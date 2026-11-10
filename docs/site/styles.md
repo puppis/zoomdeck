@@ -52,3 +52,5 @@ attribute, naming the element's line.
 
 > **Tip** Put common typography in `layout` (`fontSize`, `headingSize`, `codeSize`, `font`,
 > `color`) and use styles for the few recurring variations: footnotes, callouts, captions.
+> A `shape: sketch=true` style (with `connection` and `attachment`) makes a whole deck
+> [hand-drawn](sketch.html).

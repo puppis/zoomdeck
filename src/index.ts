@@ -65,3 +65,5 @@ export type { TextRun, MathPiece, MathFactory } from './markup/text';
 export { markupDeck, loadDeckConfig } from './markup/deck';
 export type { MarkupDeckOptions, DeckConfig } from './markup/deck';
 export { svgToMobject, loadSvgMobject } from './svg';
+export { sketch, sketchDrawable, sketchSeed, FILL_STYLES, SKETCH_SCALE } from './sketch';
+export type { SketchOptions, FillStyle, OutlineMobject } from './sketch';

@@ -9,7 +9,9 @@
     "markdown",
     "latex",
     "webgl",
-    "manim"
+    "manim",
+    "hand-drawn",
+    "rough"
   ],
   "author": "Gabriele Puppis",
   "license": "MIT",
@@ -70,6 +72,7 @@
     "gifuct-js": "^2.1.2",
     "manim-web": "^0.41.0",
     "markdown-it": "^14.1.0",
+    "roughjs": "^4.6.6",
     "three": "^0.186.1",
     "vite": "^7.0.0"
   },

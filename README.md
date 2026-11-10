@@ -35,7 +35,7 @@ the configuration and a one-page reference. `docs/markup.md` is the compact dial
 - **A Markdown dialect**: `::: slide {#id}` containers, includes/imports with placement and
   visit steps, styled prose with inline math, display math, images (SVG, raster, animated APNG/GIF
   and videos with `play=once|loop`), live pages (`iframe:`), syntax-highlighted code listings, vector shapes, arrows and lines with
-  labels, anchor-based and relative positioning, named styles, groups, `focus_only`, fragments
+  labels (crisp, or hand-drawn with `sketch=true` through Rough.js), anchor-based and relative positioning, named styles, groups, `focus_only`, fragments
   (`step`, `hide`, `show:`/`hide:`), animation directives (`animate:`, `effect:`, `transform:`,
   `move_along:`, entrance and exit styles), `next:` and `skip_next:`. The dialect is documented in
   [docs/markup.md](docs/markup.md) and demonstrated live by the guide deck.
@@ -234,7 +234,7 @@ import { runDeck, markupDeck } from 'zoomdeck';
 runDeck(markupDeck({ url: '/decks/lecture/slides.md', title: 'Lecture 1' }));
 ```
 
-The runtime dependencies (`manim-web`, `three`, `markdown-it`, `gifuct-js`) are installed with it
+The runtime dependencies (`manim-web`, `three`, `markdown-it`, `gifuct-js`, `roughjs`) are installed with it
 and left external, so your bundler resolves them once. The TypeScript sources remain available as
 `zoomdeck/source` for projects that prefer to compile them. Without a bundler, use the command
 line: `zoomdeck serve <deck>` for editing and `zoomdeck build <deck> -o <folder> [--one-file]` for

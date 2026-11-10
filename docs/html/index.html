@@ -22,7 +22,7 @@
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
       </section>
       <section>
         <h4>Motion</h4>
@@ -41,8 +41,8 @@
 small animation program; child slides sit inside their parent's canvas as viewports. Presenting
 means visiting the tree in pre-order: the camera zooms into each child, plays its steps and zooms
 back out, so the audience always sees where a detail belongs.</p>
-<p>You write slides in a Markdown dialect: prose, LaTeX formulas, images, video, shapes, arrows, code
-listings, live web pages, fragments that appear on clicks, and animations such as moves, morphs
+<p>You write slides in a Markdown dialect: prose, LaTeX formulas, images, video, shapes and arrows
+(crisp or hand-drawn), code listings, live web pages, fragments that appear on clicks, and animations such as moves, morphs
 and effects. When the dialect is not enough, a slide can be a small TypeScript class with the full
 animation engine at hand. Everything runs live on a WebGL canvas in the browser: a deck loads,
 records itself once, and then plays forwards and backwards instantly, with an outline, deep links,
@@ -66,7 +66,7 @@ and <a href="exporting.html">exports</a> to a static folder or to a single HTML 
 </tr>
 <tr>
 <td><code>npm install</code></td>
-<td>fetches the only runtime dependencies: the <code>manim-web</code> rendering engine (Three.js and MathJax inside), <code>markdown-it</code> for the dialect, <code>gifuct-js</code> for GIFs, and Vite for the preview and exports</td>
+<td>fetches the only runtime dependencies: the <code>manim-web</code> rendering engine (Three.js and MathJax inside), <code>markdown-it</code> for the dialect, <code>gifuct-js</code> for GIFs, <code>roughjs</code> for hand-drawn shapes, and Vite for the preview and exports</td>
 </tr>
 </tbody>
 </table>
@@ -114,6 +114,10 @@ from disk or from any web server, and <code>npm run dev</code> opens the same de
 <tr>
 <td><a href="guide.html#slide=more-shapes">More shapes, braces, boxes and opacity</a></td>
 <td>dots, ellipses, polygons, arcs, attachments</td>
+</tr>
+<tr>
+<td><a href="guide.html#slide=sketch">Hand-drawn shapes</a></td>
+<td><code>sketch=true</code>, fill styles, roughness, deck-wide sketching</td>
 </tr>
 <tr>
 <td><a href="guide.html#slide=layout">Positioning and relative layout</a></td>

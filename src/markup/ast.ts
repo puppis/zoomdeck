@@ -4,6 +4,7 @@
  * Parsing and tree validation never instantiate text, images or LaTeX; those
  * resources are created once by `MarkupSlide.build` during preparation.
  */
+import { FILL_STYLES } from '../sketch';
 import * as engine from 'manim-web';
 
 /** Invalid markup, with an optional one-based source line number. */
@@ -209,6 +210,10 @@ export const VIDEO_EXTENSIONS = /\.(mp4|m4v|webm|ogv|ogg|mov)(?:[?#].*)?$/i;
 export const BRACE_SIDES: Record<string, [number, number, number]> = { left: [-1, 0, 0], right: [1, 0, 0], top: [0, 1, 0], bottom: [0, -1, 0] };
 export const STROKE_ATTRS = new Set(['stroke_width']);
 export const FILL_ATTRS = new Set(['fill_color', 'fill_opacity']);
+/** Hand-drawn rendering of shapes, connections and attachments: `sketch=true` and its tuning knobs. */
+export const SKETCH_ATTRS = new Set(['sketch', 'roughness', 'bowing', 'fill_style', 'hachure_angle', 'hachure_gap', 'fill_weight', 'seed']);
+/** Values of `fill_style`. */
+export const FILL_STYLE_NAMES = new Set<string>(FILL_STYLES);
 
 export function positionTargets(item: ElementSpec | IncludeSpec | ImportSpec): Set<string> {
   const result = new Set<string>();

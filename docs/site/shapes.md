@@ -33,7 +33,8 @@ the placement attributes of [Positioning](positioning.html), `step`, `hide` and 
 
 Point-defined shapes (`polygon`, `polyline`, `arc`) keep their coordinates unless they are
 positioned; `points` is a quoted, space-separated list of `(x,y)` pairs. Shapes serve as
-positioning anchors and as connection endpoints.
+positioning anchors and as connection endpoints. Every shape, connection and attachment also
+takes `sketch=true`, which draws it [by hand](sketch.html) with a hatched or solid fill.
 
 ## Connections
 

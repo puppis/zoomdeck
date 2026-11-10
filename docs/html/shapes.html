@@ -22,7 +22,7 @@
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html" aria-current="page">Shapes, connections and attachments</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html" aria-current="page">Shapes, connections and attachments</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
       </section>
       <section>
         <h4>Motion</h4>
@@ -96,7 +96,8 @@ the placement attributes of <a href="positioning.html">Positioning</a>, <code>st
 </table>
 <p>Point-defined shapes (<code>polygon</code>, <code>polyline</code>, <code>arc</code>) keep their coordinates unless they are
 positioned; <code>points</code> is a quoted, space-separated list of <code>(x,y)</code> pairs. Shapes serve as
-positioning anchors and as connection endpoints.</p>
+positioning anchors and as connection endpoints. Every shape, connection and attachment also
+takes <code>sketch=true</code>, which draws it <a href="sketch.html">by hand</a> with a hatched or solid fill.</p>
 <h2 id="connections">Connections<a class="anchor" href="#connections" aria-label="Link to this section">#</a></h2><p><a class="try" href="guide.html#slide=shapes">Open in the guide ↗</a></p>
 <pre><code class="language-markdown"><span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#box</span> -&gt; <span class="tk-attribute">#disk</span>, <span class="tk-attribute">#edge</span>, <span class="tk-attribute">label=</span><span class="tk-string">&quot;**labelled** $\to$&quot;</span>, <span class="tk-attribute">color=</span>YELLOW<span class="tk-directive">]]</span>
 <span class="tk-directive">[[line:</span> <span class="tk-attribute">#disk</span> -&gt; (<span class="tk-number">-1.2</span>,<span class="tk-number">-5</span>), <span class="tk-attribute">#drop</span>, <span class="tk-attribute">color=</span>GRAY, <span class="tk-attribute">stroke_width=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
@@ -118,7 +119,7 @@ and may attach to a <a href="groups.html">group</a>. Like connections they are c
     </article>
     <footer class="pager">
       <a class="prev" href="images.html">← Images and video</a>
-      <a class="next" href="code.html">Code listings →</a>
+      <a class="next" href="sketch.html">Hand-drawn shapes →</a>
     </footer>
   </main>
   <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#shapes">Shapes</a></li><li><a href="#connections">Connections</a></li><li><a href="#attachments">Attachments</a></li></ul></nav>

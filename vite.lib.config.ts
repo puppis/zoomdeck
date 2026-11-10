@@ -20,6 +20,6 @@ export default defineConfig({
     emptyOutDir: true,
     sourcemap: true,
     lib: { entry: resolve(__dirname, 'src/index.ts'), formats: ['es'], fileName: 'zoomdeck' },
-    rollupOptions: { external: ['manim-web', 'three', 'markdown-it', 'gifuct-js', /^three\//] },
+    rollupOptions: { external: ['manim-web', 'three', 'markdown-it', 'gifuct-js', 'roughjs', /^three\//] },
   },
 });

@@ -96,4 +96,5 @@ The package re-exports the rendering engine as the `engine` namespace (or import
 `manim-web` directly): text, formulas, shapes, images, video, groups, value trackers, updaters and
 the animation classes (`FadeIn`, `Transform`, `Rotate`, `MoveAlongPath`, `Indicate`, `Write`,
 `AnimationGroup`, `Succession`, …). The project adds `PropertyAnimation`, `DelayedAnimation`,
-`RasterImage`/`RasterMovie`, `VideoClip`/`VideoPlay` and `makeEffect`.
+`RasterImage`/`RasterMovie`, `VideoClip`/`VideoPlay`, `makeEffect` and the `sketch` helper for
+[hand-drawn shapes](sketch.html) (`sketch.rectangle(…)`, `sketch.arrow(…)`, `sketch.of(vmobject)`, …).

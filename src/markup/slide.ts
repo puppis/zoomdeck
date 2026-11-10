@@ -2,7 +2,8 @@
  * Compiled markup slides, the slide builder that links them into a tree, and
  * imports of code-authored slides into markup decks.
  */
-import { Group, MoveAlongPath, ReplacementTransform, type Animation, type Mobject, type VMobject } from 'manim-web';
+import { Group, MoveAlongPath, ReplacementTransform, type Animation, type Mobject } from 'manim-web';
+import type { OutlineMobject } from '../sketch';
 import { PropertyAnimation, RATE_FUNCTIONS, enterAnimation, exitAnimation, makeEffect, type PropertyTargets } from '../animations';
 import { Slide, PlaceholderSlide, resolveSize, startingSlide } from '../slides';
 import { RasterImage, RasterMovie } from '../raster';
@@ -254,7 +255,9 @@ export class MarkupSlide extends Slide {
       });
     }
     if (change.action === 'transform') return new ReplacementTransform(obj, this.elements.get(change.to as string) as Mobject, options);
-    return new MoveAlongPath(obj, { ...options, path: this.elements.get(change.path as string) as VMobject, rotateAlongPath: change.rotate });
+    const path = this.elements.get(change.path as string) as OutlineMobject;
+    // Sketchy shapes move along the exact geometry they approximate.
+    return new MoveAlongPath(obj, { ...options, path: path.markupOutline ?? path, rotateAlongPath: change.rotate });
   }
 
   /** Translate `animate` attributes into relative targets from the object's current geometry. */

@@ -60,6 +60,7 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
 | `width`, `height` | elements, children | wrapping width or size; viewport size for children |
 | `font_size`, `color`, `opacity` | elements | typography and translucency |
 | `fill_color`, `fill_opacity`, `stroke_width` | shapes, boxes | fill and stroke |
+| `sketch`, `roughness`, `bowing`, `fill_style`, `hachure_angle`, `hachure_gap`, `fill_weight`, `seed` | shapes, connections, attachments | [hand-drawn](sketch.html) rendering and its tuning |
 | `step`, `hide` | elements, children (`step`) | reveal and hide clicks; visit step for children |
 | `run_time`, `lag`, `rate` | fades and animations | duration, delay, rate function |
 | `enter`, `exit` | elements | `fade`, `grow`, `write`, `create`, `draw` / `fade`, `shrink`, `uncreate` |
@@ -79,6 +80,8 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
   `create`, `uncreate`, `draw`, `wave`.
 - **Rates**: `smooth`, `linear`, `rush_into`, `rush_from`, `there_and_back`, `ease_in`,
   `ease_out`, `ease_in_out`.
+- **Fill styles** (hand-drawn shapes): `hachure`, `solid`, `zigzag`, `cross-hatch`, `dots`,
+  `dashed`, `zigzag-line`.
 - **Style roles**: `heading`, `h1` … `h6`, `body`, `math`, `code`, `image`, `iframe`, `group`,
   `include`, `shape` and shape kinds, `connection`, `arrow`, `line`, `attachment`, `brace`, `box`.
 

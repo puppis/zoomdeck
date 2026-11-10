@@ -10,8 +10,8 @@ small animation program; child slides sit inside their parent's canvas as viewpo
 means visiting the tree in pre-order: the camera zooms into each child, plays its steps and zooms
 back out, so the audience always sees where a detail belongs.
 
-You write slides in a Markdown dialect: prose, LaTeX formulas, images, video, shapes, arrows, code
-listings, live web pages, fragments that appear on clicks, and animations such as moves, morphs
+You write slides in a Markdown dialect: prose, LaTeX formulas, images, video, shapes and arrows
+(crisp or hand-drawn), code listings, live web pages, fragments that appear on clicks, and animations such as moves, morphs
 and effects. When the dialect is not enough, a slide can be a small TypeScript class with the full
 animation engine at hand. Everything runs live on a WebGL canvas in the browser: a deck loads,
 records itself once, and then plays forwards and backwards instantly, with an outline, deep links,
@@ -24,7 +24,7 @@ and [exports](exporting.html) to a static folder or to a single HTML file that p
 | --- | --- |
 | Node.js 20 or newer, with npm | to install, preview, export and build the documentation |
 | A browser with WebGL 2 | Chrome, Edge, Firefox and Safari of the last few years; this is where decks run |
-| `npm install` | fetches the only runtime dependencies: the `manim-web` rendering engine (Three.js and MathJax inside), `markdown-it` for the dialect, `gifuct-js` for GIFs, and Vite for the preview and exports |
+| `npm install` | fetches the only runtime dependencies: the `manim-web` rendering engine (Three.js and MathJax inside), `markdown-it` for the dialect, `gifuct-js` for GIFs, `roughjs` for hand-drawn shapes, and Vite for the preview and exports |
 
 Nothing else is required: no Python, no LaTeX installation (formulas render through MathJax in
 the browser), no video encoder, no font installation (the Latin Modern text face is bundled).
@@ -55,6 +55,7 @@ from disk or from any web server, and `npm run dev` opens the same deck live. Ea
 | [Images and animated images](guide.html#slide=images) | SVG, raster, APNG and GIF playback |
 | [Shapes and connections](guide.html#slide=shapes) | rectangles, circles, polylines, arrows, lines |
 | [More shapes, braces, boxes and opacity](guide.html#slide=more-shapes) | dots, ellipses, polygons, arcs, attachments |
+| [Hand-drawn shapes](guide.html#slide=sketch) | `sketch=true`, fill styles, roughness, deck-wide sketching |
 | [Positioning and relative layout](guide.html#slide=layout) | flow, coordinates, relative constraints |
 | [Anchors, offsets and timing](guide.html#slide=anchors) | `anchor=`, `dx`/`dy`, `run_time`, `lag` |
 | [Anchor expressions and styles](guide.html#slide=styles) | `at=`, classes, roles, style sheets |

@@ -176,6 +176,27 @@ placed above the connection), `color`, `stroke_width`, `step` and `hide`. Connec
 after all other elements, cannot anchor other elements, and are not hidden implicitly when an
 endpoint disappears.
 
+### Hand-drawn shapes
+
+```markdown
+[[rectangle: #hr x=-6 y=0 width=3.4 height=1.8 corner_radius=0.3 fill_color=BLUE fill_opacity=0.5 sketch=true]]
+[[circle: #hc right-of:#hr buff=1 radius=0.9 fill_color=GREEN fill_opacity=0.6 fill_style=cross-hatch sketch=true]]
+[[polygon: #hp points="(0,-2) (1.5,0) (3,-2)" fill_color=ORANGE fill_opacity=1 fill_style=solid roughness=2 sketch=true]]
+[[arrow: #hr -> #hc, #ha, sketch=true]]
+[[brace: #hc, #hb, side=bottom, label="by hand", sketch=true]]
+```
+
+Every shape, connection and attachment takes `sketch=true` and is then drawn as if by hand
+(through Rough.js): a wobbly outline traced twice and a fill made of hatching lines. `fill_style`
+chooses `hachure` (default; dots default to `solid`), `solid`, `zigzag`, `cross-hatch`, `dots`,
+`dashed` or `zigzag-line`; `roughness` (1), `bowing` (1), `hachure_angle` (degrees, -41),
+`hachure_gap` (logical units), `fill_weight` (like `stroke_width`) and `seed` (an integer; by
+default derived from the element's ID and line, so the drawing is stable across reloads) tune it.
+`fill_opacity` becomes the opacity of the hatching and survives fades; a filled arc is drawn as a
+pie slice; braces become a single stroke on their side; a hand-drawn `move_along` path moves the
+follower along the exact geometry. A `shape: sketch=true` style (also `connection`, `attachment`)
+sketches a whole deck, and `sketch=false` opts an element out.
+
 ## Code listings
 
 ````markdown

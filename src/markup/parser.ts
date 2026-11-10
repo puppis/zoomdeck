@@ -8,7 +8,8 @@ import type Token from 'markdown-it/lib/token.mjs';
 import {
   ALIGNMENTS, ANIMATE_PROPS, ATTACHMENTS, BASELINE_ANCHORS, BRACE_SIDES, CONNECTIONS, CONTAINER, DIRECTIVE, EFFECT_NAMES, ELEMENT_ATTRS,
   ENTER_STYLES, EXIT_STYLES, FILL_ATTRS, GEOMETRY, GROUP_ANCHORS, GROUP_ATTRS, HORIZONTAL_POSITION, IDENTIFIER, LAYOUT, NEIGHBORS,
-  POSITION_REFERENCES, RATE_NAMES, SHAPES, STROKE_ATTRS, TEXT_LIKE, TIMING_ATTRS, VERTICAL_POSITION, VIDEO_EXTENSIONS,
+  POSITION_REFERENCES, RATE_NAMES, SHAPES, SKETCH_ATTRS, STROKE_ATTRS, TEXT_LIKE, TIMING_ATTRS, VERTICAL_POSITION, VIDEO_EXTENSIONS,
+  FILL_STYLE_NAMES,
   ActionSpec, AnimationStep, ElementSpec, EventSpec, GroupSpec, ImportSpec, IncludeSpec, InlineSpan, MarkupDocument, MarkupError,
   NextSpec, SkipNextSpec, SlideItem, SlideSpec, StepChange, StyleSheet, Attributes, applyStyles, checkClassName, endpoint, numberValue,
   parseAt, parseAttributes, parseColor, polylinePoints, positionOrder, span, stepValue,
@@ -573,14 +574,16 @@ export class ASTTransformer {
     }
     let allowed: Set<string>;
     if (item.kind === 'group') allowed = new Set(GROUP_ATTRS);
-    else if (CONNECTIONS.has(item.kind)) allowed = new Set(['id', 'step', 'hide', 'color', 'from', 'to', 'label', 'opacity', ...STROKE_ATTRS, ...TIMING_ATTRS]);
+    else if (CONNECTIONS.has(item.kind)) {
+      allowed = new Set(['id', 'step', 'hide', 'color', 'from', 'to', 'label', 'opacity', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
+    }
     else if (ATTACHMENTS.has(item.kind)) {
-      allowed = new Set(['id', 'target', 'step', 'hide', 'color', 'buff', 'opacity', ...STROKE_ATTRS, ...TIMING_ATTRS]);
+      allowed = new Set(['id', 'target', 'step', 'hide', 'color', 'buff', 'opacity', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
       if (item.kind === 'brace') for (const key of ['side', 'label', 'font_size']) allowed.add(key);
       else for (const key of ['corner_radius', ...FILL_ATTRS]) allowed.add(key);
     } else if (SHAPES.has(item.kind)) {
       allowed = new Set([...ELEMENT_ATTRS].filter((key) => !['font_size', 'width', 'height'].includes(key)));
-      for (const key of STROKE_ATTRS) allowed.add(key);
+      for (const key of [...STROKE_ATTRS, ...SKETCH_ATTRS]) allowed.add(key);
       if (item.kind === 'polyline') allowed.add('points');
       else {
         for (const key of FILL_ATTRS) allowed.add(key);
@@ -746,15 +749,23 @@ export class ASTTransformer {
   private _checkAttrs(attrs: Attributes, allowed: Set<string>, line: number): void {
     const unknown = Object.keys(attrs).filter((key) => !allowed.has(key)).sort();
     if (unknown.length) throw new MarkupError(`Unknown attributes: ${unknown.join(', ')}`, line);
-    for (const key of [...GEOMETRY, 'font_size', 'buff', 'radius', 'corner_radius', 'stroke_width', 'fill_opacity', 'opacity', 'dx', 'dy', 'run_time', 'lag', 'start_angle', 'scale']) {
+    for (const key of [...GEOMETRY, 'font_size', 'buff', 'radius', 'corner_radius', 'stroke_width', 'fill_opacity', 'opacity', 'dx', 'dy', 'run_time', 'lag', 'start_angle', 'scale',
+      'roughness', 'bowing', 'hachure_angle', 'hachure_gap', 'fill_weight', 'seed']) {
       if (!(key in attrs)) continue;
       const number = numberValue(attrs, key, line) as number;
-      if (['buff', 'corner_radius', 'stroke_width', 'lag'].includes(key) && number < 0) throw new MarkupError(`${key} must be nonnegative`, line);
-      if (['radius', 'run_time'].includes(key) && number <= 0) throw new MarkupError(`${key} must be positive`, line);
+      if (['buff', 'corner_radius', 'stroke_width', 'lag', 'roughness', 'bowing', 'fill_weight', 'seed'].includes(key) && number < 0) {
+        throw new MarkupError(`${key} must be nonnegative`, line);
+      }
+      if (['radius', 'run_time', 'hachure_gap'].includes(key) && number <= 0) throw new MarkupError(`${key} must be positive`, line);
       if (['fill_opacity', 'opacity'].includes(key) && (number < 0 || number > 1)) throw new MarkupError(`${key} must be between zero and one`, line);
     }
     for (const key of ['step', 'hide']) if (key in attrs) stepValue(attrs, key, line);
     for (const key of ['color', 'fill_color']) if (key in attrs) ASTTransformer._checkColor(attrs[key], line);
+    if ('seed' in attrs && !Number.isInteger(Number(attrs.seed))) throw new MarkupError('seed must be an integer', line);
+    if ('sketch' in attrs && !['true', 'false'].includes(attrs.sketch)) throw new MarkupError('sketch must be true or false', line);
+    if ('fill_style' in attrs && !FILL_STYLE_NAMES.has(attrs.fill_style)) {
+      throw new MarkupError(`fill_style must be one of ${[...FILL_STYLE_NAMES].join(', ')}`, line);
+    }
   }
 
   private static _checkPositioning(

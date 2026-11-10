@@ -21,7 +21,7 @@ const outDir = join(root, 'docs', 'html');
 /** Navigation: sections and their pages, in reading order. */
 const NAV: Array<{ title: string; pages: string[] }> = [
   { title: 'Start', pages: ['index', 'getting-started', 'concepts'] },
-  { title: 'Writing slides', pages: ['slides', 'text', 'math', 'images', 'shapes', 'code', 'positioning', 'styles', 'groups', 'live-pages'] },
+  { title: 'Writing slides', pages: ['slides', 'text', 'math', 'images', 'shapes', 'sketch', 'code', 'positioning', 'styles', 'groups', 'live-pages'] },
   { title: 'Motion', pages: ['fragments', 'animations', 'focus'] },
   { title: 'Beyond markup', pages: ['code-slides', 'player', 'exporting', 'configuration', 'reference'] },
 ];

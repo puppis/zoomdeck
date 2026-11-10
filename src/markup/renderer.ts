@@ -8,6 +8,7 @@ import {
   type Mobject,
 } from 'manim-web';
 import { loadSvgMobject } from '../svg';
+import { sketch, sketchSeed, type FillStyle, type OutlineMobject, type SketchOptions } from '../sketch';
 import { DEFAULT_ANIMATION_TIME, Slide, resolveSize } from '../slides';
 import { RasterImage, RasterSource } from '../raster';
 import { VideoClip } from '../video';
@@ -92,6 +93,58 @@ export class LayoutConfig {
 }
 
 export type AnyMobject = Mobject & { markupBaselineFraction?: number };
+
+/** Hand-drawn options of an element with `sketch=true`, or null when it is drawn crisply. */
+export function sketchOptions(
+  element: ElementSpec,
+  style: { color: string; strokeWidth: number; fillColor: string; fillOpacity: number },
+  defaultFillStyle?: FillStyle,
+): SketchOptions | null {
+  const attrs = element.attributes;
+  if (attrs.sketch !== 'true') return null;
+  const optional = (key: string) => (key in attrs ? Number(attrs[key]) : undefined);
+  return {
+    ...style,
+    fillStyle: (attrs.fill_style as FillStyle | undefined) ?? defaultFillStyle,
+    roughness: optional('roughness'),
+    bowing: optional('bowing'),
+    hachureAngle: optional('hachure_angle'),
+    hachureGap: optional('hachure_gap'),
+    fillWeight: optional('fill_weight'),
+    // Without a seed the look is still stable across reloads: it follows the element's identity.
+    seed: optional('seed') ?? sketchSeed(`${element.id}@${element.line}`),
+  };
+}
+
+/** The hand-drawn counterpart of a crisp shape, remembering the exact geometry for paths. */
+function sketchShape(element: ElementSpec, crisp: VMobject, options: SketchOptions): Mobject {
+  const attrs = element.attributes;
+  let rough;
+  switch (element.kind) {
+    case 'rectangle':
+      rough = sketch.rectangle(Number(attrs.width), Number(attrs.height), options, Number(attrs.corner_radius ?? 0));
+      break;
+    case 'circle':
+      rough = sketch.circle(Number(attrs.radius), options);
+      break;
+    case 'dot':
+      rough = sketch.circle(Number(attrs.radius ?? 0.08), options);
+      break;
+    case 'ellipse':
+      rough = sketch.ellipse(Number(attrs.width), Number(attrs.height), options);
+      break;
+    case 'polygon':
+      rough = sketch.polygon(polylinePoints(attrs.points, element.line, 3), options);
+      break;
+    case 'arc':
+      rough = sketch.arc([Number(attrs.x ?? 0), Number(attrs.y ?? 0)], Number(attrs.radius), Number(attrs.start_angle ?? 0), Number(attrs.angle), options);
+      break;
+    default:
+      rough = sketch.polyline(polylinePoints(attrs.points, element.line), options);
+  }
+  (rough as OutlineMobject).markupOutline = crisp;
+  return rough;
+}
 
 /** The anchor name an item is positioned by: its `anchor` attribute, else the text default or the center. */
 export function elementAnchor(item: ElementSpec | IncludeSpec | ImportSpec, textAnchor = 'left-baseline'): string {
@@ -333,9 +386,14 @@ export class MarkupRenderer {
         obj = new VMobject().setPointsAsCorners(polylinePoints(attrs.points, element.line));
       }
       const shape = obj as VMobject;
+      const strokeWidth = Number(attrs.stroke_width ?? 2);
+      const fillColor = attrs.fill_color ? parseColor(attrs.fill_color) : color;
+      const fillOpacity = Number(attrs.fill_opacity ?? (element.kind === 'dot' ? 1 : 0));
       // Setting the stroke color through setStyle also resets the fill color, so apply the fill afterwards.
-      shape.setStyle({ strokeColor: color, strokeWidth: Number(attrs.stroke_width ?? 2) });
-      shape.setFill(attrs.fill_color ? parseColor(attrs.fill_color) : color, Number(attrs.fill_opacity ?? (element.kind === 'dot' ? 1 : 0)));
+      shape.setStyle({ strokeColor: color, strokeWidth });
+      shape.setFill(fillColor, fillOpacity);
+      const sketchy = sketchOptions(element, { color, strokeWidth, fillColor, fillOpacity }, element.kind === 'dot' ? 'solid' : undefined);
+      if (sketchy) obj = sketchShape(element, shape, sketchy);
     } else if (element.kind === 'math') {
       const piece = await this.mathPiece(element.source, color, size);
       obj = piece.mobject;
@@ -382,8 +440,18 @@ export class MarkupRenderer {
     const buff = Number(attrs.buff ?? 0.15);
     let obj: Mobject;
     if (element.kind === 'brace') {
-      const direction = BRACE_SIDES[attrs.side ?? 'bottom'];
-      const brace = new Brace(target, { direction, buff, color, strokeWidth });
+      const side = attrs.side ?? 'bottom';
+      const direction = BRACE_SIDES[side];
+      const sketchy = sketchOptions(element, { color, strokeWidth, fillColor: color, fillOpacity: 0 });
+      let brace: Mobject;
+      if (sketchy) {
+        // A hand-drawn brace is a single stroke along the brace's centerline, turned to face its side.
+        const horizontal = side === 'bottom' || side === 'top';
+        const span = horizontal ? target.getWidth() : target.getHeight();
+        brace = sketch.brace(span, Math.min(0.3, span / 4), sketchy);
+        brace.rotate({ bottom: 0, top: Math.PI, left: -Math.PI / 2, right: Math.PI / 2 }[side] as number);
+        brace.nextTo(target, direction, buff);
+      } else brace = new Brace(target, { direction, buff, color, strokeWidth });
       obj = brace;
       if (attrs.label) {
         const size = numberValue(attrs, 'font_size', element.line, this.layout.fontSize * 0.8) as number;
@@ -392,9 +460,19 @@ export class MarkupRenderer {
         obj = new Group(brace, text);
       }
     } else {
-      const box = new SurroundingRectangle(target, { buff, cornerRadius: Number(attrs.corner_radius ?? 0), color, strokeWidth });
-      box.setFill(attrs.fill_color ? parseColor(attrs.fill_color) : color, Number(attrs.fill_opacity ?? 0));
+      const cornerRadius = Number(attrs.corner_radius ?? 0);
+      const fillColor = attrs.fill_color ? parseColor(attrs.fill_color) : color;
+      const fillOpacity = Number(attrs.fill_opacity ?? 0);
+      const box = new SurroundingRectangle(target, { buff, cornerRadius, color, strokeWidth });
+      box.setFill(fillColor, fillOpacity);
       obj = box;
+      const sketchy = sketchOptions(element, { color, strokeWidth, fillColor, fillOpacity });
+      if (sketchy) {
+        const rough = sketch.rectangle(box.getWidth(), box.getHeight(), sketchy, cornerRadius);
+        rough.moveTo(box.getCenter());
+        (rough as OutlineMobject).markupOutline = box;
+        obj = rough;
+      }
     }
     if ('opacity' in attrs) applyOpacity(obj, Number(attrs.opacity));
     return obj;
@@ -440,9 +518,11 @@ export class MarkupRenderer {
     const start3: [number, number, number] = [a[0] + unit[0] * trim, a[1] + unit[1] * trim, a[2] + unit[2] * trim];
     const end3: [number, number, number] = [b[0] - unit[0] * trim, b[1] - unit[1] * trim, b[2] - unit[2] * trim];
     const strokeWidth = element.kind === 'line' || 'stroke_width' in element.attributes ? Number(element.attributes.stroke_width ?? 2) : undefined;
-    const connection: Mobject = isArrow
-      ? new Arrow({ start: start3, end: end3, color, ...(strokeWidth !== undefined ? { strokeWidth } : {}) })
-      : new Line({ start: start3, end: end3, color, strokeWidth: strokeWidth ?? 2 });
+    const sketchy = sketchOptions(element, { color, strokeWidth: strokeWidth ?? (isArrow ? 4 : 2), fillColor: color, fillOpacity: 0 });
+    let connection: Mobject;
+    if (sketchy) connection = isArrow ? sketch.arrow(start3, end3, sketchy) : sketch.line(start3, end3, sketchy);
+    else if (isArrow) connection = new Arrow({ start: start3, end: end3, color, ...(strokeWidth !== undefined ? { strokeWidth } : {}) });
+    else connection = new Line({ start: start3, end: end3, color, strokeWidth: strokeWidth ?? 2 });
     const label = element.attributes.label;
     let result: Mobject = connection;
     if (label) {

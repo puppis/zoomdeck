@@ -16,18 +16,19 @@ A tour of every feature of the Markdown dialect and the player: each slide pairs
 [[include: #images x=6.5 y=4.4 width=6 skip_return=true]]
 [[include: #shapes x=13 y=4.4 width=6]]
 [[include: #more-shapes x=-13 y=0.5 width=6 skip_return=true]]
-[[include: #layout x=-6.5 y=0.5 width=6 skip_return=true]]
-[[include: #anchors x=0 y=0.5 width=6 skip_return=true]]
-[[include: #styles x=6.5 y=0.5 width=6 skip_return=true]]
-[[include: #groups x=13 y=0.5 width=6]]
-[[include: #fragments x=-13 y=-3.4 width=6 skip_return=true]]
-[[include: #focus x=-6.5 y=-3.4 width=6 skip_return=true]]
-[[include: #children x=0 y=-3.4 width=6 skip_return=true]]
-[[include: #code-slides x=6.5 y=-3.4 width=6 skip_return=true]]
-[[include: #listings x=13 y=-3.4 width=6]]
-[[include: #animations x=-13 y=-7.3 width=6 skip_return=true]]
-[[include: #media x=-6.5 y=-7.3 width=6 skip_return=true]]
-[[include: #player x=0 y=-7.3 width=6]]
+[[include: #sketch x=-6.5 y=0.5 width=6 skip_return=true]]
+[[include: #layout x=0 y=0.5 width=6 skip_return=true]]
+[[include: #anchors x=6.5 y=0.5 width=6 skip_return=true]]
+[[include: #styles x=13 y=0.5 width=6]]
+[[include: #groups x=-13 y=-3.4 width=6 skip_return=true]]
+[[include: #fragments x=-6.5 y=-3.4 width=6 skip_return=true]]
+[[include: #focus x=0 y=-3.4 width=6 skip_return=true]]
+[[include: #children x=6.5 y=-3.4 width=6 skip_return=true]]
+[[include: #code-slides x=13 y=-3.4 width=6]]
+[[include: #listings x=-9.75 y=-7.3 width=6 skip_return=true]]
+[[include: #animations x=-3.25 y=-7.3 width=6 skip_return=true]]
+[[include: #media x=3.25 y=-7.3 width=6 skip_return=true]]
+[[include: #player x=9.75 y=-7.3 width=6]]
 :::
 
 ::: slide {#tree width=20}
@@ -453,6 +454,30 @@ Every shape takes `color`, `stroke_width`, `fill_color`, `fill_opacity` and the 
 [Text at 40 % opacity]{#faded x=5.6 y=-1.6 opacity=0.4}
 
 ![](assets/tiles.png){#dim x=7.5 y=-3.4 width=3 opacity=0.5}
+:::
+
+::: slide {#sketch width=20}
+## Hand-drawn shapes
+
+```markdown {#sketch-source x=-9.35 y=3.7 width=19}
+[[rectangle: #hr x=-7.2 y=-3.3 width=3.4 height=1.8 corner_radius=0.3 color=BLUE_E fill_color=BLUE_E fill_opacity=0.5 sketch=true]]
+[[circle: #hc right-of:#hr buff=1.2 radius=0.9 color=GREEN_E fill_color=GREEN_E fill_opacity=0.6 fill_style=cross-hatch sketch=true]]
+[[polygon: #hp points="(-1.2,-4.2) (0.3,-2.3) (1.6,-4.2)" color=ORANGE fill_color=ORANGE fill_opacity=1 fill_style=solid roughness=2 sketch=true]]
+[[ellipse: #he x=4.6 y=-3.3 width=3.6 height=1.8 color=PURPLE fill_color=PURPLE fill_opacity=0.5 fill_style=zigzag hachure_angle=20 seed=7 sketch=true]]
+[[arrow: #hr -> #hc, #ha, label="`sketch=true`", color=GOLD_E, sketch=true]]
+[[brace: #he, #hb, side=bottom, label="a hand-drawn brace", color=GRAY, sketch=true]]
+[[box: #hp, #hbox, buff=0.25, color=RED, step=1, sketch=true]]
+```
+
+`sketch=true` draws a shape, connection or attachment as if by hand (through Rough.js): a wobbly double outline and a fill made of hatching, chosen by `fill_style` (`hachure`, `solid`, `zigzag`, `cross-hatch`, `dots`, `dashed`, `zigzag-line`). `roughness`, `bowing`, `hachure_angle`, `hachure_gap` and `fill_weight` tune the drawing, `seed` pins one rendition, and a `shape: sketch=true` style sketches a whole deck. Everything else is unchanged: fills fade, anchors and endpoints work, `move_along` follows the exact path. {x=-9.35 y=-0.2 width=19 font_size=21}
+
+[[rectangle: #hr x=-7.2 y=-3.3 width=3.4 height=1.8 corner_radius=0.3 color=BLUE_E fill_color=BLUE_E fill_opacity=0.5 sketch=true]]
+[[circle: #hc right-of:#hr buff=1.2 radius=0.9 color=GREEN_E fill_color=GREEN_E fill_opacity=0.6 fill_style=cross-hatch sketch=true]]
+[[polygon: #hp points="(-1.2,-4.2) (0.3,-2.3) (1.6,-4.2)" color=ORANGE fill_color=ORANGE fill_opacity=1 fill_style=solid roughness=2 sketch=true]]
+[[ellipse: #he x=4.6 y=-3.3 width=3.6 height=1.8 color=PURPLE fill_color=PURPLE fill_opacity=0.5 fill_style=zigzag hachure_angle=20 seed=7 sketch=true]]
+[[arrow: #hr -> #hc, #ha, label="`sketch=true`", color=GOLD_E, sketch=true]]
+[[brace: #he, #hb, side=bottom, label="a hand-drawn brace", color=GRAY, sketch=true]]
+[[box: #hp, #hbox, buff=0.25, color=RED, step=1, sketch=true]]
 :::
 
 ::: slide {#anchors width=20}
