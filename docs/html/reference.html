@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference · Zoomdeck</title>
+<meta name="description" content="Every directive and attribute of the dialect on one page.">
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+</header>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Start</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li></ul>
+      </section>
+      <section>
+        <h4>Beyond markup</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html" aria-current="page">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>Reference</h1>
+      <p class="lead">Every directive and attribute of the dialect on one page.</p>
+      <h2 id="document-structure">Document structure<a class="anchor" href="#document-structure" aria-label="Link to this section">#</a></h2><table>
+<thead>
+<tr>
+<th>Syntax</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>::: slide {#id attrs} … :::</code></td>
+<td>a slide; attrs: <code>title</code>, <code>width</code>, <code>height</code>, <code>start_here</code>, <code>only_this</code>, <code>skip_return</code></td>
+</tr>
+<tr>
+<td><code>::: styles … :::</code></td>
+<td>style definitions, <code>name: attributes</code> per line, at the top of the file</td>
+</tr>
+<tr>
+<td><code>::: {.element attrs} … :::</code></td>
+<td>attributes for one paragraph, heading, image, formula or listing</td>
+</tr>
+<tr>
+<td><code>::: {.group #id attrs} … :::</code></td>
+<td>a group of elements in local coordinates</td>
+</tr>
+<tr>
+<td><code>&lt;!-- … --&gt;</code></td>
+<td>discarded</td>
+</tr>
+</tbody>
+</table>
+<h2 id="elements">Elements<a class="anchor" href="#elements" aria-label="Link to this section">#</a></h2><table>
+<thead>
+<tr>
+<th>Syntax</th>
+<th>Element</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>paragraph, <code># heading</code>, <code>- item</code></td>
+<td>text (attributes in <code>{…}</code> at the end of the block)</td>
+</tr>
+<tr>
+<td><code>[text]{attrs}</code></td>
+<td>a positioned text block, or a colored span when only <code>color</code>/<code>style</code> is given</td>
+</tr>
+<tr>
+<td><code>$…$</code>, <code>$$ … $$</code></td>
+<td>inline math (part of a paragraph), display math</td>
+</tr>
+<tr>
+<td><code>![alt](path){attrs}</code></td>
+<td>image, animated image or video</td>
+</tr>
+<tr>
+<td><code>```lang {attrs}</code></td>
+<td>code listing</td>
+</tr>
+<tr>
+<td><code>[label](url)</code></td>
+<td>link</td>
+</tr>
+</tbody>
+</table>
+<h2 id="directives">Directives<a class="anchor" href="#directives" aria-label="Link to this section">#</a></h2><table>
+<thead>
+<tr>
+<th>Directive</th>
+<th>Form</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>include</code>, <code>subslide</code></td>
+<td><code>[[include: #slide, placement, step, start_here, only_this, skip_return]]</code></td>
+</tr>
+<tr>
+<td><code>import</code></td>
+<td><code>[[import: ClassName, placement, step, …]]</code></td>
+</tr>
+<tr>
+<td><code>rectangle</code>, <code>ellipse</code></td>
+<td><code>#id width height [corner_radius] fill_color fill_opacity …</code></td>
+</tr>
+<tr>
+<td><code>circle</code>, <code>dot</code></td>
+<td><code>#id radius …</code> (dot: radius optional)</td>
+</tr>
+<tr>
+<td><code>polygon</code>, <code>polyline</code></td>
+<td><code>#id points=&quot;(x,y) (x,y) …&quot; …</code></td>
+</tr>
+<tr>
+<td><code>arc</code></td>
+<td><code>#id x y radius angle [start_angle] …</code></td>
+</tr>
+<tr>
+<td><code>arrow</code>, <code>line</code></td>
+<td><code>[[arrow: #a -&gt; #b, #id, label=&quot;…&quot;, color, stroke_width, step, hide]]</code> with <code>#id</code> or <code>(x,y)</code> endpoints</td>
+</tr>
+<tr>
+<td><code>brace</code>, <code>box</code></td>
+<td><code>[[brace: #target, #id, side, buff, label]]</code>, <code>[[box: #target, #id, buff, corner_radius, fill_color, fill_opacity]]</code></td>
+</tr>
+<tr>
+<td><code>iframe</code></td>
+<td><code>[[iframe: url, #id, width, height, poster, title, placement, step]]</code></td>
+</tr>
+<tr>
+<td><code>show</code>, <code>hide</code></td>
+<td><code>[[show: #id step=N run_time lag enter]]</code>, <code>[[hide: #id step=N run_time lag exit]]</code></td>
+</tr>
+<tr>
+<td><code>animate</code></td>
+<td><code>[[animate: #id, step=N, x y at dx dy anchor angle scale opacity color, run_time lag rate]]</code></td>
+</tr>
+<tr>
+<td><code>effect</code></td>
+<td><code>[[effect: name #id, step=N, color, scale, run_time, lag, rate]]</code></td>
+</tr>
+<tr>
+<td><code>transform</code></td>
+<td><code>[[transform: #a -&gt; #b, step=N, run_time, lag, rate]]</code></td>
+</tr>
+<tr>
+<td><code>move_along</code></td>
+<td><code>[[move_along: #id, step=N, path=#shape, rotate, run_time, lag, rate]]</code></td>
+</tr>
+<tr>
+<td><code>next</code>, <code>skip_next</code></td>
+<td><code>[[next: step=N]]</code>, <code>[[skip_next: step=N]]</code></td>
+</tr>
+</tbody>
+</table>
+<p>Attributes are space- or comma-separated <code>key=value</code> pairs; quoted values may contain spaces and
+commas; <code>(x,y)</code> tuples stay whole; <code>#id</code> sets the ID; <code>.name</code> applies a style.</p>
+<h2 id="attributes">Attributes<a class="anchor" href="#attributes" aria-label="Link to this section">#</a></h2><table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>On</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>x</code>, <code>y</code></td>
+<td>elements, children</td>
+<td>position of the anchor</td>
+</tr>
+<tr>
+<td><code>anchor</code></td>
+<td>elements, children</td>
+<td><code>center</code>, edges, corners, <code>left-baseline</code>, <code>right-baseline</code> (text), <code>origin</code> (groups)</td>
+</tr>
+<tr>
+<td><code>at</code></td>
+<td>elements, children</td>
+<td><code>[anchor:]#id[.anchor]</code> or <code>[anchor:](x,y)</code></td>
+</tr>
+<tr>
+<td><code>below</code>, <code>above</code>, <code>left-of</code>, <code>right-of</code></td>
+<td>elements, children</td>
+<td>place beside <code>#id</code>, at distance <code>buff</code></td>
+</tr>
+<tr>
+<td><code>left-aligned</code>, <code>right-aligned</code>, <code>top-aligned</code>, <code>bottom-aligned</code>, <code>baseline-aligned</code></td>
+<td>elements, children</td>
+<td>align an edge or baseline with <code>#id</code></td>
+</tr>
+<tr>
+<td><code>dx</code>, <code>dy</code></td>
+<td>positioned elements</td>
+<td>offset after placement</td>
+</tr>
+<tr>
+<td><code>width</code>, <code>height</code></td>
+<td>elements, children</td>
+<td>wrapping width or size; viewport size for children</td>
+</tr>
+<tr>
+<td><code>font_size</code>, <code>color</code>, <code>opacity</code></td>
+<td>elements</td>
+<td>typography and translucency</td>
+</tr>
+<tr>
+<td><code>fill_color</code>, <code>fill_opacity</code>, <code>stroke_width</code></td>
+<td>shapes, boxes</td>
+<td>fill and stroke</td>
+</tr>
+<tr>
+<td><code>step</code>, <code>hide</code></td>
+<td>elements, children (<code>step</code>)</td>
+<td>reveal and hide clicks; visit step for children</td>
+</tr>
+<tr>
+<td><code>run_time</code>, <code>lag</code>, <code>rate</code></td>
+<td>fades and animations</td>
+<td>duration, delay, rate function</td>
+</tr>
+<tr>
+<td><code>enter</code>, <code>exit</code></td>
+<td>elements</td>
+<td><code>fade</code>, <code>grow</code>, <code>write</code>, <code>create</code>, <code>draw</code> / <code>fade</code>, <code>shrink</code>, <code>uncreate</code></td>
+</tr>
+<tr>
+<td><code>focus_only</code></td>
+<td>static elements</td>
+<td>visible only while the slide is focused</td>
+</tr>
+<tr>
+<td><code>play</code>, <code>muted</code></td>
+<td>animated images, videos</td>
+<td><code>once</code>, <code>loop</code>; sound for videos</td>
+</tr>
+<tr>
+<td><code>lang</code></td>
+<td>listings</td>
+<td>language name (normally from the fence info)</td>
+</tr>
+<tr>
+<td><code>class</code> or <code>.name</code></td>
+<td>elements, children</td>
+<td>styles</td>
+</tr>
+<tr>
+<td><code>angle</code></td>
+<td>children, <code>animate</code></td>
+<td>rotation in radians</td>
+</tr>
+<tr>
+<td><code>title</code>, <code>poster</code></td>
+<td>iframes</td>
+<td>label and preview image</td>
+</tr>
+</tbody>
+</table>
+<h2 id="names">Names<a class="anchor" href="#names" aria-label="Link to this section">#</a></h2><ul>
+<li><strong>Colors</strong>: palette names (<code>BLUE</code>, <code>TEAL</code>, <code>GREEN</code>, <code>YELLOW</code>, <code>GOLD</code>, <code>RED</code>, <code>MAROON</code>, <code>PURPLE</code>,
+<code>PINK</code>, <code>ORANGE</code>, <code>GRAY</code>, <code>WHITE</code>, <code>BLACK</code>, with <code>_A</code> … <code>_E</code> variants), CSS names, <code>#rgb</code>,
+<code>#rrggbb</code>, <code>rgb(…)</code>.</li>
+<li><strong>Effects</strong>: <code>indicate</code>, <code>wiggle</code>, <code>circumscribe</code>, <code>flash</code>, <code>focus</code>, <code>grow</code>, <code>shrink</code>, <code>write</code>,
+<code>create</code>, <code>uncreate</code>, <code>draw</code>, <code>wave</code>.</li>
+<li><strong>Rates</strong>: <code>smooth</code>, <code>linear</code>, <code>rush_into</code>, <code>rush_from</code>, <code>there_and_back</code>, <code>ease_in</code>,
+<code>ease_out</code>, <code>ease_in_out</code>.</li>
+<li><strong>Style roles</strong>: <code>heading</code>, <code>h1</code> … <code>h6</code>, <code>body</code>, <code>math</code>, <code>code</code>, <code>image</code>, <code>iframe</code>, <code>group</code>,
+<code>include</code>, <code>shape</code> and shape kinds, <code>connection</code>, <code>arrow</code>, <code>line</code>, <code>attachment</code>, <code>brace</code>, <code>box</code>.</li>
+</ul>
+<h2 id="validation">Validation<a class="anchor" href="#validation" aria-label="Link to this section">#</a></h2><p>Mistakes are reported before anything is drawn, with the source line: unknown attributes,
+duplicate or missing IDs, conflicting constraints, positioning cycles, references across groups,
+inconsistent visibility, animations of hidden elements, invalid colors, unknown classes, effects
+and rates, and missing images.</p>
+<h2 id="limitations">Limitations<a class="anchor" href="#limitations" aria-label="Link to this section">#</a></h2><ul>
+<li>Text is rasterized to canvas textures at a resolution tied to its font size; math, SVG and
+shapes stay vector.</li>
+<li>The dry recording happens at page load; large decks take a few seconds.</li>
+<li>Group members cannot have their own fragments; <code>transform</code> works best between vector content.</li>
+<li>Live pages are not drawn by the pen or spotlight and are absent from exported screenshots.</li>
+<li>The design mode (dragging elements in the browser) is planned; see the roadmap in the repository.</li>
+</ul>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="configuration.html">← Configuration</a>
+      <span></span>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#document-structure">Document structure</a></li><li><a href="#elements">Elements</a></li><li><a href="#directives">Directives</a></li><li><a href="#attributes">Attributes</a></li><li><a href="#names">Names</a></li><li><a href="#validation">Validation</a></li><li><a href="#limitations">Limitations</a></li></ul></nav>
+</div>
+</body>
+</html>

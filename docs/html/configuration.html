@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Configuration · Zoomdeck</title>
+<meta name="description" content="Every key of deck.json, the layout and presenter options, and the command line.">
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+</header>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Start</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li></ul>
+      </section>
+      <section>
+        <h4>Beyond markup</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li><li><a href="configuration.html" aria-current="page">Configuration</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>Configuration</h1>
+      <p class="lead">Every key of deck.json, the layout and presenter options, and the command line.</p>
+      <h2 id="deck-json">deck.json<a class="anchor" href="#deck-json" aria-label="Link to this section">#</a></h2><pre><code class="language-json">{
+  <span class="tk-attribute">&quot;markup&quot;</span>: <span class="tk-string">&quot;slides.md&quot;</span>,
+  <span class="tk-attribute">&quot;title&quot;</span>: <span class="tk-string">&quot;Zoomdeck guide&quot;</span>,
+  <span class="tk-attribute">&quot;root&quot;</span>: <span class="tk-string">&quot;guide&quot;</span>,
+  <span class="tk-attribute">&quot;imports&quot;</span>: <span class="tk-string">&quot;code-slides.ts&quot;</span>,
+  <span class="tk-attribute">&quot;background&quot;</span>: <span class="tk-string">&quot;#0F172A&quot;</span>,
+  <span class="tk-attribute">&quot;viewport&quot;</span>: { <span class="tk-attribute">&quot;width&quot;</span>: <span class="tk-number">16</span>, <span class="tk-attribute">&quot;height&quot;</span>: <span class="tk-number">9</span> },
+  <span class="tk-attribute">&quot;layout&quot;</span>: { <span class="tk-attribute">&quot;color&quot;</span>: <span class="tk-string">&quot;#F1F5F9&quot;</span>, <span class="tk-attribute">&quot;fontSize&quot;</span>: <span class="tk-number">26</span>, <span class="tk-attribute">&quot;headingSize&quot;</span>: <span class="tk-number">40</span>, <span class="tk-attribute">&quot;codeSize&quot;</span>: <span class="tk-number">19</span> },
+  <span class="tk-attribute">&quot;presenter&quot;</span>: { <span class="tk-attribute">&quot;transitionTime&quot;</span>: <span class="tk-number">0.8</span>, <span class="tk-attribute">&quot;showSlideBorders&quot;</span>: <span class="tk-keyword">false</span> },
+  <span class="tk-attribute">&quot;styles&quot;</span>: { <span class="tk-attribute">&quot;footnote&quot;</span>: { <span class="tk-attribute">&quot;font_size&quot;</span>: <span class="tk-number">18</span>, <span class="tk-attribute">&quot;color&quot;</span>: <span class="tk-string">&quot;GRAY&quot;</span> } },
+  <span class="tk-attribute">&quot;macros&quot;</span>: { <span class="tk-attribute">&quot;N&quot;</span>: <span class="tk-string">&quot;\\mathbb{N}&quot;</span>, <span class="tk-attribute">&quot;R&quot;</span>: <span class="tk-string">&quot;\\mathbb{R}&quot;</span> },
+  <span class="tk-attribute">&quot;showOutline&quot;</span>: <span class="tk-keyword">false</span>
+}</code></pre>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>markup</code></td>
+<td>the Markdown file, relative to <code>deck.json</code> (required)</td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td>the page title and outline root label</td>
+</tr>
+<tr>
+<td><code>root</code></td>
+<td>the root slide ID, when you want it checked explicitly</td>
+</tr>
+<tr>
+<td><code>imports</code></td>
+<td>module exporting <code>Slide</code> classes for <code>[[import: Name]]</code></td>
+</tr>
+<tr>
+<td><code>background</code></td>
+<td>canvas background color (white by default)</td>
+</tr>
+<tr>
+<td><code>viewport</code></td>
+<td>proportions the camera fits (the stage reveals surrounding canvas when it has room)</td>
+</tr>
+<tr>
+<td><code>layout</code></td>
+<td>typography and spacing, below</td>
+</tr>
+<tr>
+<td><code>presenter</code></td>
+<td>timing and camera policy, below</td>
+</tr>
+<tr>
+<td><code>styles</code></td>
+<td>named styles applied by <code>.class</code> tokens and roles, see <a href="styles.html">Styles</a></td>
+</tr>
+<tr>
+<td><code>macros</code></td>
+<td>LaTeX macros for every formula</td>
+</tr>
+<tr>
+<td><code>showOutline</code></td>
+<td>open the outline at start</td>
+</tr>
+</tbody>
+</table>
+<h2 id="layout">layout<a class="anchor" href="#layout" aria-label="Link to this section">#</a></h2><table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fontSize</code></td>
+<td>28</td>
+<td>body text size</td>
+</tr>
+<tr>
+<td><code>headingSize</code></td>
+<td>42</td>
+<td>level-1 heading size; deeper levels shrink slightly</td>
+</tr>
+<tr>
+<td><code>codeSize</code></td>
+<td>80 % of <code>fontSize</code></td>
+<td>listing size</td>
+</tr>
+<tr>
+<td><code>color</code></td>
+<td><code>#000000</code></td>
+<td>text and default stroke color (black on the default white canvas)</td>
+</tr>
+<tr>
+<td><code>font</code></td>
+<td>Latin Modern Roman (bundled)</td>
+<td>prose font family; the LaTeX text face by default, so prose and formulas share one design</td>
+</tr>
+<tr>
+<td><code>codeFont</code></td>
+<td>Latin Modern Mono (bundled)</td>
+<td>inline code and listings; the LaTeX typewriter face, sized to pair with the text face</td>
+</tr>
+<tr>
+<td><code>margin</code></td>
+<td>0.65</td>
+<td>distance of the flow from the canvas edges</td>
+</tr>
+<tr>
+<td><code>gap</code></td>
+<td>0.35</td>
+<td>distance between flowing blocks and default <code>buff</code></td>
+</tr>
+<tr>
+<td><code>lineGap</code></td>
+<td>0.12</td>
+<td>extra space between wrapped lines</td>
+</tr>
+<tr>
+<td><code>animationTime</code></td>
+<td>0.35</td>
+<td>duration of fades</td>
+</tr>
+<tr>
+<td><code>defaultSlideSize</code></td>
+<td><code>[16, 9]</code></td>
+<td>canvas of slides without <code>width</code>/<code>height</code></td>
+</tr>
+<tr>
+<td><code>textAnchor</code></td>
+<td><code>left-baseline</code></td>
+<td>default anchor of text (<code>top-left</code> or <code>center</code> possible)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="presenter">presenter<a class="anchor" href="#presenter" aria-label="Link to this section">#</a></h2><table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>transitionTime</code></td>
+<td>0.7</td>
+<td>seconds of each camera move; 0 jumps</td>
+</tr>
+<tr>
+<td><code>padding</code></td>
+<td>1</td>
+<td>camera width multiplier around a focused slide</td>
+</tr>
+<tr>
+<td><code>pauseOnEntry</code></td>
+<td>true</td>
+<td>stop after entering a slide, before its first step</td>
+</tr>
+<tr>
+<td><code>pauseOnReturn</code></td>
+<td>true</td>
+<td>stop after returning to a parent</td>
+</tr>
+<tr>
+<td><code>showSlideBorders</code></td>
+<td>false</td>
+<td>draw every slide's canvas border (design aid)</td>
+</tr>
+<tr>
+<td><code>slideBorderColor</code>, <code>slideBorderWidth</code></td>
+<td><code>#FC6255</code>, 3</td>
+<td>border style</td>
+</tr>
+<tr>
+<td><code>showSlideGrid</code></td>
+<td>false</td>
+<td>draw a coordinate grid on the focused slide</td>
+</tr>
+<tr>
+<td><code>reversePlayback</code></td>
+<td>true</td>
+<td>play stops backwards on the left key</td>
+</tr>
+</tbody>
+</table>
+<h2 id="command-line">Command line<a class="anchor" href="#command-line" aria-label="Link to this section">#</a></h2><pre><code class="language-bash"><span class="tk-keyword">node</span> bin/zoomdeck.mjs serve &lt;deck&gt; [--port N] [--no-open] [--scene Name] [--watch PATH]...
+<span class="tk-keyword">node</span> bin/zoomdeck.mjs build &lt;deck&gt; <span class="tk-attribute">-o</span> &lt;folder&gt; [--one-file] [--show-outline] [--scene Name]</code></pre>
+<p><code>&lt;deck&gt;</code> is a <code>deck.json</code>, a Markdown file (default settings) or a JS/TS module exporting a deck
+definition. <code>serve</code> watches the deck's folder and any <code>--watch</code> path; <code>build</code> writes
+<code>index.html</code>, <code>assets/</code> and <code>deck/</code> into the folder, or <code>offline.html</code> with <code>--one-file</code>. Code
+decks in <code>--one-file</code> mode embed the code but not images they load themselves.</p>
+<h2 id="development-page">Development page<a class="anchor" href="#development-page" aria-label="Link to this section">#</a></h2><p><code>npm run dev</code> serves <code>index.html</code>, which reads <code>?deck=</code> (a <code>deck.json</code>, a Markdown file or a
+module path, also <code>/@fs/absolute/path</code>) and <code>&amp;scene=</code> for named exports, and opens the guide when
+<code>deck</code> is omitted. Files under <code>examples/</code> trigger a reload on change.</p>
+<h2 id="package-scripts">Package scripts<a class="anchor" href="#package-scripts" aria-label="Link to this section">#</a></h2><table>
+<thead>
+<tr>
+<th>Script</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>npm run dev</code></td>
+<td>development page</td>
+</tr>
+<tr>
+<td><code>npm test</code>, <code>npm run typecheck</code></td>
+<td>unit tests, TypeScript</td>
+</tr>
+<tr>
+<td><code>npm run docs</code></td>
+<td>rebuild this documentation into <code>docs/html/</code></td>
+</tr>
+<tr>
+<td><code>npm run serve -- &lt;deck&gt;</code></td>
+<td>the editing preview</td>
+</tr>
+</tbody>
+</table>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="exporting.html">← Exporting a deck</a>
+      <a class="next" href="reference.html">Reference →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#deck-json">deck.json</a></li><li><a href="#layout">layout</a></li><li><a href="#presenter">presenter</a></li><li><a href="#command-line">Command line</a></li><li><a href="#development-page">Development page</a></li><li><a href="#package-scripts">Package scripts</a></li></ul></nav>
+</div>
+</body>
+</html>

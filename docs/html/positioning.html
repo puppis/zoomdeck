@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Positioning · Zoomdeck</title>
+<meta name="description" content="Anchors, flow, explicit coordinates, relative constraints, at= expressions, offsets and sizes.">
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+</header>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Start</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html" aria-current="page">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li></ul>
+      </section>
+      <section>
+        <h4>Beyond markup</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>Positioning</h1>
+      <p class="lead">Anchors, flow, explicit coordinates, relative constraints, at= expressions, offsets and sizes.</p>
+      <p><a class="try" href="guide.html#slide=layout">Open in the guide ↗</a></p>
+<h2 id="anchors">Anchors<a class="anchor" href="#anchors" aria-label="Link to this section">#</a></h2><p><code>x</code>, <code>y</code> position an element's <strong>anchor</strong>. The default anchor is <code>left-baseline</code> for prose,
+headings, math and listings (the left edge and the first baseline) and <code>center</code> for images,
+shapes, listings' siblings and child viewports. <code>anchor=</code> chooses another point:</p>
+<table>
+<thead>
+<tr>
+<th>Anchors</th>
+<th>Available on</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>center</code>, <code>top</code>, <code>bottom</code>, <code>left</code>, <code>right</code>, <code>top-left</code>, <code>top-right</code>, <code>bottom-left</code>, <code>bottom-right</code></td>
+<td>every element and viewport</td>
+</tr>
+<tr>
+<td><code>left-baseline</code>, <code>right-baseline</code></td>
+<td>text, math and listings</td>
+</tr>
+<tr>
+<td><code>origin</code></td>
+<td>groups (their local origin)</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-markdown">![](<span class="tk-string">assets/tiles.png</span>)<span class="tk-attribute">{#img x=</span><span class="tk-number">-9.35</span><span class="tk-attribute"> y=</span><span class="tk-number">0.4</span><span class="tk-attribute"> width=</span><span class="tk-number">4</span><span class="tk-attribute"> anchor=top-left}</span>
+<span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#r</span> <span class="tk-attribute">x=</span><span class="tk-number">9.35</span> <span class="tk-attribute">y=</span><span class="tk-number">-5</span> <span class="tk-attribute">width=</span><span class="tk-number">3</span> <span class="tk-attribute">height=</span><span class="tk-number">1.2</span> <span class="tk-attribute">anchor=</span>bottom-right<span class="tk-directive">]]</span>
+[Ends at x = 9.35]<span class="tk-attribute">{#rb x=</span><span class="tk-number">9.35</span><span class="tk-attribute"> y=</span><span class="tk-number">-0.4</span><span class="tk-attribute"> anchor=right-baseline}</span></code></pre>
+<p><code>layout.textAnchor</code> changes the default for text.</p>
+<h2 id="flow">Flow<a class="anchor" href="#flow" aria-label="Link to this section">#</a></h2><p>Blocks without coordinates flow downward from the top-left margin of the canvas, separated by
+<code>layout.gap</code>. Text with only <code>x</code> keeps flowing at that left edge; an explicit <code>y</code>, an <code>at=</code> or a
+vertical constraint leaves the flow. Elements that leave the flow do not reserve space, so later
+blocks move up. A center-anchored element with one missing coordinate defaults that axis to zero.</p>
+<h2 id="relative-constraints">Relative constraints<a class="anchor" href="#relative-constraints" aria-label="Link to this section">#</a></h2><p><a class="try" href="guide.html#slide=layout">Open in the guide ↗</a></p>
+<pre><code class="language-markdown"><span class="tk-type tk-bold">### </span><span class="tk-bold">A heading </span><span class="tk-attribute tk-bold">{#h x=</span><span class="tk-number tk-bold">0.6</span><span class="tk-attribute tk-bold"> y=</span><span class="tk-number tk-bold">1.6</span><span class="tk-attribute tk-bold">}</span>
+
+[Below it, left-aligned]<span class="tk-attribute">{#p below:#h left-aligned:#h buff=</span><span class="tk-number">0.3</span><span class="tk-attribute">}</span>
+
+[A side note]<span class="tk-attribute">{#note right-of:#p buff=</span><span class="tk-number">0.5</span><span class="tk-attribute"> font_size=</span><span class="tk-number">18</span><span class="tk-attribute"> color=GRAY}</span>
+
+[Big]<span class="tk-attribute">{#big x=</span><span class="tk-number">0.6</span><span class="tk-attribute"> y=</span><span class="tk-number">-1.4</span><span class="tk-attribute"> font_size=</span><span class="tk-number">48</span><span class="tk-attribute">}</span>
+[shares the baseline]<span class="tk-attribute">{x=</span><span class="tk-number">2.3</span><span class="tk-attribute"> baseline-aligned:#big}</span></code></pre>
+<ul>
+<li><code>below</code>, <code>above</code>, <code>left-of</code> and <code>right-of</code> place the element beyond the reference's bounding
+edge, centered on the other axis, at distance <code>buff</code> (default <code>layout.gap</code>).</li>
+<li><code>left-aligned</code>, <code>right-aligned</code>, <code>top-aligned</code> and <code>bottom-aligned</code> match an edge without moving
+the other axis.</li>
+<li><code>baseline-aligned</code> matches the typographic baseline of text, math or listings.</li>
+<li>One direction and at most one constraint per axis are allowed; an explicit coordinate may set
+the free axis (<code>below:#h x=0</code>).</li>
+</ul>
+<p>References target elements of the same slide (and the same <a href="groups.html">group</a>), including
+later ones and hidden fragments, but never arrows, lines, braces or boxes. Sizes are measured once
+during preparation; dependency cycles are reported with their line.</p>
+<h2 id="anchor-expressions">Anchor expressions<a class="anchor" href="#anchor-expressions" aria-label="Link to this section">#</a></h2><p><a class="try" href="guide.html#slide=styles">Open in the guide ↗</a></p>
+<pre><code class="language-markdown"><span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#ref</span> <span class="tk-attribute">x=</span><span class="tk-number">-6</span> <span class="tk-attribute">y=</span><span class="tk-number">-2.2</span> <span class="tk-attribute">width=</span><span class="tk-number">3</span> <span class="tk-attribute">height=</span><span class="tk-number">1.6</span><span class="tk-directive">]]</span>
+[My top-left at its bottom-right]<span class="tk-attribute">{#tl at=top-left:#ref.bottom-right dx=</span><span class="tk-number">0.2</span><span class="tk-attribute">}</span>
+<span class="tk-directive">[[dot:</span> <span class="tk-attribute">#d</span> <span class="tk-attribute">at=#ref.top</span> <span class="tk-attribute">color=</span>RED<span class="tk-directive">]]</span>
+[Centered on a point]<span class="tk-attribute">{#cp at=center:(</span><span class="tk-number">5</span><span class="tk-attribute">,</span><span class="tk-number">-3.6</span><span class="tk-attribute">)}</span></code></pre>
+<p><code>at=[anchor:]#id[.anchor]</code> or <code>at=[anchor:](x,y)</code> puts one anchor of the element (the prefix,
+or <code>anchor=</code>, or its default) on an anchor of another element (<code>center</code> when omitted) or on a
+literal point. It replaces <code>x</code>, <code>y</code> and the relative constraints, combines with <code>dx</code>/<code>dy</code>, and
+follows the same reference rules. Inside directives, keep <code>(x,y)</code> tuples together; the comma
+inside parentheses does not split attributes.</p>
+<h2 id="offsets-and-sizes">Offsets and sizes<a class="anchor" href="#offsets-and-sizes" aria-label="Link to this section">#</a></h2><ul>
+<li><code>dx</code>, <code>dy</code> shift the final position of any positioned element.</li>
+<li><code>width</code> controls paragraph wrapping, image width and the maximum width of formulas and listings;
+<code>height</code> scales the result; <code>font_size</code> overrides the layout size.</li>
+<li><code>opacity</code> (0 to 1) makes any element translucent; fades preserve it.</li>
+</ul>
+<h2 id="children">Children<a class="anchor" href="#children" aria-label="Link to this section">#</a></h2><p>Includes and imports take the same attributes against local elements: <code>x</code>, <code>y</code>, <code>anchor</code>, <code>at=</code>,
+the relative constraints, <code>dx</code>/<code>dy</code> and <code>.class</code> styles. Their <code>width</code>/<code>height</code> size the viewport,
+not the child's canvas.</p>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="code.html">← Code listings</a>
+      <a class="next" href="styles.html">Styles →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#anchors">Anchors</a></li><li><a href="#flow">Flow</a></li><li><a href="#relative-constraints">Relative constraints</a></li><li><a href="#anchor-expressions">Anchor expressions</a></li><li><a href="#offsets-and-sizes">Offsets and sizes</a></li><li><a href="#children">Children</a></li></ul></nav>
+</div>
+</body>
+</html>

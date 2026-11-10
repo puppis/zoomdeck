@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zoomdeck</title>
+<meta name="description" content="Zooming presentations written in Markdown and played entirely in the browser.">
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+</header>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Start</h4>
+        <ul><li><a href="index.html" aria-current="page">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li></ul>
+      </section>
+      <section>
+        <h4>Beyond markup</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>Zoomdeck</h1>
+      <p class="lead">Zooming presentations written in Markdown and played entirely in the browser.</p>
+      <h2 id="what-zoomdeck-does">What Zoomdeck does<a class="anchor" href="#what-zoomdeck-does" aria-label="Link to this section">#</a></h2><p>A Zoomdeck presentation is a <strong>tree of slides</strong>. Each slide has its own logical canvas and a
+small animation program; child slides sit inside their parent's canvas as viewports. Presenting
+means visiting the tree in pre-order: the camera zooms into each child, plays its steps and zooms
+back out, so the audience always sees where a detail belongs.</p>
+<p>You write slides in a Markdown dialect: prose, LaTeX formulas, images, video, shapes, arrows, code
+listings, live web pages, fragments that appear on clicks, and animations such as moves, morphs
+and effects. When the dialect is not enough, a slide can be a small TypeScript class with the full
+animation engine at hand. Everything runs live on a WebGL canvas in the browser: a deck loads,
+records itself once, and then plays forwards and backwards instantly, with an outline, deep links,
+a pen, a highlighter, a spotlight and configurable keys. The same deck previews while you edit it
+and <a href="exporting.html">exports</a> to a static folder or to a single HTML file that plays from disk.</p>
+<h2 id="requirements">Requirements<a class="anchor" href="#requirements" aria-label="Link to this section">#</a></h2><table>
+<thead>
+<tr>
+<th>Needed</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Node.js 20 or newer, with npm</td>
+<td>to install, preview, export and build the documentation</td>
+</tr>
+<tr>
+<td>A browser with WebGL 2</td>
+<td>Chrome, Edge, Firefox and Safari of the last few years; this is where decks run</td>
+</tr>
+<tr>
+<td><code>npm install</code></td>
+<td>fetches the only runtime dependencies: the <code>manim-web</code> rendering engine (Three.js and MathJax inside), <code>markdown-it</code> for the dialect, <code>gifuct-js</code> for GIFs, and Vite for the preview and exports</td>
+</tr>
+</tbody>
+</table>
+<p>Nothing else is required: no Python, no LaTeX installation (formulas render through MathJax in
+the browser), no video encoder, no font installation (the Latin Modern text face is bundled).
+Exported decks are plain HTML and need no server to be viewed.</p>
+<pre><code class="language-bash"><span class="tk-keyword">cd</span> Zoomdeck
+<span class="tk-keyword">npm</span> install
+<span class="tk-keyword">npm</span> run dev        <span class="tk-comment"># opens the guide deck at http://localhost:5173/</span></code></pre>
+<p><a href="getting-started.html">Getting started</a> continues from here with a first deck and the command
+line.</p>
+<h2 id="the-guide">The guide<a class="anchor" href="#the-guide" aria-label="Link to this section">#</a></h2><p>The guide deck is Zoomdeck's own demonstration and the companion of this documentation: a
+presentation in which every chapter shows a feature next to the listing that produces it.
+<strong><a href="guide.html">Open the guide</a></strong> — it is a single self-contained HTML file next to these pages,
+exported from <code>examples/guide/</code> when you run <code>npm install</code> (and again by <code>npm run docs</code>); it runs
+from disk or from any web server, and <code>npm run dev</code> opens the same deck live. Each chapter has its own link:</p>
+<table>
+<thead>
+<tr>
+<th>Chapter</th>
+<th>Opens</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="guide.html#slide=tree">Slides form a tree</a></td>
+<td>containers, includes, nested zooming</td>
+</tr>
+<tr>
+<td><a href="guide.html#slide=prose">Prose and inline styling</a></td>
+<td>emphasis, colors, breaks, lists, links</td>
+</tr>
+<tr>
+<td><a href="guide.html#slide=math">Mathematics</a></td>
+<td>inline and display formulas, macros, colored LaTeX</td>
+</tr>
+<tr>
+<td><a href="guide.html#slide=images">Images and animated images</a></td>
+<td>SVG, raster, APNG and GIF playback</td>
+</tr>
+<tr>
+<td><a href="guide.html#slide=shapes">Shapes and connections</a></td>
+<td>rectangles, circles, polylines, arrows, lines</td>
+</tr>
+<tr>
+<td><a href="guide.html#slide=more-shapes">More shapes, braces, boxes and opacity</a></td>
+<td>dots, ellipses, polygons, arcs, attachments</td>
+</tr>
+<tr>
+<td><a href="guide.html#slide=layout">Positioning and relative layout</a></td>
+<td>flow, coordinates, relative constraints</td>
+</tr>
+<tr>
+<td><a href="guide.html#slide=anchors">Anchors, offsets and timing</a></td>
+<td><code>anchor=</code>, <code>dx</code>/<code>dy</code>, <code>run_time</code>, <code>lag</code></td>
+</tr>
+<tr>
+<td><a href="guide.html#slide=styles">Anchor expressions and styles</a></td>
+<td><code>at=</code>, classes, roles, style sheets</td>
+</tr>
+<tr>
+<td><a href="guide.html#slide=groups">Groups</a></td>
+<td>elements laid out in local coordinates</td>
+</tr>
+<tr>
+<td><a href="guide.html#slide=fragments">Fragments and click steps</a></td>
+<td><code>step</code>, <code>hide</code>, <code>show</code>, <code>next</code>, <code>skip_next</code></td>
+</tr>
+<tr>
+<td><a href="guide.html#slide=focus">Decorations visible only in focus</a></td>
+<td><code>focus_only</code> panels and captions</td>
+</tr>
+<tr>
+<td><a href="guide.html#slide=children">Children, visit order and placeholders</a></td>
+<td>visit steps, <code>skip_return</code>, undefined slides</td>
+</tr>
+<tr>
+<td><a href="guide.html#slide=code-slides">Code-authored slides</a></td>
+<td>a TypeScript <code>Slide</code> imported into Markdown</td>
+</tr>
+<tr>
+<td><a href="guide.html#slide=listings">Code listings</a></td>
+<td>fenced code with syntax colors</td>
+</tr>
+<tr>
+<td><a href="guide.html#slide=animations">Animations from markup</a></td>
+<td><code>animate</code>, <code>effect</code>, <code>transform</code>, <code>move_along</code></td>
+</tr>
+<tr>
+<td><a href="guide.html#slide=media">Video, live pages and going back</a></td>
+<td>video, iframes, reverse playback</td>
+</tr>
+<tr>
+<td><a href="guide.html#slide=player">The player and deck.json</a></td>
+<td>keys, pointer tools, configuration, command line</td>
+</tr>
+</tbody>
+</table>
+<p>The project lives at <a href="https://github.com/puppis/zoomdeck">github.com/puppis/zoomdeck</a>; this site
+and the guide are published from it at <a href="https://puppis.github.io/zoomdeck/">puppis.github.io/zoomdeck</a>.
+The guide's sources are in <code>examples/guide/</code>: <code>slides.md</code>, <code>deck.json</code>, <code>code-slides.ts</code> and a
+few generated assets. Copying that folder is a good way to start a deck; <a href="exporting.html">exporting</a> your own deck
+the same way (<code>zoomdeck build &lt;deck&gt; -o &lt;folder&gt; --one-file</code>) gives a file like <code>guide.html</code>.</p>
+<h2 id="documentation">Documentation<a class="anchor" href="#documentation" aria-label="Link to this section">#</a></h2><div class="cards">
+<a href="getting-started.html"><strong>Getting started</strong><span>Install, run the dev page, write a first deck, export it.</span></a>
+<a href="concepts.html"><strong>Concepts</strong><span>Slides, logical coordinates, stops and how playback is recorded.</span></a>
+<a href="slides.html"><strong>Slides and the tree</strong><span>Containers, includes, sizes, visit order, placeholders.</span></a>
+<a href="positioning.html"><strong>Positioning</strong><span>Anchors, flow, relative constraints and <code>at=</code> expressions.</span></a>
+<a href="fragments.html"><strong>Fragments</strong><span>Steps, show and hide, timing, automatic advancement.</span></a>
+<a href="animations.html"><strong>Animations</strong><span>Move, rotate, scale, recolor, effects, morphs and paths.</span></a>
+<a href="code-slides.html"><strong>Code-authored slides</strong><span>TypeScript slides with the full engine, mixed into Markdown decks.</span></a>
+<a href="player.html"><strong>The player</strong><span>Keys, settings, pen and spotlight, reverse playback.</span></a>
+<a href="exporting.html"><strong>Exporting a deck</strong><span>A static folder, or one HTML file that plays anywhere.</span></a>
+<a href="configuration.html"><strong>Configuration</strong><span>Every key of deck.json and the command line.</span></a>
+<a href="reference.html"><strong>Reference</strong><span>Every directive and attribute on one page.</span></a>
+</div>
+
+    </article>
+    <footer class="pager">
+      <span></span>
+      <a class="next" href="getting-started.html">Getting started →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#what-zoomdeck-does">What Zoomdeck does</a></li><li><a href="#requirements">Requirements</a></li><li><a href="#the-guide">The guide</a></li><li><a href="#documentation">Documentation</a></li></ul></nav>
+</div>
+</body>
+</html>

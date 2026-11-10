@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Groups · Zoomdeck</title>
+<meta name="description" content="Several elements laid out in their own coordinates and handled as one element of the slide.">
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+</header>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Start</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html" aria-current="page">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li></ul>
+      </section>
+      <section>
+        <h4>Beyond markup</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>Groups</h1>
+      <p class="lead">Several elements laid out in their own coordinates and handled as one element of the slide.</p>
+      <p><a class="try" href="guide.html#slide=groups">Open in the guide ↗</a></p>
+<pre><code class="language-markdown"><span class="tk-directive">::: </span><span class="tk-attribute">{.group #automaton x=</span><span class="tk-number">2</span><span class="tk-attribute"> y=</span><span class="tk-number">-0.5</span><span class="tk-attribute"> step=</span><span class="tk-number">1</span><span class="tk-attribute">}</span>
+<span class="tk-directive">[[circle:</span> <span class="tk-attribute">#q0</span> <span class="tk-attribute">x=</span><span class="tk-number">0</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">radius=</span><span class="tk-number">0.6</span> <span class="tk-attribute">color=</span>BLUE<span class="tk-directive">]]</span>
+[<span class="tk-string">$q_0$</span>]<span class="tk-attribute">{at=#q0.center anchor=center}</span>
+<span class="tk-directive">[[circle:</span> <span class="tk-attribute">#q1</span> <span class="tk-attribute">x=</span><span class="tk-number">3</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">radius=</span><span class="tk-number">0.6</span> <span class="tk-attribute">color=</span>BLUE<span class="tk-directive">]]</span>
+[<span class="tk-string">$q_1$</span>]<span class="tk-attribute">{at=#q1.center anchor=center}</span>
+<span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#q0</span> -&gt; <span class="tk-attribute">#q1</span>, <span class="tk-attribute">#t</span>, <span class="tk-attribute">label=</span><span class="tk-string">&quot;$a$&quot;</span><span class="tk-directive">]]</span>
+<span class="tk-directive">:::</span>
+
+<span class="tk-directive">[[box:</span> <span class="tk-attribute">#automaton</span>, <span class="tk-attribute">#gbox</span>, <span class="tk-attribute">buff=</span><span class="tk-number">0.3</span>, <span class="tk-attribute">color=</span>GREEN, <span class="tk-attribute">step=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">::: </span><span class="tk-attribute">{.group #legend below:#automaton left-aligned:#automaton buff=</span><span class="tk-number">0.9</span><span class="tk-attribute">}</span>
+<span class="tk-directive">[[dot:</span> <span class="tk-attribute">#k1</span> <span class="tk-attribute">x=</span><span class="tk-number">0</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">color=</span>BLUE<span class="tk-directive">]]</span>
+[a state]<span class="tk-attribute">{at=#k1.right anchor=left-baseline dx=</span><span class="tk-number">0.2</span><span class="tk-attribute">}</span>
+<span class="tk-directive">:::</span></code></pre>
+<p>A <code>::: {.group #id …}</code> container holds elements, shapes, connections, attachments and nested
+groups (no includes, imports or directives).</p>
+<h2 id="local-coordinates">Local coordinates<a class="anchor" href="#local-coordinates" aria-label="Link to this section">#</a></h2><p>Members are laid out in the group's own coordinates: flow starts at the local origin, explicit
+coordinates and <code>at=</code> are local, and members may only reference other members of the same group.
+Member IDs without an explicit <code>#id</code> are prefixed with the group ID (<code>automaton.element-2</code>).</p>
+<h2 id="one-element-of-the-slide">One element of the slide<a class="anchor" href="#one-element-of-the-slide" aria-label="Link to this section">#</a></h2><p>The group is then a single element: <code>x</code>, <code>y</code> place its <strong>origin</strong> (the local <code>(0,0)</code>) unless
+<code>anchor=</code> names a bounding-box point; relative constraints, <code>at=</code>, <code>dx</code>/<code>dy</code>, <code>width</code> (the
+members' wrapping width), <code>opacity</code>, <code>step</code>, <code>hide</code>, <code>focus_only</code> and <code>enter</code>/<code>exit</code> apply to the
+whole. A group can be an <code>at=</code> or relative reference, an arrow endpoint, a brace or box target, and
+the target of an <a href="animations.html">animation</a>.</p>
+<p>Members cannot carry <code>step</code>, <code>hide</code>, <code>focus_only</code> or <code>play</code>, and <code>show</code>/<code>hide</code>/<code>animate</code>
+directives cannot target them: animate the group.</p>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="styles.html">← Styles</a>
+      <a class="next" href="live-pages.html">Live pages →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#local-coordinates">Local coordinates</a></li><li><a href="#one-element-of-the-slide">One element of the slide</a></li></ul></nav>
+</div>
+</body>
+</html>

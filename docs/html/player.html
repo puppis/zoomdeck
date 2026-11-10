@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The player · Zoomdeck</title>
+<meta name="description" content="Keyboard and pointer controls, outline, reverse playback, deep links, pen and spotlight, speed and fullscreen.">
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+</header>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Start</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li></ul>
+      </section>
+      <section>
+        <h4>Beyond markup</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="player.html" aria-current="page">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>The player</h1>
+      <p class="lead">Keyboard and pointer controls, outline, reverse playback, deep links, pen and spotlight, speed and fullscreen.</p>
+      <p><a class="try" href="guide.html#slide=player">Open in the guide ↗</a></p>
+<h2 id="controls">Controls<a class="anchor" href="#controls" aria-label="Link to this section">#</a></h2><table>
+<thead>
+<tr>
+<th>Default keys</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>→</code>, Space</td>
+<td>next stop (plays its animations)</td>
+</tr>
+<tr>
+<td><code>←</code></td>
+<td>previous stop, playing the current stop backwards</td>
+</tr>
+<tr>
+<td>Home</td>
+<td>first stop</td>
+</tr>
+<tr>
+<td>R</td>
+<td>replay the current stop</td>
+</tr>
+<tr>
+<td>⌘Z / Ctrl+Z</td>
+<td>undo the last pen or highlighter stroke</td>
+</tr>
+<tr>
+<td>⌘⇧Z / Ctrl+Shift+Z / Ctrl+Y</td>
+<td>redo a stroke</td>
+</tr>
+<tr>
+<td>Delete, Backspace</td>
+<td>clear all strokes on this slide</td>
+</tr>
+<tr>
+<td>F</td>
+<td>toggle fullscreen; Esc leaves it</td>
+</tr>
+<tr>
+<td>O</td>
+<td>toggle the slide outline</td>
+</tr>
+<tr>
+<td>,</td>
+<td>open the settings</td>
+</tr>
+</tbody>
+</table>
+<p>The footer has previous/next buttons, a progress bar, the pen settings, the speed control
+(0.5× to 2×), the settings gear and the fullscreen button. The header shows the breadcrumb of the
+current slide and the player state.</p>
+<h2 id="settings">Settings<a class="anchor" href="#settings" aria-label="Link to this section">#</a></h2><p>The gear button (or the <code>,</code> key) opens the settings dialog. It lists every action with its keys:
+click a key to remove it, or choose &quot;Add key&quot; and press the new combination, which may include
+modifiers; a combination already used elsewhere moves to the new action. &quot;Restore default
+bindings&quot; undoes all changes. The dialog also holds the reverse-playback switch and a reference
+of the pointer gestures. Settings are stored in the browser and apply to every deck you open there.</p>
+<h2 id="pointer-tools">Pointer tools<a class="anchor" href="#pointer-tools" aria-label="Link to this section">#</a></h2><ul>
+<li>Hold <strong>Shift</strong> for a spotlight that follows the pointer; Shift + scroll resizes it.</li>
+<li><strong>Shift + drag</strong> draws a highlighter stroke, <strong>Control + drag</strong> draws with the pen; color and
+tip size are in the footer. Strokes belong to the current slide and clear when the slide changes;
+undo, redo and clear act on the current slide's strokes.</li>
+</ul>
+<h2 id="reverse-playback">Reverse playback<a class="anchor" href="#reverse-playback" aria-label="Link to this section">#</a></h2><p>Going back plays the stop's animations in reverse: fades, property animations, effects, morphs and
+camera moves retrace their path, including zooming back into a child you just left. Videos, loops
+and updater-driven waits cannot run backwards and are passed over. Pressing <code>←</code> again during a
+reverse settles it and steps back once more, so quick presses step through stops.
+<code>&quot;presenter&quot;: { &quot;reversePlayback&quot;: false }</code> restores instant jumps.</p>
+<h2 id="outline-and-deep-links">Outline and deep links<a class="anchor" href="#outline-and-deep-links" aria-label="Link to this section">#</a></h2><p>The outline lists every slide; clicking one jumps to its first stop. The address bar follows the
+current stop as <code>#step=N</code>, which can be shared or bookmarked; <code>#slide=id</code> opens the first stop of a
+slide by its markup ID (or a slide by name).</p>
+<h2 id="loops-and-automatic-advancement">Loops and automatic advancement<a class="anchor" href="#loops-and-automatic-advancement" aria-label="Link to this section">#</a></h2><p>Looping stops (<code>play=loop</code>, <code>stop({ loop: true })</code>) repeat until the next click. Stops marked with
+<code>next</code> or <code>autoNext</code> advance by themselves once played; backward moves never trigger them.</p>
+<h2 id="editing-preview">Editing preview<a class="anchor" href="#editing-preview" aria-label="Link to this section">#</a></h2><p><code>zoomdeck serve</code> and the dev page reload when the deck's files change and return to the
+slide and step you were on, using a bookmark saved just before the reload. Parse and reference
+errors are shown with the offending line.</p>
+<h2 id="static-exports">Static exports<a class="anchor" href="#static-exports" aria-label="Link to this section">#</a></h2><p>A deck can be exported as a static folder or as one self-contained HTML file that opens from
+disk; both keep the complete player, including settings and deep links. See
+<a href="exporting.html">Exporting a deck</a>.</p>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="code-slides.html">← Code-authored slides</a>
+      <a class="next" href="exporting.html">Exporting a deck →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#controls">Controls</a></li><li><a href="#settings">Settings</a></li><li><a href="#pointer-tools">Pointer tools</a></li><li><a href="#reverse-playback">Reverse playback</a></li><li><a href="#outline-and-deep-links">Outline and deep links</a></li><li><a href="#loops-and-automatic-advancement">Loops and automatic advancement</a></li><li><a href="#editing-preview">Editing preview</a></li><li><a href="#static-exports">Static exports</a></li></ul></nav>
+</div>
+</body>
+</html>

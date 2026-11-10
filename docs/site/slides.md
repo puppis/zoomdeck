@@ -1,0 +1,90 @@
+---
+title: Slides and the tree
+description: Slide containers, canvas sizes, includes, visit order, start and preview flags, placeholders.
+---
+
+<a class="try" href="guide.html#slide=tree">Open in the guide ↗</a>
+
+## Slide containers
+
+```markdown
+::: slide {#overview title="Lecture overview" width=20}
+# Introduction
+
+[[include: #chapter x=4 y=-1 width=8 angle=0.1 step=2]]
+:::
+
+::: slide {#chapter}
+## A chapter
+:::
+```
+
+- Every slide is a `::: slide {#id} … :::` container. IDs start with a letter or underscore and
+  continue with letters, digits, `_`, `.` or `-`; they are unique in the document.
+- Definition order and heading levels never determine nesting; only includes do.
+- The **root** is the unique slide that nothing includes. Every slide must belong to that tree:
+  unknown references, cycles and including the same slide twice are errors. To show the same
+  content twice, define it twice under different IDs.
+- `title="…"` names the slide in the outline; otherwise its first heading, then its ID, is used.
+
+## Canvas size
+
+`width` and `height` on a slide set its canvas. The default is 16 × 9 (or
+`layout.defaultSlideSize`); one dimension infers the other from the default proportions, two
+choose a different aspect ratio.
+
+```markdown
+::: slide {#wide width=32}        → 32 × 18
+::: slide {#square width=10 height=10}
+```
+
+## Includes
+
+```markdown
+[[include: #diagram x=4.5 y=-2 width=9 angle=0.08]]
+[[subslide: #notes below:#heading left-aligned:#heading width=6 step=1]]
+```
+
+An include places the referenced slide's viewport in the current canvas. `x`, `y` are the center
+of the viewport (or the point named by `anchor=`), `width`/`height` its size (one dimension keeps
+the child's aspect ratio, two letterbox it), `angle` rotates it in radians. Without `width` and
+`height` the viewport is at most six units wide. Includes accept the relative constraints, `at=`,
+`dx`/`dy` and `.class` styles of [Positioning](positioning.html). `subslide` is an alias.
+
+An include referring to an **undefined** slide draws a red placeholder rather than failing, and
+the placeholder is never a stop, so a deck keeps running while a slide is still unwritten.
+
+## Visit order
+
+Children without `step` are visited in source order after all numbered steps of the parent.
+`step=N` interleaves a visit with the parent's fragments: the parent's changes of step N play
+first, then the child is visited. On return the parent resumes with its previous state; children
+keep their final appearance as previews.
+
+```markdown
+[Shown first]{#a step=1}
+[[include: #left x=-4 y=-2 width=7 step=1]]     ← visited after the reveal of step 1
+[Shown next]{#b step=2}
+[[include: #right x=4 y=-2 width=7]]            ← visited after step 2
+```
+
+## Flags
+
+| Attribute | On | Effect |
+| --- | --- | --- |
+| `start_here=true` | slide, include, import | open playback at this slide (at most one in a deck) |
+| `only_this=true` | slide, include | prepare only this subtree while editing; everything else becomes a placeholder |
+| `skip_return=true` | slide, include, import | leave this subtree straight for the next stop, without zooming back to the parent first |
+
+`skip_return` is the clean way to move from one subslide to its next sibling without going back
+to the parent: the camera goes directly from the finished child to the sibling.
+
+## Code-authored children
+
+```markdown
+[[import: Orbit x=0 y=-3 width=4 step=5]]
+```
+
+`import` instantiates a `Slide` subclass exported by the module named by `imports` in
+`deck.json`; see [Code-authored slides](code-slides.html). It takes the same placement
+attributes as an include.

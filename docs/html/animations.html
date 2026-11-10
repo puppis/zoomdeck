@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Animations · Zoomdeck</title>
+<meta name="description" content="Move, rotate, scale, recolor and fade elements, play named effects, morph one element into another, follow paths, and move child viewports.">
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+</header>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Start</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html" aria-current="page">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li></ul>
+      </section>
+      <section>
+        <h4>Beyond markup</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>Animations</h1>
+      <p class="lead">Move, rotate, scale, recolor and fade elements, play named effects, morph one element into another, follow paths, and move child viewports.</p>
+      <p><a class="try" href="guide.html#slide=animations">Open in the guide ↗</a></p>
+<pre><code class="language-markdown"><span class="tk-directive">[[animate:</span> <span class="tk-attribute">#ball</span>, <span class="tk-attribute">step=</span><span class="tk-number">1</span>, <span class="tk-attribute">x=</span><span class="tk-number">6.5</span>, <span class="tk-attribute">run_time=</span><span class="tk-number">1.2</span>, <span class="tk-attribute">rate=</span>ease_in_out<span class="tk-directive">]]</span>
+<span class="tk-directive">[[animate:</span> <span class="tk-attribute">#card</span>, <span class="tk-attribute">step=</span><span class="tk-number">2</span>, <span class="tk-attribute">angle=</span><span class="tk-number">0.4</span>, <span class="tk-attribute">scale=</span><span class="tk-number">1.3</span>, <span class="tk-attribute">color=</span>ORANGE, <span class="tk-attribute">opacity=</span><span class="tk-number">0.6</span>, <span class="tk-attribute">run_time=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[effect:</span> indicate <span class="tk-attribute">#before</span>, <span class="tk-attribute">step=</span><span class="tk-number">3</span>, <span class="tk-attribute">color=</span>YELLOW<span class="tk-directive">]]</span>
+<span class="tk-directive">[[effect:</span> circumscribe <span class="tk-attribute">#card</span>, <span class="tk-attribute">step=</span><span class="tk-number">3</span>, <span class="tk-attribute">color=</span>RED, <span class="tk-attribute">lag=</span><span class="tk-number">0.3</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[transform:</span> <span class="tk-attribute">#before</span> -&gt; <span class="tk-attribute">#after</span>, <span class="tk-attribute">step=</span><span class="tk-number">4</span>, <span class="tk-attribute">run_time=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[move_along:</span> <span class="tk-attribute">#ball</span>, <span class="tk-attribute">step=</span><span class="tk-number">5</span>, <span class="tk-attribute">path=#orbit</span>, <span class="tk-attribute">run_time=</span><span class="tk-number">2</span>, <span class="tk-attribute">rate=</span>linear<span class="tk-directive">]]</span>
+<span class="tk-directive">[[animate:</span> <span class="tk-attribute">#satellite</span>, <span class="tk-attribute">step=</span><span class="tk-number">7</span>, <span class="tk-attribute">x=</span><span class="tk-number">7.5</span>, <span class="tk-attribute">y=</span><span class="tk-number">-3.6</span>, <span class="tk-attribute">angle=</span><span class="tk-number">-0.3</span>, <span class="tk-attribute">run_time=</span><span class="tk-number">1.5</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[include:</span> <span class="tk-attribute">#satellite</span> <span class="tk-attribute">x=</span><span class="tk-number">5.5</span> <span class="tk-attribute">y=</span><span class="tk-number">-3.6</span> <span class="tk-attribute">width=</span><span class="tk-number">4</span> <span class="tk-attribute">step=</span><span class="tk-number">8</span><span class="tk-directive">]]</span></code></pre>
+<p>Animation directives play at a numbered step together with the fades of that step. They share
+<code>run_time</code>, <code>lag</code> and <code>rate</code>; targets must be visible at that step, and a target may be changed
+only once per step.</p>
+<h2 id="animate">animate<a class="anchor" href="#animate" aria-label="Link to this section">#</a></h2><p><code>[[animate: #id, step=N, …]]</code> interpolates toward a target state:</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>x</code>, <code>y</code></td>
+<td>move the element's anchor (<code>anchor=</code> picks another point)</td>
+</tr>
+<tr>
+<td><code>at=</code></td>
+<td>move the anchor onto another element's anchor or a point, as in <a href="positioning.html">Positioning</a></td>
+</tr>
+<tr>
+<td><code>dx</code>, <code>dy</code></td>
+<td>add an offset to the move</td>
+</tr>
+<tr>
+<td><code>angle</code></td>
+<td>rotate by that many radians about the center</td>
+</tr>
+<tr>
+<td><code>scale</code></td>
+<td>scale by that factor about the center</td>
+</tr>
+<tr>
+<td><code>opacity</code>, <code>color</code></td>
+<td>final values</td>
+</tr>
+</tbody>
+</table>
+<p>The ID may name an <strong>included slide</strong>: its viewport then moves, rotates or scales, and the whole
+subtree follows, as in the guide where a child is slid and tilted before it is visited.</p>
+<h2 id="effect">effect<a class="anchor" href="#effect" aria-label="Link to this section">#</a></h2><p><code>[[effect: name #id, step=N, …]]</code> plays an engine effect without changing visibility:</p>
+<p><code>indicate</code>, <code>wiggle</code>, <code>circumscribe</code>, <code>flash</code>, <code>focus</code>, <code>grow</code>, <code>shrink</code>, <code>write</code>, <code>create</code>,
+<code>uncreate</code>, <code>draw</code>, <code>wave</code>. <code>color</code> and <code>scale</code> tune the ones that take them.</p>
+<h2 id="transform">transform<a class="anchor" href="#transform" aria-label="Link to this section">#</a></h2><p><code>[[transform: #a -&gt; #b, step=N]]</code> morphs a visible element into a hidden one, which becomes the
+visible element afterwards, so later <code>hide</code>/<code>show</code> directives address the new element. Give the
+target <code>step=N</code> for the transform's own step: the morph then reveals it instead of a fade. Works
+best between formulas and shapes.</p>
+<h2 id="move-along">move_along<a class="anchor" href="#move-along" aria-label="Link to this section">#</a></h2><p><code>[[move_along: #id, step=N, path=#shape]]</code> moves an element along a circle, arc, polyline or
+polygon; <code>rotate=true</code> turns it along the path.</p>
+<h2 id="rates">Rates<a class="anchor" href="#rates" aria-label="Link to this section">#</a></h2><p><code>rate=</code> takes <code>smooth</code> (default), <code>linear</code>, <code>rush_into</code>, <code>rush_from</code>, <code>there_and_back</code>,
+<code>ease_in</code>, <code>ease_out</code>, <code>ease_in_out</code>.</p>
+<h2 id="sequencing">Sequencing<a class="anchor" href="#sequencing" aria-label="Link to this section">#</a></h2><p>Changes of one step run in parallel; <code>lag</code> staggers them and <code>run_time</code> sets each duration.
+<code>[[next: step=N]]</code> chains steps without clicks. Group members cannot be animated individually;
+animate the <a href="groups.html">group</a>.</p>
+<blockquote>
+<p><strong>Note</strong> Every directive compiles to an engine animation played by the same machinery as the
+fades, so clips, snapshots, outline jumps, replay and reverse playback treat them alike.</p>
+</blockquote>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="fragments.html">← Fragments and steps</a>
+      <a class="next" href="focus.html">Focus-only decorations →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#animate">animate</a></li><li><a href="#effect">effect</a></li><li><a href="#transform">transform</a></li><li><a href="#move-along">move_along</a></li><li><a href="#rates">Rates</a></li><li><a href="#sequencing">Sequencing</a></li></ul></nav>
+</div>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Slides and the tree · Zoomdeck</title>
+<meta name="description" content="Slide containers, canvas sizes, includes, visit order, start and preview flags, placeholders.">
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+</header>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Start</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="slides.html" aria-current="page">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li></ul>
+      </section>
+      <section>
+        <h4>Beyond markup</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>Slides and the tree</h1>
+      <p class="lead">Slide containers, canvas sizes, includes, visit order, start and preview flags, placeholders.</p>
+      <p><a class="try" href="guide.html#slide=tree">Open in the guide ↗</a></p>
+<h2 id="slide-containers">Slide containers<a class="anchor" href="#slide-containers" aria-label="Link to this section">#</a></h2><pre><code class="language-markdown"><span class="tk-directive">::: slide </span><span class="tk-attribute">{#overview title=</span><span class="tk-string">&quot;Lecture overview&quot;</span><span class="tk-attribute"> width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold"># </span><span class="tk-bold">Introduction</span>
+
+<span class="tk-directive">[[include:</span> <span class="tk-attribute">#chapter</span> <span class="tk-attribute">x=</span><span class="tk-number">4</span> <span class="tk-attribute">y=</span><span class="tk-number">-1</span> <span class="tk-attribute">width=</span><span class="tk-number">8</span> <span class="tk-attribute">angle=</span><span class="tk-number">0.1</span> <span class="tk-attribute">step=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
+<span class="tk-directive">:::</span>
+
+<span class="tk-directive">::: slide </span><span class="tk-attribute">{#chapter}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">A chapter</span>
+<span class="tk-directive">:::</span></code></pre>
+<ul>
+<li>Every slide is a <code>::: slide {#id} … :::</code> container. IDs start with a letter or underscore and
+continue with letters, digits, <code>_</code>, <code>.</code> or <code>-</code>; they are unique in the document.</li>
+<li>Definition order and heading levels never determine nesting; only includes do.</li>
+<li>The <strong>root</strong> is the unique slide that nothing includes. Every slide must belong to that tree:
+unknown references, cycles and including the same slide twice are errors. To show the same
+content twice, define it twice under different IDs.</li>
+<li><code>title=&quot;…&quot;</code> names the slide in the outline; otherwise its first heading, then its ID, is used.</li>
+</ul>
+<h2 id="canvas-size">Canvas size<a class="anchor" href="#canvas-size" aria-label="Link to this section">#</a></h2><p><code>width</code> and <code>height</code> on a slide set its canvas. The default is 16 × 9 (or
+<code>layout.defaultSlideSize</code>); one dimension infers the other from the default proportions, two
+choose a different aspect ratio.</p>
+<pre><code class="language-markdown"><span class="tk-directive">::: slide </span><span class="tk-attribute">{#wide width=</span><span class="tk-number">32</span><span class="tk-attribute">}</span>        → 32 × 18
+<span class="tk-directive">::: slide </span><span class="tk-attribute">{#square width=</span><span class="tk-number">10</span><span class="tk-attribute"> height=</span><span class="tk-number">10</span><span class="tk-attribute">}</span></code></pre>
+<h2 id="includes">Includes<a class="anchor" href="#includes" aria-label="Link to this section">#</a></h2><pre><code class="language-markdown"><span class="tk-directive">[[include:</span> <span class="tk-attribute">#diagram</span> <span class="tk-attribute">x=</span><span class="tk-number">4.5</span> <span class="tk-attribute">y=</span><span class="tk-number">-2</span> <span class="tk-attribute">width=</span><span class="tk-number">9</span> <span class="tk-attribute">angle=</span><span class="tk-number">0.08</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[subslide:</span> <span class="tk-attribute">#notes</span> <span class="tk-attribute">below:#heading</span> <span class="tk-attribute">left-aligned:#heading</span> <span class="tk-attribute">width=</span><span class="tk-number">6</span> <span class="tk-attribute">step=</span><span class="tk-number">1</span><span class="tk-directive">]]</span></code></pre>
+<p>An include places the referenced slide's viewport in the current canvas. <code>x</code>, <code>y</code> are the center
+of the viewport (or the point named by <code>anchor=</code>), <code>width</code>/<code>height</code> its size (one dimension keeps
+the child's aspect ratio, two letterbox it), <code>angle</code> rotates it in radians. Without <code>width</code> and
+<code>height</code> the viewport is at most six units wide. Includes accept the relative constraints, <code>at=</code>,
+<code>dx</code>/<code>dy</code> and <code>.class</code> styles of <a href="positioning.html">Positioning</a>. <code>subslide</code> is an alias.</p>
+<p>An include referring to an <strong>undefined</strong> slide draws a red placeholder rather than failing, and
+the placeholder is never a stop, so a deck keeps running while a slide is still unwritten.</p>
+<h2 id="visit-order">Visit order<a class="anchor" href="#visit-order" aria-label="Link to this section">#</a></h2><p>Children without <code>step</code> are visited in source order after all numbered steps of the parent.
+<code>step=N</code> interleaves a visit with the parent's fragments: the parent's changes of step N play
+first, then the child is visited. On return the parent resumes with its previous state; children
+keep their final appearance as previews.</p>
+<pre><code class="language-markdown">[Shown first]<span class="tk-attribute">{#a step=</span><span class="tk-number">1</span><span class="tk-attribute">}</span>
+[[include: #left x=-4 y=-2 width=7 step=1]]     ← visited after the reveal of step 1
+[Shown next]<span class="tk-attribute">{#b step=</span><span class="tk-number">2</span><span class="tk-attribute">}</span>
+[[include: #right x=4 y=-2 width=7]]            ← visited after step 2</code></pre>
+<h2 id="flags">Flags<a class="anchor" href="#flags" aria-label="Link to this section">#</a></h2><table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>On</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>start_here=true</code></td>
+<td>slide, include, import</td>
+<td>open playback at this slide (at most one in a deck)</td>
+</tr>
+<tr>
+<td><code>only_this=true</code></td>
+<td>slide, include</td>
+<td>prepare only this subtree while editing; everything else becomes a placeholder</td>
+</tr>
+<tr>
+<td><code>skip_return=true</code></td>
+<td>slide, include, import</td>
+<td>leave this subtree straight for the next stop, without zooming back to the parent first</td>
+</tr>
+</tbody>
+</table>
+<p><code>skip_return</code> is the clean way to move from one subslide to its next sibling without going back
+to the parent: the camera goes directly from the finished child to the sibling.</p>
+<h2 id="code-authored-children">Code-authored children<a class="anchor" href="#code-authored-children" aria-label="Link to this section">#</a></h2><pre><code class="language-markdown"><span class="tk-directive">[[import:</span> Orbit <span class="tk-attribute">x=</span><span class="tk-number">0</span> <span class="tk-attribute">y=</span><span class="tk-number">-3</span> <span class="tk-attribute">width=</span><span class="tk-number">4</span> <span class="tk-attribute">step=</span><span class="tk-number">5</span><span class="tk-directive">]]</span></code></pre>
+<p><code>import</code> instantiates a <code>Slide</code> subclass exported by the module named by <code>imports</code> in
+<code>deck.json</code>; see <a href="code-slides.html">Code-authored slides</a>. It takes the same placement
+attributes as an include.</p>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="concepts.html">← Concepts</a>
+      <a class="next" href="text.html">Text →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#slide-containers">Slide containers</a></li><li><a href="#canvas-size">Canvas size</a></li><li><a href="#includes">Includes</a></li><li><a href="#visit-order">Visit order</a></li><li><a href="#flags">Flags</a></li><li><a href="#code-authored-children">Code-authored children</a></li></ul></nav>
+</div>
+</body>
+</html>

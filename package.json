@@ -1,0 +1,83 @@
+{
+  "name": "zoomdeck",
+  "version": "0.1.0",
+  "description": "Zooming presentations written in Markdown and played entirely in the browser: a tree of slides visited in pre-order with a zooming camera.",
+  "keywords": [
+    "presentation",
+    "slides",
+    "zooming",
+    "markdown",
+    "latex",
+    "webgl",
+    "manim"
+  ],
+  "author": "Gabriele Puppis",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/puppis/zoomdeck.git"
+  },
+  "homepage": "https://puppis.github.io/zoomdeck/",
+  "bugs": {
+    "url": "https://github.com/puppis/zoomdeck/issues"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "zoomdeck": "./bin/zoomdeck.mjs"
+  },
+  "main": "./dist/zoomdeck.js",
+  "module": "./dist/zoomdeck.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/zoomdeck.js",
+      "default": "./dist/zoomdeck.js"
+    },
+    "./source": "./src/index.ts",
+    "./package.json": "./package.json"
+  },
+  "sideEffects": [
+    "./src/patches.ts",
+    "*.css"
+  ],
+  "files": [
+    "bin",
+    "dist",
+    "src",
+    "index.html",
+    "vite.config.ts",
+    "tsconfig.json",
+    "docs/markup.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "serve": "node bin/zoomdeck.mjs serve",
+    "docs": "vite-node scripts/build-docs.ts",
+    "prepare": "npm run docs",
+    "build:lib": "vite build --config vite.lib.config.ts && tsc -p tsconfig.lib.json",
+    "prepack": "npm run build:lib"
+  },
+  "dependencies": {
+    "gifuct-js": "^2.1.2",
+    "manim-web": "^0.41.0",
+    "markdown-it": "^14.1.0",
+    "three": "^0.186.1",
+    "vite": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "^24.0.0",
+    "happy-dom": "^18.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0"
+  }
+}

@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Code-authored slides · Zoomdeck</title>
+<meta name="description" content="Slides written in TypeScript with the complete animation engine, used alone or imported into Markdown decks.">
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+</header>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Start</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li></ul>
+      </section>
+      <section>
+        <h4>Beyond markup</h4>
+        <ul><li><a href="code-slides.html" aria-current="page">Code-authored slides</a></li><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>Code-authored slides</h1>
+      <p class="lead">Slides written in TypeScript with the complete animation engine, used alone or imported into Markdown decks.</p>
+      <p><a class="try" href="guide.html#slide=code-slides">Open in the guide ↗</a></p>
+<h2 id="importing-a-slide-into-a-markdown-deck">Importing a slide into a Markdown deck<a class="anchor" href="#importing-a-slide-into-a-markdown-deck" aria-label="Link to this section">#</a></h2><pre><code class="language-markdown"><span class="tk-directive">[[import:</span> Orbit <span class="tk-attribute">x=</span><span class="tk-number">5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.4</span> <span class="tk-attribute">width=</span><span class="tk-number">8</span> <span class="tk-attribute">step=</span><span class="tk-number">1</span><span class="tk-directive">]]</span></code></pre>
+<pre><code class="language-typescript"><span class="tk-keyword">import</span> { BLUE, Circle, Dot, MoveAlongPath, YELLOW, linear } <span class="tk-keyword">from</span> <span class="tk-string">'manim-web'</span>;
+<span class="tk-keyword">import</span> { Slide, <span class="tk-keyword">type</span> SlideContext } <span class="tk-keyword">from</span> <span class="tk-string">'zoomdeck'</span>;
+
+<span class="tk-keyword">export</span> <span class="tk-keyword">class</span> Orbit <span class="tk-keyword">extends</span> Slide {
+  <span class="tk-keyword">override</span> build(ctx: SlideContext) {
+    <span class="tk-keyword">const</span> path = <span class="tk-keyword">new</span> Circle({ radius: <span class="tk-number">2.5</span>, color: BLUE });
+    <span class="tk-keyword">const</span> dot = <span class="tk-keyword">new</span> Dot({ point: [<span class="tk-number">2.5</span>, <span class="tk-number">0</span>, <span class="tk-number">0</span>], color: YELLOW });
+    ctx.add(path, dot);
+    <span class="tk-type">Object</span>.assign(ctx.objects, { path, dot });
+  }
+  <span class="tk-keyword">override</span> <span class="tk-keyword">async</span> construct(ctx: SlideContext) {
+    <span class="tk-keyword">const</span> { dot, path } = ctx.objects;
+    <span class="tk-keyword">await</span> ctx.play(<span class="tk-keyword">new</span> MoveAlongPath(dot, { path }), { runTime: <span class="tk-number">2</span>, rateFunc: linear });
+    ctx.stop();
+  }
+}</code></pre>
+<p><code>deck.json</code> names the module with <code>&quot;imports&quot;: &quot;code-slides.ts&quot;</code>. The class must be constructible
+without arguments and return a fresh slide; qualified names (<code>helpers.Orbit</code>) traverse
+namespaces. Each occurrence creates its own instance, with the same placement attributes as an
+include. A slide's natural canvas defaults to 16 × 9; pass <code>{ size: [20, 12] }</code> or
+<code>width</code>/<code>height</code> to <code>super()</code> to change it.</p>
+<h2 id="the-slide-api">The Slide API<a class="anchor" href="#the-slide-api" aria-label="Link to this section">#</a></h2><table>
+<thead>
+<tr>
+<th>Member</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>build(ctx)</code></td>
+<td>runs once during preparation: create objects, add them with <code>ctx.add</code>, place children with <code>this.addChild</code></td>
+</tr>
+<tr>
+<td><code>construct(ctx)</code></td>
+<td>runs on entry: <code>await ctx.play(...)</code>, <code>await ctx.wait(s)</code>, <code>ctx.stop(options)</code>; an <code>async *</code> generator may <code>yield ctx.visit(child)</code></td>
+</tr>
+<tr>
+<td><code>addChild(child, { center, width, height, angle, strokeColor, strokeOpacity, strokeWidth, onlyThis, startHere })</code></td>
+<td>place a child viewport in this canvas</td>
+</tr>
+<tr>
+<td>options <code>skipReturn</code>, <code>onlyThis</code>, <code>startHere</code>, <code>size</code>, <code>build</code>, <code>program</code></td>
+<td>the same flags as the markup attributes; callbacks instead of subclassing</td>
+</tr>
+</tbody>
+</table>
+<p>Engine text defaults to white, so give it the deck's text color explicitly, <code>color: ctx.foreground</code>
+(black on the default white canvas), unless the slide chooses its own colors.</p>
+<p>Coordinates are the slide's own: the engine's world space <em>is</em> the slide's local space, so
+<code>moveTo</code>, <code>nextTo</code>, <code>shift</code> and <code>.animate</code> behave as in any scene. Child viewports are ordinary
+animatable objects: moving one moves its whole subtree.</p>
+<h2 id="the-slidecontext-api">The SlideContext API<a class="anchor" href="#the-slidecontext-api" aria-label="Link to this section">#</a></h2><table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>add</code>, <code>remove</code>, <code>replace</code>, <code>clear</code></td>
+<td>local scene membership</td>
+</tr>
+<tr>
+<td><code>play(...animations, { runTime, rateFunc })</code></td>
+<td>play engine animations in parallel</td>
+</tr>
+<tr>
+<td><code>wait(seconds)</code></td>
+<td>hold while updaters run</td>
+</tr>
+<tr>
+<td><code>stop({ loop, autoNext, notes, playbackRate })</code></td>
+<td>end a clip (a click)</td>
+</tr>
+<tr>
+<td><code>visit(child)</code></td>
+<td>yield this from a generator to visit a child now</td>
+</tr>
+<tr>
+<td><code>skipNext()</code>, <code>autoAdvance()</code></td>
+<td>the equivalents of <code>skip_next</code> and <code>next</code></td>
+</tr>
+<tr>
+<td><code>toEdge(mob, direction, { buff })</code>, <code>toCorner</code>, <code>toWorld</code>, <code>toLocal</code></td>
+<td>canvas-relative placement</td>
+</tr>
+<tr>
+<td><code>touch(mob)</code></td>
+<td>report a mutation made outside animations so snapshots record it</td>
+</tr>
+<tr>
+<td><code>objects</code></td>
+<td>a free map for sharing objects between <code>build</code> and <code>construct</code></td>
+</tr>
+<tr>
+<td><code>foreground</code></td>
+<td>the deck's text color, for engine objects created in code</td>
+</tr>
+</tbody>
+</table>
+<p>Programs run exactly once per page load during recording; keep them deterministic.</p>
+<h2 id="code-only-decks">Code-only decks<a class="anchor" href="#code-only-decks" aria-label="Link to this section">#</a></h2><pre><code class="language-typescript"><span class="tk-keyword">import</span> { defineDeck, Slide } <span class="tk-keyword">from</span> <span class="tk-string">'zoomdeck'</span>;
+
+<span class="tk-keyword">export</span> <span class="tk-keyword">default</span> defineDeck({
+  title: <span class="tk-string">'Minimal'</span>,
+  presenter: { transitionTime: <span class="tk-number">0.8</span> },
+  background: <span class="tk-string">'#000000'</span>,
+  deck: () =&gt; {
+    <span class="tk-keyword">const</span> root = <span class="tk-keyword">new</span> Slide(<span class="tk-string">'Overview'</span>, { build: (ctx) =&gt; { <span class="tk-comment">/* … */</span> } });
+    root.addChild(<span class="tk-keyword">new</span> Topic(<span class="tk-string">'Left'</span>), { center: [-<span class="tk-number">4</span>, <span class="tk-number">0</span>, <span class="tk-number">0</span>], width: <span class="tk-number">7</span> });
+    <span class="tk-keyword">return</span> root;
+  },
+});</code></pre>
+<p>A module exporting a deck definition (default export or named exports chosen with <code>scene=</code>) runs
+on the dev page with <code>/?deck=path/to/module</code> and builds with the command line like any deck.
+Markdown decks can be created from code too: <code>markupDeck({ url, layout, presenter, styles, … })</code>.</p>
+<h2 id="available-engine-objects">Available engine objects<a class="anchor" href="#available-engine-objects" aria-label="Link to this section">#</a></h2><p>The package re-exports the rendering engine as the <code>engine</code> namespace (or import from
+<code>manim-web</code> directly): text, formulas, shapes, images, video, groups, value trackers, updaters and
+the animation classes (<code>FadeIn</code>, <code>Transform</code>, <code>Rotate</code>, <code>MoveAlongPath</code>, <code>Indicate</code>, <code>Write</code>,
+<code>AnimationGroup</code>, <code>Succession</code>, …). The project adds <code>PropertyAnimation</code>, <code>DelayedAnimation</code>,
+<code>RasterImage</code>/<code>RasterMovie</code>, <code>VideoClip</code>/<code>VideoPlay</code> and <code>makeEffect</code>.</p>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="focus.html">← Focus-only decorations</a>
+      <a class="next" href="player.html">The player →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#importing-a-slide-into-a-markdown-deck">Importing a slide into a Markdown deck</a></li><li><a href="#the-slide-api">The Slide API</a></li><li><a href="#the-slidecontext-api">The SlideContext API</a></li><li><a href="#code-only-decks">Code-only decks</a></li><li><a href="#available-engine-objects">Available engine objects</a></li></ul></nav>
+</div>
+</body>
+</html>

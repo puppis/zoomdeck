@@ -1,0 +1,128 @@
+/**
+ * The rendering surface: an engine Scene whose camera fits the
+ * presentation viewport into the available stage, revealing the surrounding
+ * canvas when the browser has extra room.
+ */
+import { Scene } from 'manim-web';
+import type { Presenter } from '../runtime';
+import type { Vec3 } from '../geometry';
+
+export interface StageOptions {
+  background: string;
+  /** Width over height of the presentation viewport. */
+  viewportAspect: number;
+}
+
+export class Stage {
+  readonly scene: Scene;
+  readonly container: HTMLElement;
+  readonly viewportAspect: number;
+  presenter: Presenter | null = null;
+  /** Callbacks run after every render, e.g. DOM layers that follow the camera. */
+  readonly afterRender: Array<() => void> = [];
+  private _observer: ResizeObserver | null = null;
+  private _width: number;
+  private _height: number;
+
+  constructor(container: HTMLElement, options: StageOptions) {
+    this.container = container;
+    this.viewportAspect = options.viewportAspect;
+    this._width = Math.max(2, Math.round(container.clientWidth || 800));
+    this._height = Math.max(2, Math.round(container.clientHeight || 450));
+    this.scene = new Scene(container, {
+      width: this._width,
+      height: this._height,
+      backgroundColor: options.background,
+      autoRender: false,
+      autoResize: false,
+      frustumCulling: false,
+      pauseRenderingWhenHidden: false,
+    });
+    const canvas = this.scene.getCanvas();
+    canvas.style.display = 'block';
+    if (typeof ResizeObserver !== 'undefined') {
+      this._observer = new ResizeObserver(() => this.fit());
+      this._observer.observe(container);
+    }
+  }
+
+  attach(presenter: Presenter): void {
+    this.presenter = presenter;
+    this.scene.threeScene.add(presenter.root3D);
+  }
+
+  get width(): number {
+    return this._width;
+  }
+
+  get height(): number {
+    return this._height;
+  }
+
+  /** Match the canvas to the container size. */
+  fit(): void {
+    const width = Math.max(2, Math.round(this.container.clientWidth));
+    const height = Math.max(2, Math.round(this.container.clientHeight));
+    if (width === this._width && height === this._height) return;
+    this._width = width;
+    this._height = height;
+    this.scene.resize(width, height);
+    if (this.presenter) for (const ctx of this.presenter.contexts.values()) ctx.display.invalidateStrokes();
+    this.render();
+  }
+
+  /** The camera view (world units) that contains the presentation viewport. */
+  private _view(): { width: number; height: number } {
+    const camera = this.presenter?.camera ?? { center: [0, 0, 0] as Vec3, width: 16 };
+    const stageAspect = this._width / this._height;
+    const viewportHeight = camera.width / this.viewportAspect;
+    if (stageAspect >= this.viewportAspect) {
+      return { width: viewportHeight * stageAspect, height: viewportHeight };
+    }
+    return { width: camera.width, height: camera.width / stageAspect };
+  }
+
+  /** Map a world point to canvas pixels (origin at the top-left corner of the stage). */
+  worldToPixel(x: number, y: number): { x: number; y: number } {
+    const view = this._view();
+    const center = this.presenter?.camera.center ?? ([0, 0, 0] as Vec3);
+    return {
+      x: ((x - center[0]) / view.width + 0.5) * this._width,
+      y: (0.5 - (y - center[1]) / view.height) * this._height,
+    };
+  }
+
+  /** Pixel rectangle of the central presentation viewport inside the canvas. */
+  viewportRect(): { left: number; top: number; width: number; height: number } {
+    const view = this._view();
+    const camera = this.presenter?.camera ?? { center: [0, 0, 0] as Vec3, width: 16 };
+    const scale = this._width / view.width;
+    const width = camera.width * scale;
+    const height = (camera.width / this.viewportAspect) * scale;
+    return { left: (this._width - width) / 2, top: (this._height - height) / 2, width, height };
+  }
+
+  /** Draw the current presenter state. */
+  render(): void {
+    const presenter = this.presenter;
+    if (!presenter) return;
+    const view = this._view();
+    const camera = presenter.camera;
+    const threeCamera = this.scene.camera;
+    threeCamera.frameWidth = view.width;
+    threeCamera.frameHeight = view.height;
+    threeCamera.moveTo([camera.center[0], camera.center[1], threeCamera.position.z]);
+    const bounds = {
+      min: [camera.center[0] - view.width / 2, camera.center[1] - view.height / 2, 0] as Vec3,
+      max: [camera.center[0] + view.width / 2, camera.center[1] + view.height / 2, 0] as Vec3,
+    };
+    presenter.prepareRender(this._width, this._height, bounds, view.width);
+    this.scene.render();
+    for (const callback of this.afterRender) callback();
+  }
+
+  dispose(): void {
+    this._observer?.disconnect();
+    this.scene.dispose();
+  }
+}
