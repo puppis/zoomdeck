@@ -44,8 +44,9 @@ back at the stop you were looking at. Editing therefore needs only two things fr
 <li><strong>Save without thinking about it.</strong> Every setup below saves the deck after a second of idle
 typing (or when the editor loses focus), so the browser follows you.</li>
 <li><strong>Two shortcuts.</strong> One starts the preview server for the deck of the current file, the other
-exports it as a single HTML file into a <code>build/</code> folder next to it. Both prefer the
-<code>deck.json</code> next to the file when there is one, so the deck's title, styles and macros apply.</li>
+exports it as a single HTML file into a <code>build/</code> folder next to it. The command itself picks up
+the <code>deck.json</code> that names the file, so the deck's title, styles, macros and slide classes
+apply whichever file is open.</li>
 </ol>
 <pre><code class="language-bash">zoomdeck serve path/to/slides.md            <span class="tk-comment"># or deck.json; opens http://localhost:5173/</span>
 zoomdeck build path/to/deck.json <span class="tk-attribute">-o</span> build <span class="tk-attribute">--one-file</span></code></pre>

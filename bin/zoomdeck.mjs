@@ -11,7 +11,7 @@
  */
 import { createServer, build as viteBuild } from 'vite';
 import { promises as fs } from 'node:fs';
-import { existsSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, resolve, relative, basename, extname, join, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -65,6 +65,26 @@ const dropEngineMuxers = {
   },
 };
 
+/**
+ * The deck to use for a path. Editors hand over the Markdown file they are
+ * editing; when a deck.json in the same folder names that file, the deck is
+ * served or built through it, so its title, styles, macros and slide classes
+ * apply exactly as when the configuration is given directly.
+ */
+function resolveDeckPath(path) {
+  const deckPath = resolve(path);
+  if (!['.md', '.markdown'].includes(extname(deckPath).toLowerCase())) return deckPath;
+  const configPath = join(dirname(deckPath), 'deck.json');
+  if (!existsSync(configPath)) return deckPath;
+  try {
+    const config = JSON.parse(readFileSync(configPath, 'utf8'));
+    if (typeof config.markup === 'string' && resolve(dirname(configPath), config.markup) === deckPath) return configPath;
+  } catch {
+    // A broken deck.json is reported when it is used explicitly.
+  }
+  return deckPath;
+}
+
 function deckKind(deckPath) {
   const ext = extname(deckPath).toLowerCase();
   if (ext === '.json') return 'json';
@@ -82,7 +102,7 @@ function openBrowser(url) {
 }
 
 async function serve(options) {
-  const deckPath = resolve(options.positional[0] ?? usage('serve needs a deck path'));
+  const deckPath = resolveDeckPath(options.positional[0] ?? usage('serve needs a deck path'));
   if (!existsSync(deckPath)) usage(`deck not found: ${deckPath}`);
   const kind = deckKind(deckPath);
   const deckDir = dirname(deckPath);
@@ -139,7 +159,7 @@ async function collectAssets(deckDir) {
 const MIME = { '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.apng': 'image/apng', '.mp4': 'video/mp4', '.m4v': 'video/mp4', '.webm': 'video/webm', '.ogv': 'video/ogg', '.mov': 'video/quicktime', '.html': 'text/html' };
 
 async function build(options) {
-  const deckPath = resolve(options.positional[0] ?? usage('build needs a deck path'));
+  const deckPath = resolveDeckPath(options.positional[0] ?? usage('build needs a deck path'));
   if (!existsSync(deckPath)) usage(`deck not found: ${deckPath}`);
   if (!options.output) usage('build needs -o <folder>');
   const kind = deckKind(deckPath);

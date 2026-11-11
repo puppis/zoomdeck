@@ -118,6 +118,10 @@ zoomdeck build path/to/deck.json -o build/my-deck --one-file
 Ready-made editor setups (VS Code, Sublime Text, Emacs, Vim, JetBrains) that bind the preview and
 the export to shortcuts and save as you type are described in [Editors](editors.html).
 
+Both commands accept the `deck.json` or the Markdown file: a Markdown file whose folder holds a
+`deck.json` naming it is served or built through that configuration, so handing the file you are
+editing to the command (as the editor setups do) gives the same result as naming `deck.json`.
+
 `serve` accepts `--port N`, `--no-open`, `--scene Name` and repeatable `--watch PATH`; `build`
 accepts `--show-outline` and `--scene Name`. The deck argument is a `deck.json`, a Markdown file or
 a JS/TS module exporting a deck definition. The single-file export opens by double-click and needs
