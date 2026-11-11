@@ -216,8 +216,9 @@ Run `npm test` for the unit tests and `npm run typecheck` for TypeScript.
 
 ## Limitations
 
-- Text is rasterized to canvas textures at a resolution tied to its font size (crisp when its
-  slide is focused); math, SVG and shapes stay vector.
+- Text is rasterized to canvas textures and redrawn at the screen's resolution whenever the
+  camera comes to rest, so it is sharp at every zoom level once settled and may soften briefly
+  during a zoom; math, SVG and shapes stay vector.
 - The dry recording happens at page load; large decks take a few seconds (a 46-slide lecture
   records in about three seconds on a laptop).
 - `PresenterConfig.renderCanvas` and `stillTime` are accepted for compatibility but have no

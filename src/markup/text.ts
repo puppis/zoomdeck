@@ -44,6 +44,26 @@ export interface LinkBox {
 /** Every live line that carries links, for the player's link layer. */
 export const LINKED_LINES = new Set<StyledLine>();
 
+/** Every live line, so the player can redraw text at the screen's resolution when the camera settles. */
+export const TEXT_LINES = new Set<StyledLine>();
+
+/** Smallest and largest canvas density relative to the base supersampling, and the widest canvas drawn. */
+const MIN_DENSITY = 0.2;
+const MAX_DENSITY = 6;
+const MAX_CANVAS_PX = 8192;
+/** Relative change of density that triggers a redraw; smaller mismatches are not visible. */
+const DENSITY_TOLERANCE = 0.1;
+
+/** The run layout of a line at the base canvas resolution, from which every redraw is drawn. */
+interface LineLayout {
+  px: number;
+  width: number;
+  height: number;
+  originX: number;
+  baselineY: number;
+  metrics: RunMetrics[];
+}
+
 export interface StyledLineOptions {
   runs: TextRun[];
   fontSize: number;
@@ -117,6 +137,9 @@ export class StyledLine extends Text {
   fontDescent = 0;
   /** Link hit boxes in local coordinates (origin at the plane center). */
   links: LinkBox[] = [];
+  private _layout: LineLayout | null = null;
+  /** Canvas density relative to the base resolution; 1 until the player asks for another. */
+  private _density = 1;
 
   constructor(options: StyledLineOptions) {
     super({
@@ -131,6 +154,7 @@ export class StyledLine extends Text {
     this._baseColor = options.baseColor;
     this._canvasDirty = true;
     this._renderToCanvas();
+    TEXT_LINES.add(this);
   }
 
   get runs(): TextRun[] {
@@ -140,6 +164,58 @@ export class StyledLine extends Text {
   /** Pixel size of the base font on the supersampled canvas. */
   private _px(): number {
     return (this.getFontSize() * 4) / 3 * textResolutionScale();
+  }
+
+  /** Canvas pixels per world unit of the current drawing. */
+  get canvasDensity(): number {
+    return PX_PER_WORLD_BASE * textResolutionScale() * this._density;
+  }
+
+  /**
+   * Redraw the glyphs so that the canvas holds about `pxPerWorld` pixels per
+   * world unit, which the player sets to the screen's own density once the
+   * camera rests. The layout, the plane and every metric stay as they were;
+   * only the sharpness of the bitmap changes. Returns whether a redraw happened.
+   */
+  rasterizeAt(pxPerWorld: number): boolean {
+    const layout = this._layout;
+    if (!layout || !this._canvas || !this._ctx || !Number.isFinite(pxPerWorld) || pxPerWorld <= 0) return false;
+    const base = PX_PER_WORLD_BASE * textResolutionScale();
+    let density = Math.min(MAX_DENSITY, Math.max(MIN_DENSITY, pxPerWorld / base));
+    density = Math.min(density, MAX_CANVAS_PX / Math.max(layout.width, layout.height));
+    if (Math.abs(density / this._density - 1) <= DENSITY_TOLERANCE) return false;
+    this._density = density;
+    this._draw(layout);
+    this._updateMesh();
+    this._markDirty();
+    return true;
+  }
+
+  /** Draw the laid-out runs onto the canvas at the current density. */
+  private _draw(layout: LineLayout): void {
+    const canvas = this._canvas as HTMLCanvasElement;
+    const ctx = this._ctx as CanvasRenderingContext2D;
+    const runs = this._runs as TextRun[];
+    const k = this._density;
+    canvas.width = Math.max(1, Math.ceil(layout.width * k));
+    canvas.height = Math.max(1, Math.ceil(layout.height * k));
+    ctx.setTransform(k, 0, 0, k, 0, 0);
+    ctx.clearRect(0, 0, layout.width, layout.height);
+    ctx.textBaseline = 'alphabetic';
+    ctx.textAlign = 'left';
+    const tint = this.color !== this._baseColor ? this.color : null;
+    const px = layout.px;
+    let x = layout.originX;
+    runs.forEach((run, i) => {
+      ctx.font = fontString(run, px, this._family);
+      ctx.fillStyle = tint ?? run.color;
+      ctx.globalAlpha = this.fillOpacity;
+      if (run.text.trim()) ctx.fillText(run.text, x, layout.baselineY);
+      if (run.href) ctx.fillRect(x, layout.baselineY + px * 0.1, layout.metrics[i].advance, Math.max(1, px * 0.05));
+      x += layout.metrics[i].advance;
+    });
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    if (this._texture) this._texture.needsUpdate = true;
   }
 
   protected override _renderToCanvas(): void {
@@ -156,7 +232,6 @@ export class StyledLine extends Text {
     const scale = textResolutionScale();
     const pxPerWorld = PX_PER_WORLD_BASE * scale;
     const px = this._px();
-    const tint = this.color !== this._baseColor ? this.color : null;
     const metrics = runs.map((run) => measureRun(run, px, this._family));
     let cursor = 0;
     let inkLeft = Infinity;
@@ -185,24 +260,14 @@ export class StyledLine extends Text {
     // Underlines of links sit below the ink; keep room for them on the canvas.
     const underlineDepth = runs.some((run) => run.href) ? px * 0.1 + Math.max(1, px * 0.05) : 0;
     const height = Math.max(1, Math.ceil(ascent + Math.max(descent, underlineDepth) + 2 * PADDING_PX));
-    this._canvas.width = width;
-    this._canvas.height = height;
-    const ctx = this._ctx;
-    ctx.clearRect(0, 0, width, height);
-    ctx.textBaseline = 'alphabetic';
-    ctx.textAlign = 'left';
     const originX = PADDING_PX - inkLeft;
     const baselineY = PADDING_PX + ascent;
+    this._layout = { px, width, height, originX, baselineY, metrics };
+    this._draw(this._layout);
     let x = originX;
     const linkRuns: Array<{ href: string; from: number; to: number }> = [];
     runs.forEach((run, i) => {
-      ctx.font = fontString(run, px, this._family);
-      ctx.fillStyle = tint ?? run.color;
-      ctx.globalAlpha = this.fillOpacity;
-      if (run.text.trim()) ctx.fillText(run.text, x, baselineY);
       if (run.href) {
-        const thickness = Math.max(1, px * 0.05);
-        ctx.fillRect(x, baselineY + px * 0.1, metrics[i].advance, thickness);
         const last = linkRuns[linkRuns.length - 1];
         if (last && last.href === run.href && Math.abs(last.to - x) < 0.5) last.to = x + metrics[i].advance;
         else linkRuns.push({ href: run.href, from: x, to: x + metrics[i].advance });
@@ -228,7 +293,12 @@ export class StyledLine extends Text {
     const baselineWorld = this._worldHeight / 2 - baselineY / pxPerWorld;
     this.markupBaselineFraction = this._worldHeight > 0 ? baselineWorld / this._worldHeight : 0;
     this._canvasDirty = false;
-    if (this._texture) this._texture.needsUpdate = true;
+  }
+
+  override dispose(): void {
+    TEXT_LINES.delete(this);
+    LINKED_LINES.delete(this);
+    super.dispose();
   }
 
   override copy(): StyledLine {

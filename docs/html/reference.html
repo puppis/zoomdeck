@@ -331,7 +331,8 @@ duplicate or missing IDs, conflicting constraints, positioning cycles, reference
 inconsistent visibility, animations of hidden elements, invalid colors, unknown classes, effects
 and rates, and missing images.</p>
 <h2 id="limitations">Limitations<a class="anchor" href="#limitations" aria-label="Link to this section">#</a></h2><ul>
-<li>Text is rasterized to canvas textures at a resolution tied to its font size; math, SVG and
+<li>Text is rasterized to canvas textures, redrawn at the screen's resolution whenever the camera
+comes to rest (so it may soften briefly during a zoom); math, SVG and
 shapes stay vector.</li>
 <li>The dry recording happens at page load; large decks take a few seconds.</li>
 <li>Group members cannot have their own fragments; <code>transform</code> works best between vector content.</li>

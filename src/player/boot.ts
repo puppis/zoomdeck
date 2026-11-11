@@ -106,6 +106,11 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
       stage.render();
     });
   };
+  // Text is redrawn at the screen's resolution whenever the camera comes to rest or the stage is resized.
+  player.on('state', ({ state }) => {
+    if (state !== 'playing') stage.refreshText();
+  });
+  stage.afterResize.push(() => stage.refreshText());
   ui.bind(player, stage, navigation);
   if (log) console.info(`[zoomdeck] [+${((performance.now() - started) / 1000).toFixed(1)}s] Ready: ${navigation.clips.length} clips`);
 
@@ -170,5 +175,6 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
   const initial = restored ?? (startClip !== null && startClip >= 0 ? startClip : hashStep ?? 0);
   stage.fit();
   await player.goTo(initial >= 0 && initial < navigation.clips.length ? initial : 0, false);
+  stage.refreshText();
   return { presenter, player, stage, ui, navigation };
 }

@@ -103,7 +103,8 @@ and rates, and missing images.
 
 ## Limitations
 
-- Text is rasterized to canvas textures at a resolution tied to its font size; math, SVG and
+- Text is rasterized to canvas textures, redrawn at the screen's resolution whenever the camera
+  comes to rest (so it may soften briefly during a zoom); math, SVG and
   shapes stay vector.
 - The dry recording happens at page load; large decks take a few seconds.
 - Group members cannot have their own fragments; `transform` works best between vector content.

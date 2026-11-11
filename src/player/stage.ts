@@ -6,6 +6,7 @@
 import { Scene } from 'manim-web';
 import type { Presenter } from '../runtime';
 import type { Vec3 } from '../geometry';
+import { TEXT_LINES } from '../markup/text';
 
 export interface StageOptions {
   background: string;
@@ -20,6 +21,8 @@ export class Stage {
   presenter: Presenter | null = null;
   /** Callbacks run after every render, e.g. DOM layers that follow the camera. */
   readonly afterRender: Array<() => void> = [];
+  /** Callbacks run after the canvas changed size. */
+  readonly afterResize: Array<() => void> = [];
   private _observer: ResizeObserver | null = null;
   private _width: number;
   private _height: number;
@@ -69,6 +72,7 @@ export class Stage {
     this.scene.resize(width, height);
     if (this.presenter) for (const ctx of this.presenter.contexts.values()) ctx.display.invalidateStrokes();
     this.render();
+    for (const callback of this.afterResize) callback();
   }
 
   /** The camera view (world units) that contains the presentation viewport. */
@@ -100,6 +104,40 @@ export class Stage {
     const width = camera.width * scale;
     const height = (camera.width / this.viewportAspect) * scale;
     return { left: (this._width - width) / 2, top: (this._height - height) / 2, width, height };
+  }
+
+  /**
+   * Redraw the text lines in view at the screen's own pixel density, so that
+   * prose is sharp wherever the camera has come to rest. Lines outside the
+   * view keep their current bitmaps. Renders again when anything changed.
+   */
+  refreshText(): void {
+    const presenter = this.presenter;
+    if (!presenter || !TEXT_LINES.size) return;
+    const view = this._view();
+    const center = presenter.camera.center;
+    const pixelRatio = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+    const pxPerWorld = (this._width * pixelRatio) / view.width;
+    const marginX = view.width * 0.25;
+    const marginY = view.height * 0.25;
+    const root = this.scene.threeScene;
+    let changed = false;
+    for (const line of TEXT_LINES) {
+      const object = line.getThreeObject();
+      let ancestor = object.parent;
+      while (ancestor && ancestor !== root) ancestor = ancestor.parent;
+      if (ancestor !== root) continue;
+      const m = object.matrixWorld.elements;
+      const scale = Math.hypot(m[0], m[1], m[2]);
+      const x = m[12];
+      const y = m[13];
+      const halfWidth = (line.getWidth() * scale) / 2;
+      const halfHeight = (line.getHeight() * scale) / 2;
+      if (x + halfWidth < center[0] - view.width / 2 - marginX || x - halfWidth > center[0] + view.width / 2 + marginX) continue;
+      if (y + halfHeight < center[1] - view.height / 2 - marginY || y - halfHeight > center[1] + view.height / 2 + marginY) continue;
+      if (line.rasterizeAt(pxPerWorld * scale)) changed = true;
+    }
+    if (changed) this.render();
   }
 
   /** Draw the current presenter state. */
