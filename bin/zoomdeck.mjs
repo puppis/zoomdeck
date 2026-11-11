@@ -3,7 +3,7 @@
  * zoomdeck command line: preview a deck while editing, or build a
  * static HTML bundle (optionally a single self-contained file).
  *
- *   zoomdeck serve <deck> [--port N] [--no-open] [--watch PATH]...
+ *   zoomdeck serve <deck> [--port N] [--no-open] [--watch PATH]...   (port 8000 or the next free one)
  *   zoomdeck build <deck> -o <folder> [--one-file] [--show-outline]
  *
  * `<deck>` is a `deck.json`, a Markdown file, or a JS/TS module exporting a
@@ -31,7 +31,7 @@ function usage(message) {
 }
 
 function parseArgs(argv) {
-  const options = { watch: [], open: true, oneFile: false, showOutline: false, port: 8000, output: null, scene: null, positional: [] };
+  const options = { watch: [], open: true, oneFile: false, showOutline: false, port: null, output: null, scene: null, positional: [] };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--port') options.port = Number(argv[++i]);
@@ -128,17 +128,40 @@ async function serve(options) {
     resolve: { alias: optionalStubs },
     optimizeDeps: { entries: ['index.html'] },
     plugins: [dropEngineMuxers, reloadPlugin],
-    server: { port: options.port, strictPort: options.port !== 0, fs: { allow: [packageRoot, ...watchRoots] } },
+    // Bind the IPv4 loopback explicitly: "localhost" may resolve to ::1 only, which would leave
+    // the printed 127.0.0.1 address refusing connections. Without --port, a busy 8000 falls
+    // through to the next free port instead of failing, so a second preview can always start.
+    server: {
+      host: '127.0.0.1',
+      port: options.port ?? 8000,
+      strictPort: options.port !== null && options.port !== 0,
+      fs: { allow: [packageRoot, ...watchRoots] },
+    },
     logLevel: 'warn',
   });
   await server.listen();
-  const port = server.config.server.port;
+  const address = server.httpServer?.address();
+  const port = address && typeof address === 'object' ? address.port : options.port ?? 8000;
   const deckParam = `/@fs${deckPath.split(sep).join('/')}`;
   const query = new URLSearchParams({ deck: deckParam });
   if (options.scene) query.set('scene', options.scene);
   const url = `http://127.0.0.1:${port}/?${query.toString()}`;
   console.log(`Zoomdeck preview (${kind}) at ${url}`);
+  if (options.port !== null && options.port !== 0 && port !== options.port) console.log(`(port ${options.port} was busy)`);
   console.log(`Watching ${watchRoots.map((root) => relative(process.cwd(), root) || '.').join(', ')} — press Ctrl+C to stop`);
+  const stop = (reason) => {
+    if (reason) console.log(reason);
+    server.close().finally(() => process.exit(0));
+  };
+  for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) process.on(signal, () => stop());
+  // Editors stop a preview by ending the process that started it; when only that parent dies
+  // (a shell wrapper, a build panel), the server would linger and keep the port. Follow it out.
+  const parent = process.ppid;
+  if (parent > 1) {
+    setInterval(() => {
+      if (process.ppid !== parent) stop('The process that started the preview has exited; stopping the server');
+    }, 1000).unref();
+  }
   if (options.open) openBrowser(url);
 }
 

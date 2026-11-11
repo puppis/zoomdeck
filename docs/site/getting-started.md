@@ -122,6 +122,11 @@ Both commands accept the `deck.json` or the Markdown file: a Markdown file whose
 `deck.json` naming it is served or built through that configuration, so handing the file you are
 editing to the command (as the editor setups do) gives the same result as naming `deck.json`.
 
+The preview listens on `http://127.0.0.1:8000/`, or on the next free port when 8000 is busy
+(another preview is probably still running; the printed address is the one to use). `--port N`
+insists on a port. The server stops with Ctrl+C, and also by itself when the program that
+started it (an editor's build panel or task) ends.
+
 `serve` accepts `--port N`, `--no-open`, `--scene Name` and repeatable `--watch PATH`; `build`
 accepts `--show-outline` and `--scene Name`. The deck argument is a `deck.json`, a Markdown file or
 a JS/TS module exporting a deck definition. The single-file export opens by double-click and needs

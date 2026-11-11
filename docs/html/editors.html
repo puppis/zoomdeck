@@ -70,6 +70,12 @@ editor's Markdown, the slide and styles containers, the <code>[[directive: …]]
 <code>.classes</code>, <code>key=value</code> attributes, quoted strings and numbers. Errors in a deck appear in the
 browser with their line number (and file, for imported files), so the browser window doubles as
 the editor's problems panel.</p>
+<p><strong>If the browser opens on a page that refuses to connect</strong>, read the build panel or terminal:
+the server prints the address it actually listens on, <code>http://127.0.0.1:8000/</code> or the next free
+port when a previous preview still holds 8000. Stopping that previous preview (Tools ▸ Cancel
+Build in Sublime Text, closing the task terminal in VS Code, <code>C-c C-k</code> in Emacs, closing the
+terminal split in Vim, the stop button of the tool window in JetBrains) frees the port; a server
+also stops on its own when the program that started it ends.</p>
 <h2 id="visual-studio-code">Visual Studio Code<a class="anchor" href="#visual-studio-code" aria-label="Link to this section">#</a></h2><table>
 <thead>
 <tr>

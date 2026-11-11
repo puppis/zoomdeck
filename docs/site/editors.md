@@ -46,6 +46,13 @@ editor's Markdown, the slide and styles containers, the `[[directive: …]]` lin
 browser with their line number (and file, for imported files), so the browser window doubles as
 the editor's problems panel.
 
+**If the browser opens on a page that refuses to connect**, read the build panel or terminal:
+the server prints the address it actually listens on, `http://127.0.0.1:8000/` or the next free
+port when a previous preview still holds 8000. Stopping that previous preview (Tools ▸ Cancel
+Build in Sublime Text, closing the task terminal in VS Code, `C-c C-k` in Emacs, closing the
+terminal split in Vim, the stop button of the tool window in JetBrains) frees the port; a server
+also stops on its own when the program that started it ends.
+
 ## Visual Studio Code
 
 | What | Where |
