@@ -47,7 +47,7 @@ export { IframeHost, IFRAME_HOSTS } from './markup/iframe';
 export { IframeLayer } from './player/iframes';
 export type { RasterImageOptions, RasterMovieOptions } from './raster';
 export {
-  MarkupError, ElementSpec, GroupSpec, IncludeSpec, ImportSpec, EventSpec, ActionSpec, NextSpec, SkipNextSpec, SlideSpec, MarkupDocument,
+  MarkupError, ElementSpec, GroupSpec, IncludeSpec, CodeSlideSpec, ImportSpec, EventSpec, ActionSpec, NextSpec, SkipNextSpec, SlideSpec, MarkupDocument,
   parseAttributes, parseColor, parseCssColor, parseAt, normalizeStyles, applyStyles, styleRoles,
 } from './markup/ast';
 export type { InlineSpan, AnimationStep, StepChange, VisibilityChange, SlideItem, Attributes, StyleSheet, AtExpression, ActionKind } from './markup/ast';
@@ -58,12 +58,19 @@ export { MarkupSlide, SlideBuilder } from './markup/slide';
 export type { SlideNamespace, SlideBuilderOptions } from './markup/slide';
 export { StyledLine, layoutParagraph, inlineWords, baselineY } from './markup/text';
 export { layoutCode, tokenizeCode, languageFor, codeThemeFor, DARK_CODE_THEME, LIGHT_CODE_THEME } from './markup/code';
-export { PropertyAnimation, makeEffect, enterAnimation, exitAnimation, RATE_FUNCTIONS, EFFECT_NAMES as EFFECTS } from './animations';
-export type { PropertyTargets, EffectOptions, AnimationTiming, RateFunction } from './animations';
+export { PropertyAnimation, Tremble, makeEffect, enterAnimation, exitAnimation, RATE_FUNCTIONS, EFFECT_NAMES as EFFECTS } from './animations';
+export type { PropertyTargets, EffectOptions, AnimationTiming, RateFunction, TrembleOptions } from './animations';
 export type { CodeToken, CodeTheme, TokenClass, CodeLayoutOptions } from './markup/code';
 export type { TextRun, MathPiece, MathFactory } from './markup/text';
 export { markupDeck, loadDeckConfig } from './markup/deck';
+export { expandImports, importPath, describeOrigin, IMPORT_DIRECTIVE } from './markup/imports';
+export type { ExpandOptions, ExpandedSource, LineOrigin } from './markup/imports';
 export type { MarkupDeckOptions, DeckConfig } from './markup/deck';
 export { svgToMobject, loadSvgMobject } from './svg';
 export { sketch, sketchDrawable, sketchSeed, FILL_STYLES, SKETCH_SCALE } from './sketch';
 export type { SketchOptions, FillStyle, OutlineMobject } from './sketch';
+export { makeIcon, iconParts, ICON_NAMES } from './icons';
+export type { IconName, IconOptions, IconPart } from './icons';
+export { blobMobject, blobOutline, blobField } from './blob';
+export type { Rect, BlobOptions } from './blob';
+export { pathMobject, smoothLoop, loopsMobject, circlePath, ellipsePath, rectPath } from './paths';

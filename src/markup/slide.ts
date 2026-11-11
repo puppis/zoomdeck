@@ -3,8 +3,8 @@
  * imports of code-authored slides into markup decks.
  */
 import { Group, MoveAlongPath, ReplacementTransform, type Animation, type Mobject } from 'manim-web';
-import type { OutlineMobject } from '../sketch';
-import { PropertyAnimation, RATE_FUNCTIONS, enterAnimation, exitAnimation, makeEffect, type PropertyTargets } from '../animations';
+import { sketchSeed, type OutlineMobject } from '../sketch';
+import { PropertyAnimation, RATE_FUNCTIONS, Tremble, enterAnimation, exitAnimation, makeEffect, type PropertyTargets } from '../animations';
 import { Slide, PlaceholderSlide, resolveSize, startingSlide } from '../slides';
 import { RasterImage, RasterMovie } from '../raster';
 import { VideoClip, VideoPlay } from '../video';
@@ -12,16 +12,19 @@ import { IframeHost } from './iframe';
 import { DelayedAnimation, type SlideContext } from '../runtime';
 import {
   ATTACHMENTS, CONNECTIONS, NEIGHBORS, TEXT_LIKE, VERTICAL_POSITION,
-  ActionSpec, AnimationStep, ElementSpec, EventSpec, GroupSpec, ImportSpec, IncludeSpec, MarkupDocument, MarkupError, NextSpec,
-  SkipNextSpec, SlideItem, SlideSpec, StepChange, childKey, numberValue, parseAt, parseColor, positionOrder, positionTargets, stepValue,
+  ActionSpec, AnimationStep, ElementSpec, EventSpec, GroupSpec, CodeSlideSpec, IncludeSpec, MarkupDocument, MarkupError, NextSpec,
+  SkipNextSpec, SlideItem, SlideSpec, StepChange, childKey, numberValue, parseAt, parseColor, parseTremble, positionOrder, positionTargets,
+  stepValue,
 } from './ast';
 import { ASTTransformer } from './parser';
-import { LayoutConfig, MarkupRenderer, anchorPoint, applyOpacity, elementAnchor, placeRelative, type OriginMobject } from './renderer';
+import {
+  LayoutConfig, MarkupRenderer, anchorPoint, applyOpacity, elementAnchor, placeRelative, type OriginMobject, type PartsMobject,
+} from './renderer';
 
 export type SlideNamespace = Record<string, unknown>;
 
-function importSlide(spec: ImportSpec, namespace: SlideNamespace | null): Slide {
-  if (!namespace) throw new MarkupError('Imports require a namespace; pass `imports` to the markup deck', spec.line);
+function instantiateSlide(spec: CodeSlideSpec, namespace: SlideNamespace | null): Slide {
+  if (!namespace) throw new MarkupError('Code-authored subslides need slide classes; pass `classes` to the markup deck', spec.line);
   const parts = spec.className.split('.');
   if (!(parts[0] in namespace)) throw new MarkupError(`Unknown class ${JSON.stringify(spec.className)}`, spec.line);
   let candidate: unknown = namespace[parts[0]];
@@ -109,7 +112,7 @@ export class MarkupSlide extends Slide {
   private async _layout(
     items: SlideItem[],
     scope: { left: number; top: number; width: number; local: Map<string, Mobject> },
-    viewportOf: ((index: number, item: IncludeSpec | ImportSpec) => Mobject) | null,
+    viewportOf: ((index: number, item: IncludeSpec | CodeSlideSpec) => Mobject) | null,
   ): Promise<void> {
     const layout = this.renderer.layout;
     let cursor = scope.top;
@@ -122,8 +125,8 @@ export class MarkupSlide extends Slide {
       let obj: Mobject;
       let explicit: boolean;
       let position: [number, number, number] | null;
-      if (item instanceof IncludeSpec || item instanceof ImportSpec) {
-        if (!viewportOf) throw new MarkupError('Groups cannot contain includes or imports', item.line);
+      if (item instanceof IncludeSpec || item instanceof CodeSlideSpec) {
+        if (!viewportOf) throw new MarkupError('Groups cannot contain includes or subslides', item.line);
         obj = viewportOf(index, item);
         explicit = 'x' in item.attributes || 'y' in item.attributes;
         position = [Number(item.attributes.x ?? 0), Number(item.attributes.y ?? 0), 0];
@@ -180,7 +183,7 @@ export class MarkupSlide extends Slide {
     }
     if (viewportOf) {
       for (const [index, item] of items.entries()) {
-        if (item instanceof IncludeSpec || item instanceof ImportSpec) placeRelative(item, viewportOf(index, item), scope.local, layout.gap);
+        if (item instanceof IncludeSpec || item instanceof CodeSlideSpec) placeRelative(item, viewportOf(index, item), scope.local, layout.gap);
       }
     }
     // Offsets apply last, after flow, explicit and relative placement.
@@ -214,10 +217,12 @@ export class MarkupSlide extends Slide {
     const local = new Map<string, Mobject>();
     const width = numberValue(spec.attributes, 'width', spec.line, availableWidth) as number;
     await this._layout(spec.items, { left: 0, top: 0, width, local }, null);
-    const group = new Group(...local.values()) as OriginMobject;
+    const group = new Group(...local.values()) as OriginMobject & PartsMobject;
     if (local.size) {
       const center = group.getCenter();
       group.markupOrigin = [-center[0], -center[1]];
+      // Blobs flow around the members rather than around the group's box.
+      group.markupParts = [...local.values()];
     }
     if ('opacity' in spec.attributes) applyOpacity(group, Number(spec.attributes.opacity));
     return group;
@@ -292,21 +297,58 @@ export class MarkupSlide extends Slide {
     clip.autoNext = true;
   }
 
-  /** Play finite movies once, then record a separate loop without repeated fades. */
-  private async _playImages(ctx: SlideContext, targets: string[], reveal: boolean): Promise<void> {
+  /** Trembling animations of the shown elements whose `tremble=` range covers `step`. */
+  private _tremblers(ctx: SlideContext, step: number): Animation[] {
+    const shown = new Set(ctx.getMobjectFamilyMembers());
+    const result: Animation[] = [];
+    const visit = (items: SlideItem[]): void => {
+      for (const item of items) {
+        if (!(item instanceof ElementSpec)) continue;
+        if (item instanceof GroupSpec) visit(item.items);
+        if (!('tremble' in item.attributes)) continue;
+        const range = parseTremble(item.attributes.tremble, stepValue(item.attributes, 'step', item.line), item.line);
+        if (!range || step < range.start || (range.end !== null && step >= range.end)) continue;
+        const obj = this.elements.get(item.id);
+        if (!obj || !shown.has(obj)) continue;
+        result.push(new Tremble(obj, {
+          amplitude: numberValue(item.attributes, 'tremble_amplitude', item.line) ?? undefined,
+          rate: numberValue(item.attributes, 'tremble_rate', item.line) ?? undefined,
+          seed: sketchSeed(`${item.id}@${item.line}`),
+        }));
+      }
+    };
+    visit(this.spec.items);
+    return result;
+  }
+
+  /**
+   * Play finite movies once, then record the continuous motion of a stop
+   * (looping movies and trembling elements) as a separate looping clip, so
+   * that the fades of the stop are not repeated with every cycle.
+   */
+  private async _playContinuous(ctx: SlideContext, targets: string[], step: number, reveal: boolean): Promise<void> {
     const movies = targets.filter((target) => this.movies.has(target)).map((target) => this.movies.get(target) as RasterMovie | VideoPlay);
     const finite = movies.filter((movie) => movie.plays !== 0);
-    const looping = movies.filter((movie) => movie.plays === 0);
+    const looping: Animation[] = [...movies.filter((movie) => movie.plays === 0), ...this._tremblers(ctx, step)];
     if (finite.length) await ctx.play(...finite);
     if (looping.length) {
-      if (reveal || finite.length) {
-        ctx.stop();
-        MarkupSlide._autoAdvance(ctx);
-      }
+      if (reveal || finite.length) ctx.stop();
+      // The reveal (or the entry stop before the slide's program) runs straight into the loop.
+      MarkupSlide._autoAdvance(ctx);
       await ctx.play(...looping);
     }
     ctx.stop();
     if (looping.length) ctx.completedStop().loop = true;
+  }
+
+  /** After a pause recorded by the runtime (a return from a child), keep trembling elements moving. */
+  private async _loopIdle(ctx: SlideContext, step: number): Promise<void> {
+    const tremblers = this._tremblers(ctx, step);
+    if (!tremblers.length) return;
+    MarkupSlide._autoAdvance(ctx);
+    await ctx.play(...tremblers);
+    ctx.stop();
+    ctx.completedStop().loop = true;
   }
 
   /** Execute planned clicks and resume after visits through the slide runtime. */
@@ -321,8 +363,8 @@ export class MarkupSlide extends Slide {
     const initialMovies = this.spec.items
       .filter((item): item is ElementSpec => item instanceof ElementSpec && this.movies.has(item.id) && stepValue(item.attributes, 'step', item.line) === 0)
       .map((item) => item.id);
-    if (initialMovies.length && !presenter.consumeSkipNext()) {
-      await this._playImages(ctx, initialMovies, false);
+    if ((initialMovies.length || this._tremblers(ctx, 0).length) && !presenter.consumeSkipNext()) {
+      await this._playContinuous(ctx, initialMovies, 0, false);
       if (entry && entry.autoNext) MarkupSlide._autoAdvance(ctx);
     }
     for (const step of this.animationSteps) {
@@ -338,7 +380,7 @@ export class MarkupSlide extends Slide {
             if (animation) animations.push(change.lag ? new DelayedAnimation(animation, change.lag) : animation);
           }
           if (animations.length) await ctx.play(...animations);
-          await this._playImages(ctx, movies, true);
+          await this._playContinuous(ctx, movies, step.number, true);
         }
       }
       for (const target of step.visits) {
@@ -346,11 +388,14 @@ export class MarkupSlide extends Slide {
         yield ctx.visit(child);
         const childCtx = presenter.contexts.get(child) as SlideContext;
         eventSkipped = childCtx.phase === 'skipped';
-        if (!childCtx.returnSkipped && !presenter.config.pauseOnReturn) ctx.stop();
+        if (!childCtx.returnSkipped) {
+          if (!presenter.config.pauseOnReturn) ctx.stop();
+          await this._loopIdle(ctx, step.number);
+        }
       }
       if (!step.changes.length && !step.visits.length) {
         eventSkipped = presenter.consumeSkipNext();
-        if (!eventSkipped) ctx.stop();
+        if (!eventSkipped) await this._playContinuous(ctx, [], step.number, true);
       }
       if (!eventSkipped) {
         if (step.autoNext) MarkupSlide._autoAdvance(ctx);
@@ -402,8 +447,8 @@ export class SlideBuilder {
       const slide = definitions.get(identifier) as SlideSpec;
       const parent = this.slides.get(slide.id) as Slide;
       for (const [index, item] of slide.items.entries()) {
-        if (!(item instanceof IncludeSpec) && !(item instanceof ImportSpec)) continue;
-        const child = item instanceof IncludeSpec ? (this.slides.get(item.target) as Slide) : importSlide(item, options.namespace ?? null);
+        if (!(item instanceof IncludeSpec) && !(item instanceof CodeSlideSpec)) continue;
+        const child = item instanceof IncludeSpec ? (this.slides.get(item.target) as Slide) : instantiateSlide(item, options.namespace ?? null);
         const attrs = item.attributes;
         if ('only_this' in attrs) child.onlyThis = attrs.only_this === 'true';
         if ('start_here' in attrs) child.startHere = attrs.start_here === 'true';

@@ -1,14 +1,14 @@
 ---
 title: Code-authored slides
-description: Slides written in TypeScript with the complete animation engine, used alone or imported into Markdown decks.
+description: Slides written in TypeScript with the complete animation engine, used alone or placed as subslides of Markdown decks.
 ---
 
 <a class="try" href="guide.html#slide=code-slides">Open in the guide ↗</a>
 
-## Importing a slide into a Markdown deck
+## Placing a code-authored slide in a Markdown deck
 
 ```markdown
-[[import: Orbit x=5 y=-1.4 width=8 step=1]]
+[[subslide: Orbit x=5 y=-1.4 width=8 step=1]]
 ```
 
 ```typescript
@@ -30,7 +30,7 @@ export class Orbit extends Slide {
 }
 ```
 
-`deck.json` names the module with `"imports": "code-slides.ts"`. The class must be constructible
+`deck.json` names the module with `"classes": "code-slides.ts"`. The class must be constructible
 without arguments and return a fresh slide; qualified names (`helpers.Orbit`) traverse
 namespaces. Each occurrence creates its own instance, with the same placement attributes as an
 include. A slide's natural canvas defaults to 16 × 9; pass `{ size: [20, 12] }` or

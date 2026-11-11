@@ -361,10 +361,10 @@ export const sketch = {
     return sketchDrawable(generator().path(bracePath(length, Math.min(depth, length / 2)), roughOptions(o)), o);
   },
 
-  /** Any SVG path data, with coordinates in logical units (y up). */
-  path(d: string, options: SketchOptions = {}): VGroup {
+  /** Any SVG path data, with coordinates in logical units (y up), optionally scaled by `scale`. */
+  path(d: string, options: SketchOptions = {}, scale = 1): VGroup {
     const o = resolve(options);
-    const subpaths = parseSVGPathData(d).map((subpath) => subpath.map(([x, y]) => toRough([x, y])));
+    const subpaths = parseSVGPathData(d).map((subpath) => subpath.map(([x, y]) => toRough([x * scale, y * scale])));
     return sketchDrawable(generator().path(curvesToPath(subpaths), roughOptions(o)), o);
   },
 

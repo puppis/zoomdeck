@@ -4,18 +4,20 @@
  * `MathTex`, images resolve against the document's base URL.
  */
 import {
-  Arc, Arrow, Brace, Circle, Dot, Ellipse, Group, Line, MathTex, Polygon, Rectangle, RoundedRectangle, SurroundingRectangle, VMobject,
+  Arc, Arrow, Brace, Circle, Dot, Ellipse, Group, Line, MathTex, Polygon, Rectangle, RoundedRectangle, VMobject,
   type Mobject,
 } from 'manim-web';
 import { loadSvgMobject } from '../svg';
 import { sketch, sketchSeed, type FillStyle, type OutlineMobject, type SketchOptions } from '../sketch';
+import { makeIcon, type IconName } from '../icons';
+import { blobMobject, type Rect } from '../blob';
 import { DEFAULT_ANIMATION_TIME, Slide, resolveSize } from '../slides';
 import { RasterImage, RasterSource } from '../raster';
 import { VideoClip } from '../video';
 import { IframeHost } from './iframe';
 import {
   ALIGNMENTS, BRACE_SIDES, CONNECTIONS, GROUP_ANCHORS, NEIGHBORS, POSITION_REFERENCES, SHAPES, TEXT_ANCHORS, TEXT_LIKE, VIDEO_EXTENSIONS,
-  ElementSpec, ImportSpec, IncludeSpec, InlineSpan, MarkupError, endpoint, numberValue, parseAt, parseColor, polylinePoints,
+  ElementSpec, CodeSlideSpec, IncludeSpec, InlineSpan, MarkupError, attachmentTargets, endpoint, numberValue, parseAt, parseColor, polylinePoints,
 } from './ast';
 import { MarkupParser } from './parser';
 import { MONOSPACE, baselineY, layoutParagraph, type MathPiece } from './text';
@@ -152,7 +154,7 @@ function sketchShape(element: ElementSpec, crisp: VMobject, options: SketchOptio
 }
 
 /** The anchor name an item is positioned by: its `anchor` attribute, else the text default or the center. */
-export function elementAnchor(item: ElementSpec | IncludeSpec | ImportSpec, textAnchor = 'left-baseline'): string {
+export function elementAnchor(item: ElementSpec | IncludeSpec | CodeSlideSpec, textAnchor = 'left-baseline'): string {
   const explicit = item.attributes.anchor;
   if (explicit) return explicit;
   return item instanceof ElementSpec && TEXT_LIKE.has(item.kind) ? textAnchor : 'center';
@@ -160,6 +162,33 @@ export function elementAnchor(item: ElementSpec | IncludeSpec | ImportSpec, text
 
 /** Objects built from a group remember where their local origin sits relative to their center. */
 export type OriginMobject = Mobject & { markupOrigin?: [number, number] };
+
+/** Composite objects name the parts a blob should flow around separately (group members, an icon and its label). */
+export type PartsMobject = Mobject & { markupParts?: Mobject[] };
+
+/** The rectangles a blob encloses for an object: its parts' rectangles, else its own bounding box. */
+export function enclosedRects(obj: Mobject): Rect[] {
+  const parts = (obj as PartsMobject).markupParts;
+  if (parts && parts.length) return parts.flatMap(enclosedRects);
+  const [x, y] = obj.getCenter();
+  const width = obj.getWidth();
+  const height = obj.getHeight();
+  if (!(width > 0) && !(height > 0)) return [];
+  return [{ x, y, width, height }];
+}
+
+/** The axis-aligned bounding box of several objects together. */
+export function unionRect(objects: readonly Mobject[]): Rect {
+  const rects = objects.map((obj) => {
+    const [x, y] = obj.getCenter();
+    return { x, y, width: obj.getWidth(), height: obj.getHeight() };
+  });
+  const left = Math.min(...rects.map((r) => r.x - r.width / 2));
+  const right = Math.max(...rects.map((r) => r.x + r.width / 2));
+  const bottom = Math.min(...rects.map((r) => r.y - r.height / 2));
+  const top = Math.max(...rects.map((r) => r.y + r.height / 2));
+  return { x: (left + right) / 2, y: (bottom + top) / 2, width: right - left, height: top - bottom };
+}
 
 /** A named point of an object's current geometry (see `ANCHORS`; `origin` for groups). */
 export function anchorPoint(obj: Mobject, anchor: string): [number, number, number] {
@@ -180,7 +209,7 @@ export function anchorPoint(obj: Mobject, anchor: string): [number, number, numb
 }
 
 /** Return an item's anchor point from current geometry, including uniform text scaling. */
-export function positionAnchor(item: ElementSpec | IncludeSpec | ImportSpec, obj: Mobject, textAnchor = 'left-baseline'): [number, number, number] {
+export function positionAnchor(item: ElementSpec | IncludeSpec | CodeSlideSpec, obj: Mobject, textAnchor = 'left-baseline'): [number, number, number] {
   return anchorPoint(obj, elementAnchor(item, textAnchor));
 }
 
@@ -194,7 +223,7 @@ export function applyOpacity(obj: Mobject, opacity: number): void {
 
 /** Apply nextTo/alignTo placement in the owning slide's logical coordinates. */
 export function placeRelative(
-  item: ElementSpec | IncludeSpec | ImportSpec,
+  item: ElementSpec | IncludeSpec | CodeSlideSpec,
   obj: Mobject,
   objects: Map<string, Mobject>,
   gap: number,
@@ -399,6 +428,25 @@ export class MarkupRenderer {
       shape.setFill(fillColor, fillOpacity);
       const sketchy = sketchOptions(element, { color, strokeWidth, fillColor, fillOpacity }, element.kind === 'dot' ? 'solid' : undefined);
       if (sketchy) obj = sketchShape(element, shape, sketchy);
+    } else if (element.kind === 'icon') {
+      const strokeWidth = Number(attrs.stroke_width ?? 2);
+      const fillColor = attrs.fill_color ? parseColor(attrs.fill_color) : color;
+      const fillOpacity = Number(attrs.fill_opacity ?? 0);
+      const icon = makeIcon(element.source as IconName, {
+        size: numberValue(attrs, 'size', element.line, 1) as number,
+        color, strokeWidth, fillColor, fillOpacity,
+        sketch: sketchOptions(element, { color, strokeWidth, fillColor, fillOpacity }),
+      });
+      obj = icon;
+      if (attrs.label) {
+        const label = await this.text(this._parser.parseInlineSpans(attrs.label, element.line), size * 0.8, 6, color, attrs.font);
+        const side = attrs.label_side ?? 'below';
+        const direction = { below: [0, -1, 0], above: [0, 1, 0], left: [-1, 0, 0], right: [1, 0, 0] }[side] as [number, number, number];
+        label.nextTo(icon, direction, 0.15);
+        const group = new Group(icon, label) as PartsMobject;
+        group.markupParts = [icon, label];
+        obj = group;
+      }
     } else if (element.kind === 'math') {
       const piece = await this.mathPiece(element.source, color, size);
       obj = piece.mobject;
@@ -411,7 +459,7 @@ export class MarkupRenderer {
       throw new MarkupError(`Unsupported rendered element kind ${JSON.stringify(element.kind)}`, element.line);
     }
     const height = numberValue(attrs, 'height', element.line);
-    if (!SHAPES.has(element.kind) && height !== null && obj.getHeight() > 0) obj.scaleToFitHeight(height);
+    if (!SHAPES.has(element.kind) && element.kind !== 'icon' && height !== null && obj.getHeight() > 0) obj.scaleToFitHeight(height);
     if ('opacity' in attrs) applyOpacity(obj, Number(attrs.opacity));
     return obj;
   }
@@ -436,15 +484,27 @@ export class MarkupRenderer {
     return image;
   }
 
-  /** Create a brace or surrounding box around an already laid-out element. */
+  /** Create a brace, a surrounding box or a blob around already laid-out elements. */
   async attachment(element: ElementSpec, objects: Map<string, Mobject>): Promise<Mobject> {
     const attrs = element.attributes;
-    const target = objects.get(attrs.target) as Mobject;
+    const targets = attachmentTargets(element).map((id) => objects.get(id) as Mobject);
+    const target = targets[0];
     const color = attrs.color ? parseColor(attrs.color) : this.layout.color;
     const strokeWidth = Number(attrs.stroke_width ?? 2);
-    const buff = Number(attrs.buff ?? 0.15);
+    const buff = Number(attrs.buff ?? (element.kind === 'blob' ? 0.3 : 0.15));
     let obj: Mobject;
-    if (element.kind === 'brace') {
+    if (element.kind === 'blob') {
+      const fillColor = attrs.fill_color ? parseColor(attrs.fill_color) : color;
+      const fillOpacity = Number(attrs.fill_opacity ?? 0);
+      const rects = targets.flatMap(enclosedRects);
+      if (!rects.length) throw new MarkupError('A blob needs targets with a visible size', element.line);
+      const blob = blobMobject(rects, { buff, smoothness: numberValue(attrs, 'smoothness', element.line, 0.5) as number });
+      blob.setStyle({ strokeColor: color, strokeWidth });
+      blob.setFill(fillColor, fillOpacity);
+      obj = blob;
+      const sketchy = sketchOptions(element, { color, strokeWidth, fillColor, fillOpacity });
+      if (sketchy) obj = sketch.of(blob, sketchy);
+    } else if (element.kind === 'brace') {
       const side = attrs.side ?? 'bottom';
       const direction = BRACE_SIDES[side];
       const sketchy = sketchOptions(element, { color, strokeWidth, fillColor: color, fillOpacity: 0 });
@@ -468,7 +528,15 @@ export class MarkupRenderer {
       const cornerRadius = Number(attrs.corner_radius ?? 0);
       const fillColor = attrs.fill_color ? parseColor(attrs.fill_color) : color;
       const fillOpacity = Number(attrs.fill_opacity ?? 0);
-      const box = new SurroundingRectangle(target, { buff, cornerRadius, color, strokeWidth });
+      // The box surrounds the joint bounding box of all its targets.
+      const bounds = unionRect(targets);
+      const width = bounds.width + 2 * buff;
+      const height = bounds.height + 2 * buff;
+      const box: VMobject = cornerRadius > 0
+        ? new RoundedRectangle({ width, height, cornerRadius: Math.min(cornerRadius, width / 2, height / 2) })
+        : new Rectangle({ width, height });
+      box.moveTo([bounds.x, bounds.y, 0]);
+      box.setStyle({ strokeColor: color, strokeWidth });
       box.setFill(fillColor, fillOpacity);
       obj = box;
       const sketchy = sketchOptions(element, { color, strokeWidth, fillColor, fillOpacity });

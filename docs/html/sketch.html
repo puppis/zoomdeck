@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hand-drawn shapes · Zoomdeck</title>
-<meta name="description" content="sketch=true renders shapes, arrows, lines, braces and boxes as if drawn by hand, with hatched or solid fills, through Rough.js.">
+<meta name="description" content="sketch=true renders shapes, icons, arrows, lines, braces, boxes and blobs as if drawn by hand, with hatched or solid fills, through Rough.js.">
 <link rel="stylesheet" href="docs.css">
 </head>
 <body>
@@ -22,7 +22,7 @@
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="sketch.html" aria-current="page">Hand-drawn shapes</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="sketch.html" aria-current="page">Hand-drawn shapes</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
       </section>
       <section>
         <h4>Motion</h4>
@@ -36,17 +36,15 @@
   <main id="content">
     <article>
       <h1>Hand-drawn shapes</h1>
-      <p class="lead">sketch=true renders shapes, arrows, lines, braces and boxes as if drawn by hand, with hatched or solid fills, through Rough.js.</p>
+      <p class="lead">sketch=true renders shapes, icons, arrows, lines, braces, boxes and blobs as if drawn by hand, with hatched or solid fills, through Rough.js.</p>
       <p><a class="try" href="guide.html#slide=sketch">Open in the guide ↗</a></p>
-<pre><code class="language-markdown"><span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#hr</span> <span class="tk-attribute">x=</span><span class="tk-number">-7.2</span> <span class="tk-attribute">y=</span><span class="tk-number">-3.6</span> <span class="tk-attribute">width=</span><span class="tk-number">3.4</span> <span class="tk-attribute">height=</span><span class="tk-number">1.8</span> <span class="tk-attribute">corner_radius=</span><span class="tk-number">0.3</span> <span class="tk-attribute">color=</span>BLUE_E <span class="tk-attribute">fill_color=</span>BLUE_E <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.5</span> <span class="tk-attribute">sketch=</span>true<span class="tk-directive">]]</span>
-<span class="tk-directive">[[circle:</span> <span class="tk-attribute">#hc</span> <span class="tk-attribute">right-of:#hr</span> <span class="tk-attribute">buff=</span><span class="tk-number">1.2</span> <span class="tk-attribute">radius=</span><span class="tk-number">0.9</span> <span class="tk-attribute">color=</span>GREEN_E <span class="tk-attribute">fill_color=</span>GREEN_E <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.6</span> <span class="tk-attribute">fill_style=</span>cross-hatch <span class="tk-attribute">sketch=</span>true<span class="tk-directive">]]</span>
-<span class="tk-directive">[[polygon:</span> <span class="tk-attribute">#hp</span> <span class="tk-attribute">points=</span><span class="tk-string">&quot;(-1.2,-4.5) (0.3,-2.6) (1.6,-4.5)&quot;</span> <span class="tk-attribute">color=</span>ORANGE <span class="tk-attribute">fill_color=</span>ORANGE <span class="tk-attribute">fill_opacity=</span><span class="tk-number">1</span> <span class="tk-attribute">fill_style=</span>solid <span class="tk-attribute">roughness=</span><span class="tk-number">2</span> <span class="tk-attribute">sketch=</span>true<span class="tk-directive">]]</span>
-<span class="tk-directive">[[ellipse:</span> <span class="tk-attribute">#he</span> <span class="tk-attribute">x=</span><span class="tk-number">4.6</span> <span class="tk-attribute">y=</span><span class="tk-number">-3.6</span> <span class="tk-attribute">width=</span><span class="tk-number">3.6</span> <span class="tk-attribute">height=</span><span class="tk-number">1.8</span> <span class="tk-attribute">color=</span>PURPLE <span class="tk-attribute">fill_color=</span>PURPLE <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.5</span> <span class="tk-attribute">fill_style=</span>zigzag <span class="tk-attribute">hachure_angle=</span><span class="tk-number">20</span> <span class="tk-attribute">seed=</span><span class="tk-number">7</span> <span class="tk-attribute">sketch=</span>true<span class="tk-directive">]]</span>
-<span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#hr</span> -&gt; <span class="tk-attribute">#hc</span>, <span class="tk-attribute">#ha</span>, <span class="tk-attribute">label=</span><span class="tk-string">&quot;sketch=true&quot;</span>, <span class="tk-attribute">font=</span>Zeyada, <span class="tk-attribute">font_size=</span><span class="tk-number">30</span>, <span class="tk-attribute">color=</span>GOLD_E, <span class="tk-attribute">sketch=</span>true<span class="tk-directive">]]</span>
-<span class="tk-directive">[[brace:</span> <span class="tk-attribute">#he</span>, <span class="tk-attribute">#hb</span>, <span class="tk-attribute">side=</span>bottom, <span class="tk-attribute">label=</span><span class="tk-string">&quot;a hand-drawn brace&quot;</span>, <span class="tk-attribute">font=</span>Zeyada, <span class="tk-attribute">font_size=</span><span class="tk-number">30</span>, <span class="tk-attribute">color=</span>GRAY, <span class="tk-attribute">sketch=</span>true<span class="tk-directive">]]</span>
-<span class="tk-directive">[[box:</span> <span class="tk-attribute">#hp</span>, <span class="tk-attribute">#hbox</span>, <span class="tk-attribute">buff=</span><span class="tk-number">0.25</span>, <span class="tk-attribute">color=</span>RED, <span class="tk-attribute">step=</span><span class="tk-number">1</span>, <span class="tk-attribute">sketch=</span>true<span class="tk-directive">]]</span></code></pre>
-<p>Any <a href="shapes.html">shape, connection or attachment</a> takes <code>sketch=true</code> and is then drawn as if by
-hand: a slightly wobbly outline traced twice, and a fill made of hatching lines instead of a flat
+<pre><code class="language-markdown"><span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#hr</span> <span class="tk-attribute">x=</span><span class="tk-number">-6.5</span> <span class="tk-attribute">y=</span><span class="tk-number">-3</span> <span class="tk-attribute">width=</span><span class="tk-number">3.4</span> <span class="tk-attribute">height=</span><span class="tk-number">1.8</span> <span class="tk-attribute">color=</span>BLUE_E <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.5</span> <span class="tk-attribute">sketch=</span>true<span class="tk-directive">]]</span>
+<span class="tk-directive">[[circle:</span> <span class="tk-attribute">#hc</span> <span class="tk-attribute">right-of:#hr</span> <span class="tk-attribute">buff=</span><span class="tk-number">1.5</span> <span class="tk-attribute">radius=</span><span class="tk-number">0.9</span> <span class="tk-attribute">color=</span>GREEN_E <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.6</span> <span class="tk-attribute">fill_style=</span>cross-hatch <span class="tk-attribute">sketch=</span>true<span class="tk-directive">]]</span>
+<span class="tk-directive">[[polygon:</span> <span class="tk-attribute">#hp</span> <span class="tk-attribute">points=</span><span class="tk-string">&quot;(0.5,-3.9) (2,-2) (3.5,-3.9)&quot;</span> <span class="tk-attribute">color=</span>ORANGE <span class="tk-attribute">fill_opacity=</span><span class="tk-number">1</span> <span class="tk-attribute">fill_style=</span>solid <span class="tk-attribute">roughness=</span><span class="tk-number">2</span> <span class="tk-attribute">sketch=</span>true<span class="tk-directive">]]</span>
+<span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#hr</span> -&gt; <span class="tk-attribute">#hc</span>, <span class="tk-attribute">#ha</span>, <span class="tk-attribute">sketch=</span>true<span class="tk-directive">]]</span>
+<span class="tk-directive">[[brace:</span> <span class="tk-attribute">#hp</span>, <span class="tk-attribute">#hb</span>, <span class="tk-attribute">side=</span>bottom, <span class="tk-attribute">label=</span><span class="tk-string">&quot;by hand&quot;</span>, <span class="tk-attribute">sketch=</span>true<span class="tk-directive">]]</span></code></pre>
+<p>Any <a href="shapes.html">shape</a>, <a href="icons.html">icon</a>, connection or attachment (braces, <a href="enclosures.html">boxes and
+blobs</a>) takes <code>sketch=true</code> and is then drawn as if by hand: a slightly wobbly outline traced twice, and a fill made of hatching lines instead of a flat
 color. The geometry comes from <a href="https://roughjs.com/">Rough.js</a>; Zoomdeck turns its strokes into
 ordinary vector objects, so hand-drawn shapes animate, fade, transform, serve as anchors and
 endpoints, and export exactly like crisp ones.</p>
@@ -110,7 +108,10 @@ define the look once and elements opt in.</p>
 <li><strong>Rectangles</strong> keep their <code>corner_radius</code>; <strong>arcs</strong> with a fill are drawn as pie slices.</li>
 <li><strong>Arrows</strong> get a hand-drawn shaft and a small filled triangular tip; <strong>lines</strong> a single wobbly stroke.</li>
 <li><strong>Braces</strong> become one stroke along the brace's curve, on the requested <code>side</code>, labels included;
-<strong>boxes</strong> are hand-drawn rectangles around their target.</li>
+<strong>boxes</strong> are hand-drawn rectangles around their targets and <strong>blobs</strong> hand-drawn curves.</li>
+<li><strong>Icons</strong> are sketched part by part: the silhouette gets the hatching, the details stay strokes.</li>
+<li><code>tremble=</code> suits hand-drawn elements particularly well: the wobbly outline then quivers like a
+line in an animated sketch (see <a href="animations.html#tremble">Animations</a>).</li>
 <li>A hand-drawn shape used as a <code>move_along</code> path moves the follower along the exact geometry,
 not along the wobble.</li>
 <li>The wobble is defined in the slide's logical units, so it scales with the slide when the camera
@@ -147,7 +148,7 @@ drawable. Options mirror the attributes in camelCase (<code>fillStyle</code>, <c
     </article>
     <footer class="pager">
       <a class="prev" href="shapes.html">← Shapes, connections and attachments</a>
-      <a class="next" href="code.html">Code listings →</a>
+      <a class="next" href="icons.html">Icons →</a>
     </footer>
   </main>
   <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#attributes">Attributes</a></li><li><a href="#what-changes-by-hand">What changes by hand</a></li><li><a href="#handwriting">Handwriting</a></li><li><a href="#a-whole-deck-by-hand">A whole deck by hand</a></li><li><a href="#from-code">From code</a></li></ul></nav>

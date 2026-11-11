@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Shapes, connections and attachments · Zoomdeck</title>
-<meta name="description" content="Rectangles, circles, dots, ellipses, polygons, arcs and polylines; arrows and lines; braces and boxes.">
+<meta name="description" content="Rectangles, circles, dots, ellipses, polygons, arcs and polylines; arrows and lines; braces, boxes and blobs.">
 <link rel="stylesheet" href="docs.css">
 </head>
 <body>
@@ -22,7 +22,7 @@
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html" aria-current="page">Shapes, connections and attachments</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html" aria-current="page">Shapes, connections and attachments</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
       </section>
       <section>
         <h4>Motion</h4>
@@ -36,7 +36,7 @@
   <main id="content">
     <article>
       <h1>Shapes, connections and attachments</h1>
-      <p class="lead">Rectangles, circles, dots, ellipses, polygons, arcs and polylines; arrows and lines; braces and boxes.</p>
+      <p class="lead">Rectangles, circles, dots, ellipses, polygons, arcs and polylines; arrows and lines; braces, boxes and blobs.</p>
       <p><a class="try" href="guide.html#slide=shapes">Open in the guide ↗</a></p>
 <pre><code class="language-markdown"><span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#box</span> <span class="tk-attribute">x=</span><span class="tk-number">-6</span> <span class="tk-attribute">y=</span><span class="tk-number">-2.4</span> <span class="tk-attribute">width=</span><span class="tk-number">3.4</span> <span class="tk-attribute">height=</span><span class="tk-number">1.8</span> <span class="tk-attribute">corner_radius=</span><span class="tk-number">0.3</span> <span class="tk-attribute">color=</span>BLUE <span class="tk-attribute">fill_color=</span>BLUE <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.15</span><span class="tk-directive">]]</span>
 <span class="tk-directive">[[circle:</span> <span class="tk-attribute">#disk</span> <span class="tk-attribute">right-of:#box</span> <span class="tk-attribute">buff=</span><span class="tk-number">2.2</span> <span class="tk-attribute">radius=</span><span class="tk-number">0.9</span> <span class="tk-attribute">color=</span>GREEN <span class="tk-attribute">stroke_width=</span><span class="tk-number">4</span><span class="tk-directive">]]</span>
@@ -97,7 +97,9 @@ the placement attributes of <a href="positioning.html">Positioning</a>, <code>st
 <p>Point-defined shapes (<code>polygon</code>, <code>polyline</code>, <code>arc</code>) keep their coordinates unless they are
 positioned; <code>points</code> is a quoted, space-separated list of <code>(x,y)</code> pairs. Shapes serve as
 positioning anchors and as connection endpoints. Every shape, connection and attachment also
-takes <code>sketch=true</code>, which draws it <a href="sketch.html">by hand</a> with a hatched or solid fill.</p>
+takes <code>sketch=true</code>, which draws it <a href="sketch.html">by hand</a> with a hatched or solid fill. Ready-made
+symbols for diagrams (people, servers, databases, clouds, …) are <a href="icons.html">icons</a>, which behave
+like shapes.</p>
 <h2 id="connections">Connections<a class="anchor" href="#connections" aria-label="Link to this section">#</a></h2><p><a class="try" href="guide.html#slide=shapes">Open in the guide ↗</a></p>
 <pre><code class="language-markdown"><span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#box</span> -&gt; <span class="tk-attribute">#disk</span>, <span class="tk-attribute">#edge</span>, <span class="tk-attribute">label=</span><span class="tk-string">&quot;**labelled** $\to$&quot;</span>, <span class="tk-attribute">color=</span>YELLOW<span class="tk-directive">]]</span>
 <span class="tk-directive">[[line:</span> <span class="tk-attribute">#disk</span> -&gt; (<span class="tk-number">-1.2</span>,<span class="tk-number">-5</span>), <span class="tk-attribute">#drop</span>, <span class="tk-attribute">color=</span>GRAY, <span class="tk-attribute">stroke_width=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
@@ -110,11 +112,14 @@ they cannot anchor other elements and are not hidden implicitly when an endpoint
 <h2 id="attachments">Attachments<a class="anchor" href="#attachments" aria-label="Link to this section">#</a></h2><p><a class="try" href="guide.html#slide=more-shapes">Open in the guide ↗</a></p>
 <pre><code class="language-markdown"><span class="tk-directive">[[brace:</span> <span class="tk-attribute">#e</span>, <span class="tk-attribute">#be</span>, <span class="tk-attribute">side=</span>bottom, <span class="tk-attribute">label=</span><span class="tk-string">&quot;an ellipse&quot;</span>, <span class="tk-attribute">color=</span>GRAY<span class="tk-directive">]]</span>
 <span class="tk-directive">[[box:</span> <span class="tk-attribute">#tri</span>, <span class="tk-attribute">#bx</span>, <span class="tk-attribute">buff=</span><span class="tk-number">0.2</span>, <span class="tk-attribute">corner_radius=</span><span class="tk-number">0.1</span>, <span class="tk-attribute">color=</span>GREEN, <span class="tk-attribute">step=</span><span class="tk-number">2</span><span class="tk-directive">]]</span></code></pre>
-<p>A <code>brace</code> or <code>box</code> is attached to one element, named first. Braces take <code>side</code> (<code>bottom</code> by
-default, or <code>left</code>, <code>right</code>, <code>top</code>), <code>buff</code>, an inline <code>label</code> with <code>font_size</code>, <code>color</code> and
-<code>stroke_width</code>. Boxes (surrounding rectangles) take <code>buff</code>, <code>corner_radius</code>, <code>color</code>,
-<code>stroke_width</code>, <code>fill_color</code> and <code>fill_opacity</code>. Both accept <code>step</code>, <code>hide</code>, <code>opacity</code> and timing,
-and may attach to a <a href="groups.html">group</a>. Like connections they are created after layout.</p>
+<p>A <code>brace</code> is attached to one element, named first; it takes <code>side</code> (<code>bottom</code> by default, or
+<code>left</code>, <code>right</code>, <code>top</code>), <code>buff</code>, an inline <code>label</code> with <code>font_size</code> and <code>font</code>, <code>color</code> and
+<code>stroke_width</code>. A <code>box</code> (a surrounding rectangle) and a <code>blob</code> (a smooth curve at a fixed
+distance) enclose one or <strong>several</strong> elements, listed before the first comma; they are described
+in <a href="enclosures.html">Boxes and blobs</a>. All attachments accept <code>step</code>, <code>hide</code>, <code>opacity</code> and
+timing, may attach to a <a href="groups.html">group</a> or an <a href="icons.html">icon</a>, and, like connections,
+are created after layout. Shapes, icons, connections and attachments can also vibrate over a
+range of steps with <a href="animations.html#tremble"><code>tremble=</code></a>.</p>
 
     </article>
     <footer class="pager">

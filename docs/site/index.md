@@ -10,8 +10,8 @@ small animation program; child slides sit inside their parent's canvas as viewpo
 means visiting the tree in pre-order: the camera zooms into each child, plays its steps and zooms
 back out, so the audience always sees where a detail belongs.
 
-You write slides in a Markdown dialect: prose, LaTeX formulas, images, video, shapes and arrows
-(crisp or hand-drawn), code listings, live web pages, fragments that appear on clicks, and animations such as moves, morphs
+You write slides in a Markdown dialect: prose, LaTeX formulas, images, video, shapes, diagram
+icons and arrows (crisp or hand-drawn), boxes and blobs around groups of elements, code listings, live web pages, fragments that appear on clicks, and animations such as moves, morphs
 and effects. When the dialect is not enough, a slide can be a small TypeScript class with the full
 animation engine at hand. Everything runs live on a WebGL canvas in the browser: a deck loads,
 records itself once, and then plays forwards and backwards instantly, with an outline, deep links,
@@ -56,6 +56,8 @@ from disk or from any web server, and `npm run dev` opens the same deck live. Ea
 | [Shapes and connections](guide.html#slide=shapes) | rectangles, circles, polylines, arrows, lines |
 | [More shapes, braces, boxes and opacity](guide.html#slide=more-shapes) | dots, ellipses, polygons, arcs, attachments |
 | [Hand-drawn shapes](guide.html#slide=sketch) | `sketch=true`, fill styles, roughness, deck-wide sketching |
+| [Icons for diagrams](guide.html#slide=icons) | `icon:` symbols with fill, outline and labels |
+| [Boxes and blobs](guide.html#slide=enclosures) | enclosures around several elements, `tremble=` |
 | [Positioning and relative layout](guide.html#slide=layout) | flow, coordinates, relative constraints |
 | [Anchors, offsets and timing](guide.html#slide=anchors) | `anchor=`, `dx`/`dy`, `run_time`, `lag` |
 | [Anchor expressions and styles](guide.html#slide=styles) | `at=`, classes, roles, style sheets |
@@ -63,7 +65,8 @@ from disk or from any web server, and `npm run dev` opens the same deck live. Ea
 | [Fragments and click steps](guide.html#slide=fragments) | `step`, `hide`, `show`, `next`, `skip_next` |
 | [Decorations visible only in focus](guide.html#slide=focus) | `focus_only` panels and captions |
 | [Children, visit order and placeholders](guide.html#slide=children) | visit steps, `skip_return`, undefined slides |
-| [Code-authored slides](guide.html#slide=code-slides) | a TypeScript `Slide` imported into Markdown |
+| [Importing markup from files](guide.html#slide=imports) | `[[import: path.md]]` between slides and inside them |
+| [Code-authored slides](guide.html#slide=code-slides) | a TypeScript `Slide` placed as a subslide |
 | [Code listings](guide.html#slide=listings) | fenced code with syntax colors |
 | [Animations from markup](guide.html#slide=animations) | `animate`, `effect`, `transform`, `move_along` |
 | [Video, live pages and going back](guide.html#slide=media) | video, iframes, reverse playback |
@@ -83,7 +86,7 @@ the same way (`zoomdeck build <deck> -o <folder> --one-file`) gives a file like 
 <a href="slides.html"><strong>Slides and the tree</strong><span>Containers, includes, sizes, visit order, placeholders.</span></a>
 <a href="positioning.html"><strong>Positioning</strong><span>Anchors, flow, relative constraints and <code>at=</code> expressions.</span></a>
 <a href="fragments.html"><strong>Fragments</strong><span>Steps, show and hide, timing, automatic advancement.</span></a>
-<a href="animations.html"><strong>Animations</strong><span>Move, rotate, scale, recolor, effects, morphs and paths.</span></a>
+<a href="animations.html"><strong>Animations</strong><span>Move, rotate, scale, recolor, effects, morphs, paths and trembling.</span></a>
 <a href="code-slides.html"><strong>Code-authored slides</strong><span>TypeScript slides with the full engine, mixed into Markdown decks.</span></a>
 <a href="player.html"><strong>The player</strong><span>Keys, settings, pen and spotlight, reverse playback.</span></a>
 <a href="exporting.html"><strong>Exporting a deck</strong><span>A static folder, or one HTML file that plays anywhere.</span></a>

@@ -56,7 +56,7 @@ first entry and stays visible afterwards, so parents show their finished childre
 | Part | Role |
 | --- | --- |
 | Markdown dialect | slides, elements, placement, fragments and animations as text |
-| `deck.json` | title, colors, typography, presenter options, styles, macros, imports |
+| `deck.json` | title, colors, typography, presenter options, styles, macros, slide classes |
 | Code slides | TypeScript `Slide` subclasses with the complete animation engine |
 | Player | outline, keyboard, pen, spotlight, speed, fullscreen, deep links |
 | Command line | editing preview with reload, static and single-file exports |

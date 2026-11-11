@@ -22,7 +22,7 @@
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html" aria-current="page">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html" aria-current="page">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
       </section>
       <section>
         <h4>Motion</h4>
@@ -38,13 +38,11 @@
       <h1>Images and video</h1>
       <p class="lead">SVG and raster images, animated PNG and GIF, and video files played through the browser.</p>
       <p><a class="try" href="guide.html#slide=images">Open in the guide ↗</a></p>
-<pre><code class="language-markdown">![Vector artwork](<span class="tk-string">assets/slides.svg</span>)<span class="tk-attribute">{#svg x=</span><span class="tk-number">-7</span><span class="tk-attribute"> y=</span><span class="tk-number">-2.9</span><span class="tk-attribute"> width=</span><span class="tk-number">4</span><span class="tk-attribute">}</span>
+<pre><code class="language-markdown">![Vector artwork](<span class="tk-string">assets/slides.svg</span>)<span class="tk-attribute">{#svg x=</span><span class="tk-number">-6.5</span><span class="tk-attribute"> y=</span><span class="tk-number">-2.6</span><span class="tk-attribute"> width=</span><span class="tk-number">4</span><span class="tk-attribute">}</span>
 
-![A raster still](<span class="tk-string">assets/tiles.png</span>)<span class="tk-attribute">{#still right-of:#svg buff=</span><span class="tk-number">0.6</span><span class="tk-attribute"> width=</span><span class="tk-number">4</span><span class="tk-attribute">}</span>
+![Plays once when revealed](<span class="tk-string">assets/orbit.png</span>)<span class="tk-attribute">{#once x=</span><span class="tk-number">0</span><span class="tk-attribute"> y=</span><span class="tk-number">-2.6</span><span class="tk-attribute"> width=</span><span class="tk-number">3</span><span class="tk-attribute"> play=once step=</span><span class="tk-number">1</span><span class="tk-attribute">}</span>
 
-![Plays once when revealed](<span class="tk-string">assets/orbit.png</span>)<span class="tk-attribute">{#once x=</span><span class="tk-number">2.2</span><span class="tk-attribute"> y=</span><span class="tk-number">-2.9</span><span class="tk-attribute"> width=</span><span class="tk-number">3</span><span class="tk-attribute"> play=once step=</span><span class="tk-number">1</span><span class="tk-attribute">}</span>
-
-![Loops until the next click](<span class="tk-string">assets/orbit.png</span>)<span class="tk-attribute">{#loop right-of:#once buff=</span><span class="tk-number">1</span><span class="tk-attribute"> width=</span><span class="tk-number">3</span><span class="tk-attribute"> play=loop step=</span><span class="tk-number">2</span><span class="tk-attribute"> hide=</span><span class="tk-number">3</span><span class="tk-attribute">}</span>
+![Loops until the next click](<span class="tk-string">assets/orbit.png</span>)<span class="tk-attribute">{#loop right-of:#once buff=</span><span class="tk-number">1.5</span><span class="tk-attribute"> width=</span><span class="tk-number">3</span><span class="tk-attribute"> play=loop step=</span><span class="tk-number">2</span><span class="tk-attribute"> hide=</span><span class="tk-number">3</span><span class="tk-attribute">}</span>
 
 ![A recording](<span class="tk-string">assets/clip.mp4</span>)<span class="tk-attribute">{#movie width=</span><span class="tk-number">7.5</span><span class="tk-attribute"> play=once step=</span><span class="tk-number">4</span><span class="tk-attribute">}</span></code></pre>
 <h2 id="images">Images<a class="anchor" href="#images" aria-label="Link to this section">#</a></h2><p>An image occupies a block of its own, is centered on <code>x</code>, <code>y</code> (or placed by <code>anchor=</code>, <code>at=</code>

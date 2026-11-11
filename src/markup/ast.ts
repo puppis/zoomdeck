@@ -5,14 +5,20 @@
  * resources are created once by `MarkupSlide.build` during preparation.
  */
 import { FILL_STYLES } from '../sketch';
+import { ICON_NAMES } from '../icons';
 import * as engine from 'manim-web';
 
 /** Invalid markup, with an optional one-based source line number. */
 export class MarkupError extends Error {
+  /**
+   * How a line number is named in messages. Documents assembled from imported
+   * files install a function here that names the file the line came from.
+   */
+  static describe: (line: number) => string = (line) => `Line ${line}`;
   readonly line: number | null;
 
   constructor(message: string, line: number | null = null) {
-    super(line !== null ? `Line ${line}: ${message}` : message);
+    super(line !== null ? `${MarkupError.describe(line)}: ${message}` : message);
     this.name = 'MarkupError';
     this.line = line;
   }
@@ -68,10 +74,15 @@ export class IncludeSpec {
   constructor(readonly target: string, readonly attributes: Attributes = {}, readonly line = 1) {}
 }
 
-/** A slide class reference with parent-local placement attributes. */
-export class ImportSpec {
+/** A code-authored child (`[[subslide: ClassName ...]]`) with parent-local placement attributes. */
+export class CodeSlideSpec {
   constructor(readonly className: string, readonly attributes: Attributes = {}, readonly line = 1) {}
 }
+
+/** @deprecated Use `CodeSlideSpec`. */
+export const ImportSpec = CodeSlideSpec;
+/** @deprecated Use `CodeSlideSpec`. */
+export type ImportSpec = CodeSlideSpec;
 
 /** An explicit show/hide directive targeting one slide-local element. */
 export class EventSpec {
@@ -97,7 +108,7 @@ export class ActionSpec {
   constructor(readonly action: ActionKind, readonly target: string, readonly step: number, readonly attributes: Attributes, readonly line = 1) {}
 }
 
-export type SlideItem = ElementSpec | IncludeSpec | ImportSpec | EventSpec | ActionSpec | NextSpec | SkipNextSpec;
+export type SlideItem = ElementSpec | IncludeSpec | CodeSlideSpec | EventSpec | ActionSpec | NextSpec | SkipNextSpec;
 
 /** One change played at a step: a fade, a property animation, an effect, a morph or a path motion. */
 export interface StepChange {
@@ -154,7 +165,7 @@ export class MarkupDocument {
 
 export const IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_.-]*$/;
 export const CONTAINER = /^\s*:::\s*(.*?)\s*$/;
-export const DIRECTIVE = /^\s*\[\[(include|subslide|import|arrow|line|rectangle|circle|polyline|dot|ellipse|polygon|arc|brace|box|iframe|show|hide|animate|effect|transform|move_along|next|skip_next):\s*(.*?)\]\]\s*$/;
+export const DIRECTIVE = /^\s*\[\[(include|subslide|import|arrow|line|rectangle|circle|polyline|dot|ellipse|polygon|arc|icon|brace|box|blob|iframe|show|hide|animate|effect|transform|move_along|next|skip_next):\s*(.*?)\]\]\s*$/;
 /** Names accepted by `rate=`; implemented in `animations.ts`. */
 export const RATE_NAMES = new Set(['smooth', 'linear', 'rush_into', 'rush_from', 'there_and_back', 'ease_in', 'ease_out', 'ease_in_out']);
 export const EFFECT_NAMES = new Set(['indicate', 'wiggle', 'circumscribe', 'flash', 'focus', 'grow', 'shrink', 'write', 'create', 'uncreate', 'draw', 'wave']);
@@ -203,8 +214,18 @@ export const TEXT_ANCHORS = ANCHORS;
 export const TEXT_LIKE = new Set(['text', 'math', 'code']);
 export const SHAPES = new Set(['rectangle', 'circle', 'polyline', 'dot', 'ellipse', 'polygon', 'arc']);
 export const CONNECTIONS = new Set(['arrow', 'line']);
-/** Decorations attached to another element after layout; like connections they cannot anchor others. */
-export const ATTACHMENTS = new Set(['brace', 'box']);
+/** Decorations attached to other elements after layout; like connections they cannot anchor others. */
+export const ATTACHMENTS = new Set(['brace', 'box', 'blob']);
+/** Attachments that may enclose several elements at once. */
+export const ENCLOSURES = new Set(['box', 'blob']);
+/** Names accepted by `[[icon: name ...]]`. */
+export const ICON_KINDS = new Set<string>(ICON_NAMES);
+/** Where an icon's label sits. */
+export const LABEL_SIDES = new Set(['below', 'above', 'left', 'right']);
+/** Continuous vibration of vector geometry: `tremble=` with its amplitude and rate. */
+export const TREMBLE_ATTRS = new Set(['tremble', 'tremble_amplitude', 'tremble_rate']);
+/** Element kinds made of vector geometry, which `tremble=` can shake. */
+export const VECTOR_KINDS = new Set([...SHAPES, ...CONNECTIONS, ...ATTACHMENTS, 'icon', 'math', 'group']);
 /** File extensions rendered as videos by the image syntax. */
 export const VIDEO_EXTENSIONS = /\.(mp4|m4v|webm|ogv|ogg|mov)(?:[?#].*)?$/i;
 export const BRACE_SIDES: Record<string, [number, number, number]> = { left: [-1, 0, 0], right: [1, 0, 0], top: [0, 1, 0], bottom: [0, -1, 0] };
@@ -215,7 +236,34 @@ export const SKETCH_ATTRS = new Set(['sketch', 'roughness', 'bowing', 'fill_styl
 /** Values of `fill_style`. */
 export const FILL_STYLE_NAMES = new Set<string>(FILL_STYLES);
 
-export function positionTargets(item: ElementSpec | IncludeSpec | ImportSpec): Set<string> {
+/** The element IDs an attachment decorates (`target` holds them separated by spaces). */
+export function attachmentTargets(item: ElementSpec): string[] {
+  return (item.attributes.target ?? '').split(/\s+/).filter(Boolean);
+}
+
+/** A parsed `tremble=` value: the step the vibration starts at and the step it stops at, if any. */
+export interface TrembleRange {
+  start: number;
+  end: number | null;
+}
+
+/**
+ * Parse `tremble=true` (from the element's appearance on), `tremble=N` (from
+ * step N on) or `tremble=N-M` (from step N until step M, like `step`/`hide`).
+ * Returns null for `tremble=false`.
+ */
+export function parseTremble(value: string, appear: number, line: number): TrembleRange | null {
+  if (value === 'false') return null;
+  if (value === 'true') return { start: appear, end: null };
+  const match = /^(\d+)(?:-(\d+))?$/.exec(value);
+  if (!match) throw new MarkupError('tremble must be true, false, a step N or a range N-M', line);
+  const start = Number(match[1]);
+  const end = match[2] === undefined ? null : Number(match[2]);
+  if (end !== null && end <= start) throw new MarkupError('tremble ranges must end after they start', line);
+  return { start, end };
+}
+
+export function positionTargets(item: ElementSpec | IncludeSpec | CodeSlideSpec): Set<string> {
   const result = new Set<string>();
   for (const [key, value] of Object.entries(item.attributes)) if (POSITION_REFERENCES.has(key)) result.add(value.slice(1));
   if ('at' in item.attributes) {
@@ -271,17 +319,18 @@ export function normalizeStyles(styles: Record<string, string | Record<string, u
 }
 
 /** The style roles an item receives automatically, most generic first. */
-export function styleRoles(item: ElementSpec | IncludeSpec | ImportSpec): string[] {
+export function styleRoles(item: ElementSpec | IncludeSpec | CodeSlideSpec): string[] {
   if (!(item instanceof ElementSpec)) return ['include'];
   if (item.kind === 'text') return item.level ? ['heading', `h${item.level}`] : ['body'];
   if (SHAPES.has(item.kind)) return ['shape', item.kind];
+  if (item.kind === 'icon') return ['shape', 'icon', `icon-${item.source}`];
   if (CONNECTIONS.has(item.kind)) return ['connection', item.kind];
   if (ATTACHMENTS.has(item.kind)) return ['attachment', item.kind];
   return [item.kind];
 }
 
 /** Fill in role and class styles below an item's own attributes, consuming its `class` token list. */
-export function applyStyles(item: ElementSpec | IncludeSpec | ImportSpec, styles: StyleSheet): void {
+export function applyStyles(item: ElementSpec | IncludeSpec | CodeSlideSpec, styles: StyleSheet): void {
   const attrs = item.attributes;
   const classes = (attrs.class ?? '').split(/\s+/).filter(Boolean);
   delete attrs.class;
@@ -330,9 +379,9 @@ export function positionOrder(elements: Map<string, ElementSpec>): string[] {
   return order;
 }
 
-export function childKey(index: number, item: IncludeSpec | ImportSpec): string {
-  // Colons cannot occur in markup slide IDs, so imports never collide with includes.
-  return item instanceof IncludeSpec ? item.target : `import:${index}`;
+export function childKey(index: number, item: IncludeSpec | CodeSlideSpec): string {
+  // Colons cannot occur in markup slide IDs, so code-authored children never collide with includes.
+  return item instanceof IncludeSpec ? item.target : `class:${index}`;
 }
 
 const RESERVED = new Set([
@@ -547,7 +596,7 @@ export function numberValue(attrs: Attributes, key: string, line: number, fallba
   if (value === null || value === undefined) return null;
   const number = Number(value);
   if (!Number.isFinite(number) || (typeof value === 'string' && !value.trim())) throw new MarkupError(`${key} must be a number`, line);
-  if (['width', 'height', 'font_size'].includes(key) && number <= 0) throw new MarkupError(`Invalid ${key}: ${value}`, line);
+  if (['width', 'height', 'font_size', 'size'].includes(key) && number <= 0) throw new MarkupError(`Invalid ${key}: ${value}`, line);
   return number;
 }
 

@@ -22,7 +22,7 @@
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
       </section>
       <section>
         <h4>Motion</h4>
@@ -41,7 +41,7 @@
   <span class="tk-attribute">&quot;markup&quot;</span>: <span class="tk-string">&quot;slides.md&quot;</span>,
   <span class="tk-attribute">&quot;title&quot;</span>: <span class="tk-string">&quot;Zoomdeck guide&quot;</span>,
   <span class="tk-attribute">&quot;root&quot;</span>: <span class="tk-string">&quot;guide&quot;</span>,
-  <span class="tk-attribute">&quot;imports&quot;</span>: <span class="tk-string">&quot;code-slides.ts&quot;</span>,
+  <span class="tk-attribute">&quot;classes&quot;</span>: <span class="tk-string">&quot;code-slides.ts&quot;</span>,
   <span class="tk-attribute">&quot;background&quot;</span>: <span class="tk-string">&quot;#0F172A&quot;</span>,
   <span class="tk-attribute">&quot;viewport&quot;</span>: { <span class="tk-attribute">&quot;width&quot;</span>: <span class="tk-number">16</span>, <span class="tk-attribute">&quot;height&quot;</span>: <span class="tk-number">9</span> },
   <span class="tk-attribute">&quot;layout&quot;</span>: { <span class="tk-attribute">&quot;color&quot;</span>: <span class="tk-string">&quot;#F1F5F9&quot;</span>, <span class="tk-attribute">&quot;fontSize&quot;</span>: <span class="tk-number">26</span>, <span class="tk-attribute">&quot;headingSize&quot;</span>: <span class="tk-number">40</span>, <span class="tk-attribute">&quot;codeSize&quot;</span>: <span class="tk-number">19</span> },
@@ -71,8 +71,8 @@
 <td>the root slide ID, when you want it checked explicitly</td>
 </tr>
 <tr>
-<td><code>imports</code></td>
-<td>module exporting <code>Slide</code> classes for <code>[[import: Name]]</code></td>
+<td><code>classes</code></td>
+<td>module exporting <code>Slide</code> classes for <code>[[subslide: Name]]</code> (<code>imports</code> is still accepted)</td>
 </tr>
 <tr>
 <td><code>background</code></td>

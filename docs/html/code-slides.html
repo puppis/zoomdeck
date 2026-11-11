@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Code-authored slides · Zoomdeck</title>
-<meta name="description" content="Slides written in TypeScript with the complete animation engine, used alone or imported into Markdown decks.">
+<meta name="description" content="Slides written in TypeScript with the complete animation engine, used alone or placed as subslides of Markdown decks.">
 <link rel="stylesheet" href="docs.css">
 </head>
 <body>
@@ -22,7 +22,7 @@
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
       </section>
       <section>
         <h4>Motion</h4>
@@ -36,9 +36,9 @@
   <main id="content">
     <article>
       <h1>Code-authored slides</h1>
-      <p class="lead">Slides written in TypeScript with the complete animation engine, used alone or imported into Markdown decks.</p>
+      <p class="lead">Slides written in TypeScript with the complete animation engine, used alone or placed as subslides of Markdown decks.</p>
       <p><a class="try" href="guide.html#slide=code-slides">Open in the guide ↗</a></p>
-<h2 id="importing-a-slide-into-a-markdown-deck">Importing a slide into a Markdown deck<a class="anchor" href="#importing-a-slide-into-a-markdown-deck" aria-label="Link to this section">#</a></h2><pre><code class="language-markdown"><span class="tk-directive">[[import:</span> Orbit <span class="tk-attribute">x=</span><span class="tk-number">5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.4</span> <span class="tk-attribute">width=</span><span class="tk-number">8</span> <span class="tk-attribute">step=</span><span class="tk-number">1</span><span class="tk-directive">]]</span></code></pre>
+<h2 id="placing-a-code-authored-slide-in-a-markdown-deck">Placing a code-authored slide in a Markdown deck<a class="anchor" href="#placing-a-code-authored-slide-in-a-markdown-deck" aria-label="Link to this section">#</a></h2><pre><code class="language-markdown"><span class="tk-directive">[[subslide:</span> Orbit <span class="tk-attribute">x=</span><span class="tk-number">5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.4</span> <span class="tk-attribute">width=</span><span class="tk-number">8</span> <span class="tk-attribute">step=</span><span class="tk-number">1</span><span class="tk-directive">]]</span></code></pre>
 <pre><code class="language-typescript"><span class="tk-keyword">import</span> { BLUE, Circle, Dot, MoveAlongPath, YELLOW, linear } <span class="tk-keyword">from</span> <span class="tk-string">'manim-web'</span>;
 <span class="tk-keyword">import</span> { Slide, <span class="tk-keyword">type</span> SlideContext } <span class="tk-keyword">from</span> <span class="tk-string">'zoomdeck'</span>;
 
@@ -55,7 +55,7 @@
     ctx.stop();
   }
 }</code></pre>
-<p><code>deck.json</code> names the module with <code>&quot;imports&quot;: &quot;code-slides.ts&quot;</code>. The class must be constructible
+<p><code>deck.json</code> names the module with <code>&quot;classes&quot;: &quot;code-slides.ts&quot;</code>. The class must be constructible
 without arguments and return a fresh slide; qualified names (<code>helpers.Orbit</code>) traverse
 namespaces. Each occurrence creates its own instance, with the same placement attributes as an
 include. A slide's natural canvas defaults to 16 × 9; pass <code>{ size: [20, 12] }</code> or
@@ -170,7 +170,7 @@ the animation classes (<code>FadeIn</code>, <code>Transform</code>, <code>Rotate
       <a class="next" href="player.html">The player →</a>
     </footer>
   </main>
-  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#importing-a-slide-into-a-markdown-deck">Importing a slide into a Markdown deck</a></li><li><a href="#the-slide-api">The Slide API</a></li><li><a href="#the-slidecontext-api">The SlideContext API</a></li><li><a href="#code-only-decks">Code-only decks</a></li><li><a href="#available-engine-objects">Available engine objects</a></li></ul></nav>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#placing-a-code-authored-slide-in-a-markdown-deck">Placing a code-authored slide in a Markdown deck</a></li><li><a href="#the-slide-api">The Slide API</a></li><li><a href="#the-slidecontext-api">The SlideContext API</a></li><li><a href="#code-only-decks">Code-only decks</a></li><li><a href="#available-engine-objects">Available engine objects</a></li></ul></nav>
 </div>
 </body>
 </html>

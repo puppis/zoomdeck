@@ -16,8 +16,9 @@ preview it with `node bin/zoomdeck.mjs serve <deck>`.
 ```text
 guide/
 ├── slides.md        the slides
-├── deck.json        title, typography, presenter options, styles, macros, imports
-├── code-slides.ts   Slide classes used by [[import: Name]]
+├── deck.json        title, typography, presenter options, styles, macros, slide classes
+├── code-slides.ts   Slide classes used by [[subslide: Name]]
+├── parts/           Markdown files spliced in with [[import: path.md]]
 └── assets/          images, an animated PNG, a video, an embeddable page
 ```
 
@@ -32,5 +33,5 @@ short as:
 ```
 
 Code-authored decks export a `defineDeck({...})` value (default export or named exports selected
-with `scene=`). Slides imported by markup (`[[import: Name ...]]`) come from the module named in
-`imports` and must be `Slide` subclasses constructible without arguments.
+with `scene=`). Code-authored subslides of markup decks (`[[subslide: Name ...]]`) come from the module
+named in `classes` and must be `Slide` subclasses constructible without arguments.

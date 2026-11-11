@@ -1,6 +1,6 @@
 ---
 title: Shapes, connections and attachments
-description: Rectangles, circles, dots, ellipses, polygons, arcs and polylines; arrows and lines; braces and boxes.
+description: Rectangles, circles, dots, ellipses, polygons, arcs and polylines; arrows and lines; braces, boxes and blobs.
 ---
 
 <a class="try" href="guide.html#slide=shapes">Open in the guide ↗</a>
@@ -34,7 +34,9 @@ the placement attributes of [Positioning](positioning.html), `step`, `hide` and 
 Point-defined shapes (`polygon`, `polyline`, `arc`) keep their coordinates unless they are
 positioned; `points` is a quoted, space-separated list of `(x,y)` pairs. Shapes serve as
 positioning anchors and as connection endpoints. Every shape, connection and attachment also
-takes `sketch=true`, which draws it [by hand](sketch.html) with a hatched or solid fill.
+takes `sketch=true`, which draws it [by hand](sketch.html) with a hatched or solid fill. Ready-made
+symbols for diagrams (people, servers, databases, clouds, …) are [icons](icons.html), which behave
+like shapes.
 
 ## Connections
 
@@ -61,8 +63,11 @@ they cannot anchor other elements and are not hidden implicitly when an endpoint
 [[box: #tri, #bx, buff=0.2, corner_radius=0.1, color=GREEN, step=2]]
 ```
 
-A `brace` or `box` is attached to one element, named first. Braces take `side` (`bottom` by
-default, or `left`, `right`, `top`), `buff`, an inline `label` with `font_size`, `color` and
-`stroke_width`. Boxes (surrounding rectangles) take `buff`, `corner_radius`, `color`,
-`stroke_width`, `fill_color` and `fill_opacity`. Both accept `step`, `hide`, `opacity` and timing,
-and may attach to a [group](groups.html). Like connections they are created after layout.
+A `brace` is attached to one element, named first; it takes `side` (`bottom` by default, or
+`left`, `right`, `top`), `buff`, an inline `label` with `font_size` and `font`, `color` and
+`stroke_width`. A `box` (a surrounding rectangle) and a `blob` (a smooth curve at a fixed
+distance) enclose one or **several** elements, listed before the first comma; they are described
+in [Boxes and blobs](enclosures.html). All attachments accept `step`, `hide`, `opacity` and
+timing, may attach to a [group](groups.html) or an [icon](icons.html), and, like connections,
+are created after layout. Shapes, icons, connections and attachments can also vibrate over a
+range of steps with [`tremble=`](animations.html#tremble).

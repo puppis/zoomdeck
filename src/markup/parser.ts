@@ -7,12 +7,12 @@ import type StateInline from 'markdown-it/lib/rules_inline/state_inline.mjs';
 import type Token from 'markdown-it/lib/token.mjs';
 import {
   ALIGNMENTS, ANIMATE_PROPS, ATTACHMENTS, BASELINE_ANCHORS, BRACE_SIDES, CONNECTIONS, CONTAINER, DIRECTIVE, EFFECT_NAMES, ELEMENT_ATTRS,
-  ENTER_STYLES, EXIT_STYLES, FILL_ATTRS, GEOMETRY, GROUP_ANCHORS, GROUP_ATTRS, HORIZONTAL_POSITION, IDENTIFIER, LAYOUT, NEIGHBORS,
-  POSITION_REFERENCES, RATE_NAMES, SHAPES, SKETCH_ATTRS, STROKE_ATTRS, TEXT_LIKE, TIMING_ATTRS, VERTICAL_POSITION, VIDEO_EXTENSIONS,
-  FILL_STYLE_NAMES,
-  ActionSpec, AnimationStep, ElementSpec, EventSpec, GroupSpec, ImportSpec, IncludeSpec, InlineSpan, MarkupDocument, MarkupError,
-  NextSpec, SkipNextSpec, SlideItem, SlideSpec, StepChange, StyleSheet, Attributes, applyStyles, checkClassName, endpoint, numberValue,
-  parseAt, parseAttributes, parseColor, polylinePoints, positionOrder, span, stepValue,
+  ENCLOSURES, ENTER_STYLES, EXIT_STYLES, FILL_ATTRS, GEOMETRY, GROUP_ANCHORS, GROUP_ATTRS, HORIZONTAL_POSITION, ICON_KINDS, IDENTIFIER,
+  LABEL_SIDES, LAYOUT, NEIGHBORS, POSITION_REFERENCES, RATE_NAMES, SHAPES, SKETCH_ATTRS, STROKE_ATTRS, TEXT_LIKE, TIMING_ATTRS, TREMBLE_ATTRS,
+  VECTOR_KINDS, VERTICAL_POSITION, VIDEO_EXTENSIONS, FILL_STYLE_NAMES,
+  ActionSpec, AnimationStep, ElementSpec, EventSpec, GroupSpec, CodeSlideSpec, IncludeSpec, InlineSpan, MarkupDocument, MarkupError,
+  NextSpec, SkipNextSpec, SlideItem, SlideSpec, StepChange, StyleSheet, Attributes, applyStyles, attachmentTargets, checkClassName, childKey, endpoint,
+  numberValue, parseAt, parseAttributes, parseColor, parseTremble, polylinePoints, positionOrder, span, stepValue,
 } from './ast';
 
 type Env = { line?: number };
@@ -174,6 +174,9 @@ export class MarkupParser {
         index = end + 1;
         continue;
       }
+      if (/^\s*\[\[import:/.test(lines[index])) {
+        throw new MarkupError('File imports are resolved before parsing: load the document through markupDeck or expandImports', index + 1);
+      }
       if (!opening || !opening[1].startsWith('slide ')) throw new MarkupError('Expected ::: slide {#slide-id} or ::: styles', index + 1);
       const attrs = parseAttributes(opening[1].slice(6), index + 1);
       if (!('id' in attrs)) throw new MarkupError('Every slide requires an explicit #id', index + 1);
@@ -241,18 +244,41 @@ export class MarkupParser {
           if (keys.length !== 1 || keys[0] !== 'step') throw new MarkupError(`${kind} directives require only step=N`, line);
           const step = stepValue(attrs, 'step', line);
           items.push(kind === 'next' ? new NextSpec(step, line) : new SkipNextSpec(step, line));
-        } else if (['include', 'subslide', 'import', 'show', 'hide'].includes(kind) || ATTACHMENTS.has(kind)) {
-          const pattern = kind === 'import' ? /^#?([^\s,]+)(.*)$/s : /^#?([\w.-]+)(.*)$/s;
-          const match = pattern.exec(value);
-          if (!match) throw new MarkupError(kind === 'import' ? 'Expected a class name' : 'Expected a referenced #id', line);
+        } else if (ATTACHMENTS.has(kind)) {
+          // Attachments list the elements they decorate before the first comma: [[blob: #a #b #c, #id, buff=0.4]].
+          const trimmed = value.trim();
+          const comma = trimmed.indexOf(',');
+          const head = comma < 0 ? trimmed : trimmed.slice(0, comma);
+          const tokens = head.split(/\s+/).filter(Boolean);
+          const count = tokens.findIndex((token) => !token.startsWith('#'));
+          const targets = count < 0 ? tokens : tokens.slice(0, count);
+          if (!targets.length || targets.some((token) => !/^#[\w.-]+$/.test(token))) {
+            throw new MarkupError(`Expected [[${kind}: #id #id ..., #name, attributes]]`, line);
+          }
+          const rest = (count < 0 ? '' : tokens.slice(count).join(' ')) + (comma < 0 ? '' : trimmed.slice(comma));
+          const attrs = parseAttributes(rest, line, { commas: true });
+          if ('target' in attrs) throw new MarkupError(`Name the ${kind} targets first: [[${kind}: #id #id ...]]`, line);
+          attrs.target = targets.map((token) => token.slice(1)).join(' ');
+          items.push(new ElementSpec(attrs.id ?? `${prefix}element-${items.length + 1}`, kind, [], attrs, '', line));
+        } else if (kind === 'icon') {
+          const match = /^([a-z-]+)\s+(.*)$/s.exec(value.trim());
+          if (!match) throw new MarkupError('Expected [[icon: name #id ...]]', line);
+          const attrs = parseAttributes(match[2], line, { commas: true });
+          if (!('id' in attrs)) throw new MarkupError('Icons require an explicit #id', line);
+          items.push(new ElementSpec(attrs.id, 'icon', [], attrs, match[1], line));
+        } else if (kind === 'import') {
+          throw new MarkupError('File imports are resolved before parsing: load the document through markupDeck or expandImports', line);
+        } else if (kind === 'subslide' && !value.trim().startsWith('#')) {
+          // A child slide written in code: [[subslide: ClassName ...]].
+          const match = /^([^\s,]+)(.*)$/s.exec(value.trim());
+          if (!match) throw new MarkupError('Expected [[subslide: #id ...]] or [[subslide: ClassName ...]]', line);
+          items.push(new CodeSlideSpec(match[1], parseAttributes(match[2], line, { commas: true }), line));
+        } else if (['include', 'subslide', 'show', 'hide'].includes(kind)) {
+          const match = /^#?([\w.-]+)(.*)$/s.exec(value);
+          if (!match) throw new MarkupError('Expected a referenced #id', line);
           const attrs = parseAttributes(match[2], line, { commas: true });
           if (kind === 'include' || kind === 'subslide') items.push(new IncludeSpec(match[1], attrs, line));
-          else if (kind === 'import') items.push(new ImportSpec(match[1], attrs, line));
-          else if (ATTACHMENTS.has(kind)) {
-            if ('target' in attrs) throw new MarkupError(`Name the ${kind} target first: [[${kind}: #id ...]]`, line);
-            attrs.target = match[1];
-            items.push(new ElementSpec(attrs.id ?? `${prefix}element-${items.length + 1}`, kind, [], attrs, '', line));
-          } else {
+          else {
             const keys = Object.keys(attrs);
             const extra = kind === 'show' ? 'enter' : 'exit';
             if (!keys.includes('step') || keys.some((key) => key !== 'step' && key !== extra && !TIMING_ATTRS.has(key))) {
@@ -458,8 +484,8 @@ export class ASTTransformer {
             elements.set(item.id, item);
             scopeOf.set(item.id, scope);
             if (item instanceof GroupSpec) visit(item.items, item.id);
-          } else if (item instanceof IncludeSpec || item instanceof ImportSpec) {
-            if (scope) throw new MarkupError('Groups cannot contain includes or imports', item.line);
+          } else if (item instanceof IncludeSpec || item instanceof CodeSlideSpec) {
+            if (scope) throw new MarkupError('Groups cannot contain includes or subslides', item.line);
             applyStyles(item, styles);
             this._checkChild(item, slide, slides, parents);
           } else if (scope) throw new MarkupError('Groups cannot contain directives', item.line);
@@ -474,12 +500,17 @@ export class ASTTransformer {
       for (const item of elements.values()) {
         const scope = scopeOf.get(item.id) as string;
         if (ATTACHMENTS.has(item.kind)) {
-          const target = elements.get(item.attributes.target);
-          if (!target) throw new MarkupError(`Unknown ${item.kind} target #${item.attributes.target} in ${slide.id}`, item.line);
-          if (CONNECTIONS.has(target.kind) || ATTACHMENTS.has(target.kind)) {
-            throw new MarkupError(`A ${item.kind} must attach to text, image, math, code, a shape or a group`, item.line);
+          const targets = attachmentTargets(item);
+          if (!targets.length) throw new MarkupError(`A ${item.kind} needs at least one target`, item.line);
+          if (!ENCLOSURES.has(item.kind) && targets.length > 1) throw new MarkupError(`A ${item.kind} attaches to one element`, item.line);
+          for (const id of targets) {
+            const target = elements.get(id);
+            if (!target) throw new MarkupError(`Unknown ${item.kind} target #${id} in ${slide.id}`, item.line);
+            if (CONNECTIONS.has(target.kind) || ATTACHMENTS.has(target.kind)) {
+              throw new MarkupError(`A ${item.kind} must attach to text, image, math, code, a shape, an icon or a group`, item.line);
+            }
+            scopeCheck(scope, target, `The ${item.kind} target`, item.line);
           }
-          scopeCheck(scope, target, `The ${item.kind} target`, item.line);
           if ('label' in item.attributes) {
             for (const s of new MarkupParser().parseInlineSpans(item.attributes.label, item.line)) {
               if (s.color) ASTTransformer._checkColor(s.color, item.line);
@@ -495,7 +526,7 @@ export class ASTTransformer {
           const target = elements.get(end);
           if (!target) throw new MarkupError(`Unknown ${item.kind} endpoint #${end} in ${slide.id}`, item.line);
           if (CONNECTIONS.has(target.kind) || ATTACHMENTS.has(target.kind)) {
-            throw new MarkupError('Arrow/line endpoints must reference text, image, math, code, shapes or groups', item.line);
+            throw new MarkupError('Arrow/line endpoints must reference text, image, math, code, shapes, icons or groups', item.line);
           }
           scopeCheck(scope, target, 'The endpoint', item.line);
         }
@@ -530,7 +561,7 @@ export class ASTTransformer {
         if (positionable(item)) ASTTransformer._checkPositioning(item, elements, scopeOf, scopeOf.get(item.id) as string);
       }
       for (const item of slide.items) {
-        if (item instanceof IncludeSpec || item instanceof ImportSpec) ASTTransformer._checkPositioning(item, elements, scopeOf, '');
+        if (item instanceof IncludeSpec || item instanceof CodeSlideSpec) ASTTransformer._checkPositioning(item, elements, scopeOf, '');
       }
       const scopes = new Set(scopeOf.values());
       for (const scope of scopes) {
@@ -559,7 +590,7 @@ export class ASTTransformer {
     for (const slide of document.slides) {
       for (const item of slide.items) {
         if (item instanceof IncludeSpec && 'start_here' in item.attributes) starts.set(item.target, item.attributes.start_here === 'true');
-        else if (item instanceof ImportSpec && item.attributes.start_here === 'true') importedStarts += 1;
+        else if (item instanceof CodeSlideSpec && item.attributes.start_here === 'true') importedStarts += 1;
       }
     }
     if ([...starts.values()].filter(Boolean).length + importedStarts > 1) throw new MarkupError('start_here may be true on at most one slide');
@@ -569,7 +600,7 @@ export class ASTTransformer {
   /** Validate one element's kind-specific attributes; `scope` is the enclosing group ID or ''. */
   private _checkElement(item: ElementSpec, scope: string): void {
     const decoration = CONNECTIONS.has(item.kind) || ATTACHMENTS.has(item.kind);
-    if (!['text', 'image', 'math', 'code', 'group', 'iframe'].includes(item.kind) && !SHAPES.has(item.kind) && !decoration) {
+    if (!['text', 'image', 'math', 'code', 'group', 'iframe', 'icon'].includes(item.kind) && !SHAPES.has(item.kind) && !decoration) {
       throw new MarkupError(`Unknown element kind ${JSON.stringify(item.kind)}`, item.line);
     }
     let allowed: Set<string>;
@@ -580,7 +611,11 @@ export class ASTTransformer {
     else if (ATTACHMENTS.has(item.kind)) {
       allowed = new Set(['id', 'target', 'step', 'hide', 'color', 'buff', 'opacity', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
       if (item.kind === 'brace') for (const key of ['side', 'label', 'font_size', 'font']) allowed.add(key);
+      else if (item.kind === 'blob') for (const key of ['smoothness', ...FILL_ATTRS]) allowed.add(key);
       else for (const key of ['corner_radius', ...FILL_ATTRS]) allowed.add(key);
+    } else if (item.kind === 'icon') {
+      allowed = new Set([...ELEMENT_ATTRS].filter((key) => !['width', 'height'].includes(key)));
+      for (const key of ['size', 'label', 'label_side', ...STROKE_ATTRS, ...FILL_ATTRS, ...SKETCH_ATTRS]) allowed.add(key);
     } else if (SHAPES.has(item.kind)) {
       allowed = new Set([...ELEMENT_ATTRS].filter((key) => !['font_size', 'width', 'height'].includes(key)));
       for (const key of [...STROKE_ATTRS, ...SKETCH_ATTRS]) allowed.add(key);
@@ -604,7 +639,29 @@ export class ASTTransformer {
         if (VIDEO_EXTENSIONS.test(item.source)) allowed.add('muted');
       } else if (item.kind === 'code') allowed.add('lang');
     }
+    if (VECTOR_KINDS.has(item.kind)) for (const key of TREMBLE_ATTRS) allowed.add(key);
     this._checkAttrs(item.attributes, allowed, item.line);
+    if (item.kind === 'icon') {
+      if (!ICON_KINDS.has(item.source)) throw new MarkupError(`Unknown icon ${JSON.stringify(item.source)}; use one of ${[...ICON_KINDS].join(', ')}`, item.line);
+      if ('label_side' in item.attributes && !LABEL_SIDES.has(item.attributes.label_side)) {
+        throw new MarkupError('label_side must be below, above, left or right', item.line);
+      }
+      if ('label_side' in item.attributes && !('label' in item.attributes)) throw new MarkupError('label_side requires a label', item.line);
+      if ('label' in item.attributes) {
+        for (const s of new MarkupParser().parseInlineSpans(item.attributes.label, item.line)) {
+          if (s.color) ASTTransformer._checkColor(s.color, item.line);
+        }
+      }
+    }
+    if ('tremble' in item.attributes) {
+      const range = parseTremble(item.attributes.tremble, stepValue(item.attributes, 'step', item.line), item.line);
+      if (range && 'hide' in item.attributes && range.start >= stepValue(item.attributes, 'hide', item.line)) {
+        throw new MarkupError('tremble must start before the element is hidden', item.line);
+      }
+    }
+    for (const key of ['tremble_amplitude', 'tremble_rate']) {
+      if (key in item.attributes && !('tremble' in item.attributes)) throw new MarkupError(`${key} requires tremble=`, item.line);
+    }
     if (item.kind === 'iframe') {
       if (!('width' in item.attributes) || !('height' in item.attributes)) throw new MarkupError('iframe requires width and height', item.line);
       if (!/^(https?:\/\/|\/|\.\.?\/|[\w.-]+(?:\/|\.html?(?:$|[?#])))/i.test(item.attributes.url)) {
@@ -634,7 +691,7 @@ export class ASTTransformer {
   }
 
   /** Validate an include or import and register its parent link. */
-  private _checkChild(item: IncludeSpec | ImportSpec, slide: SlideSpec, slides: Map<string, SlideSpec>, parents: Map<string, string>): void {
+  private _checkChild(item: IncludeSpec | CodeSlideSpec, slide: SlideSpec, slides: Map<string, SlideSpec>, parents: Map<string, string>): void {
     this._checkAttrs(item.attributes, new Set([...LAYOUT, 'step', 'only_this', 'start_here', 'skip_return']), item.line);
     for (const flag of ['start_here', 'only_this', 'skip_return']) {
       if (!['true', 'false'].includes(item.attributes[flag] ?? 'false')) throw new MarkupError(`${flag} must be true or false`, item.line);
@@ -643,7 +700,7 @@ export class ASTTransformer {
     if ('step' in item.attributes && stepValue(item.attributes, 'step', item.line) === 0) {
       throw new MarkupError('A child visit step must be at least one', item.line);
     }
-    if (item instanceof ImportSpec) {
+    if (item instanceof CodeSlideSpec) {
       checkClassName(item.className, item.line);
       return;
     }
@@ -694,7 +751,7 @@ export class ASTTransformer {
         if ('id' in at.target) {
           const reference = resolve(at.target.id, 'at= reference');
           if (reference && (CONNECTIONS.has(reference.kind) || ATTACHMENTS.has(reference.kind))) {
-            throw new MarkupError('at= cannot reference an arrow, line, brace or box', item.line);
+            throw new MarkupError('at= cannot reference an arrow, line, brace, box or blob', item.line);
           }
           if (at.target.anchor && reference) ASTTransformer._checkAnchorFor(reference, at.target.anchor, item.line);
         }
@@ -716,7 +773,7 @@ export class ASTTransformer {
   }
 
   /** Reject anchors that do not exist for an item: baselines need text, `origin` needs a group. */
-  private static _checkAnchorFor(item: ElementSpec | IncludeSpec | ImportSpec, anchor: string, line: number): void {
+  private static _checkAnchorFor(item: ElementSpec | IncludeSpec | CodeSlideSpec, anchor: string, line: number): void {
     if (!GROUP_ANCHORS.has(anchor)) throw new MarkupError(`Unknown anchor ${JSON.stringify(anchor)}`, line);
     if (anchor === 'origin' && !(item instanceof GroupSpec)) throw new MarkupError('origin is an anchor of groups only', line);
     if (BASELINE_ANCHORS.has(anchor) && !(item instanceof ElementSpec && TEXT_LIKE.has(item.kind))) {
@@ -750,15 +807,15 @@ export class ASTTransformer {
   private _checkAttrs(attrs: Attributes, allowed: Set<string>, line: number): void {
     const unknown = Object.keys(attrs).filter((key) => !allowed.has(key)).sort();
     if (unknown.length) throw new MarkupError(`Unknown attributes: ${unknown.join(', ')}`, line);
-    for (const key of [...GEOMETRY, 'font_size', 'buff', 'radius', 'corner_radius', 'stroke_width', 'fill_opacity', 'opacity', 'dx', 'dy', 'run_time', 'lag', 'start_angle', 'scale',
-      'roughness', 'bowing', 'hachure_angle', 'hachure_gap', 'fill_weight', 'seed']) {
+    for (const key of [...GEOMETRY, 'font_size', 'size', 'buff', 'radius', 'corner_radius', 'stroke_width', 'fill_opacity', 'opacity', 'dx', 'dy', 'run_time', 'lag',
+      'start_angle', 'scale', 'roughness', 'bowing', 'hachure_angle', 'hachure_gap', 'fill_weight', 'seed', 'smoothness', 'tremble_amplitude', 'tremble_rate']) {
       if (!(key in attrs)) continue;
       const number = numberValue(attrs, key, line) as number;
-      if (['buff', 'corner_radius', 'stroke_width', 'lag', 'roughness', 'bowing', 'fill_weight', 'seed'].includes(key) && number < 0) {
+      if (['buff', 'corner_radius', 'stroke_width', 'lag', 'roughness', 'bowing', 'fill_weight', 'seed', 'tremble_amplitude'].includes(key) && number < 0) {
         throw new MarkupError(`${key} must be nonnegative`, line);
       }
-      if (['radius', 'run_time', 'hachure_gap'].includes(key) && number <= 0) throw new MarkupError(`${key} must be positive`, line);
-      if (['fill_opacity', 'opacity'].includes(key) && (number < 0 || number > 1)) throw new MarkupError(`${key} must be between zero and one`, line);
+      if (['radius', 'run_time', 'hachure_gap', 'tremble_rate'].includes(key) && number <= 0) throw new MarkupError(`${key} must be positive`, line);
+      if (['fill_opacity', 'opacity', 'smoothness'].includes(key) && (number < 0 || number > 1)) throw new MarkupError(`${key} must be between zero and one`, line);
     }
     for (const key of ['step', 'hide']) if (key in attrs) stepValue(attrs, key, line);
     for (const key of ['color', 'fill_color']) if (key in attrs) ASTTransformer._checkColor(attrs[key], line);
@@ -770,7 +827,7 @@ export class ASTTransformer {
   }
 
   private static _checkPositioning(
-    item: ElementSpec | IncludeSpec | ImportSpec, elements: Map<string, ElementSpec>, scopeOf: Map<string, string>, scope: string,
+    item: ElementSpec | IncludeSpec | CodeSlideSpec, elements: Map<string, ElementSpec>, scopeOf: Map<string, string>, scope: string,
   ): void {
     const attrs = item.attributes;
     const keys = Object.keys(attrs);
@@ -786,7 +843,7 @@ export class ASTTransformer {
       if ('id' in at.target) {
         const target = elements.get(at.target.id);
         if (!target) throw new MarkupError(`Unknown at= reference #${at.target.id}`, item.line);
-        if (CONNECTIONS.has(target.kind) || ATTACHMENTS.has(target.kind)) throw new MarkupError('at= cannot reference an arrow, line, brace or box', item.line);
+        if (CONNECTIONS.has(target.kind) || ATTACHMENTS.has(target.kind)) throw new MarkupError('at= cannot reference an arrow, line, brace, box or blob', item.line);
         if (scopeOf.get(target.id) !== scope) throw new MarkupError(`#${target.id} belongs to a different group`, item.line);
         if (at.target.anchor) ASTTransformer._checkAnchorFor(target, at.target.anchor, item.line);
       }
@@ -810,7 +867,7 @@ export class ASTTransformer {
       }
       const target = elements.get(reference.slice(1));
       if (!target) throw new MarkupError(`Unknown positioning reference ${reference}`, item.line);
-      if (CONNECTIONS.has(target.kind) || ATTACHMENTS.has(target.kind)) throw new MarkupError('Positioning references cannot target an arrow, line, brace or box', item.line);
+      if (CONNECTIONS.has(target.kind) || ATTACHMENTS.has(target.kind)) throw new MarkupError('Positioning references cannot target an arrow, line, brace, box or blob', item.line);
       if (scopeOf.get(target.id) !== scope) throw new MarkupError(`${reference} belongs to a different group`, item.line);
       if (key === 'baseline-aligned' && !TEXT_LIKE.has(target.kind)) {
         throw new MarkupError('baseline-aligned must reference text, math or code', item.line);
@@ -889,18 +946,18 @@ export class ASTTransformer {
     }
     let last = Math.max(0, ...changes.keys(), ...nextSteps, ...skipSteps);
     const explicitVisits = slide.items
-      .filter((item): item is IncludeSpec | ImportSpec => (item instanceof IncludeSpec || item instanceof ImportSpec) && 'step' in item.attributes)
+      .filter((item): item is IncludeSpec | CodeSlideSpec => (item instanceof IncludeSpec || item instanceof CodeSlideSpec) && 'step' in item.attributes)
       .map((item) => stepValue(item.attributes, 'step', item.line));
     last = Math.max(last, ...explicitVisits);
     slide.items.forEach((item, index) => {
-      if (item instanceof IncludeSpec || item instanceof ImportSpec) {
+      if (item instanceof IncludeSpec || item instanceof CodeSlideSpec) {
         let number: number;
         if ('step' in item.attributes) number = stepValue(item.attributes, 'step', item.line);
         else {
           last += 1;
           number = last;
         }
-        push(visits, number, item instanceof IncludeSpec ? item.target : `import:${index}`);
+        push(visits, number, childKey(index, item));
       }
     });
     const result: AnimationStep[] = [];

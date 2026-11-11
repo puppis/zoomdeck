@@ -361,15 +361,28 @@ export class RasterImage extends Mobject implements SnapshotExtra {
   /** Display frame `index`, decoding it in the background when necessary. */
   showFrame(index: number): void {
     this._target = Math.max(0, Math.min(Math.round(index), this.source.frameCount - 1));
-    if (!this._pumping) this._pumping = this._pump();
+    this._startPump();
   }
 
   /** Resolve once the requested frame is visible. */
   async waitForLoad(): Promise<void> {
-    while (this._shown !== this._target) {
-      if (!this._pumping) this._pumping = this._pump();
-      await this._pumping;
-    }
+    while (this._shown !== this._target) await this._startPump();
+  }
+
+  /**
+   * Start decoding towards the target frame unless a pump is already running.
+   * The pump promise is cleared from a continuation, never from inside the
+   * pump itself: a pump that finds nothing to do would otherwise clear the
+   * field before the assignment stored it, and no later frame would decode.
+   */
+  private _startPump(): Promise<void> {
+    if (this._pumping) return this._pumping;
+    if (this._shown === this._target) return Promise.resolve();
+    const pump = this._pump().finally(() => {
+      if (this._pumping === pump) this._pumping = null;
+    });
+    this._pumping = pump;
+    return pump;
   }
 
   private async _pump(): Promise<void> {
@@ -377,7 +390,8 @@ export class RasterImage extends Mobject implements SnapshotExtra {
       while (this._shown !== this._target) {
         const wanted = this._target;
         const frame = await this.source.frameAt(wanted);
-        if (wanted !== this._target) continue;
+        // Show whatever has been decoded, even when the target moved on meanwhile: it is closer than the current frame.
+        if (wanted === this._shown) continue;
         this._context.clearRect(0, 0, this._canvas.width, this._canvas.height);
         this._context.drawImage(frame, 0, 0);
         this._shown = wanted;
@@ -388,8 +402,6 @@ export class RasterImage extends Mobject implements SnapshotExtra {
     } catch (error) {
       console.error('[zoomdeck] raster frame failed', error);
       this._shown = this._target;
-    } finally {
-      this._pumping = null;
     }
   }
 

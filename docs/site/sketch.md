@@ -1,22 +1,20 @@
 ---
 title: Hand-drawn shapes
-description: sketch=true renders shapes, arrows, lines, braces and boxes as if drawn by hand, with hatched or solid fills, through Rough.js.
+description: sketch=true renders shapes, icons, arrows, lines, braces, boxes and blobs as if drawn by hand, with hatched or solid fills, through Rough.js.
 ---
 
 <a class="try" href="guide.html#slide=sketch">Open in the guide ↗</a>
 
 ```markdown
-[[rectangle: #hr x=-7.2 y=-3.6 width=3.4 height=1.8 corner_radius=0.3 color=BLUE_E fill_color=BLUE_E fill_opacity=0.5 sketch=true]]
-[[circle: #hc right-of:#hr buff=1.2 radius=0.9 color=GREEN_E fill_color=GREEN_E fill_opacity=0.6 fill_style=cross-hatch sketch=true]]
-[[polygon: #hp points="(-1.2,-4.5) (0.3,-2.6) (1.6,-4.5)" color=ORANGE fill_color=ORANGE fill_opacity=1 fill_style=solid roughness=2 sketch=true]]
-[[ellipse: #he x=4.6 y=-3.6 width=3.6 height=1.8 color=PURPLE fill_color=PURPLE fill_opacity=0.5 fill_style=zigzag hachure_angle=20 seed=7 sketch=true]]
-[[arrow: #hr -> #hc, #ha, label="sketch=true", font=Zeyada, font_size=30, color=GOLD_E, sketch=true]]
-[[brace: #he, #hb, side=bottom, label="a hand-drawn brace", font=Zeyada, font_size=30, color=GRAY, sketch=true]]
-[[box: #hp, #hbox, buff=0.25, color=RED, step=1, sketch=true]]
+[[rectangle: #hr x=-6.5 y=-3 width=3.4 height=1.8 color=BLUE_E fill_opacity=0.5 sketch=true]]
+[[circle: #hc right-of:#hr buff=1.5 radius=0.9 color=GREEN_E fill_opacity=0.6 fill_style=cross-hatch sketch=true]]
+[[polygon: #hp points="(0.5,-3.9) (2,-2) (3.5,-3.9)" color=ORANGE fill_opacity=1 fill_style=solid roughness=2 sketch=true]]
+[[arrow: #hr -> #hc, #ha, sketch=true]]
+[[brace: #hp, #hb, side=bottom, label="by hand", sketch=true]]
 ```
 
-Any [shape, connection or attachment](shapes.html) takes `sketch=true` and is then drawn as if by
-hand: a slightly wobbly outline traced twice, and a fill made of hatching lines instead of a flat
+Any [shape](shapes.html), [icon](icons.html), connection or attachment (braces, [boxes and
+blobs](enclosures.html)) takes `sketch=true` and is then drawn as if by hand: a slightly wobbly outline traced twice, and a fill made of hatching lines instead of a flat
 color. The geometry comes from [Rough.js](https://roughjs.com/); Zoomdeck turns its strokes into
 ordinary vector objects, so hand-drawn shapes animate, fade, transform, serve as anchors and
 endpoints, and export exactly like crisp ones.
@@ -45,7 +43,10 @@ define the look once and elements opt in.
 - **Rectangles** keep their `corner_radius`; **arcs** with a fill are drawn as pie slices.
 - **Arrows** get a hand-drawn shaft and a small filled triangular tip; **lines** a single wobbly stroke.
 - **Braces** become one stroke along the brace's curve, on the requested `side`, labels included;
-  **boxes** are hand-drawn rectangles around their target.
+  **boxes** are hand-drawn rectangles around their targets and **blobs** hand-drawn curves.
+- **Icons** are sketched part by part: the silhouette gets the hatching, the details stay strokes.
+- `tremble=` suits hand-drawn elements particularly well: the wobbly outline then quivers like a
+  line in an animated sketch (see [Animations](animations.html#tremble)).
 - A hand-drawn shape used as a `move_along` path moves the follower along the exact geometry,
   not along the wobble.
 - The wobble is defined in the slide's logical units, so it scales with the slide when the camera

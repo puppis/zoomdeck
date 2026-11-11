@@ -1,7 +1,7 @@
 {
   "markup": "slides.md",
   "title": "Zoomdeck guide",
-  "imports": "code-slides.ts",
+  "classes": "code-slides.ts",
   "viewport": {
     "width": 16,
     "height": 9

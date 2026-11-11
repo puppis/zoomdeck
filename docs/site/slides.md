@@ -49,7 +49,8 @@ An include places the referenced slide's viewport in the current canvas. `x`, `y
 of the viewport (or the point named by `anchor=`), `width`/`height` its size (one dimension keeps
 the child's aspect ratio, two letterbox it), `angle` rotates it in radians. Without `width` and
 `height` the viewport is at most six units wide. Includes accept the relative constraints, `at=`,
-`dx`/`dy` and `.class` styles of [Positioning](positioning.html). `subslide` is an alias.
+`dx`/`dy` and `.class` styles of [Positioning](positioning.html). `[[subslide: #id …]]` is the
+same thing; `subslide` also places [code-authored children](#code-authored-children).
 
 An include referring to an **undefined** slide draws a red placeholder rather than failing, and
 the placeholder is never a stop, so a deck keeps running while a slide is still unwritten.
@@ -72,9 +73,9 @@ keep their final appearance as previews.
 
 | Attribute | On | Effect |
 | --- | --- | --- |
-| `start_here=true` | slide, include, import | open playback at this slide (at most one in a deck) |
+| `start_here=true` | slide, include, subslide | open playback at this slide (at most one in a deck) |
 | `only_this=true` | slide, include | prepare only this subtree while editing; everything else becomes a placeholder |
-| `skip_return=true` | slide, include, import | leave this subtree straight for the next stop, without zooming back to the parent first |
+| `skip_return=true` | slide, include, subslide | leave this subtree straight for the next stop, without zooming back to the parent first |
 
 `skip_return` is the clean way to move from one subslide to its next sibling without going back
 to the parent: the camera goes directly from the finished child to the sibling.
@@ -82,9 +83,33 @@ to the parent: the camera goes directly from the finished child to the sibling.
 ## Code-authored children
 
 ```markdown
-[[import: Orbit x=0 y=-3 width=4 step=5]]
+[[subslide: Orbit x=0 y=-3 width=4 step=5]]
 ```
 
-`import` instantiates a `Slide` subclass exported by the module named by `imports` in
-`deck.json`; see [Code-authored slides](code-slides.html). It takes the same placement
-attributes as an include.
+`subslide` with a class name instead of a `#id` instantiates a `Slide` subclass exported by the
+module named by `classes` in `deck.json`; see [Code-authored slides](code-slides.html). It takes
+the same placement attributes as an include.
+
+## Splitting a deck into files
+
+<a class="try" href="guide.html#slide=imports">Open in the guide ↗</a>
+
+```markdown
+::: slide {#intro}
+## Introduction
+[[import: parts/footer.md]]
+:::
+
+[[import: parts/appendix.md]]
+```
+
+`[[import: path.md]]` splices another Markdown file into the document before it is parsed.
+Between slides the file contributes slides and `::: styles` blocks; inside a slide it contributes
+elements and directives, as if its lines were written there. Paths are relative to the importing
+file (so a file in `parts/` imports its neighbours by bare name), imported files may import
+others, and import lines inside fenced code are left alone. Error messages name the imported
+file and the line within it. Asset paths (images, videos, pages) in an imported file keep
+resolving relative to the main document, like everything else.
+
+Exports embed the imported files, so a built deck needs no server to resolve them; the
+preview server reloads when any of them changes.

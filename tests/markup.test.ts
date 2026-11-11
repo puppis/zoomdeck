@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MarkupParser, ASTTransformer } from '../src/markup/parser';
-import { ActionSpec, ElementSpec, GroupSpec, ImportSpec, IncludeSpec, MarkupError, normalizeStyles, parseAt, parseAttributes, parseColor, positionTargets } from '../src/markup/ast';
+import { ActionSpec, ElementSpec, GroupSpec, CodeSlideSpec, IncludeSpec, MarkupError, normalizeStyles, parseAt, parseAttributes, parseColor, positionTargets } from '../src/markup/ast';
 import { preprocessLatex } from '../src/markup/latex';
 import { Transform } from '../src/geometry';
 import { Slide, walk, startingSlide } from '../src/slides';
@@ -60,9 +60,9 @@ describe('MarkupParser', () => {
     expect(() => new MarkupParser().parse('::: slide {#a}\n[x]{#x below:#y}\n:::')).toThrow(/Unknown positioning/);
   });
 
-  it('parses imports and CSS color spans', () => {
-    const document = new MarkupParser().parse('::: slide {#a}\n[[import: Run x=1 step=2]]\n\n[red]{style="color:red"} words\n:::');
-    const item = document.slides[0].items[0] as ImportSpec;
+  it('parses code-authored subslides and CSS color spans', () => {
+    const document = new MarkupParser().parse('::: slide {#a}\n[[subslide: Run x=1 step=2]]\n\n[red]{style="color:red"} words\n:::');
+    const item = document.slides[0].items[0] as CodeSlideSpec;
     expect(item.className).toBe('Run');
     const prose = document.slides[0].items[1] as ElementSpec;
     expect(prose.spans[0].color).toBe('#FF0000');

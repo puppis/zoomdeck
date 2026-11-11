@@ -6,13 +6,11 @@ description: SVG and raster images, animated PNG and GIF, and video files played
 <a class="try" href="guide.html#slide=images">Open in the guide ↗</a>
 
 ```markdown
-![Vector artwork](assets/slides.svg){#svg x=-7 y=-2.9 width=4}
+![Vector artwork](assets/slides.svg){#svg x=-6.5 y=-2.6 width=4}
 
-![A raster still](assets/tiles.png){#still right-of:#svg buff=0.6 width=4}
+![Plays once when revealed](assets/orbit.png){#once x=0 y=-2.6 width=3 play=once step=1}
 
-![Plays once when revealed](assets/orbit.png){#once x=2.2 y=-2.9 width=3 play=once step=1}
-
-![Loops until the next click](assets/orbit.png){#loop right-of:#once buff=1 width=3 play=loop step=2 hide=3}
+![Loops until the next click](assets/orbit.png){#loop right-of:#once buff=1.5 width=3 play=loop step=2 hide=3}
 
 ![A recording](assets/clip.mp4){#movie width=7.5 play=once step=4}
 ```

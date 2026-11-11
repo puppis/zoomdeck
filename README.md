@@ -32,10 +32,10 @@ the configuration and a one-page reference. `docs/markup.md` is the compact dial
 - **First-entry fades, coordinate grids and design borders** (`PresenterConfig`), `padding`,
   `transitionTime`, `pauseOnEntry`/`pauseOnReturn`.
 - **Selective rendering** (`onlyThis`), **placeholders**, **`startHere`**.
-- **A Markdown dialect**: `::: slide {#id}` containers, includes/imports with placement and
-  visit steps, styled prose with inline math, display math, images (SVG, raster, animated APNG/GIF
-  and videos with `play=once|loop`), live pages (`iframe:`), syntax-highlighted code listings, vector shapes, arrows and lines with
-  labels (crisp, or hand-drawn with `sketch=true` through Rough.js), anchor-based and relative positioning, named styles, groups, `focus_only`, fragments
+- **A Markdown dialect**: `::: slide {#id}` containers, includes and subslides with placement and
+  visit steps, `[[import: path.md]]` to split a deck into files, styled prose with inline math, display math, images (SVG, raster, animated APNG/GIF
+  and videos with `play=once|loop`), live pages (`iframe:`), syntax-highlighted code listings, vector shapes, diagram icons (`icon:`), arrows and lines with
+  labels (crisp, or hand-drawn with `sketch=true` through Rough.js), boxes and blobs around several elements, a `tremble=` vibration, anchor-based and relative positioning, named styles, groups, `focus_only`, fragments
   (`step`, `hide`, `show:`/`hide:`), animation directives (`animate:`, `effect:`, `transform:`,
   `move_along:`, entrance and exit styles), `next:` and `skip_next:`. The dialect is documented in
   [docs/markup.md](docs/markup.md) and demonstrated live by the guide deck.
@@ -161,7 +161,7 @@ file:
   "viewport": { "width": 1024, "height": 768 },
   "layout": { "defaultSlideSize": [16, 12], "font": "Times New Roman", "color": "BLACK", "fontSize": 36, "headingSize": 80, "codeSize": 24 },
   "presenter": { "transitionTime": 1.5 },
-  "imports": "code-slides.ts",
+  "classes": "code-slides.ts",
   "macros": { "N": "\\mathbb{N}" }
 }
 ```
@@ -169,8 +169,8 @@ file:
 `layout` takes the `LayoutConfig` fields (`fontSize`, `headingSize`, `codeSize`, `color`, `font`,
 `codeFont`, `margin`, `gap`, `lineGap`, `animationTime`, `defaultSlideSize`, `textAnchor`); `presenter` takes the
 `PresenterConfig` fields; `viewport` sets the presentation proportions the camera fits (the
-browser reveals the surrounding canvas when its stage has extra room); `imports` names a module
-exporting the `Slide` classes used by `[[import: Name ...]]`.
+browser reveals the surrounding canvas when its stage has extra room); `classes` names a module
+exporting the `Slide` classes used by `[[subslide: Name ...]]`.
 
 A deck is black text on a white canvas by default (`background` and `layout.color` change
 that). Prose uses the bundled Latin Modern Roman face and code the bundled Latin Modern Mono (LaTeX's Computer Modern family) unless `layout.font` or `layout.codeFont`

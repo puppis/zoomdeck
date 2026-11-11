@@ -27,30 +27,48 @@ every construct of this page live, each next to the listing that produced it; op
   component, define it again under a fresh ID.
 - `width` / `height` on a **slide** set its canvas (default 16 × 9, or `layout.defaultSlideSize`).
   One dimension infers the other from the default proportions; two choose a different aspect.
-- On an **include** or **import**, `x`, `y` place the viewport's center, `width` / `height` size it
+- On an **include** or **subslide**, `x`, `y` place the viewport's center, `width` / `height` size it
   (one dimension keeps the child's aspect, two letterbox it), `angle` rotates it in radians.
-  Without `width` and `height` the viewport is at most six units wide. `subslide` is an alias of
-  `include`.
+  Without `width` and `height` the viewport is at most six units wide. `[[subslide: #id]]` is the
+  same as `[[include: #id]]`; with a class name it places a code-authored child.
 - `title="…"` names the slide in the outline; otherwise its first heading, then its ID, is used.
 - An include referring to an undefined slide draws a red placeholder rather than failing; the
   placeholder is never a stop, so the deck keeps running while the slide is still unwritten.
-- `start_here=true` on a slide, include or import opens playback at that slide (at most one).
+- `start_here=true` on a slide, include or subslide opens playback at that slide (at most one).
   `only_this=true` prepares only that subtree while editing; everything else becomes a placeholder.
-- `skip_return=true` on a slide, include or import leaves that subtree straight for the next stop
+- `skip_return=true` on a slide, include or subslide leaves that subtree straight for the next stop
   (the next sibling, or the parent's next fragment) without zooming back out first.
-- Includes and imports accept `.class` styles, `anchor=`, `at=` and `dx`/`dy` like elements.
+- Includes and subslides accept `.class` styles, `anchor=`, `at=` and `dx`/`dy` like elements.
 - Includes without `step` are visited in source order after all numbered steps of their parent;
   `step=N` interleaves a visit with the parent's fragments. On return the parent resumes with its
   previous state, and children keep their final appearance.
 
+## Importing files
+
+```markdown
+::: slide {#intro}
+## Introduction
+[[import: parts/footer.md]]
+:::
+
+[[import: parts/appendix.md]]
+```
+
+`[[import: path.md]]` splices another Markdown file into the document before parsing. Between
+slides it contributes slides and `::: styles` blocks; inside a slide it contributes elements and
+directives. Paths are relative to the importing file, imported files may import others (cycles
+are errors), import lines inside fenced code are left alone, and error messages name the
+imported file and line. Asset paths in imported files resolve relative to the main document.
+Exports embed the imported files.
+
 ## Code-authored children
 
 ```markdown
-[[import: Orbit x=0 y=-3 width=4 angle=0 step=5]]
+[[subslide: Orbit x=0 y=-3 width=4 angle=0 step=5]]
 ```
 
-`import` instantiates a `Slide` subclass exported by the module named by `imports` in
-`deck.json` (or passed as `imports` to `markupDeck`). The class must be constructible without
+`subslide` with a class name instantiates a `Slide` subclass exported by the module named by
+`classes` in `deck.json` (or passed as `classes` to `markupDeck`). The class must be constructible without
 arguments and return a fresh slide; put object creation in `build(ctx)` and animations in
 `construct(ctx)`. Qualified names (`helpers.Orbit`) traverse namespaces. Each occurrence creates
 its own instance, with the same placement and relative-positioning attributes as an include.
@@ -163,18 +181,41 @@ polygons at least three `points` (closed, fillable); arcs `radius`, `angle` and 
 `hide` and `focus_only`. Point-defined shapes without positioning keep their coordinates. Shapes
 serve as anchors and connection endpoints.
 
-A `brace` or `box` is **attached** to one element, named first: `[[brace: #target, #id, …]]`.
-Braces take `side` (`bottom` by default, or `left`, `right`, `top`), `buff`, an optional inline
-`label` with `font_size`, `color` and `stroke_width`; boxes (surrounding rectangles) take `buff`,
-`corner_radius`, `color`, `stroke_width`, `fill_color` and `fill_opacity`. Both accept `step`,
-`hide`, `opacity` and timing. Like connections they are created after layout, so they cannot anchor
-other elements or serve as endpoints.
+A `brace` is **attached** to one element, named first: `[[brace: #target, #id, …]]`; it takes
+`side` (`bottom` by default, or `left`, `right`, `top`), `buff`, an optional inline `label` with
+`font_size` and `font`, `color` and `stroke_width`. A `box` (a surrounding rectangle) and a `blob`
+(a smooth enclosing curve) surround one or several elements, listed before the first comma:
+`[[box: #a #b, #id, …]]`. Boxes take `buff`, `corner_radius`, `color`, `stroke_width`,
+`fill_color` and `fill_opacity`; blobs `buff` (the distance kept from every member, 0.3),
+`smoothness` (0 to 1, how softly neighbouring members merge; distant members get separate
+loops), `color`, `stroke_width`, `fill_color` and `fill_opacity`. A blob flows around the members
+of a group, and around an icon and its label, separately. All attachments accept `step`, `hide`,
+`opacity` and timing. Like connections they are created after layout, so they cannot anchor other
+elements or serve as endpoints.
 
 Arrows and lines go from one endpoint to another: an element ID (attached at the facing bounding
 edge) or a literal `(x,y)` point. They take an optional `#id`, `label` (inline text and math,
 placed above the connection), `color`, `stroke_width`, `step` and `hide`. Connections are created
 after all other elements, cannot anchor other elements, and are not hidden implicitly when an
 endpoint disappears.
+
+### Icons
+
+```markdown
+[[icon: user #alice x=-6 y=0 size=1.4 color=BLUE_E fill_color=BLUE_E fill_opacity=0.2 label="Alice"]]
+[[icon: server #api right-of:#alice buff=2 size=1.4 label="api" label_side=above]]
+[[icon: database #db right-of:#api buff=2 size=1.4 color=GOLD_E sketch=true]]
+[[arrow: #alice -> #api, #req, label="HTTPS"]]
+```
+
+`[[icon: name #id …]]` draws a symbol built from geometry: `user`, `users`, `database`,
+`server`, `client`, `desktop`, `phone`, `cloud`, `document`, `folder`, `lock`, `gear`, `message`
+or `globe`. `size` (1) is the height of its box; `color`, `stroke_width`, `fill_color` and
+`fill_opacity` (0) style it, the fill applying to the silhouette parts only; `label` adds inline
+text on `label_side` (`below`, `above`, `left`, `right`) with `font_size` and `font`. Icons take
+the positioning attributes, `step`, `hide`, `opacity`, `enter`/`exit`, `sketch=true` and
+`tremble=`, serve as anchors, endpoints and attachment targets, and receive the style roles
+`shape`, `icon` and `icon-<name>`.
 
 ### Hand-drawn shapes
 
@@ -186,15 +227,15 @@ endpoint disappears.
 [[brace: #hc, #hb, side=bottom, label="by hand", sketch=true]]
 ```
 
-Every shape, connection and attachment takes `sketch=true` and is then drawn as if by hand
+Every shape, icon, connection and attachment takes `sketch=true` and is then drawn as if by hand
 (through Rough.js): a wobbly outline traced twice and a fill made of hatching lines. `fill_style`
 chooses `hachure` (default; dots default to `solid`), `solid`, `zigzag`, `cross-hatch`, `dots`,
 `dashed` or `zigzag-line`; `roughness` (1), `bowing` (1), `hachure_angle` (degrees, -41),
 `hachure_gap` (logical units), `fill_weight` (like `stroke_width`) and `seed` (an integer; by
 default derived from the element's ID and line, so the drawing is stable across reloads) tune it.
 `fill_opacity` becomes the opacity of the hatching and survives fades; a filled arc is drawn as a
-pie slice; braces become a single stroke on their side; a hand-drawn `move_along` path moves the
-follower along the exact geometry. A `shape: sketch=true` style (also `connection`, `attachment`)
+pie slice; braces become a single stroke on their side; icons are sketched part by part; a
+hand-drawn `move_along` path moves the follower along the exact geometry. A `shape: sketch=true` style (also `connection`, `attachment`)
 sketches a whole deck, and `sketch=false` opts an element out. Paragraphs, headings and labels
 take `font=Zeyada` for the bundled handwriting face (or any loaded font family).
 
@@ -285,7 +326,7 @@ centered on the other axis, at distance `buff` (default `layout.gap`). `left-ali
 `baseline-aligned` matches the typographic baseline of text, math or listings. One direction and at
 most one constraint per axis are allowed; an explicit coordinate may set the free axis. References
 target elements of the same slide, including later ones and hidden fragments; sizes are measured
-once during preparation, so show/hide never reflows. Includes and imports accept the same
+once during preparation, so show/hide never reflows. Includes and subslides accept the same
 attributes against local elements.
 
 ## Styles
@@ -305,7 +346,7 @@ callout: color=ORANGE font_size=30
 
 A style is a named attribute set, defined in `deck.json` (`styles`, as objects or attribute
 strings) or in a `::: styles` block at the top of the Markdown file, which wins for the same
-name. Elements, includes and imports opt in with `.name` tokens (several allowed, later ones
+name. Elements, includes and subslides opt in with `.name` tokens (several allowed, later ones
 win). Styles named after a **role** apply automatically: `heading` (also `h1` … `h6`), `body`,
 `math`, `code`, `image`, `shape` (also `rectangle`, `circle`, …), `connection` (`arrow`, `line`),
 `attachment` (`brace`, `box`), `group` and `include`. Resolution order: the element's own
@@ -327,7 +368,7 @@ unsupported ones are reported like misplaced attributes.
 ```
 
 A `::: {.group #id …}` container holds elements, shapes, connections, attachments and nested
-groups (no includes, imports or directives). Members are laid out in the group's own coordinates:
+groups (no includes, subslides or directives). Members are laid out in the group's own coordinates:
 flow starts at the local origin, explicit coordinates and `at=` are local, and members may only
 reference members of the same group. The group is then one element of the slide: `x`, `y` place
 its `origin` (the local `(0,0)`) unless `anchor=` names a bounding-box point; relative constraints,
@@ -400,6 +441,14 @@ target may be changed only once per step.
   fades: `enter` takes `fade`, `grow`, `write`, `create` or `draw`; `exit` takes `fade`, `shrink`
   or `uncreate`. `write`, `create`, `draw` and `uncreate` suit vector content (math, shapes).
 
+- **`tremble=`** is an attribute of shapes, icons, connections, attachments, formulas and groups:
+  the points of the element's vector geometry vibrate, a few times per second jumping to nearby
+  positions with neighbouring points moving together. `tremble=true` trembles from the element's
+  appearance on, `tremble=N` from step N, `tremble=N-M` from step N until step M;
+  `tremble_amplitude` (0.04) and `tremble_rate` (12 per second) tune it. A trembling stop loops
+  like `play=loop`: the step's fades play once, the deck advances by itself into a looping clip,
+  and the next click leaves it; the left key jumps over such loops.
+
 Group members cannot be animated individually; animate the group.
 
 ## Decorations visible only in focus
@@ -421,7 +470,7 @@ or `play`, and `show`/`hide` directives cannot target them.
 {
   "markup": "slides.md",
   "title": "A dark deck",
-  "imports": "code-slides.ts",
+  "classes": "code-slides.ts",
   "root": "overview",
   "background": "#0F172A",
   "viewport": { "width": 16, "height": 9 },

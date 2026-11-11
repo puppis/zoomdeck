@@ -23,7 +23,7 @@ description: Several elements laid out in their own coordinates and handled as o
 ```
 
 A `::: {.group #id …}` container holds elements, shapes, connections, attachments and nested
-groups (no includes, imports or directives).
+groups (no includes, subslides or directives).
 
 ## Local coordinates
 

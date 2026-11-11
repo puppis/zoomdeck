@@ -22,7 +22,7 @@
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
       </section>
       <section>
         <h4>Motion</h4>
@@ -114,8 +114,12 @@
 <td><code>[[include: #slide, placement, step, start_here, only_this, skip_return]]</code></td>
 </tr>
 <tr>
+<td><code>subslide</code></td>
+<td><code>[[subslide: ClassName, placement, step, …]]</code> (a code-authored child)</td>
+</tr>
+<tr>
 <td><code>import</code></td>
-<td><code>[[import: ClassName, placement, step, …]]</code></td>
+<td><code>[[import: path.md]]</code> splices a Markdown file in, between slides or inside one</td>
 </tr>
 <tr>
 <td><code>rectangle</code>, <code>ellipse</code></td>
@@ -138,8 +142,16 @@
 <td><code>[[arrow: #a -&gt; #b, #id, label=&quot;…&quot;, color, stroke_width, step, hide]]</code> with <code>#id</code> or <code>(x,y)</code> endpoints</td>
 </tr>
 <tr>
-<td><code>brace</code>, <code>box</code></td>
-<td><code>[[brace: #target, #id, side, buff, label]]</code>, <code>[[box: #target, #id, buff, corner_radius, fill_color, fill_opacity]]</code></td>
+<td><code>icon</code></td>
+<td><code>[[icon: name #id size label label_side fill_color fill_opacity stroke_width …]]</code> (names under <a href="#names">Names</a>)</td>
+</tr>
+<tr>
+<td><code>brace</code></td>
+<td><code>[[brace: #target, #id, side, buff, label, font_size, font]]</code></td>
+</tr>
+<tr>
+<td><code>box</code>, <code>blob</code></td>
+<td><code>[[box: #a #b …, #id, buff, corner_radius, fill_color, fill_opacity]]</code>, <code>[[blob: #a #b …, #id, buff, smoothness, fill_color, fill_opacity]]</code></td>
 </tr>
 <tr>
 <td><code>iframe</code></td>
@@ -229,12 +241,27 @@ commas; <code>(x,y)</code> tuples stay whole; <code>#id</code> sets the ID; <cod
 </tr>
 <tr>
 <td><code>fill_color</code>, <code>fill_opacity</code>, <code>stroke_width</code></td>
-<td>shapes, boxes</td>
+<td>shapes, icons, boxes, blobs</td>
 <td>fill and stroke</td>
 </tr>
 <tr>
+<td><code>size</code>, <code>label</code>, <code>label_side</code></td>
+<td>icons</td>
+<td>box height; caption text and its side (<code>below</code>, <code>above</code>, <code>left</code>, <code>right</code>)</td>
+</tr>
+<tr>
+<td><code>smoothness</code></td>
+<td>blobs</td>
+<td>how softly neighbouring targets merge, 0 to 1</td>
+</tr>
+<tr>
+<td><code>tremble</code>, <code>tremble_amplitude</code>, <code>tremble_rate</code></td>
+<td>shapes, icons, connections, attachments, math, groups</td>
+<td><code>true</code>, <code>N</code> or <code>N-M</code>: vibration over a range of steps, its size and frequency</td>
+</tr>
+<tr>
 <td><code>sketch</code>, <code>roughness</code>, <code>bowing</code>, <code>fill_style</code>, <code>hachure_angle</code>, <code>hachure_gap</code>, <code>fill_weight</code>, <code>seed</code></td>
-<td>shapes, connections, attachments</td>
+<td>shapes, icons, connections, attachments</td>
 <td><a href="sketch.html">hand-drawn</a> rendering and its tuning</td>
 </tr>
 <tr>
@@ -294,8 +321,11 @@ commas; <code>(x,y)</code> tuples stay whole; <code>#id</code> sets the ID; <cod
 <code>ease_out</code>, <code>ease_in_out</code>.</li>
 <li><strong>Fill styles</strong> (hand-drawn shapes): <code>hachure</code>, <code>solid</code>, <code>zigzag</code>, <code>cross-hatch</code>, <code>dots</code>,
 <code>dashed</code>, <code>zigzag-line</code>.</li>
+<li><strong>Icons</strong>: <code>user</code>, <code>users</code>, <code>database</code>, <code>server</code>, <code>client</code>, <code>desktop</code>, <code>phone</code>, <code>cloud</code>,
+<code>document</code>, <code>folder</code>, <code>lock</code>, <code>gear</code>, <code>message</code>, <code>globe</code>.</li>
 <li><strong>Style roles</strong>: <code>heading</code>, <code>h1</code> … <code>h6</code>, <code>body</code>, <code>math</code>, <code>code</code>, <code>image</code>, <code>iframe</code>, <code>group</code>,
-<code>include</code>, <code>shape</code> and shape kinds, <code>connection</code>, <code>arrow</code>, <code>line</code>, <code>attachment</code>, <code>brace</code>, <code>box</code>.</li>
+<code>include</code>, <code>shape</code> and shape kinds, <code>icon</code> and <code>icon-&lt;name&gt;</code>, <code>connection</code>, <code>arrow</code>, <code>line</code>,
+<code>attachment</code>, <code>brace</code>, <code>box</code>, <code>blob</code>.</li>
 </ul>
 <h2 id="validation">Validation<a class="anchor" href="#validation" aria-label="Link to this section">#</a></h2><p>Mistakes are reported before anything is drawn, with the source line: unknown attributes,
 duplicate or missing IDs, conflicting constraints, positioning cycles, references across groups,

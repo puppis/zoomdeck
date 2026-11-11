@@ -29,13 +29,16 @@ description: Every directive and attribute of the dialect on one page.
 | Directive | Form |
 | --- | --- |
 | `include`, `subslide` | `[[include: #slide, placement, step, start_here, only_this, skip_return]]` |
-| `import` | `[[import: ClassName, placement, step, …]]` |
+| `subslide` | `[[subslide: ClassName, placement, step, …]]` (a code-authored child) |
+| `import` | `[[import: path.md]]` splices a Markdown file in, between slides or inside one |
 | `rectangle`, `ellipse` | `#id width height [corner_radius] fill_color fill_opacity …` |
 | `circle`, `dot` | `#id radius …` (dot: radius optional) |
 | `polygon`, `polyline` | `#id points="(x,y) (x,y) …" …` |
 | `arc` | `#id x y radius angle [start_angle] …` |
 | `arrow`, `line` | `[[arrow: #a -> #b, #id, label="…", color, stroke_width, step, hide]]` with `#id` or `(x,y)` endpoints |
-| `brace`, `box` | `[[brace: #target, #id, side, buff, label]]`, `[[box: #target, #id, buff, corner_radius, fill_color, fill_opacity]]` |
+| `icon` | `[[icon: name #id size label label_side fill_color fill_opacity stroke_width …]]` (names under [Names](#names)) |
+| `brace` | `[[brace: #target, #id, side, buff, label, font_size, font]]` |
+| `box`, `blob` | `[[box: #a #b …, #id, buff, corner_radius, fill_color, fill_opacity]]`, `[[blob: #a #b …, #id, buff, smoothness, fill_color, fill_opacity]]` |
 | `iframe` | `[[iframe: url, #id, width, height, poster, title, placement, step]]` |
 | `show`, `hide` | `[[show: #id step=N run_time lag enter]]`, `[[hide: #id step=N run_time lag exit]]` |
 | `animate` | `[[animate: #id, step=N, x y at dx dy anchor angle scale opacity color, run_time lag rate]]` |
@@ -60,8 +63,11 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
 | `width`, `height` | elements, children | wrapping width or size; viewport size for children |
 | `font_size`, `color`, `opacity` | elements | typography and translucency |
 | `font`, and `font_size` on labels | text, connection and brace labels | font family (`Zeyada`, the bundled handwriting face, or any loaded font) |
-| `fill_color`, `fill_opacity`, `stroke_width` | shapes, boxes | fill and stroke |
-| `sketch`, `roughness`, `bowing`, `fill_style`, `hachure_angle`, `hachure_gap`, `fill_weight`, `seed` | shapes, connections, attachments | [hand-drawn](sketch.html) rendering and its tuning |
+| `fill_color`, `fill_opacity`, `stroke_width` | shapes, icons, boxes, blobs | fill and stroke |
+| `size`, `label`, `label_side` | icons | box height; caption text and its side (`below`, `above`, `left`, `right`) |
+| `smoothness` | blobs | how softly neighbouring targets merge, 0 to 1 |
+| `tremble`, `tremble_amplitude`, `tremble_rate` | shapes, icons, connections, attachments, math, groups | `true`, `N` or `N-M`: vibration over a range of steps, its size and frequency |
+| `sketch`, `roughness`, `bowing`, `fill_style`, `hachure_angle`, `hachure_gap`, `fill_weight`, `seed` | shapes, icons, connections, attachments | [hand-drawn](sketch.html) rendering and its tuning |
 | `step`, `hide` | elements, children (`step`) | reveal and hide clicks; visit step for children |
 | `run_time`, `lag`, `rate` | fades and animations | duration, delay, rate function |
 | `enter`, `exit` | elements | `fade`, `grow`, `write`, `create`, `draw` / `fade`, `shrink`, `uncreate` |
@@ -83,8 +89,11 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
   `ease_out`, `ease_in_out`.
 - **Fill styles** (hand-drawn shapes): `hachure`, `solid`, `zigzag`, `cross-hatch`, `dots`,
   `dashed`, `zigzag-line`.
+- **Icons**: `user`, `users`, `database`, `server`, `client`, `desktop`, `phone`, `cloud`,
+  `document`, `folder`, `lock`, `gear`, `message`, `globe`.
 - **Style roles**: `heading`, `h1` … `h6`, `body`, `math`, `code`, `image`, `iframe`, `group`,
-  `include`, `shape` and shape kinds, `connection`, `arrow`, `line`, `attachment`, `brace`, `box`.
+  `include`, `shape` and shape kinds, `icon` and `icon-<name>`, `connection`, `arrow`, `line`,
+  `attachment`, `brace`, `box`, `blob`.
 
 ## Validation
 

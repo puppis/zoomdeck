@@ -162,6 +162,12 @@ runDeck({ ...definition, showOutline: definition.showOutline || ${options.showOu
     const markupPath = resolve(deckDir, config.markup);
     const markdown = await fs.readFile(markupPath, 'utf8');
     const assets = {};
+    // Markdown files next to the deck are embedded as text, so [[import: path]] works without a server.
+    const files = {};
+    for (const file of await collectAssets(deckDir)) {
+      if (file === markupPath || !['.md', '.markdown'].includes(extname(file).toLowerCase())) continue;
+      files[relative(dirname(markupPath), file).split(sep).join('/')] = await fs.readFile(file, 'utf8');
+    }
     if (options.oneFile) {
       for (const file of await collectAssets(deckDir)) {
         const mime = MIME[extname(file).toLowerCase()];
@@ -178,19 +184,22 @@ runDeck({ ...definition, showOutline: definition.showOutline || ${options.showOu
         await fs.copyFile(file, target);
       }
     }
-    const importsLine = config.imports
-      ? `import * as slides from ${JSON.stringify(resolve(deckDir, config.imports).split(sep).join('/'))};`
+    const classesModule = config.classes ?? config.imports;
+    const importsLine = classesModule
+      ? `import * as slides from ${JSON.stringify(resolve(deckDir, classesModule).split(sep).join('/'))};`
       : 'const slides = undefined;';
     const markupBase = options.oneFile ? '' : `deck/${relative(deckDir, markupPath).split(sep).join('/')}`;
     entrySource = `import { runDeck, markupDeck } from ${JSON.stringify(sourceIndex)};
 ${importsLine}
-const config = ${JSON.stringify({ ...config, imports: undefined })};
+const config = ${JSON.stringify({ ...config, imports: undefined, classes: undefined })};
 const source = ${JSON.stringify(markdown)};
 const assets = ${JSON.stringify(assets)};
+const files = ${JSON.stringify(files)};
 runDeck(markupDeck({
   source,
   basePath: ${JSON.stringify(markupBase)} ? new URL(${JSON.stringify(markupBase)}, location.href).href : location.href,
   assets: Object.keys(assets).length ? assets : undefined,
+  files: Object.keys(files).length ? files : undefined,
   title: config.title ?? ${JSON.stringify(basename(deckDir))},
   root: config.root,
   layout: config.layout,
@@ -200,7 +209,7 @@ runDeck(markupDeck({
   macros: config.macros,
   styles: config.styles,
   showOutline: Boolean(config.showOutline) || ${options.showOutline},
-  imports: slides,
+  classes: slides,
 }));`;
   }
   const entryFile = join(stageDir, 'entry.ts');

@@ -88,7 +88,8 @@ every key.
 my-deck/
 ├── slides.md        the slides, in the Markdown dialect
 ├── deck.json        title, colors, typography, presenter options, styles, macros
-├── code-slides.ts        optional: Slide classes used by [[import: Name]]
+├── code-slides.ts   optional: Slide classes used by [[subslide: Name]]
+├── parts/           optional: Markdown files spliced in with [[import: path.md]]
 └── assets/          images, videos, pages referenced from slides.md
 ```
 

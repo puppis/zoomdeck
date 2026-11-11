@@ -10,7 +10,7 @@ description: Every key of deck.json, the layout and presenter options, and the c
   "markup": "slides.md",
   "title": "Zoomdeck guide",
   "root": "guide",
-  "imports": "code-slides.ts",
+  "classes": "code-slides.ts",
   "background": "#0F172A",
   "viewport": { "width": 16, "height": 9 },
   "layout": { "color": "#F1F5F9", "fontSize": 26, "headingSize": 40, "codeSize": 19 },
@@ -26,7 +26,7 @@ description: Every key of deck.json, the layout and presenter options, and the c
 | `markup` | the Markdown file, relative to `deck.json` (required) |
 | `title` | the page title and outline root label |
 | `root` | the root slide ID, when you want it checked explicitly |
-| `imports` | module exporting `Slide` classes for `[[import: Name]]` |
+| `classes` | module exporting `Slide` classes for `[[subslide: Name]]` (`imports` is still accepted) |
 | `background` | canvas background color (white by default) |
 | `viewport` | proportions the camera fits (the stage reveals surrounding canvas when it has room) |
 | `layout` | typography and spacing, below |

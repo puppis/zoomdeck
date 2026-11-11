@@ -119,6 +119,145 @@ export class PropertyAnimation extends Animation {
   }
 }
 
+export interface TrembleOptions extends AnimationTiming {
+  /** Largest displacement of a point, in logical units; 0.04 by default. */
+  amplitude?: number;
+  /** How many times per second the points jump to new positions; 12 by default. */
+  rate?: number;
+  /** Seed of the random displacements; the same seed replays the same jitter. */
+  seed?: number;
+}
+
+function mulberry(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function hash(...values: number[]): number {
+  let h = 2166136261;
+  for (const value of values) {
+    h ^= value & 0xffff;
+    h = Math.imul(h, 16777619);
+    h ^= value >>> 16;
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+/** Size of the random displacement lattice in logical units: nearby points move together. */
+const TREMBLE_CELL = 0.3;
+
+interface TrembleState {
+  points: number[][];
+  lengths: number[] | undefined;
+}
+
+/**
+ * Make the control points of every vector member of a mobject vibrate: a few
+ * times per second each point jumps to a new nearby position, with nearby
+ * points moving together so that outlines wobble as if drawn by an unsteady
+ * hand. The geometry is restored exactly when the animation ends.
+ */
+export class Tremble extends Animation {
+  /** Random motion has no meaningful reverse; backward navigation jumps over it. */
+  readonly irreversible = true;
+  readonly amplitude: number;
+  readonly rate: number;
+  readonly seed: number;
+  private readonly _states = new Map<VMobject, TrembleState>();
+  private _frame = -1;
+
+  constructor(mobject: Mobject, options: TrembleOptions = {}) {
+    super(mobject, { duration: options.duration ?? 1, rateFunc: linear });
+    this.amplitude = options.amplitude ?? 0.04;
+    this.rate = options.rate ?? 12;
+    this.seed = options.seed ?? 1;
+    if (!Number.isFinite(this.amplitude) || this.amplitude < 0) throw new Error('Tremble amplitude must be a nonnegative number');
+    if (!Number.isFinite(this.rate) || this.rate <= 0) throw new Error('Tremble rate must be positive');
+  }
+
+  override begin(): void {
+    super.begin();
+    this._states.clear();
+    this._frame = -1;
+    for (const member of this.mobject.getFamily()) {
+      if (member instanceof VMobject && member.hasOwnPoints()) {
+        this._states.set(member, { points: member.getLocalPoints(), lengths: member.getSubpathLengths() });
+      }
+    }
+  }
+
+  private _restore(): void {
+    for (const [member, state] of this._states) {
+      member.setPoints(state.points.map((p) => [...p]));
+      member.setBaseSubpathLengths(state.lengths);
+    }
+  }
+
+  interpolate(alpha: number): void {
+    const frame = Math.floor(alpha * this.duration * this.rate);
+    if (frame === this._frame) return;
+    this._frame = frame;
+    if (alpha >= 1) {
+      this._restore();
+      return;
+    }
+    const lattice = new Map<number, [number, number]>();
+    const displacement = (ix: number, iy: number): [number, number] => {
+      const key = ix * 73856093 + iy;
+      let value = lattice.get(key);
+      if (!value) {
+        const random = mulberry(hash(this.seed, frame, ix, iy));
+        value = [random() * 2 - 1, random() * 2 - 1];
+        lattice.set(key, value);
+      }
+      return value;
+    };
+    const smooth01 = (t: number) => t * t * (3 - 2 * t);
+    const offset = (x: number, y: number): [number, number] => {
+      const gx = x / TREMBLE_CELL;
+      const gy = y / TREMBLE_CELL;
+      const ix = Math.floor(gx);
+      const iy = Math.floor(gy);
+      const tx = smooth01(gx - ix);
+      const ty = smooth01(gy - iy);
+      const result: [number, number] = [0, 0];
+      for (const [cx, cy, weight] of [[ix, iy, (1 - tx) * (1 - ty)], [ix + 1, iy, tx * (1 - ty)], [ix, iy + 1, (1 - tx) * ty], [ix + 1, iy + 1, tx * ty]]) {
+        const d = displacement(cx, cy);
+        result[0] += d[0] * weight;
+        result[1] += d[1] * weight;
+      }
+      return [result[0] * this.amplitude, result[1] * this.amplitude];
+    };
+    for (const [member, state] of this._states) {
+      // The lattice is sampled near world positions, so separate shapes never wobble in unison.
+      const center = member.getCenter();
+      const points = state.points.map((p) => {
+        const [dx, dy] = offset(p[0] + center[0], p[1] + center[1]);
+        return [p[0] + dx, p[1] + dy, p[2]];
+      });
+      member.setPoints(points);
+      member.setBaseSubpathLengths(state.lengths);
+    }
+  }
+
+  override finish(): void {
+    this._restore();
+    super.finish();
+  }
+
+  override reset(): void {
+    if (this._states.size) this._restore();
+    super.reset();
+  }
+}
+
 /** Effects addressable from markup (`[[effect: name #id ...]]`). */
 export const EFFECT_NAMES = ['indicate', 'wiggle', 'circumscribe', 'flash', 'focus', 'grow', 'shrink', 'write', 'create', 'uncreate', 'draw', 'wave'] as const;
 export type EffectName = (typeof EFFECT_NAMES)[number];

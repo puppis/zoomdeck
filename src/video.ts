@@ -40,9 +40,23 @@ export class VideoClip extends VideoMobject implements SnapshotExtra {
     const video = this._video;
     if (video && !this._listening) {
       this._listening = true;
-      video.addEventListener('seeked', () => VideoClip.onUpdate?.());
-      video.addEventListener('loadeddata', () => VideoClip.onUpdate?.());
+      for (const event of ['seeked', 'loadeddata']) {
+        video.addEventListener(event, () => {
+          this.refresh();
+          VideoClip.onUpdate?.();
+        });
+      }
     }
+  }
+
+  /**
+   * Upload the element's current frame at the next render. Three.js relies on
+   * the browser's frame callbacks for this, which Chrome delivers sparsely for
+   * a video element outside the document, so playback and seeks drive it.
+   */
+  refresh(): this {
+    if (this._texture) this._texture.needsUpdate = true;
+    return this;
   }
 
   /** Pause and show the first frame. */
@@ -51,6 +65,7 @@ export class VideoClip extends VideoMobject implements SnapshotExtra {
     if (video) {
       video.pause();
       video.currentTime = 0;
+      this.refresh();
     }
     return this;
   }
@@ -98,7 +113,9 @@ export class VideoPlay extends Animation {
 
   interpolate(alpha: number): void {
     const element = this.video.element;
-    if (!element || element.paused || alpha >= 1) return;
+    if (!element) return;
+    this.video.refresh();
+    if (element.paused || alpha >= 1) return;
     // Keep the playhead near the clip's clock when the element stalls or the speed changes.
     const want = alpha * this.duration;
     if (Math.abs(element.currentTime - want) > 0.5) element.currentTime = want;
@@ -109,6 +126,7 @@ export class VideoPlay extends Animation {
     if (element) {
       element.pause();
       element.currentTime = Math.max(0, this.duration - 0.001);
+      this.video.refresh();
     }
     super.finish();
   }
