@@ -5,7 +5,12 @@ description: Install the project, open the development page, write a Markdown de
 
 ## Install
 
-Node 20 or newer is required.
+Node.js 20.19 or newer, or 22.12 or newer, is required (the current LTS release is the simplest
+choice); `npm install` checks this first. On an older or odd-numbered release such as 21.x the
+install would otherwise stop inside the documentation build with `TypeError: crypto.hash is not a
+function`: that message comes from Vite, which needs those Node versions, and not from a broken
+download. Installing a supported Node (for example with `nvm install --lts`) and running
+`npm install` again fixes it.
 
 ```bash
 cd Zoomdeck

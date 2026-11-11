@@ -1,6 +1,6 @@
 ---
 title: Icons
-description: Diagram symbols built from geometry (people, machines, storage, documents and more) with configurable outline, fill and label, crisp or hand-drawn.
+description: Thirty-nine diagram symbols built from geometry (people, machines, files, marks and actions) with configurable outline, fill and label, crisp or hand-drawn.
 ---
 
 <a class="try" href="guide.html#slide=icons">Open in the guide ↗</a>
@@ -22,15 +22,15 @@ it fades in and out with `step` and `hide`, and it [animates](animations.html) l
 
 ## Names
 
-| Name | Symbol | Name | Symbol |
-| --- | --- | --- | --- |
-| `user` | one person | `cloud` | a cloud |
-| `users` | two people | `document` | a page with a folded corner and text lines |
-| `database` | a cylinder with two bands | `folder` | a folder with a tab |
-| `server` | a rack with three units and indicator lights | `lock` | a padlock |
-| `client` | a laptop | `gear` | an eight-tooth gear |
-| `desktop` | a monitor on a stand | `message` | an envelope |
-| `phone` | a handset | `globe` | a globe with meridians and parallels |
+| Group | Icons |
+| --- | --- |
+| People and machines | `user`, `users`, `client` (a laptop), `desktop`, `phone`, `server`, `database`, `cloud`, `globe` |
+| Files and records | `document`, `folder`, `message` (an envelope), `calendar`, `chart` |
+| Marks and places | `check`, `cross`, `question`, `exclamation`, `info`, `warning`, `star`, `flag`, `pin`, `home` |
+| Actions and tools | `download`, `upload`, `search`, `arrival`, `departure`, `recycle`, `trash`, `key`, `lock`, `shield`, `bolt`, `gear`, `gears`, `puzzle`, `clock` |
+
+All of them share the same construction: one or two closed silhouettes that take the fill, plus
+strokes for the details, drawn with the same outline width inside a square box.
 
 ## Attributes
 

@@ -37,7 +37,11 @@
     <article>
       <h1>Getting started</h1>
       <p class="lead">Install the project, open the development page, write a Markdown deck and export it.</p>
-      <h2 id="install">Install<a class="anchor" href="#install" aria-label="Link to this section">#</a></h2><p>Node 20 or newer is required.</p>
+      <h2 id="install">Install<a class="anchor" href="#install" aria-label="Link to this section">#</a></h2><p>Node.js 20.19 or newer, or 22.12 or newer, is required (the current LTS release is the simplest
+choice); <code>npm install</code> checks this first. On an older or odd-numbered release such as 21.x the
+install would otherwise stop inside the documentation build with <code>TypeError: crypto.hash is not a function</code>: that message comes from Vite, which needs those Node versions, and not from a broken
+download. Installing a supported Node (for example with <code>nvm install --lts</code>) and running
+<code>npm install</code> again fixes it.</p>
 <pre><code class="language-bash"><span class="tk-keyword">cd</span> Zoomdeck
 <span class="tk-keyword">npm</span> install
 <span class="tk-keyword">npm</span> run dev</code></pre>

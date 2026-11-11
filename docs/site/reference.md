@@ -89,8 +89,7 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
   `ease_out`, `ease_in_out`.
 - **Fill styles** (hand-drawn shapes): `hachure`, `solid`, `zigzag`, `cross-hatch`, `dots`,
   `dashed`, `zigzag-line`.
-- **Icons**: `user`, `users`, `database`, `server`, `client`, `desktop`, `phone`, `cloud`,
-  `document`, `folder`, `lock`, `gear`, `message`, `globe`.
+- **Icons**: `user`, `users`, `client`, `desktop`, `phone`, `server`, `database`, `cloud`, `globe`, `document`, `folder`, `message`, `calendar`, `chart`, `check`, `cross`, `question`, `exclamation`, `info`, `warning`, `star`, `flag`, `pin`, `home`, `download`, `upload`, `search`, `arrival`, `departure`, `recycle`, `trash`, `key`, `lock`, `shield`, `bolt`, `gear`, `gears`, `puzzle`, `clock`.
 - **Style roles**: `heading`, `h1` … `h6`, `body`, `math`, `code`, `image`, `iframe`, `group`,
   `include`, `shape` and shape kinds, `icon` and `icon-<name>`, `connection`, `arrow`, `line`,
   `attachment`, `brace`, `box`, `blob`.

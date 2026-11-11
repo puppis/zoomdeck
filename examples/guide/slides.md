@@ -241,7 +241,7 @@ Point-defined shapes (`polygon`, `polyline`, `arc`) keep their coordinates unles
 [[arrow: #api -> #db, #sql, label="SQL", step=1]]
 ```
 
-`[[icon: name #id ...]]` draws a symbol built from geometry: `user`, `users`, `database`, `server`, `client`, `desktop`, `phone`, `cloud`, `document`, `folder`, `lock`, `gear`, `message` or `globe`. `size` sets its height, `color`, `stroke_width` and `fill_opacity` style it, `label` and `label_side` caption it. Icons are positioned, connected, enclosed, animated and sketched like shapes. {x=-9.35 y=0.6 width=19 font_size=22}
+`[[icon: name #id ...]]` draws one of 39 symbols built from geometry: people and machines (`user`, `server`, `database`, `cloud`, ...), files (`document`, `folder`, `message`, ...), marks (`check`, `question`, `warning`, `pin`, ...) and actions (`download`, `search`, `trash`, `gear`, ...). `size` sets its height, `color`, `stroke_width` and `fill_opacity` style it, `label` and `label_side` caption it. Icons are positioned, connected, enclosed, animated and sketched like shapes. {x=-9.35 y=0.6 width=19 font_size=22}
 
 [[icon: user #alice x=-7 y=-2.4 size=1.4 color=BLUE_E label="Alice"]]
 [[icon: server #api right-of:#alice buff=3 size=1.4 color=GREEN_E fill_opacity=0.25 label="api" label_side=above]]

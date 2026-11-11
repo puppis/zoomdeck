@@ -208,9 +208,12 @@ endpoint disappears.
 [[arrow: #alice -> #api, #req, label="HTTPS"]]
 ```
 
-`[[icon: name #id …]]` draws a symbol built from geometry: `user`, `users`, `database`,
-`server`, `client`, `desktop`, `phone`, `cloud`, `document`, `folder`, `lock`, `gear`, `message`
-or `globe`. `size` (1) is the height of its box; `color`, `stroke_width`, `fill_color` and
+`[[icon: name #id …]]` draws one of thirty-nine symbols built from geometry: people and machines
+(`user`, `users`, `client`, `desktop`, `phone`, `server`, `database`, `cloud`, `globe`), files
+(`document`, `folder`, `message`, `calendar`, `chart`), marks and places (`check`, `cross`,
+`question`, `exclamation`, `info`, `warning`, `star`, `flag`, `pin`, `home`) and actions
+(`download`, `upload`, `search`, `arrival`, `departure`, `recycle`, `trash`, `key`, `lock`,
+`shield`, `bolt`, `gear`, `gears`, `puzzle`, `clock`). `size` (1) is the height of its box; `color`, `stroke_width`, `fill_color` and
 `fill_opacity` (0) style it, the fill applying to the silhouette parts only; `label` adds inline
 text on `label_side` (`below`, `above`, `left`, `right`) with `font_size` and `font`. Icons take
 the positioning attributes, `step`, `hide`, `opacity`, `enter`/`exit`, `sketch=true` and

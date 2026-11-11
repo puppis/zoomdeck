@@ -22,7 +22,7 @@ and [exports](exporting.html) to a static folder or to a single HTML file that p
 
 | Needed | Notes |
 | --- | --- |
-| Node.js 20 or newer, with npm | to install, preview, export and build the documentation |
+| Node.js 20.19 or newer, or 22.12 or newer, with npm | to install, preview, export and build the documentation; older and odd-numbered releases (such as 21.x) fail with `crypto.hash is not a function` |
 | A browser with WebGL 2 | Chrome, Edge, Firefox and Safari of the last few years; this is where decks run |
 | `npm install` | fetches the only runtime dependencies: the `manim-web` rendering engine (Three.js and MathJax inside), `markdown-it` for the dialect, `gifuct-js` for GIFs, `roughjs` for hand-drawn shapes, and Vite for the preview and exports |
 
@@ -56,7 +56,7 @@ from disk or from any web server, and `npm run dev` opens the same deck live. Ea
 | [Shapes and connections](guide.html#slide=shapes) | rectangles, circles, polylines, arrows, lines |
 | [More shapes, braces, boxes and opacity](guide.html#slide=more-shapes) | dots, ellipses, polygons, arcs, attachments |
 | [Hand-drawn shapes](guide.html#slide=sketch) | `sketch=true`, fill styles, roughness, deck-wide sketching |
-| [Icons for diagrams](guide.html#slide=icons) | `icon:` symbols with fill, outline and labels |
+| [Icons for diagrams](guide.html#slide=icons) | 39 `icon:` symbols with fill, outline and labels |
 | [Boxes and blobs](guide.html#slide=enclosures) | enclosures around several elements, `tremble=` |
 | [Positioning and relative layout](guide.html#slide=layout) | flow, coordinates, relative constraints |
 | [Anchors, offsets and timing](guide.html#slide=anchors) | `anchor=`, `dx`/`dy`, `run_time`, `lag` |
