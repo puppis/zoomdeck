@@ -57,7 +57,7 @@ works as well.</p>
 <p>If an editor reports <strong><code>zoomdeck: command not found</code></strong> although the terminal finds it, the editor
 was started from the Dock, the Start menu or a launcher and did not read your shell profile, so
 npm's global <code>bin</code> directory (or nvm's, or Homebrew's) is missing from its <code>PATH</code>. The Sublime
-Text package below runs its commands through a login shell for that reason; VS Code's tasks run
+Text package below reads the <code>PATH</code> of your login shell for that reason; VS Code's tasks run
 in its integrated terminal, which loads the profile; JetBrains IDEs and Vim's terminal inherit
 it too. For the remaining cases, start the editor from a terminal once, or put the full path of
 the command (<code>which zoomdeck</code>) into the configuration: each one names the command in a single
@@ -108,12 +108,18 @@ opens a slide or styles block select it automatically, others through View ▸ S
 since Zoomdeck is the build system of Markdown files), <strong>Ctrl+Alt+P</strong> starts the preview in the
 build panel (Tools ▸ Cancel Build stops it), and &quot;Build folder&quot; writes the static folder
 export.</li>
+<li>Command Palette entries (&quot;Zoomdeck: Preview deck&quot;, &quot;Build HTML file&quot;, &quot;Build static folder&quot;).</li>
 <li><code>save_on_focus_lost</code>, so switching to the browser saves the deck first. For saving while you
 type, add a plugin such as <em>auto-save</em> from Package Control.</li>
 </ul>
-<p>The build system runs its commands through <code>zsh -lic</code> on macOS and <code>bash -lic</code> on Linux, so the
-<code>zoomdeck</code> command is found with the <code>PATH</code> of your shell even when Sublime Text was launched from
-the Dock. On Windows the commands run directly; make sure <code>npm prefix -g</code> is on the system <code>PATH</code>.</p>
+<p>The build system's target is <code>zoomdeck_exec</code>, a small plugin in the package: it asks your login
+shell (the one in <code>$SHELL</code>) for its <code>PATH</code> once and runs the command with it, so <code>zoomdeck</code> is
+found even when Sublime Text was launched from the Dock, a launcher or a menu, which otherwise
+gives it the bare system <code>PATH</code>. If the command still is not found, check that a terminal finds it
+(<code>which zoomdeck</code>), run &quot;Zoomdeck: Re-read the shell PATH&quot; from the Command Palette after
+installing it, or write its absolute path (or <code>node /path/to/Zoomdeck/bin/zoomdeck.mjs</code>) into the
+<code>command</code> setting of <code>Packages/User/Zoomdeck.sublime-settings</code>. The Sublime console (View ▸ Show
+Console) prints what the plugin found. Tools ▸ Cancel Build stops the preview server.</p>
 <h2 id="emacs">Emacs<a class="anchor" href="#emacs" aria-label="Link to this section">#</a></h2><pre><code class="language-elisp">(add-to-list 'load-path &quot;/path/to/Zoomdeck/editors/emacs&quot;)
 (require 'zoomdeck)</code></pre>
 <p><code>zoomdeck-mode</code> derives from <code>markdown-mode</code> when it is installed (otherwise from <code>text-mode</code>),

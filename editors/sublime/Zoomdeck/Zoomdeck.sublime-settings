@@ -1,0 +1,6 @@
+{
+  // The command the build system runs. Normally the global `zoomdeck` created by `npm link`;
+  // an absolute path (the output of `which zoomdeck`) or "node /path/to/Zoomdeck/bin/zoomdeck.mjs"
+  // also work. Copy this file to Packages/User/Zoomdeck.sublime-settings to change it.
+  "command": "zoomdeck"
+}

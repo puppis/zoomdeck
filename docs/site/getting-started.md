@@ -93,8 +93,9 @@ package instead and must be repeated after updates.
   appear in `echo $PATH`. Node installers normally arrange this for your shell; nvm does it in
   `~/.zshrc` or `~/.bashrc`.
 - Editors started from the Dock, the Start menu or a launcher do not read your shell profile, so
-  their `PATH` is the system default. The Sublime Text package in `editors/` therefore runs its
-  commands through a login shell; for other editors, either start the editor from a terminal, or
+  their `PATH` is the system default. The Sublime Text package in `editors/` therefore reads the
+  `PATH` of your login shell before running the command; for other editors, either start the
+  editor from a terminal, or
   write the full path of the command into the configuration (`which zoomdeck` prints it; for
   Emacs set `zoomdeck-command`, for Vim `g:zoomdeck_command`, and for VS Code and JetBrains edit
   the command in the task or tool). See [Editors](editors.html).
