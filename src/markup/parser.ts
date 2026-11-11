@@ -9,8 +9,9 @@ import {
   ALIGNMENTS, ANIMATE_PROPS, ATTACHMENTS, BASELINE_ANCHORS, BRACE_SIDES, CONNECTIONS, CONTAINER, DIRECTIVE, EFFECT_NAMES, ELEMENT_ATTRS,
   ENCLOSURES, ENTER_STYLES, EXIT_STYLES, FILL_ATTRS, GEOMETRY, GROUP_ANCHORS, GROUP_ATTRS, HORIZONTAL_POSITION, ICON_KINDS, IDENTIFIER,
   LABEL_SIDES, LAYOUT, NEIGHBORS, POSITION_REFERENCES, RATE_NAMES, SHAPES, SKETCH_ATTRS, STROKE_ATTRS, TEXT_LIKE, TIMING_ATTRS, TREMBLE_ATTRS,
-  VECTOR_KINDS, VERTICAL_POSITION, VIDEO_EXTENSIONS, FILL_STYLE_NAMES,
-  ActionSpec, AnimationStep, ElementSpec, EventSpec, GroupSpec, CodeSlideSpec, IncludeSpec, InlineSpan, MarkupDocument, MarkupError,
+  VECTOR_KINDS, VERTICAL_POSITION, VIDEO_EXTENSIONS, FILL_STYLE_NAMES, CHART_ATTRS, CHART_TYPE_NAMES, TABLE_ATTRS, TABLE_RULE_NAMES,
+  ActionSpec, AnimationStep, ElementSpec, EventSpec, GroupSpec, CodeSlideSpec, IncludeSpec, InlineSpan, MarkupDocument, MarkupError, TableSpec,
+  type CellAlignment,
   NextSpec, SkipNextSpec, SlideItem, SlideSpec, StepChange, StyleSheet, Attributes, applyStyles, attachmentTargets, checkClassName, childKey, endpoint,
   numberValue, parseAt, parseAttributes, parseColor, parseTremble, polylinePoints, positionOrder, span, stepValue,
 } from './ast';
@@ -142,6 +143,7 @@ export class MarkupParser {
 
   constructor() {
     this.blockMarkdown = new MarkdownIt('commonmark', { html: false });
+    this.blockMarkdown.enable('table');
     this.markdown = new MarkdownIt('commonmark', { html: false });
     this.markdown.inline.ruler.before('escape', 'dollar_math', dollarMath);
     this.markdown.inline.ruler.before('escape', 'hard_line_break', hardLineBreak);
@@ -351,7 +353,10 @@ export class MarkupParser {
         }
         const element = nested[0];
         const merged = { ...element.attributes, ...attrs };
-        items.push(new ElementSpec(merged.id ?? `${prefix}element-${items.length + 1}`, element.kind, element.spans, merged, element.source, line, element.level));
+        const identifier = merged.id ?? `${prefix}element-${items.length + 1}`;
+        items.push(element instanceof TableSpec
+          ? new TableSpec(identifier, element.rows, element.aligns, merged, line)
+          : new ElementSpec(identifier, element.kind, element.spans, merged, element.source, line, element.level));
         index = end + 1;
         continue;
       }
@@ -401,8 +406,39 @@ export class MarkupParser {
     const tokens = this.blockMarkdown.parse(source, {});
     let level = 0;
     let bullet = false;
-    for (const token of tokens) {
+    for (let index = 0; index < tokens.length; index += 1) {
+      const token = tokens[index];
       const tokenLine = line + (token.map ? token.map[0] : 0);
+      if (token.type === 'table_open') {
+        // A pipe table: header row first, alignments from the delimiter row.
+        const rows: InlineSpan[][][] = [];
+        const aligns: CellAlignment[] = [];
+        let row: InlineSpan[][] | null = null;
+        let cellLine = tokenLine;
+        while (index + 1 < tokens.length && tokens[index + 1].type !== 'table_close') {
+          index += 1;
+          const inner = tokens[index];
+          if (inner.type === 'tr_open') row = [];
+          else if (inner.type === 'tr_close' && row) rows.push(row);
+          else if (inner.type === 'th_open' || inner.type === 'td_open') {
+            cellLine = line + (inner.map ? inner.map[0] : 0);
+            if (inner.type === 'th_open') {
+              const style = inner.attrGet('style') ?? '';
+              aligns.push(style.includes('center') ? 'center' : style.includes('right') ? 'right' : 'left');
+            }
+          } else if (inner.type === 'inline' && row) {
+            const children = this.markdown.parseInline(inner.content, { line: cellLine })[0]?.children ?? [];
+            try {
+              row.push(spans(children).filter((s) => s.content !== ''));
+            } catch (error) {
+              throw new MarkupError(String((error as Error).message).replace(/^Line \d+: /, ''), cellLine);
+            }
+          }
+        }
+        index += 1;
+        result.push(new TableSpec(`${prefix}element-${offset + result.length + 1}`, rows, aligns, {}, tokenLine));
+        continue;
+      }
       if (token.type === 'heading_open') level = Number(token.tag.slice(1));
       else if (token.type === 'heading_close') level = 0;
       else if (token.type === 'list_item_open') bullet = true;
@@ -417,7 +453,11 @@ export class MarkupParser {
           attrs.lang = match[1];
         }
         const identifier = attrs.id ?? `${prefix}element-${offset + result.length + 1}`;
-        result.push(new ElementSpec(identifier, 'code', [], attrs, token.content.replace(/\s+$/, ''), tokenLine));
+        if (attrs.lang === 'chart') {
+          // A chart fence holds the data; its info string holds the options.
+          delete attrs.lang;
+          result.push(new ElementSpec(identifier, 'chart', [], attrs, token.content.replace(/\s+$/, ''), tokenLine));
+        } else result.push(new ElementSpec(identifier, 'code', [], attrs, token.content.replace(/\s+$/, ''), tokenLine));
       } else if (token.type === 'inline') {
         const [content, attrs] = MarkupParser._blockAttributes(token.content, tokenLine);
         const inline = this.markdown.parseInline(content, { line: tokenLine })[0]?.children ?? [];
@@ -600,7 +640,7 @@ export class ASTTransformer {
   /** Validate one element's kind-specific attributes; `scope` is the enclosing group ID or ''. */
   private _checkElement(item: ElementSpec, scope: string): void {
     const decoration = CONNECTIONS.has(item.kind) || ATTACHMENTS.has(item.kind);
-    if (!['text', 'image', 'math', 'code', 'group', 'iframe', 'icon'].includes(item.kind) && !SHAPES.has(item.kind) && !decoration) {
+    if (!['text', 'image', 'math', 'code', 'group', 'iframe', 'icon', 'table', 'chart'].includes(item.kind) && !SHAPES.has(item.kind) && !decoration) {
       throw new MarkupError(`Unknown element kind ${JSON.stringify(item.kind)}`, item.line);
     }
     let allowed: Set<string>;
@@ -613,6 +653,11 @@ export class ASTTransformer {
       if (item.kind === 'brace') for (const key of ['side', 'label', 'font_size', 'font']) allowed.add(key);
       else if (item.kind === 'blob') for (const key of ['smoothness', ...FILL_ATTRS]) allowed.add(key);
       else for (const key of ['corner_radius', ...FILL_ATTRS]) allowed.add(key);
+    } else if (item.kind === 'table') {
+      allowed = new Set([...ELEMENT_ATTRS].filter((key) => key !== 'height'));
+      for (const key of [...TABLE_ATTRS, ...SKETCH_ATTRS]) allowed.add(key);
+    } else if (item.kind === 'chart') {
+      allowed = new Set([...ELEMENT_ATTRS, ...CHART_ATTRS, ...SKETCH_ATTRS]);
     } else if (item.kind === 'icon') {
       allowed = new Set([...ELEMENT_ATTRS].filter((key) => !['width', 'height'].includes(key)));
       for (const key of ['size', 'label', 'label_side', ...STROKE_ATTRS, ...FILL_ATTRS, ...SKETCH_ATTRS]) allowed.add(key);
@@ -652,6 +697,30 @@ export class ASTTransformer {
           if (s.color) ASTTransformer._checkColor(s.color, item.line);
         }
       }
+    }
+    if (item.kind === 'table') {
+      if ('rules' in item.attributes && !TABLE_RULE_NAMES.has(item.attributes.rules)) {
+        throw new MarkupError(`rules must be one of ${[...TABLE_RULE_NAMES].join(', ')}`, item.line);
+      }
+      if ('header' in item.attributes && !['true', 'false'].includes(item.attributes.header)) throw new MarkupError('header must be true or false', item.line);
+      for (const row of (item as TableSpec).rows) for (const cell of row) for (const s of cell) if (s.color) ASTTransformer._checkColor(s.color, item.line);
+    }
+    if (item.kind === 'chart') {
+      if ('type' in item.attributes && !CHART_TYPE_NAMES.has(item.attributes.type)) {
+        throw new MarkupError(`Chart type must be one of ${[...CHART_TYPE_NAMES].join(', ')}`, item.line);
+      }
+      for (const key of ['grid', 'legend', 'values', 'header']) {
+        if (key in item.attributes && !['true', 'false'].includes(item.attributes[key])) throw new MarkupError(`${key} must be true or false`, item.line);
+      }
+      if ('colors' in item.attributes) {
+        const names = item.attributes.colors.split(/[\s,]+/).filter(Boolean);
+        if (!names.length) throw new MarkupError('colors needs at least one color', item.line);
+        for (const name of names) ASTTransformer._checkColor(name, item.line);
+      }
+      if ('min' in item.attributes && 'max' in item.attributes && Number(item.attributes.max) <= Number(item.attributes.min)) {
+        throw new MarkupError('max must exceed min', item.line);
+      }
+      if (!item.source.trim()) throw new MarkupError('A chart fence needs rows of data', item.line);
     }
     if ('tremble' in item.attributes) {
       const range = parseTremble(item.attributes.tremble, stepValue(item.attributes, 'step', item.line), item.line);
@@ -808,17 +877,20 @@ export class ASTTransformer {
     const unknown = Object.keys(attrs).filter((key) => !allowed.has(key)).sort();
     if (unknown.length) throw new MarkupError(`Unknown attributes: ${unknown.join(', ')}`, line);
     for (const key of [...GEOMETRY, 'font_size', 'size', 'buff', 'radius', 'corner_radius', 'stroke_width', 'fill_opacity', 'opacity', 'dx', 'dy', 'run_time', 'lag',
-      'start_angle', 'scale', 'roughness', 'bowing', 'hachure_angle', 'hachure_gap', 'fill_weight', 'seed', 'smoothness', 'tremble_amplitude', 'tremble_rate']) {
+      'start_angle', 'scale', 'roughness', 'bowing', 'hachure_angle', 'hachure_gap', 'fill_weight', 'seed', 'smoothness', 'tremble_amplitude', 'tremble_rate',
+      'padding', 'header_opacity', 'stripe_opacity', 'min', 'max']) {
       if (!(key in attrs)) continue;
       const number = numberValue(attrs, key, line) as number;
-      if (['buff', 'corner_radius', 'stroke_width', 'lag', 'roughness', 'bowing', 'fill_weight', 'seed', 'tremble_amplitude'].includes(key) && number < 0) {
+      if (['buff', 'corner_radius', 'stroke_width', 'lag', 'roughness', 'bowing', 'fill_weight', 'seed', 'tremble_amplitude', 'padding'].includes(key) && number < 0) {
         throw new MarkupError(`${key} must be nonnegative`, line);
       }
       if (['radius', 'run_time', 'hachure_gap', 'tremble_rate'].includes(key) && number <= 0) throw new MarkupError(`${key} must be positive`, line);
-      if (['fill_opacity', 'opacity', 'smoothness'].includes(key) && (number < 0 || number > 1)) throw new MarkupError(`${key} must be between zero and one`, line);
+      if (['fill_opacity', 'opacity', 'smoothness', 'header_opacity', 'stripe_opacity'].includes(key) && (number < 0 || number > 1)) {
+        throw new MarkupError(`${key} must be between zero and one`, line);
+      }
     }
     for (const key of ['step', 'hide']) if (key in attrs) stepValue(attrs, key, line);
-    for (const key of ['color', 'fill_color']) if (key in attrs) ASTTransformer._checkColor(attrs[key], line);
+    for (const key of ['color', 'fill_color', 'border_color', 'header_color', 'axis_color']) if (key in attrs) ASTTransformer._checkColor(attrs[key], line);
     if ('seed' in attrs && !Number.isInteger(Number(attrs.seed))) throw new MarkupError('seed must be an integer', line);
     if ('sketch' in attrs && !['true', 'false'].includes(attrs.sketch)) throw new MarkupError('sketch must be true or false', line);
     if ('fill_style' in attrs && !FILL_STYLE_NAMES.has(attrs.fill_style)) {

@@ -6,6 +6,8 @@
  */
 import { FILL_STYLES } from '../sketch';
 import { ICON_NAMES } from '../icons';
+import { CHART_TYPES } from '../charts';
+import { TABLE_RULES } from './table';
 import * as engine from 'manim-web';
 
 /** Invalid markup, with an optional one-based source line number. */
@@ -59,6 +61,15 @@ export class ElementSpec {
   get position(): [number, number, number] | null {
     if (!('x' in this.attributes) && !('y' in this.attributes)) return null;
     return [Number(this.attributes.x ?? 0), Number(this.attributes.y ?? 0), 0];
+  }
+}
+
+export type CellAlignment = 'left' | 'center' | 'right';
+
+/** A pipe table: rows of cells (the first row is the header), each cell a list of inline spans. */
+export class TableSpec extends ElementSpec {
+  constructor(id: string, readonly rows: InlineSpan[][][], readonly aligns: CellAlignment[], attributes: Attributes = {}, line = 1) {
+    super(id, 'table', [], attributes, '', line);
   }
 }
 
@@ -225,7 +236,15 @@ export const LABEL_SIDES = new Set(['below', 'above', 'left', 'right']);
 /** Continuous vibration of vector geometry: `tremble=` with its amplitude and rate. */
 export const TREMBLE_ATTRS = new Set(['tremble', 'tremble_amplitude', 'tremble_rate']);
 /** Element kinds made of vector geometry, which `tremble=` can shake. */
-export const VECTOR_KINDS = new Set([...SHAPES, ...CONNECTIONS, ...ATTACHMENTS, 'icon', 'math', 'group']);
+export const VECTOR_KINDS = new Set([...SHAPES, ...CONNECTIONS, ...ATTACHMENTS, 'icon', 'math', 'group', 'table', 'chart']);
+/** Values of `type=` on chart fences. */
+export const CHART_TYPE_NAMES = new Set<string>(CHART_TYPES);
+/** Values of `rules=` on tables. */
+export const TABLE_RULE_NAMES = new Set<string>(TABLE_RULES);
+/** Attributes of tables beyond the common element attributes. */
+export const TABLE_ATTRS = new Set(['header', 'padding', 'rules', 'border_color', 'stroke_width', 'fill_color', 'fill_opacity', 'header_color', 'header_opacity', 'stripe_opacity']);
+/** Attributes of chart fences beyond the common element attributes. */
+export const CHART_ATTRS = new Set(['type', 'header', 'colors', 'axis_color', 'border_color', 'stroke_width', 'fill_opacity', 'grid', 'legend', 'values', 'min', 'max']);
 /** File extensions rendered as videos by the image syntax. */
 export const VIDEO_EXTENSIONS = /\.(mp4|m4v|webm|ogv|ogg|mov)(?:[?#].*)?$/i;
 export const BRACE_SIDES: Record<string, [number, number, number]> = { left: [-1, 0, 0], right: [1, 0, 0], top: [0, 1, 0], bottom: [0, -1, 0] };

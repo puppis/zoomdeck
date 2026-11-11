@@ -118,3 +118,21 @@ export function rectPath(x: number, y: number, width: number, height: number, ra
   return `M${x + r},${y} H${x1 - r} C${x1 - r + k},${y} ${x1},${y + r - k} ${x1},${y + r} V${y1 - r} C${x1},${y1 - r + k} ${x1 - r + k},${y1} ${x1 - r},${y1} `
     + `H${x + r} C${x + r - k},${y1} ${x},${y1 - r + k} ${x},${y1 - r} V${y + r} C${x},${y + r - k} ${x + r - k},${y} ${x + r},${y} Z`;
 }
+
+/** A circular arc from angle `a0` to `a1` (radians, counterclockwise) as cubic curves. */
+export function arcPath(cx: number, cy: number, r: number, a0: number, a1: number): string {
+  const segments = Math.max(1, Math.ceil(Math.abs(a1 - a0) / (Math.PI / 2)));
+  const step = (a1 - a0) / segments;
+  const k = (4 / 3) * Math.tan(step / 4);
+  const point = (a: number): [number, number] => [cx + Math.cos(a) * r, cy + Math.sin(a) * r];
+  const fmt = (v: number) => v.toFixed(4);
+  let d = `M${fmt(point(a0)[0])},${fmt(point(a0)[1])}`;
+  for (let i = 0; i < segments; i += 1) {
+    const a = a0 + step * i;
+    const b = a + step;
+    const [x1, y1] = point(a);
+    const [x2, y2] = point(b);
+    d += ` C${fmt(x1 - Math.sin(a) * r * k)},${fmt(y1 + Math.cos(a) * r * k)} ${fmt(x2 + Math.sin(b) * r * k)},${fmt(y2 - Math.cos(b) * r * k)} ${fmt(x2)},${fmt(y2)}`;
+  }
+  return d;
+}

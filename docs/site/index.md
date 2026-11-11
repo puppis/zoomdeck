@@ -11,7 +11,7 @@ means visiting the tree in pre-order: the camera zooms into each child, plays it
 back out, so the audience always sees where a detail belongs.
 
 You write slides in a Markdown dialect: prose, LaTeX formulas, images, video, shapes, diagram
-icons and arrows (crisp or hand-drawn), boxes and blobs around groups of elements, code listings, live web pages, fragments that appear on clicks, and animations such as moves, morphs
+icons and arrows (crisp or hand-drawn), boxes and blobs around groups of elements, tables, charts, code listings, live web pages, fragments that appear on clicks, and animations such as moves, morphs
 and effects. When the dialect is not enough, a slide can be a small TypeScript class with the full
 animation engine at hand. Everything runs live on a WebGL canvas in the browser: a deck loads,
 records itself once, and then plays forwards and backwards instantly, with an outline, deep links,
@@ -66,6 +66,7 @@ from disk or from any web server, and `npm run dev` opens the same deck live. Ea
 | [Decorations visible only in focus](guide.html#slide=focus) | `focus_only` panels and captions |
 | [Children, visit order and placeholders](guide.html#slide=children) | visit steps, `skip_return`, undefined slides |
 | [Importing markup from files](guide.html#slide=imports) | `[[import: path.md]]` between slides and inside them |
+| [Tables and charts](guide.html#slide=tables) | pipe tables with rules and shading, bar, line and pie charts |
 | [Code-authored slides](guide.html#slide=code-slides) | a TypeScript `Slide` placed as a subslide |
 | [Code listings](guide.html#slide=listings) | fenced code with syntax colors |
 | [Animations from markup](guide.html#slide=animations) | `animate`, `effect`, `transform`, `move_along` |

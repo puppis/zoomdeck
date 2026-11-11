@@ -242,6 +242,36 @@ hand-drawn `move_along` path moves the follower along the exact geometry. A `sha
 sketches a whole deck, and `sketch=false` opts an element out. Paragraphs, headings and labels
 take `font=Zeyada` for the bundled handwriting face (or any loaded font family).
 
+## Tables and charts
+
+```markdown
+::: {.element #sales x=0 y=1 rules=rows border_color=BLUE_E header_opacity=0.25 stripe_opacity=0.08}
+| Region | 2023 | 2024 |
+| :--- | ---: | ---: |
+| North | 3.2 | **5.0** |
+| South | 2.1 | $\pi$ |
+:::
+
+```chart {#bars x=0 y=-2 width=6 height=3 type=bar values=true}
+Region, 2023, 2024
+North, 3.2, 5.0
+South, 2.1, 3.1
+```
+```
+
+A pipe table (header, delimiter row with `:---`/`:---:`/`---:` alignments, body rows) becomes a
+grid of cells holding inline markup; a `::: {.element …}` container positions it and takes
+`rules` (`all`, `rows`, `cols`, `outer`, `none`), `border_color`, `stroke_width`, `header`
+(`false` makes the first row ordinary), `header_color`/`header_opacity` (0.12), `stripe_opacity`,
+`fill_color`/`fill_opacity`, `padding` (0.15), `font_size`, `font`, `color`, `opacity`, `width`
+(columns shrink and wrap beyond it) and `sketch=true`. A fence with language `chart` holds rows
+separated by commas, semicolons or tabs (the first row names the series unless it is plain
+numbers; `header=` overrides) and takes `type` (`bar`, `line`, `pie`), `width`/`height` of the
+plot (6 × 3.5), `colors`, `fill_opacity` (0.85), `border_color`, `stroke_width`, `axis_color`,
+`grid`, `legend`, `values`, `min`/`max`, `font_size`, `font`, `color`, `opacity` and `sketch=true`.
+Both are centered on `x`, `y` (or placed by `anchor=` and the relative constraints), fade with
+`step`/`hide`, and carry the style roles `table` and `chart`.
+
 ## Code listings
 
 ````markdown

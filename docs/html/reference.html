@@ -22,7 +22,7 @@
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="tables-charts.html">Tables and charts</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
       </section>
       <section>
         <h4>Motion</h4>
@@ -94,6 +94,14 @@
 <tr>
 <td><code>```lang {attrs}</code></td>
 <td>code listing</td>
+</tr>
+<tr>
+<td><code>| a | b |</code> rows with a <code>| --- | --- |</code> delimiter</td>
+<td>table (attributes through a <code>::: {.element …}</code> container)</td>
+</tr>
+<tr>
+<td><code>```chart {attrs}</code> with rows of <code>label, v1, v2</code></td>
+<td>bar, line or pie chart</td>
 </tr>
 <tr>
 <td><code>[label](url)</code></td>
@@ -255,8 +263,18 @@ commas; <code>(x,y)</code> tuples stay whole; <code>#id</code> sets the ID; <cod
 <td>how softly neighbouring targets merge, 0 to 1</td>
 </tr>
 <tr>
+<td><code>rules</code>, <code>header</code>, <code>padding</code>, <code>border_color</code>, <code>header_color</code>, <code>header_opacity</code>, <code>stripe_opacity</code></td>
+<td>tables</td>
+<td>rules, header row, cell padding and shading (<a href="tables-charts.html">Tables and charts</a>)</td>
+</tr>
+<tr>
+<td><code>type</code>, <code>colors</code>, <code>axis_color</code>, <code>border_color</code>, <code>grid</code>, <code>legend</code>, <code>values</code>, <code>min</code>, <code>max</code>, <code>header</code></td>
+<td>charts</td>
+<td>chart kind, palette, axes, gridlines, legend, value labels and axis bounds</td>
+</tr>
+<tr>
 <td><code>tremble</code>, <code>tremble_amplitude</code>, <code>tremble_rate</code></td>
-<td>shapes, icons, connections, attachments, math, groups</td>
+<td>shapes, icons, connections, attachments, math, groups, tables, charts</td>
 <td><code>true</code>, <code>N</code> or <code>N-M</code>: vibration over a range of steps, its size and frequency</td>
 </tr>
 <tr>
@@ -324,7 +342,7 @@ commas; <code>(x,y)</code> tuples stay whole; <code>#id</code> sets the ID; <cod
 <li><strong>Icons</strong>: <code>user</code>, <code>users</code>, <code>client</code>, <code>desktop</code>, <code>phone</code>, <code>server</code>, <code>database</code>, <code>cloud</code>, <code>globe</code>, <code>document</code>, <code>folder</code>, <code>message</code>, <code>calendar</code>, <code>chart</code>, <code>check</code>, <code>cross</code>, <code>question</code>, <code>exclamation</code>, <code>info</code>, <code>warning</code>, <code>star</code>, <code>flag</code>, <code>pin</code>, <code>home</code>, <code>download</code>, <code>upload</code>, <code>search</code>, <code>arrival</code>, <code>departure</code>, <code>recycle</code>, <code>trash</code>, <code>key</code>, <code>lock</code>, <code>shield</code>, <code>bolt</code>, <code>gear</code>, <code>gears</code>, <code>puzzle</code>, <code>clock</code>.</li>
 <li><strong>Style roles</strong>: <code>heading</code>, <code>h1</code> … <code>h6</code>, <code>body</code>, <code>math</code>, <code>code</code>, <code>image</code>, <code>iframe</code>, <code>group</code>,
 <code>include</code>, <code>shape</code> and shape kinds, <code>icon</code> and <code>icon-&lt;name&gt;</code>, <code>connection</code>, <code>arrow</code>, <code>line</code>,
-<code>attachment</code>, <code>brace</code>, <code>box</code>, <code>blob</code>.</li>
+<code>attachment</code>, <code>brace</code>, <code>box</code>, <code>blob</code>, <code>table</code>, <code>chart</code>.</li>
 </ul>
 <h2 id="validation">Validation<a class="anchor" href="#validation" aria-label="Link to this section">#</a></h2><p>Mistakes are reported before anything is drawn, with the source line: unknown attributes,
 duplicate or missing IDs, conflicting constraints, positioning cycles, references across groups,

@@ -47,7 +47,7 @@ export { IframeHost, IFRAME_HOSTS } from './markup/iframe';
 export { IframeLayer } from './player/iframes';
 export type { RasterImageOptions, RasterMovieOptions } from './raster';
 export {
-  MarkupError, ElementSpec, GroupSpec, IncludeSpec, CodeSlideSpec, ImportSpec, EventSpec, ActionSpec, NextSpec, SkipNextSpec, SlideSpec, MarkupDocument,
+  MarkupError, ElementSpec, GroupSpec, TableSpec, IncludeSpec, CodeSlideSpec, ImportSpec, EventSpec, ActionSpec, NextSpec, SkipNextSpec, SlideSpec, MarkupDocument,
   parseAttributes, parseColor, parseCssColor, parseAt, normalizeStyles, applyStyles, styleRoles,
 } from './markup/ast';
 export type { InlineSpan, AnimationStep, StepChange, VisibilityChange, SlideItem, Attributes, StyleSheet, AtExpression, ActionKind } from './markup/ast';
@@ -73,4 +73,8 @@ export { makeIcon, iconParts, ICON_NAMES } from './icons';
 export type { IconName, IconOptions, IconPart } from './icons';
 export { blobMobject, blobOutline, blobField } from './blob';
 export type { Rect, BlobOptions } from './blob';
-export { pathMobject, smoothLoop, loopsMobject, circlePath, ellipsePath, rectPath } from './paths';
+export { pathMobject, smoothLoop, loopsMobject, circlePath, ellipsePath, rectPath, arcPath } from './paths';
+export { buildChart, parseChartData, niceStep, valueAxis, CHART_TYPES, CHART_COLORS } from './charts';
+export type { ChartData, ChartSeries, ChartOptions, ChartType, LabelFactory } from './charts';
+export { buildTable, TABLE_RULES } from './markup/table';
+export type { TableOptions, TableRules, CellFactory } from './markup/table';

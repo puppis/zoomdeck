@@ -11,13 +11,16 @@ import { loadSvgMobject } from '../svg';
 import { sketch, sketchSeed, type FillStyle, type OutlineMobject, type SketchOptions } from '../sketch';
 import { makeIcon, type IconName } from '../icons';
 import { blobMobject, type Rect } from '../blob';
+import { buildChart, parseChartData, type ChartType } from '../charts';
+import { buildTable, type TableRules } from './table';
 import { DEFAULT_ANIMATION_TIME, Slide, resolveSize } from '../slides';
 import { RasterImage, RasterSource } from '../raster';
 import { VideoClip } from '../video';
 import { IframeHost } from './iframe';
 import {
   ALIGNMENTS, BRACE_SIDES, CONNECTIONS, GROUP_ANCHORS, NEIGHBORS, POSITION_REFERENCES, SHAPES, TEXT_ANCHORS, TEXT_LIKE, VIDEO_EXTENSIONS,
-  ElementSpec, CodeSlideSpec, IncludeSpec, InlineSpan, MarkupError, attachmentTargets, endpoint, numberValue, parseAt, parseColor, polylinePoints,
+  ElementSpec, CodeSlideSpec, IncludeSpec, InlineSpan, MarkupError, TableSpec, attachmentTargets, endpoint, numberValue, parseAt, parseColor,
+  polylinePoints, span,
 } from './ast';
 import { MarkupParser } from './parser';
 import { MONOSPACE, baselineY, layoutParagraph, type MathPiece } from './text';
@@ -447,6 +450,62 @@ export class MarkupRenderer {
         group.markupParts = [icon, label];
         obj = group;
       }
+    } else if (element.kind === 'table') {
+      const table = element as TableSpec;
+      const optional = (key: string) => (key in attrs ? Number(attrs[key]) : undefined);
+      const borderColor = attrs.border_color ? parseColor(attrs.border_color) : color;
+      obj = await buildTable(table.rows, {
+        fontSize: size,
+        color,
+        aligns: table.aligns,
+        header: attrs.header !== 'false',
+        padding: optional('padding'),
+        rules: attrs.rules as TableRules | undefined,
+        borderColor,
+        strokeWidth: optional('stroke_width'),
+        fillColor: attrs.fill_color ? parseColor(attrs.fill_color) : undefined,
+        fillOpacity: optional('fill_opacity'),
+        headerColor: attrs.header_color ? parseColor(attrs.header_color) : undefined,
+        headerOpacity: optional('header_opacity'),
+        stripeOpacity: optional('stripe_opacity'),
+        maxWidth: width,
+        sketch: sketchOptions(element, { color: borderColor, strokeWidth: optional('stroke_width') ?? 1.5, fillColor: borderColor, fillOpacity: 0 }, 'solid'),
+      }, (spans, fontSize, maxWidth) => this.text(spans, fontSize, maxWidth, color, attrs.font));
+    } else if (element.kind === 'chart') {
+      let data;
+      try {
+        data = parseChartData(element.source, 'header' in attrs ? attrs.header === 'true' : undefined);
+      } catch (error) {
+        throw new MarkupError(`Chart data: ${(error as Error).message}`, element.line);
+      }
+      const optional = (key: string) => (key in attrs ? Number(attrs[key]) : undefined);
+      const flag = (key: string) => (key in attrs ? attrs[key] === 'true' : undefined);
+      const colors = attrs.colors ? attrs.colors.split(/[\s,]+/).filter(Boolean).map(parseColor) : undefined;
+      const borderColor = attrs.border_color ? parseColor(attrs.border_color) : undefined;
+      const sketchy = sketchOptions(element, { color, strokeWidth: optional('stroke_width') ?? 2, fillColor: color, fillOpacity: optional('fill_opacity') ?? 0.85 }, 'solid');
+      try {
+        obj = await buildChart(data, {
+          type: (attrs.type as ChartType | undefined) ?? 'bar',
+          width: numberValue(attrs, 'width', element.line, 6) as number,
+          height: numberValue(attrs, 'height', element.line, 3.5) as number,
+          colors,
+          color,
+          axisColor: attrs.axis_color ? parseColor(attrs.axis_color) : undefined,
+          borderColor,
+          fillOpacity: optional('fill_opacity'),
+          strokeWidth: optional('stroke_width'),
+          fontSize: size * 0.75,
+          grid: flag('grid'),
+          legend: flag('legend'),
+          values: flag('values'),
+          min: optional('min'),
+          max: optional('max'),
+          sketch: sketchy,
+        }, (text, fontSize, labelColor) => this.text([span(text)], fontSize, 20, labelColor, attrs.font));
+      } catch (error) {
+        if (error instanceof MarkupError) throw error;
+        throw new MarkupError(`Chart: ${(error as Error).message}`, element.line);
+      }
     } else if (element.kind === 'math') {
       const piece = await this.mathPiece(element.source, color, size);
       obj = piece.mobject;
@@ -459,7 +518,7 @@ export class MarkupRenderer {
       throw new MarkupError(`Unsupported rendered element kind ${JSON.stringify(element.kind)}`, element.line);
     }
     const height = numberValue(attrs, 'height', element.line);
-    if (!SHAPES.has(element.kind) && element.kind !== 'icon' && height !== null && obj.getHeight() > 0) obj.scaleToFitHeight(height);
+    if (!SHAPES.has(element.kind) && !['icon', 'chart'].includes(element.kind) && height !== null && obj.getHeight() > 0) obj.scaleToFitHeight(height);
     if ('opacity' in attrs) applyOpacity(obj, Number(attrs.opacity));
     return obj;
   }

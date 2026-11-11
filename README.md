@@ -35,7 +35,7 @@ the configuration and a one-page reference. `docs/markup.md` is the compact dial
 - **A Markdown dialect**: `::: slide {#id}` containers, includes and subslides with placement and
   visit steps, `[[import: path.md]]` to split a deck into files, styled prose with inline math, display math, images (SVG, raster, animated APNG/GIF
   and videos with `play=once|loop`), live pages (`iframe:`), syntax-highlighted code listings, vector shapes, diagram icons (`icon:`), arrows and lines with
-  labels (crisp, or hand-drawn with `sketch=true` through Rough.js), boxes and blobs around several elements, a `tremble=` vibration, anchor-based and relative positioning, named styles, groups, `focus_only`, fragments
+  labels (crisp, or hand-drawn with `sketch=true` through Rough.js), boxes and blobs around several elements, pipe tables and bar/line/pie charts, a `tremble=` vibration, anchor-based and relative positioning, named styles, groups, `focus_only`, fragments
   (`step`, `hide`, `show:`/`hide:`), animation directives (`animate:`, `effect:`, `transform:`,
   `move_along:`, entrance and exit styles), `next:` and `skip_next:`. The dialect is documented in
   [docs/markup.md](docs/markup.md) and demonstrated live by the guide deck.

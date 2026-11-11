@@ -22,6 +22,8 @@ description: Every directive and attribute of the dialect on one page.
 | `$…$`, `$$ … $$` | inline math (part of a paragraph), display math |
 | `![alt](path){attrs}` | image, animated image or video |
 | ```` ```lang {attrs} ```` | code listing |
+| `\| a \| b \|` rows with a `\| --- \| --- \|` delimiter | table (attributes through a `::: {.element …}` container) |
+| ```` ```chart {attrs} ```` with rows of `label, v1, v2` | bar, line or pie chart |
 | `[label](url)` | link |
 
 ## Directives
@@ -66,7 +68,9 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
 | `fill_color`, `fill_opacity`, `stroke_width` | shapes, icons, boxes, blobs | fill and stroke |
 | `size`, `label`, `label_side` | icons | box height; caption text and its side (`below`, `above`, `left`, `right`) |
 | `smoothness` | blobs | how softly neighbouring targets merge, 0 to 1 |
-| `tremble`, `tremble_amplitude`, `tremble_rate` | shapes, icons, connections, attachments, math, groups | `true`, `N` or `N-M`: vibration over a range of steps, its size and frequency |
+| `rules`, `header`, `padding`, `border_color`, `header_color`, `header_opacity`, `stripe_opacity` | tables | rules, header row, cell padding and shading ([Tables and charts](tables-charts.html)) |
+| `type`, `colors`, `axis_color`, `border_color`, `grid`, `legend`, `values`, `min`, `max`, `header` | charts | chart kind, palette, axes, gridlines, legend, value labels and axis bounds |
+| `tremble`, `tremble_amplitude`, `tremble_rate` | shapes, icons, connections, attachments, math, groups, tables, charts | `true`, `N` or `N-M`: vibration over a range of steps, its size and frequency |
 | `sketch`, `roughness`, `bowing`, `fill_style`, `hachure_angle`, `hachure_gap`, `fill_weight`, `seed` | shapes, icons, connections, attachments | [hand-drawn](sketch.html) rendering and its tuning |
 | `step`, `hide` | elements, children (`step`) | reveal and hide clicks; visit step for children |
 | `run_time`, `lag`, `rate` | fades and animations | duration, delay, rate function |
@@ -92,7 +96,7 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
 - **Icons**: `user`, `users`, `client`, `desktop`, `phone`, `server`, `database`, `cloud`, `globe`, `document`, `folder`, `message`, `calendar`, `chart`, `check`, `cross`, `question`, `exclamation`, `info`, `warning`, `star`, `flag`, `pin`, `home`, `download`, `upload`, `search`, `arrival`, `departure`, `recycle`, `trash`, `key`, `lock`, `shield`, `bolt`, `gear`, `gears`, `puzzle`, `clock`.
 - **Style roles**: `heading`, `h1` … `h6`, `body`, `math`, `code`, `image`, `iframe`, `group`,
   `include`, `shape` and shape kinds, `icon` and `icon-<name>`, `connection`, `arrow`, `line`,
-  `attachment`, `brace`, `box`, `blob`.
+  `attachment`, `brace`, `box`, `blob`, `table`, `chart`.
 
 ## Validation
 

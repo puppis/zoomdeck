@@ -22,7 +22,7 @@
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="tables-charts.html">Tables and charts</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
       </section>
       <section>
         <h4>Motion</h4>
@@ -42,7 +42,7 @@ small animation program; child slides sit inside their parent's canvas as viewpo
 means visiting the tree in pre-order: the camera zooms into each child, plays its steps and zooms
 back out, so the audience always sees where a detail belongs.</p>
 <p>You write slides in a Markdown dialect: prose, LaTeX formulas, images, video, shapes, diagram
-icons and arrows (crisp or hand-drawn), boxes and blobs around groups of elements, code listings, live web pages, fragments that appear on clicks, and animations such as moves, morphs
+icons and arrows (crisp or hand-drawn), boxes and blobs around groups of elements, tables, charts, code listings, live web pages, fragments that appear on clicks, and animations such as moves, morphs
 and effects. When the dialect is not enough, a slide can be a small TypeScript class with the full
 animation engine at hand. Everything runs live on a WebGL canvas in the browser: a deck loads,
 records itself once, and then plays forwards and backwards instantly, with an outline, deep links,
@@ -158,6 +158,10 @@ from disk or from any web server, and <code>npm run dev</code> opens the same de
 <tr>
 <td><a href="guide.html#slide=imports">Importing markup from files</a></td>
 <td><code>[[import: path.md]]</code> between slides and inside them</td>
+</tr>
+<tr>
+<td><a href="guide.html#slide=tables">Tables and charts</a></td>
+<td>pipe tables with rules and shading, bar, line and pie charts</td>
 </tr>
 <tr>
 <td><a href="guide.html#slide=code-slides">Code-authored slides</a></td>

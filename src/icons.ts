@@ -9,7 +9,7 @@
  */
 import { VGroup } from 'manim-web';
 import { sketch, type OutlineMobject, type SketchOptions } from './sketch';
-import { circlePath, ellipsePath, pathMobject, rectPath } from './paths';
+import { arcPath, circlePath, ellipsePath, pathMobject, rectPath } from './paths';
 
 export const ICON_NAMES = [
   'user', 'users', 'database', 'server', 'client', 'desktop', 'phone', 'cloud', 'document', 'folder', 'lock', 'gear', 'gears', 'message',
@@ -76,24 +76,6 @@ function starPath(points = 5, outer = 0.5, inner = 0.2): string {
     steps.push(`${(Math.cos(angle) * radius).toFixed(4)},${(Math.sin(angle) * radius).toFixed(4)}`);
   }
   return `M${steps[0]} L${steps.slice(1).join(' L')} Z`;
-}
-
-/** A circular arc from angle `a0` to `a1` (radians, counterclockwise) as cubic curves. */
-function arcPath(cx: number, cy: number, r: number, a0: number, a1: number): string {
-  const segments = Math.max(1, Math.ceil(Math.abs(a1 - a0) / (Math.PI / 2)));
-  const step = (a1 - a0) / segments;
-  const k = (4 / 3) * Math.tan(step / 4);
-  const point = (a: number): [number, number] => [cx + Math.cos(a) * r, cy + Math.sin(a) * r];
-  const fmt = (v: number) => v.toFixed(4);
-  let d = `M${fmt(point(a0)[0])},${fmt(point(a0)[1])}`;
-  for (let i = 0; i < segments; i += 1) {
-    const a = a0 + step * i;
-    const b = a + step;
-    const [x1, y1] = point(a);
-    const [x2, y2] = point(b);
-    d += ` C${fmt(x1 - Math.sin(a) * r * k)},${fmt(y1 + Math.cos(a) * r * k)} ${fmt(x2 + Math.sin(b) * r * k)},${fmt(y2 - Math.cos(b) * r * k)} ${fmt(x2)},${fmt(y2)}`;
-  }
-  return d;
 }
 
 /** The three chasing arrows of a recycling symbol: arcs with a small head at each end. */

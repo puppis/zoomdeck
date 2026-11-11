@@ -22,11 +22,12 @@ A tour of the Markdown dialect and the player: each slide pairs a listing with i
 [[include: #layout x=3.25 y=1.3 width=6 skip_return=true]]
 [[include: #anchors x=9.75 y=1.3 width=6 skip_return=true]]
 [[include: #styles x=16.25 y=1.3 width=6]]
-[[include: #groups x=-13 y=-2.6 width=6 skip_return=true]]
-[[include: #fragments x=-6.5 y=-2.6 width=6 skip_return=true]]
-[[include: #focus x=0 y=-2.6 width=6 skip_return=true]]
-[[include: #children x=6.5 y=-2.6 width=6 skip_return=true]]
-[[include: #imports x=13 y=-2.6 width=6]]
+[[include: #groups x=-16.25 y=-2.6 width=6 skip_return=true]]
+[[include: #fragments x=-9.75 y=-2.6 width=6 skip_return=true]]
+[[include: #focus x=-3.25 y=-2.6 width=6 skip_return=true]]
+[[include: #children x=3.25 y=-2.6 width=6 skip_return=true]]
+[[include: #imports x=9.75 y=-2.6 width=6 skip_return=true]]
+[[include: #tables x=16.25 y=-2.6 width=6]]
 [[include: #code-slides x=-13 y=-6.5 width=6 skip_return=true]]
 [[include: #listings x=-6.5 y=-6.5 width=6 skip_return=true]]
 [[include: #animations x=0 y=-6.5 width=6 skip_return=true]]
@@ -528,6 +529,40 @@ Mark one slide or include with `start_here=true` to open playback there. While e
 :::
 
 [[import: parts/appendix.md]]
+
+::: slide {#tables width=20}
+## Tables and charts
+
+````markdown {#tables-source x=-9.35 y=3.7 width=9.5}
+::: {.element #sales x=5 y=1.3 rules=rows stripe_opacity=0.08}
+| Region | 2023 | 2024 |
+| :--- | ---: | ---: |
+| North | 3.2 | **5.0** |
+| South | 2.1 | $\pi$ |
+:::
+
+```chart {#bars x=5 y=-2.6 width=6 height=2.6 values=true}
+Region, 2023, 2024
+North, 3.2, 5.0
+South, 2.1, 3.1
+```
+````
+
+::: {.element #sales x=5 y=1.3 rules=rows stripe_opacity=0.08}
+| Region | 2023 | 2024 |
+| :--- | ---: | ---: |
+| North | 3.2 | **5.0** |
+| South | 2.1 | $\pi$ |
+:::
+
+```chart {#bars x=5 y=-2.6 width=6 height=2.6 values=true}
+Region, 2023, 2024
+North, 3.2, 5.0
+South, 2.1, 3.1
+```
+
+A pipe table becomes a grid of styled cells; a `::: {.element ...}` container positions it and sets `rules` (all, rows, cols, outer, none), `border_color`, `stroke_width`, `header_color`/`header_opacity`, `stripe_opacity`, `fill_color`/`fill_opacity` and `padding`. A `chart` fence holds comma-separated rows, the first naming the series: `type=bar|line|pie`, `width`, `height`, `colors`, `fill_opacity`, `border_color`, `axis_color`, `grid`, `legend`, `values` and `min`/`max` shape it. Both take `sketch=true`. {x=-9.35 y=-3.6 width=9.5 font_size=18}
+:::
 
 ::: slide {#code-slides width=20}
 ## Code-authored slides
