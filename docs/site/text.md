@@ -61,4 +61,7 @@ calibration.
 
 Body text uses `layout.fontSize` (28 by default) and headings `layout.headingSize`, shrinking
 slightly per level; code spans use `layout.codeFont`. Any element can override its size with
-`font_size=` and its color with `color=`, or through a [style](styles.html).
+`font_size=` and its color with `color=`, or through a [style](styles.html). A paragraph, heading,
+arrow label or brace label can also pick its own face with `font=`: any font the page has, or the
+bundled handwriting face **Zeyada**, which pairs with [hand-drawn shapes](sketch.html)
+(`[A note]{font=Zeyada font_size=36}`).

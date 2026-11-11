@@ -37,7 +37,7 @@ export { PlayerUI } from './player/ui';
 export { slideKeys, bookmark } from './position';
 export type { Bookmark } from './position';
 export { coordinateGrid } from './guides';
-export { loadDefaultFonts, DEFAULT_TEXT_FONT } from './fonts';
+export { loadDefaultFonts, DEFAULT_TEXT_FONT, DEFAULT_CODE_FONT, DEFAULT_HANDWRITING_FONT } from './fonts';
 export { MATH_SIZE_RATIO } from './markup/renderer';
 export * as engine from 'manim-web';
 export { RasterImage, RasterMovie, RasterSource } from './raster';

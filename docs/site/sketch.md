@@ -6,12 +6,12 @@ description: sketch=true renders shapes, arrows, lines, braces and boxes as if d
 <a class="try" href="guide.html#slide=sketch">Open in the guide ↗</a>
 
 ```markdown
-[[rectangle: #hr x=-7.2 y=-3.3 width=3.4 height=1.8 corner_radius=0.3 color=BLUE_E fill_color=BLUE_E fill_opacity=0.5 sketch=true]]
+[[rectangle: #hr x=-7.2 y=-3.6 width=3.4 height=1.8 corner_radius=0.3 color=BLUE_E fill_color=BLUE_E fill_opacity=0.5 sketch=true]]
 [[circle: #hc right-of:#hr buff=1.2 radius=0.9 color=GREEN_E fill_color=GREEN_E fill_opacity=0.6 fill_style=cross-hatch sketch=true]]
-[[polygon: #hp points="(-1.2,-4.2) (0.3,-2.3) (1.6,-4.2)" color=ORANGE fill_color=ORANGE fill_opacity=1 fill_style=solid roughness=2 sketch=true]]
-[[ellipse: #he x=4.6 y=-3.3 width=3.6 height=1.8 color=PURPLE fill_color=PURPLE fill_opacity=0.5 fill_style=zigzag hachure_angle=20 seed=7 sketch=true]]
-[[arrow: #hr -> #hc, #ha, label="`sketch=true`", color=GOLD_E, sketch=true]]
-[[brace: #he, #hb, side=bottom, label="a hand-drawn brace", color=GRAY, sketch=true]]
+[[polygon: #hp points="(-1.2,-4.5) (0.3,-2.6) (1.6,-4.5)" color=ORANGE fill_color=ORANGE fill_opacity=1 fill_style=solid roughness=2 sketch=true]]
+[[ellipse: #he x=4.6 y=-3.6 width=3.6 height=1.8 color=PURPLE fill_color=PURPLE fill_opacity=0.5 fill_style=zigzag hachure_angle=20 seed=7 sketch=true]]
+[[arrow: #hr -> #hc, #ha, label="sketch=true", font=Zeyada, font_size=30, color=GOLD_E, sketch=true]]
+[[brace: #he, #hb, side=bottom, label="a hand-drawn brace", font=Zeyada, font_size=30, color=GRAY, sketch=true]]
 [[box: #hp, #hbox, buff=0.25, color=RED, step=1, sketch=true]]
 ```
 
@@ -50,6 +50,13 @@ define the look once and elements opt in.
   not along the wobble.
 - The wobble is defined in the slide's logical units, so it scales with the slide when the camera
   zooms, like a drawing would.
+
+## Handwriting
+
+A handwriting face completes the look: the player bundles **Zeyada** (SIL Open Font License),
+and `font=Zeyada` on a paragraph, heading, arrow label or brace label sets it, usually with a
+larger `font_size` since handwriting faces are small on the em. A `body: font=Zeyada font_size=34`
+style applies it to every paragraph.
 
 ## A whole deck by hand
 

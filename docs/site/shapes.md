@@ -48,7 +48,7 @@ takes `sketch=true`, which draws it [by hand](sketch.html) with a hatched or sol
 
 An arrow or line goes from one endpoint to another: an element ID (attached at the facing
 bounding edge) or a literal `(x,y)` point. They take an optional `#id`, a `label` with inline
-styling and math (placed above the connection), `color`, `stroke_width`, `opacity`, `step`,
+styling and math (placed above the connection, sized by `font_size`, set in `font`), `color`, `stroke_width`, `opacity`, `step`,
 `hide` and timing. Connections are created after all other elements, so forward references work;
 they cannot anchor other elements and are not hidden implicitly when an endpoint disappears.
 

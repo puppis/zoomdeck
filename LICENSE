@@ -21,4 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 The fonts in src/fonts/ (Latin Modern) are distributed under the GUST Font
-License; see src/fonts/GUST-FONT-LICENSE.txt.
+License; see src/fonts/GUST-FONT-LICENSE.txt. The Zeyada font in src/fonts/
+(copyright Kimberly Geswein) is distributed under the SIL Open Font License
+1.1; see src/fonts/ZEYADA-OFL.txt.

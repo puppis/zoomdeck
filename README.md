@@ -174,6 +174,7 @@ exporting the `Slide` classes used by `[[import: Name ...]]`.
 
 A deck is black text on a white canvas by default (`background` and `layout.color` change
 that). Prose uses the bundled Latin Modern Roman face and code the bundled Latin Modern Mono (LaTeX's Computer Modern family) unless `layout.font` or `layout.codeFont`
+replace them; `font=` on a paragraph, heading or label picks another face (the handwriting face Zeyada is bundled too)
 says otherwise, and formula sizes are calibrated to prose sizes, so text and math look like one
 LaTeX document by default. LaTeX renders through MathJax (ams, newcommand and configmacros packages). `\textcolor` and
 `\color` with dvipsnames or CSS colors are supported; other LaTeX packages are not. Prose uses
@@ -243,5 +244,6 @@ a static or single-file export that needs nothing else.
 ## License
 
 MIT, see [LICENSE](LICENSE). The bundled Latin Modern fonts are distributed under the GUST Font
-License (`src/fonts/GUST-FONT-LICENSE.txt`); the rendering engine `manim-web` and the other
+License (`src/fonts/GUST-FONT-LICENSE.txt`) and the bundled Zeyada handwriting font under the SIL
+Open Font License (`src/fonts/ZEYADA-OFL.txt`); the rendering engine `manim-web` and the other
 dependencies are MIT-licensed npm packages.

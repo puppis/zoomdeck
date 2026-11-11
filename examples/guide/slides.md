@@ -457,26 +457,26 @@ Every shape takes `color`, `stroke_width`, `fill_color`, `fill_opacity` and the 
 :::
 
 ::: slide {#sketch width=20}
-## Hand-drawn shapes
+## Hand-drawn shapes {font=Zeyada font_size=64}
 
 ```markdown {#sketch-source x=-9.35 y=3.7 width=19}
-[[rectangle: #hr x=-7.2 y=-3.3 width=3.4 height=1.8 corner_radius=0.3 color=BLUE_E fill_color=BLUE_E fill_opacity=0.5 sketch=true]]
+[[rectangle: #hr x=-7.2 y=-3.6 width=3.4 height=1.8 corner_radius=0.3 color=BLUE_E fill_color=BLUE_E fill_opacity=0.5 sketch=true]]
 [[circle: #hc right-of:#hr buff=1.2 radius=0.9 color=GREEN_E fill_color=GREEN_E fill_opacity=0.6 fill_style=cross-hatch sketch=true]]
-[[polygon: #hp points="(-1.2,-4.2) (0.3,-2.3) (1.6,-4.2)" color=ORANGE fill_color=ORANGE fill_opacity=1 fill_style=solid roughness=2 sketch=true]]
-[[ellipse: #he x=4.6 y=-3.3 width=3.6 height=1.8 color=PURPLE fill_color=PURPLE fill_opacity=0.5 fill_style=zigzag hachure_angle=20 seed=7 sketch=true]]
-[[arrow: #hr -> #hc, #ha, label="`sketch=true`", color=GOLD_E, sketch=true]]
-[[brace: #he, #hb, side=bottom, label="a hand-drawn brace", color=GRAY, sketch=true]]
+[[polygon: #hp points="(-1.2,-4.5) (0.3,-2.6) (1.6,-4.5)" color=ORANGE fill_color=ORANGE fill_opacity=1 fill_style=solid roughness=2 sketch=true]]
+[[ellipse: #he x=4.6 y=-3.6 width=3.6 height=1.8 color=PURPLE fill_color=PURPLE fill_opacity=0.5 fill_style=zigzag hachure_angle=20 seed=7 sketch=true]]
+[[arrow: #hr -> #hc, #ha, label="sketch=true", font=Zeyada, font_size=30, color=GOLD_E, sketch=true]]
+[[brace: #he, #hb, side=bottom, label="a hand-drawn brace", font=Zeyada, font_size=30, color=GRAY, sketch=true]]
 [[box: #hp, #hbox, buff=0.25, color=RED, step=1, sketch=true]]
 ```
 
-`sketch=true` draws a shape, connection or attachment as if by hand (through Rough.js): a wobbly double outline and a fill made of hatching, chosen by `fill_style` (`hachure`, `solid`, `zigzag`, `cross-hatch`, `dots`, `dashed`, `zigzag-line`). `roughness`, `bowing`, `hachure_angle`, `hachure_gap` and `fill_weight` tune the drawing, `seed` pins one rendition, and a `shape: sketch=true` style sketches a whole deck. Everything else is unchanged: fills fade, anchors and endpoints work, `move_along` follows the exact path. {x=-9.35 y=-0.2 width=19 font_size=21}
+`sketch=true` draws a shape, connection or attachment as if by hand (Rough.js): a wobbly double outline and a hatched or solid fill (`fill_style`). `roughness`, `bowing`, `hachure_angle`, `hachure_gap`, `fill_weight` and `seed` tune it, a `shape: sketch=true` style sketches a whole deck, and `font=Zeyada` writes by hand. {x=-9.35 y=0 width=19 font_size=26 font=Zeyada}
 
-[[rectangle: #hr x=-7.2 y=-3.3 width=3.4 height=1.8 corner_radius=0.3 color=BLUE_E fill_color=BLUE_E fill_opacity=0.5 sketch=true]]
+[[rectangle: #hr x=-7.2 y=-3.6 width=3.4 height=1.8 corner_radius=0.3 color=BLUE_E fill_color=BLUE_E fill_opacity=0.5 sketch=true]]
 [[circle: #hc right-of:#hr buff=1.2 radius=0.9 color=GREEN_E fill_color=GREEN_E fill_opacity=0.6 fill_style=cross-hatch sketch=true]]
-[[polygon: #hp points="(-1.2,-4.2) (0.3,-2.3) (1.6,-4.2)" color=ORANGE fill_color=ORANGE fill_opacity=1 fill_style=solid roughness=2 sketch=true]]
-[[ellipse: #he x=4.6 y=-3.3 width=3.6 height=1.8 color=PURPLE fill_color=PURPLE fill_opacity=0.5 fill_style=zigzag hachure_angle=20 seed=7 sketch=true]]
-[[arrow: #hr -> #hc, #ha, label="`sketch=true`", color=GOLD_E, sketch=true]]
-[[brace: #he, #hb, side=bottom, label="a hand-drawn brace", color=GRAY, sketch=true]]
+[[polygon: #hp points="(-1.2,-4.5) (0.3,-2.6) (1.6,-4.5)" color=ORANGE fill_color=ORANGE fill_opacity=1 fill_style=solid roughness=2 sketch=true]]
+[[ellipse: #he x=4.6 y=-3.6 width=3.6 height=1.8 color=PURPLE fill_color=PURPLE fill_opacity=0.5 fill_style=zigzag hachure_angle=20 seed=7 sketch=true]]
+[[arrow: #hr -> #hc, #ha, label="sketch=true", font=Zeyada, font_size=30, color=GOLD_E, sketch=true]]
+[[brace: #he, #hb, side=bottom, label="a hand-drawn brace", font=Zeyada, font_size=30, color=GRAY, sketch=true]]
 [[box: #hp, #hbox, buff=0.25, color=RED, step=1, sketch=true]]
 :::
 

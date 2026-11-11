@@ -182,7 +182,7 @@ export const LAYOUT = new Set([...GEOMETRY, ...POSITION_REFERENCES, 'buff', 'dx'
 /** Timing of an element's own fade-in and fade-out, in seconds. */
 export const TIMING_ATTRS = new Set(['run_time', 'lag']);
 export const ELEMENT_ATTRS = new Set([
-  'id', 'x', 'y', 'width', 'height', 'step', 'hide', 'color', 'font_size', 'focus_only', 'opacity', 'anchor', 'dx', 'dy', 'at', 'class',
+  'id', 'x', 'y', 'width', 'height', 'step', 'hide', 'color', 'font_size', 'font', 'focus_only', 'opacity', 'anchor', 'dx', 'dy', 'at', 'class',
   'enter', 'exit', ...POSITION_REFERENCES, 'buff', ...TIMING_ATTRS,
 ]);
 /** Attributes of a `::: {.group}` container. */

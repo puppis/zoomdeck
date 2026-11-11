@@ -86,6 +86,11 @@ export class LayoutConfig {
     return this.font ? `"${this.font.replace(/"/g, '')}", "${DEFAULT_TEXT_FONT}", serif` : `"${DEFAULT_TEXT_FONT}", serif`;
   }
 
+  /** CSS font family for an element: its `font=` face in front of the prose family. */
+  fontFamilyFor(font: string | undefined): string {
+    return font ? `"${font.replace(/"/g, '')}", ${this.fontFamily}` : this.fontFamily;
+  }
+
   /** CSS font family used for code listings. */
   get codeFontFamily(): string {
     return this.codeFont ? `"${this.codeFont.replace(/"/g, '')}", ${MONOSPACE}` : MONOSPACE;
@@ -399,7 +404,7 @@ export class MarkupRenderer {
       obj = piece.mobject;
       if (obj.getWidth() > width) obj.scale(width / obj.getWidth());
     } else if (element.kind === 'text') {
-      obj = await this.text(element.spans, size, width, color);
+      obj = await this.text(element.spans, size, width, color, attrs.font);
     } else if (element.kind === 'code') {
       obj = this.code(element.source, attrs.lang ?? '', size, width, color);
     } else {
@@ -455,7 +460,7 @@ export class MarkupRenderer {
       obj = brace;
       if (attrs.label) {
         const size = numberValue(attrs, 'font_size', element.line, this.layout.fontSize * 0.8) as number;
-        const text = await this.text(this._parser.parseInlineSpans(attrs.label, element.line), size, 6, color);
+        const text = await this.text(this._parser.parseInlineSpans(attrs.label, element.line), size, 6, color, attrs.font);
         text.nextTo(brace, direction, 0.1);
         obj = new Group(brace, text);
       }
@@ -479,13 +484,13 @@ export class MarkupRenderer {
   }
 
   /** Lay out styled prose with inline math within `maxWidth` logical units. */
-  async text(spans: InlineSpan[], fontSize: number, maxWidth: number, defaultColor: string): Promise<Mobject> {
+  async text(spans: InlineSpan[], fontSize: number, maxWidth: number, defaultColor: string, font?: string): Promise<Mobject> {
     if (!spans.some((s) => s.content.trim())) return new Group();
     // Span colors may be palette names; the canvas and MathJax need hex values.
     const resolved = spans.map((s) => (s.color ? { ...s, color: parseColor(s.color) } : s));
     return layoutParagraph(
       resolved,
-      { fontSize, maxWidth, defaultColor, fontFamily: this.layout.fontFamily, lineGap: this.layout.lineGap },
+      { fontSize, maxWidth, defaultColor, fontFamily: this.layout.fontFamilyFor(font), lineGap: this.layout.lineGap },
       (latex, color) => this.mathPiece(latex, color, fontSize),
     );
   }
@@ -527,7 +532,8 @@ export class MarkupRenderer {
     let result: Mobject = connection;
     if (label) {
       const spans = this._parser.parseInlineSpans(label, element.line);
-      const text = await this.text(spans, this.layout.fontSize * 0.8, 4, this.layout.color);
+      const size = numberValue(element.attributes, 'font_size', element.line, this.layout.fontSize * 0.8) as number;
+      const text = await this.text(spans, size, 4, this.layout.color, element.attributes.font);
       text.nextTo(connection, [0, 1, 0], 0.1);
       result = new Group(connection, text);
     }

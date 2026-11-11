@@ -78,6 +78,13 @@ describe('sketch attributes in markup', () => {
     expect(parse('[[dot: #p x=0 y=0]]\n[[brace: #p, #b, sketch=true]]\n[[box: #p, #bx, sketch=true, fill_style=dots]]').slides).toHaveLength(1);
   });
 
+  it('accepts font on text and labels only', () => {
+    expect(first('[A note]{#n x=0 y=0 font=Zeyada font_size=36}').attributes.font).toBe('Zeyada');
+    expect(parse('[[arrow: (0,0) -> (1,1), #ar, label="by hand", font=Zeyada]]').slides).toHaveLength(1);
+    expect(parse('[[dot: #p x=0 y=0]]\n[[brace: #p, #b, label="x", font=Zeyada]]').slides).toHaveLength(1);
+    expect(() => parse('![i](x.png){#i x=0 y=0 font=Zeyada}')).toThrow(/Unknown attributes: font/);
+  });
+
   it('validates the values', () => {
     expect(() => parse('[[circle: #c x=0 y=0 radius=1 sketch=maybe]]')).toThrow(/sketch must be true or false/);
     expect(() => parse('[[circle: #c x=0 y=0 radius=1 fill_style=plaid]]')).toThrow(/fill_style must be one of/);

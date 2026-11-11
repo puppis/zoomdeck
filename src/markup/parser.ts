@@ -575,11 +575,11 @@ export class ASTTransformer {
     let allowed: Set<string>;
     if (item.kind === 'group') allowed = new Set(GROUP_ATTRS);
     else if (CONNECTIONS.has(item.kind)) {
-      allowed = new Set(['id', 'step', 'hide', 'color', 'from', 'to', 'label', 'opacity', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
+      allowed = new Set(['id', 'step', 'hide', 'color', 'from', 'to', 'label', 'font', 'font_size', 'opacity', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
     }
     else if (ATTACHMENTS.has(item.kind)) {
       allowed = new Set(['id', 'target', 'step', 'hide', 'color', 'buff', 'opacity', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
-      if (item.kind === 'brace') for (const key of ['side', 'label', 'font_size']) allowed.add(key);
+      if (item.kind === 'brace') for (const key of ['side', 'label', 'font_size', 'font']) allowed.add(key);
       else for (const key of ['corner_radius', ...FILL_ATTRS]) allowed.add(key);
     } else if (SHAPES.has(item.kind)) {
       allowed = new Set([...ELEMENT_ATTRS].filter((key) => !['font_size', 'width', 'height'].includes(key)));
@@ -598,6 +598,7 @@ export class ASTTransformer {
         ...POSITION_REFERENCES, 'buff', ...TIMING_ATTRS]);
     } else {
       allowed = new Set(ELEMENT_ATTRS);
+      if (item.kind !== 'text') allowed.delete('font');
       if (item.kind === 'image') {
         allowed.add('play');
         if (VIDEO_EXTENSIONS.test(item.source)) allowed.add('muted');

@@ -195,7 +195,8 @@ default derived from the element's ID and line, so the drawing is stable across 
 `fill_opacity` becomes the opacity of the hatching and survives fades; a filled arc is drawn as a
 pie slice; braces become a single stroke on their side; a hand-drawn `move_along` path moves the
 follower along the exact geometry. A `shape: sketch=true` style (also `connection`, `attachment`)
-sketches a whole deck, and `sketch=false` opts an element out.
+sketches a whole deck, and `sketch=false` opts an element out. Paragraphs, headings and labels
+take `font=Zeyada` for the bundled handwriting face (or any loaded font family).
 
 ## Code listings
 
