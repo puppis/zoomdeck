@@ -16,6 +16,8 @@ First line.\\
 Second line after an explicit break.
 
 - Bullet items are prose with a marker
+  - Nested items indent, and wrap with a hanging indent
+    1. Numbered lists nest too
 - Headings set size only: `#` to `######`
 
 ### A level-3 heading {color=TEAL}
@@ -25,9 +27,22 @@ Links like [this one](https://vite.dev) are clickable.
 
 ## Blocks
 
-Paragraphs, headings (`#` to `######`), bullet lists and fenced code blocks are supported. Blank
-lines separate elements: each paragraph, heading, list item, image, formula and listing is one
-element with its own attributes. Headings only change the typography; nesting comes from includes.
+Paragraphs, headings (`#` to `######`), bullet and numbered lists and fenced code blocks are
+supported. Blank lines separate elements: each paragraph, heading, list item, image, formula and
+listing is one element with its own attributes. Headings only change the typography; nesting
+comes from includes.
+
+## Lists
+
+Items start with `-`, `*` or `+`, or with a number and `.` or `)`; indenting an item by two or
+more spaces nests it under the previous one, to any depth. Each item is one element: its marker
+sits in a column of `layout.listIndent` (0.6 units, wider when a number needs it), its prose
+wraps to the rest of the width with a hanging indent, and nested items are shifted by one column
+per level. Markers are `•`, `–` and `◦` by depth; numbered items show their own number with
+its delimiter, so a list may start at any value. Blank lines between items are allowed, and an
+indented paragraph after a blank line continues the item without a marker. Attributes in braces
+work on an item as on any paragraph; an explicit `x` is the left edge of the list, nested items
+keep their indentation to its right.
 
 HTML comments are discarded and raw HTML is shown as text. Soft line breaks in the source are
 joined; an explicit break takes two trailing spaces, a backslash before the newline, or `\\`.

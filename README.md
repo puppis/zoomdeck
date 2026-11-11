@@ -30,7 +30,7 @@ the configuration and a one-page reference. `docs/markup.md` is the compact dial
   `yield ctx.visit(child)` from an async generator; remaining children are visited automatically;
   `skipReturn`, `ctx.skipNext()`, `ctx.autoAdvance()`, `ctx.stop({ loop, autoNext, notes })`.
 - **First-entry fades, coordinate grids and design borders** (`PresenterConfig`), `padding`,
-  `transitionTime`, `pauseOnEntry`/`pauseOnReturn`.
+  `transitionTime`, `transition` (`zoom` or `cut`, also per slide), `pauseOnEntry`/`pauseOnReturn`.
 - **Selective rendering** (`onlyThis`), **placeholders**, **`startHere`**.
 - **A Markdown dialect**: `::: slide {#id}` containers, includes and subslides with placement and
   visit steps, `[[import: path.md]]` to split a deck into files, styled prose with inline math, display math, images (SVG, raster, animated APNG/GIF

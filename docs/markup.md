@@ -38,6 +38,9 @@ every construct of this page live, each next to the listing that produced it; op
   `only_this=true` prepares only that subtree while editing; everything else becomes a placeholder.
 - `skip_return=true` on a slide, include or subslide leaves that subtree straight for the next stop
   (the next sibling, or the parent's next fragment) without zooming back out first.
+- `transition=cut` on a slide, include or subslide replaces the view at once when the camera moves
+  into or out of that slide, like turning a PDF page; `transition=zoom` restores the animation for
+  one slide when `presenter.transition` is `cut` for the whole deck.
 - Includes and subslides accept `.class` styles, `anchor=`, `at=` and `dx`/`dy` like elements.
 - Includes without `step` are visited in source order after all numbered steps of their parent;
   `step=N` interleaves a visit with the parent's fragments. On return the parent resumes with its
@@ -84,10 +87,15 @@ First line.\\
 Second line.
 
 - Bullet items are prose with a marker
+  - Nested items indent, with a hanging indent
+    1. Numbered lists nest too
 ```
 
-Paragraphs, headings (`#` to `######`), bold, italic, nested emphasis, code spans and bullet lists
-are supported; headings only change the size. Blank lines separate elements. HTML comments are
+Paragraphs, headings (`#` to `######`), bold, italic, nested emphasis, code spans and bullet or
+numbered lists are supported; headings only change the size. Lists nest by indentation: each item
+is one element whose marker (`•`, `–`, `◦` by depth, or the item's own number) sits in a column
+of `layout.listIndent` and whose prose wraps with a hanging indent; nested items shift one column
+per level, also under an explicit `x`. Blank lines separate elements. HTML comments are
 discarded and raw HTML is shown as text. Links (`[label](https://…)`, also `mailto:` and relative
 URLs) are underlined and clickable in the player, opening in a new tab. Explicit line breaks take two
 trailing spaces, a backslash before the newline, or `\\`. Prose wraps to the element's `width`,
@@ -517,8 +525,8 @@ A deck is black text on a white canvas unless `background` and `layout.color` sa
 Prose is set in the bundled Latin Modern Roman and code in Latin Modern Mono (the LaTeX text and
 typewriter faces) unless `layout.font` or `layout.codeFont` name other families, and formula sizes
 are calibrated so that a `font_size` means the same em for text, code and math. `layout` takes `fontSize`, `headingSize`, `codeSize`, `color`, `font`, `codeFont`, `margin`,
-`gap`, `lineGap`, `animationTime`, `defaultSlideSize` and `textAnchor`. `presenter` takes
-`transitionTime`, `padding`, `pauseOnEntry`, `pauseOnReturn`, `showSlideBorders`,
+`gap`, `lineGap`, `listIndent`, `animationTime`, `defaultSlideSize` and `textAnchor`. `presenter` takes
+`transitionTime`, `transition` (`zoom` or `cut`), `padding`, `pauseOnEntry`, `pauseOnReturn`, `showSlideBorders`,
 `slideBorderColor`, `slideBorderWidth`, `showSlideGrid` and `reversePlayback` (default true: the
 left key plays the current stop backwards, camera moves included; ops that cannot run backwards,
 such as videos and updater-driven waits, are passed over; `false` restores instant jumps). `viewport` sets the proportions the

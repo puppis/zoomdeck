@@ -7,7 +7,7 @@ description: Every directive and attribute of the dialect on one page.
 
 | Syntax | Purpose |
 | --- | --- |
-| `::: slide {#id attrs} … :::` | a slide; attrs: `title`, `width`, `height`, `start_here`, `only_this`, `skip_return` |
+| `::: slide {#id attrs} … :::` | a slide; attrs: `title`, `width`, `height`, `start_here`, `only_this`, `skip_return`, `transition` |
 | `::: styles … :::` | style definitions, `name: attributes` per line, at the top of the file |
 | `::: {.element attrs} … :::` | attributes for one paragraph, heading, image, formula or listing |
 | `::: {.group #id attrs} … :::` | a group of elements in local coordinates |
@@ -17,7 +17,7 @@ description: Every directive and attribute of the dialect on one page.
 
 | Syntax | Element |
 | --- | --- |
-| paragraph, `# heading`, `- item` | text (attributes in `{…}` at the end of the block) |
+| paragraph, `# heading`, `- item`, `1. item` | text (attributes in `{…}` at the end of the block); indented items nest |
 | `[text]{attrs}` | a positioned text block, or a colored span when only `color`/`style` is given |
 | `$…$`, `$$ … $$` | inline math (part of a paragraph), display math |
 | `![alt](path){attrs}` | image, animated image or video |
@@ -30,7 +30,7 @@ description: Every directive and attribute of the dialect on one page.
 
 | Directive | Form |
 | --- | --- |
-| `include`, `subslide` | `[[include: #slide, placement, step, start_here, only_this, skip_return]]` |
+| `include`, `subslide` | `[[include: #slide, placement, step, start_here, only_this, skip_return, transition]]` |
 | `subslide` | `[[subslide: ClassName, placement, step, …]]` (a code-authored child) |
 | `import` | `[[import: path.md]]` splices a Markdown file in, between slides or inside one |
 | `rectangle`, `ellipse` | `#id width height [corner_radius] fill_color fill_opacity …` |

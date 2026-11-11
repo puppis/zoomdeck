@@ -107,6 +107,10 @@ camera moves retrace their path, including zooming back into a child you just le
 and updater-driven waits cannot run backwards and are passed over. Pressing <code>←</code> again during a
 reverse settles it and steps back once more, so quick presses step through stops.
 <code>&quot;presenter&quot;: { &quot;reversePlayback&quot;: false }</code> restores instant jumps.</p>
+<h2 id="cuts">Cuts<a class="anchor" href="#cuts" aria-label="Link to this section">#</a></h2><p><code>&quot;presenter&quot;: { &quot;transition&quot;: &quot;cut&quot; }</code> replaces the view at once when the camera moves between
+slides, like turning the pages of a PDF, while fragments and animations inside a slide still
+play. <code>transition=cut</code> on a slide, include or subslide does the same for that slide alone, and
+<code>transition=zoom</code> brings the zoom back for one slide of a <code>cut</code> deck.</p>
 <h2 id="outline-and-deep-links">Outline and deep links<a class="anchor" href="#outline-and-deep-links" aria-label="Link to this section">#</a></h2><p>The outline lists every slide; clicking one jumps to its first stop. The address bar follows the
 current stop as <code>#step=N</code>, which can be shared or bookmarked; <code>#slide=id</code> opens the first stop of a
 slide by its markup ID (or a slide by name).</p>
@@ -125,7 +129,7 @@ disk; both keep the complete player, including settings and deep links. See
       <a class="next" href="editors.html">Editors →</a>
     </footer>
   </main>
-  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#controls">Controls</a></li><li><a href="#settings">Settings</a></li><li><a href="#pointer-tools">Pointer tools</a></li><li><a href="#reverse-playback">Reverse playback</a></li><li><a href="#outline-and-deep-links">Outline and deep links</a></li><li><a href="#loops-and-automatic-advancement">Loops and automatic advancement</a></li><li><a href="#editing-preview">Editing preview</a></li><li><a href="#static-exports">Static exports</a></li></ul></nav>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#controls">Controls</a></li><li><a href="#settings">Settings</a></li><li><a href="#pointer-tools">Pointer tools</a></li><li><a href="#reverse-playback">Reverse playback</a></li><li><a href="#cuts">Cuts</a></li><li><a href="#outline-and-deep-links">Outline and deep links</a></li><li><a href="#loops-and-automatic-advancement">Loops and automatic advancement</a></li><li><a href="#editing-preview">Editing preview</a></li><li><a href="#static-exports">Static exports</a></li></ul></nav>
 </div>
 </body>
 </html>

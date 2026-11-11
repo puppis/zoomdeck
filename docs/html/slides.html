@@ -103,10 +103,20 @@ keep their final appearance as previews.</p>
 <td>slide, include, subslide</td>
 <td>leave this subtree straight for the next stop, without zooming back to the parent first</td>
 </tr>
+<tr>
+<td><code>transition=cut</code></td>
+<td>slide, include, subslide</td>
+<td>enter and leave this slide without a camera animation; <code>transition=zoom</code> restores the zoom under a <code>cut</code> deck</td>
+</tr>
 </tbody>
 </table>
 <p><code>skip_return</code> is the clean way to move from one subslide to its next sibling without going back
 to the parent: the camera goes directly from the finished child to the sibling.</p>
+<h2 id="cuts-instead-of-zooms">Cuts instead of zooms<a class="anchor" href="#cuts-instead-of-zooms" aria-label="Link to this section">#</a></h2><p>By default the camera flies between slides. <code>transition=cut</code> on a slide (or on the include that
+places it) replaces the view at once whenever the camera moves into or out of that slide, as
+between the pages of a PDF; fades of focus-only decorations still play. To present a whole deck
+that way, set <code>&quot;presenter&quot;: { &quot;transition&quot;: &quot;cut&quot; }</code> in deck.json; individual slides can then
+ask for <code>transition=zoom</code> again. When two slides disagree, the cut wins.</p>
 <h2 id="code-authored-children">Code-authored children<a class="anchor" href="#code-authored-children" aria-label="Link to this section">#</a></h2><pre><code class="language-markdown"><span class="tk-directive">[[subslide:</span> Orbit <span class="tk-attribute">x=</span><span class="tk-number">0</span> <span class="tk-attribute">y=</span><span class="tk-number">-3</span> <span class="tk-attribute">width=</span><span class="tk-number">4</span> <span class="tk-attribute">step=</span><span class="tk-number">5</span><span class="tk-directive">]]</span></code></pre>
 <p><code>subslide</code> with a class name instead of a <code>#id</code> instantiates a <code>Slide</code> subclass exported by the
 module named by <code>classes</code> in <code>deck.json</code>; see <a href="code-slides.html">Code-authored slides</a>. It takes
@@ -134,7 +144,7 @@ preview server reloads when any of them changes.</p>
       <a class="next" href="text.html">Text →</a>
     </footer>
   </main>
-  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#slide-containers">Slide containers</a></li><li><a href="#canvas-size">Canvas size</a></li><li><a href="#includes">Includes</a></li><li><a href="#visit-order">Visit order</a></li><li><a href="#flags">Flags</a></li><li><a href="#code-authored-children">Code-authored children</a></li><li><a href="#splitting-a-deck-into-files">Splitting a deck into files</a></li></ul></nav>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#slide-containers">Slide containers</a></li><li><a href="#canvas-size">Canvas size</a></li><li><a href="#includes">Includes</a></li><li><a href="#visit-order">Visit order</a></li><li><a href="#flags">Flags</a></li><li><a href="#cuts-instead-of-zooms">Cuts instead of zooms</a></li><li><a href="#code-authored-children">Code-authored children</a></li><li><a href="#splitting-a-deck-into-files">Splitting a deck into files</a></li></ul></nav>
 </div>
 </body>
 </html>

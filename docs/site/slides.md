@@ -76,9 +76,18 @@ keep their final appearance as previews.
 | `start_here=true` | slide, include, subslide | open playback at this slide (at most one in a deck) |
 | `only_this=true` | slide, include | prepare only this subtree while editing; everything else becomes a placeholder |
 | `skip_return=true` | slide, include, subslide | leave this subtree straight for the next stop, without zooming back to the parent first |
+| `transition=cut` | slide, include, subslide | enter and leave this slide without a camera animation; `transition=zoom` restores the zoom under a `cut` deck |
 
 `skip_return` is the clean way to move from one subslide to its next sibling without going back
 to the parent: the camera goes directly from the finished child to the sibling.
+
+## Cuts instead of zooms
+
+By default the camera flies between slides. `transition=cut` on a slide (or on the include that
+places it) replaces the view at once whenever the camera moves into or out of that slide, as
+between the pages of a PDF; fades of focus-only decorations still play. To present a whole deck
+that way, set `"presenter": { "transition": "cut" }` in deck.json; individual slides can then
+ask for `transition=zoom` again. When two slides disagree, the cut wins.
 
 ## Code-authored children
 

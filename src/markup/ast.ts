@@ -46,6 +46,14 @@ export function span(
 export type Attributes = Record<string, string>;
 
 /** One slide-local text, image, display-math, shape or connection element. */
+/** Where a block sits in a bullet or numbered list: its nesting depth (0 at the top level) and
+ * its marker (`•`, `–`, `◦` by depth, or the item's own number such as `3.`); blocks after the
+ * first one of an item have an empty marker and keep the indentation. */
+export interface ListItem {
+  depth: number;
+  marker: string;
+}
+
 export class ElementSpec {
   constructor(
     readonly id: string,
@@ -55,6 +63,7 @@ export class ElementSpec {
     readonly source = '',
     readonly line = 1,
     readonly level = 0,
+    readonly list: ListItem | null = null,
   ) {}
 
   /** Explicit local coordinates, interpreted using the element's anchor. */

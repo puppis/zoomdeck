@@ -47,6 +47,13 @@ and updater-driven waits cannot run backwards and are passed over. Pressing `←
 reverse settles it and steps back once more, so quick presses step through stops.
 `"presenter": { "reversePlayback": false }` restores instant jumps.
 
+## Cuts
+
+`"presenter": { "transition": "cut" }` replaces the view at once when the camera moves between
+slides, like turning the pages of a PDF, while fragments and animations inside a slide still
+play. `transition=cut` on a slide, include or subslide does the same for that slide alone, and
+`transition=zoom` brings the zoom back for one slide of a `cut` deck.
+
 ## Outline and deep links
 
 The outline lists every slide; clicking one jumps to its first stop. The address bar follows the

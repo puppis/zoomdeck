@@ -54,6 +54,29 @@ describe('MarkupParser', () => {
     expect(steps[3].changes).toEqual([{ action: 'hide', target: 'q0' }]);
   });
 
+  it('keeps the nesting, markers and numbers of lists', () => {
+    const source = '::: slide {#a}\n- one\n  - two\n    1. three\n    2. four\n  - five\n- six\n\n3) seven\n\n- eight {#e width=4}\n\n  more of eight\n:::';
+    const items = new MarkupParser().parse(source).slides[0].items as ElementSpec[];
+    expect(items.map((item) => item.list)).toEqual([
+      { depth: 0, marker: '•' }, { depth: 1, marker: '–' }, { depth: 2, marker: '1.' }, { depth: 2, marker: '2.' },
+      { depth: 1, marker: '–' }, { depth: 0, marker: '•' }, { depth: 0, marker: '3)' },
+      { depth: 0, marker: '•' }, { depth: 0, marker: '' },
+    ]);
+    expect(items[0].spans.map((s) => s.content).join('')).toBe('one');
+    expect(items[7].id).toBe('e');
+    expect(items[7].attributes.width).toBe('4');
+    const plain = new MarkupParser().parse('::: slide {#a}\nNo list here.\n:::').slides[0].items[0] as ElementSpec;
+    expect(plain.list).toBeNull();
+  });
+
+  it('accepts transition=zoom|cut on slides and children only', () => {
+    const document = new MarkupParser().parse('::: slide {#a transition=cut}\n[[include: #b transition=zoom]]\n:::\n::: slide {#b}\nx\n:::');
+    expect(document.slides[0].attributes.transition).toBe('cut');
+    expect((document.slides[0].items[0] as IncludeSpec).attributes.transition).toBe('zoom');
+    expect(() => new MarkupParser().parse('::: slide {#a transition=fade}\nx\n:::')).toThrow(/zoom or cut/);
+    expect(() => new MarkupParser().parse('::: slide {#a}\n[[include: #b transition=none]]\n:::\n::: slide {#b}\nx\n:::')).toThrow(/zoom or cut/);
+  });
+
   it('rejects unknown references and inconsistent visibility', () => {
     expect(() => new MarkupParser().parse('::: slide {#a}\n[[include: #b]]\n[[include: #b]]\n:::')).toThrow(MarkupError);
     expect(() => new MarkupParser().parse('::: slide {#a}\n[x]{#x step=1}\n[[show: #x step=2]]\n:::')).toThrow(/Inconsistent/);

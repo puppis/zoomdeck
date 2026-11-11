@@ -5,7 +5,7 @@
 import { Group, MoveAlongPath, ReplacementTransform, type Animation, type Mobject } from 'manim-web';
 import { sketchSeed, type OutlineMobject } from '../sketch';
 import { PropertyAnimation, RATE_FUNCTIONS, Tremble, enterAnimation, exitAnimation, makeEffect, type PropertyTargets } from '../animations';
-import { Slide, PlaceholderSlide, resolveSize, startingSlide } from '../slides';
+import { Slide, PlaceholderSlide, resolveSize, startingSlide, type TransitionMode } from '../slides';
 import { RasterImage, RasterMovie } from '../raster';
 import { VideoClip, VideoPlay } from '../video';
 import { IframeHost } from './iframe';
@@ -70,6 +70,7 @@ export class MarkupSlide extends Slide {
       onlyThis: (spec.attributes.only_this ?? 'false') === 'true',
       startHere: (spec.attributes.start_here ?? 'false') === 'true',
       skipReturn: (spec.attributes.skip_return ?? 'false') === 'true',
+      transition: (spec.attributes.transition as TransitionMode | undefined) ?? null,
     });
     this.spec = spec;
     this.renderer = options.renderer;
@@ -125,13 +126,15 @@ export class MarkupSlide extends Slide {
       let obj: Mobject;
       let explicit: boolean;
       let position: [number, number, number] | null;
+      // Nested list items flow indented by their depth and wrap within the remaining width.
+      const indent = item instanceof ElementSpec && item.list ? item.list.depth * layout.listIndent : 0;
       if (item instanceof IncludeSpec || item instanceof CodeSlideSpec) {
         if (!viewportOf) throw new MarkupError('Groups cannot contain includes or subslides', item.line);
         obj = viewportOf(index, item);
         explicit = 'x' in item.attributes || 'y' in item.attributes;
         position = [Number(item.attributes.x ?? 0), Number(item.attributes.y ?? 0), 0];
       } else {
-        obj = item instanceof GroupSpec ? await this._buildGroup(item, scope.width) : await this.renderer.make(item, scope.width);
+        obj = item instanceof GroupSpec ? await this._buildGroup(item, scope.width) : await this.renderer.make(item, Math.max(scope.width - indent, 0.5));
         this.elements.set(item.id, obj);
         scope.local.set(item.id, obj);
         elements.set(item.id, item);
@@ -154,19 +157,20 @@ export class MarkupSlide extends Slide {
       const flows = !Object.keys(attrs).some((key) => verticalKeys.has(key));
       const anchor = elementAnchor(item, layout.textAnchor);
       const textLike = item instanceof ElementSpec && TEXT_LIKE.has(item.kind);
-      const flowPlacement = () => obj.moveTo([scope.left + obj.getWidth() / 2, cursor - obj.getHeight() / 2, 0]);
+      const flowPlacement = () => obj.moveTo([scope.left + indent + obj.getWidth() / 2, cursor - obj.getHeight() / 2, 0]);
       if (!explicit) {
         flowPlacement();
         if (flows) cursor -= obj.getHeight() + layout.gap;
       } else if (item instanceof ElementSpec && pointShapes.includes(item.kind) && item.position === null) {
         // Already at its own coordinates.
       } else if (textLike && anchor !== 'center') {
-        // Text keeps its flow position on an omitted axis; the named anchor lands on the given one.
+        // Text keeps its flow position on an omitted axis; the named anchor lands on the given one
+        // (a nested list item keeps its indentation to the right of the given x).
         flowPlacement();
         for (const [key, axis] of [['x', 0], ['y', 1]] as const) {
           if (key in attrs) {
             const delta: [number, number, number] = [0, 0, 0];
-            delta[axis] = Number(attrs[key]) - anchorPoint(obj, anchor)[axis];
+            delta[axis] = Number(attrs[key]) + (axis === 0 ? indent : 0) - anchorPoint(obj, anchor)[axis];
             obj.shift(delta);
           }
         }
@@ -453,6 +457,7 @@ export class SlideBuilder {
         if ('only_this' in attrs) child.onlyThis = attrs.only_this === 'true';
         if ('start_here' in attrs) child.startHere = attrs.start_here === 'true';
         if ('skip_return' in attrs) child.skipReturn = attrs.skip_return === 'true';
+        if ('transition' in attrs) child.transition = attrs.transition as TransitionMode;
         let width = numberValue(attrs, 'width', item.line);
         const height = numberValue(attrs, 'height', item.line);
         if (width === null && height === null) width = Math.min(6, parent.width - 2 * renderer.layout.margin);

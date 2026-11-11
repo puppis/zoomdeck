@@ -42,8 +42,8 @@ include. A slide's natural canvas defaults to 16 × 9; pass `{ size: [20, 12] }`
 | --- | --- |
 | `build(ctx)` | runs once during preparation: create objects, add them with `ctx.add`, place children with `this.addChild` |
 | `construct(ctx)` | runs on entry: `await ctx.play(...)`, `await ctx.wait(s)`, `ctx.stop(options)`; an `async *` generator may `yield ctx.visit(child)` |
-| `addChild(child, { center, width, height, angle, strokeColor, strokeOpacity, strokeWidth, onlyThis, startHere })` | place a child viewport in this canvas |
-| options `skipReturn`, `onlyThis`, `startHere`, `size`, `build`, `program` | the same flags as the markup attributes; callbacks instead of subclassing |
+| `addChild(child, { center, width, height, angle, strokeColor, strokeOpacity, strokeWidth, onlyThis, startHere, transition })` | place a child viewport in this canvas |
+| options `skipReturn`, `onlyThis`, `startHere`, `transition`, `size`, `build`, `program` | the same flags as the markup attributes; callbacks instead of subclassing |
 
 Engine text defaults to white, so give it the deck's text color explicitly, `color: ctx.foreground`
 (black on the default white canvas), unless the slide chooses its own colors.

@@ -55,8 +55,22 @@ export interface SlideOptions {
   onlyThis?: boolean;
   /** Open playback at this slide's first entry. At most one slide may enable it. */
   startHere?: boolean;
+  /** How the camera moves into and out of this slide: `cut` replaces the view at once, `zoom`
+   * animates; unset follows the presenter's `transition`. */
+  transition?: TransitionMode | null;
   /** Lightweight topology callback receiving this slide. */
   declare?: (slide: Slide) => void;
+}
+
+/** Camera behaviour between slides: an animated zoom or an instant cut, as between PDF pages. */
+export type TransitionMode = 'zoom' | 'cut';
+
+export const TRANSITION_MODES: readonly TransitionMode[] = ['zoom', 'cut'];
+
+function checkTransition(mode: TransitionMode | null | undefined): TransitionMode | null {
+  if (mode == null) return null;
+  if (!TRANSITION_MODES.includes(mode)) throw new Error('transition must be zoom or cut');
+  return mode;
 }
 
 export interface PlacementStyle {
@@ -76,6 +90,7 @@ export interface AddChildOptions extends PlacementStyle {
   angle?: number;
   onlyThis?: boolean;
   startHere?: boolean;
+  transition?: TransitionMode | null;
 }
 
 /** A logical canvas and resumable program in a presentation tree. */
@@ -89,6 +104,7 @@ export class Slide {
   skipReturn: boolean;
   onlyThis: boolean;
   startHere: boolean;
+  transition: TransitionMode | null;
   parent: Slide | null = null;
   nextSibling: Slide | null = null;
   /** Invisible engine rectangle placing this slide in its parent's canvas. */
@@ -113,6 +129,7 @@ export class Slide {
     this.skipReturn = Boolean(options.skipReturn);
     this.onlyThis = Boolean(options.onlyThis);
     this.startHere = Boolean(options.startHere);
+    this.transition = checkTransition(options.transition);
     this._declareCallback = options.declare ?? null;
     this._buildCallback = options.build ?? null;
     this._programCallback = options.program ?? null;
@@ -143,6 +160,7 @@ export class Slide {
     }
     if (options.onlyThis != null) child.onlyThis = Boolean(options.onlyThis);
     if (options.startHere != null) child.startHere = Boolean(options.startHere);
+    if (options.transition !== undefined) child.transition = checkTransition(options.transition);
     let { width, height } = options;
     if (width == null && height == null) width = this.width / 2;
     if (width == null) width = positive(height as number, 'height') * child.width / child.height;

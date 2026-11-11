@@ -12,11 +12,18 @@ import {
   VECTOR_KINDS, VERTICAL_POSITION, VIDEO_EXTENSIONS, FILL_STYLE_NAMES, CHART_ATTRS, CHART_TYPE_NAMES, TABLE_ATTRS, TABLE_RULE_NAMES,
   ActionSpec, AnimationStep, ElementSpec, EventSpec, GroupSpec, CodeSlideSpec, IncludeSpec, InlineSpan, MarkupDocument, MarkupError, TableSpec,
   type CellAlignment,
+  type ListItem,
   NextSpec, SkipNextSpec, SlideItem, SlideSpec, StepChange, StyleSheet, Attributes, applyStyles, attachmentTargets, checkClassName, childKey, endpoint,
   numberValue, parseAt, parseAttributes, parseColor, parseTremble, polylinePoints, positionOrder, span, stepValue,
 } from './ast';
 
 type Env = { line?: number };
+
+/** Markers of unordered list items by nesting depth (cycling when deeper). */
+const BULLETS = ['•', '–', '◦'];
+
+/** A line that opens a bullet or numbered list item. */
+const LIST_START = /^\s*(?:[-*+]|\d+[.)])\s+\S/;
 
 function bracketEnd(source: string, start = 0): number | null {
   let depth = 0;
@@ -356,7 +363,7 @@ export class MarkupParser {
         const identifier = merged.id ?? `${prefix}element-${items.length + 1}`;
         items.push(element instanceof TableSpec
           ? new TableSpec(identifier, element.rows, element.aligns, merged, line)
-          : new ElementSpec(identifier, element.kind, element.spans, merged, element.source, line, element.level));
+          : new ElementSpec(identifier, element.kind, element.spans, merged, element.source, line, element.level, element.list));
         index = end + 1;
         continue;
       }
@@ -392,7 +399,17 @@ export class MarkupParser {
           index += 1;
           continue;
         }
-        if (fence === null && (!text || CONTAINER.test(text) || text.startsWith('[[') || text.startsWith('$$'))) break;
+        if (fence === null && (CONTAINER.test(text) || text.startsWith('[[') || text.startsWith('$$'))) break;
+        if (fence === null && !text) {
+          // Blank lines end a block, except inside a list: further items and indented continuation
+          // lines belong to the same list, so its nesting survives (each item is still one element).
+          if (!LIST_START.test(lines[start])) break;
+          let next = index + 1;
+          while (next < lines.length && !lines[next].trim()) next += 1;
+          if (next >= lines.length || !(LIST_START.test(lines[next]) || /^\s+\S/.test(lines[next]))) break;
+          index = next;
+          continue;
+        }
         index += 1;
       }
       if (index === start) throw new MarkupError('Unknown or malformed directive', line);
@@ -405,7 +422,15 @@ export class MarkupParser {
     const result: ElementSpec[] = [];
     const tokens = this.blockMarkdown.parse(source, {});
     let level = 0;
-    let bullet = false;
+    // Open lists, innermost last; the marker of the current item is given to its first block only.
+    const lists: Array<{ ordered: boolean; delimiter: string }> = [];
+    let marker = '';
+    const listItem = (): ListItem | null => {
+      if (!lists.length) return null;
+      const item = { depth: lists.length - 1, marker };
+      marker = '';
+      return item;
+    };
     for (let index = 0; index < tokens.length; index += 1) {
       const token = tokens[index];
       const tokenLine = line + (token.map ? token.map[0] : 0);
@@ -441,9 +466,13 @@ export class MarkupParser {
       }
       if (token.type === 'heading_open') level = Number(token.tag.slice(1));
       else if (token.type === 'heading_close') level = 0;
-      else if (token.type === 'list_item_open') bullet = true;
-      else if (token.type === 'list_item_close') bullet = false;
-      else if (token.type === 'fence' || token.type === 'code_block') {
+      else if (token.type === 'bullet_list_open' || token.type === 'ordered_list_open') {
+        lists.push({ ordered: token.type === 'ordered_list_open', delimiter: token.markup });
+      } else if (token.type === 'bullet_list_close' || token.type === 'ordered_list_close') lists.pop();
+      else if (token.type === 'list_item_open') {
+        const list = lists[lists.length - 1];
+        marker = list.ordered ? `${token.info}${list.delimiter}` : BULLETS[(lists.length - 1) % BULLETS.length];
+      } else if (token.type === 'fence' || token.type === 'code_block') {
         const info = (token.info ?? '').trim();
         const match = /^([^\s{}]*)\s*(\{.*\})?\s*$/s.exec(info);
         if (!match) throw new MarkupError('A code fence takes a language name followed by optional {attributes}', tokenLine);
@@ -456,14 +485,14 @@ export class MarkupParser {
         if (attrs.lang === 'chart') {
           // A chart fence holds the data; its info string holds the options.
           delete attrs.lang;
-          result.push(new ElementSpec(identifier, 'chart', [], attrs, token.content.replace(/\s+$/, ''), tokenLine));
-        } else result.push(new ElementSpec(identifier, 'code', [], attrs, token.content.replace(/\s+$/, ''), tokenLine));
+          result.push(new ElementSpec(identifier, 'chart', [], attrs, token.content.replace(/\s+$/, ''), tokenLine, 0, listItem()));
+        } else result.push(new ElementSpec(identifier, 'code', [], attrs, token.content.replace(/\s+$/, ''), tokenLine, 0, listItem()));
       } else if (token.type === 'inline') {
         const [content, attrs] = MarkupParser._blockAttributes(token.content, tokenLine);
         const inline = this.markdown.parseInline(content, { line: tokenLine })[0]?.children ?? [];
         const identifier = attrs.id ?? `${prefix}element-${offset + result.length + 1}`;
         if (inline.length === 1 && inline[0].type === 'image') {
-          result.push(new ElementSpec(identifier, 'image', [], attrs, inline[0].attrGet('src') ?? '', tokenLine));
+          result.push(new ElementSpec(identifier, 'image', [], attrs, inline[0].attrGet('src') ?? '', tokenLine, 0, listItem()));
         } else {
           let items: InlineSpan[];
           try {
@@ -471,8 +500,7 @@ export class MarkupParser {
           } catch (error) {
             throw new MarkupError(String((error as Error).message).replace(/^Line \d+: /, ''), tokenLine);
           }
-          if (bullet) items = [span('• '), ...items];
-          result.push(new ElementSpec(identifier, 'text', items, attrs, '', tokenLine, level));
+          result.push(new ElementSpec(identifier, 'text', items, attrs, '', tokenLine, level, listItem()));
         }
       }
     }
@@ -504,10 +532,11 @@ export class ASTTransformer {
     for (const slide of document.slides) {
       if (!IDENTIFIER.test(slide.id) || slides.has(slide.id)) throw new MarkupError(`Invalid or duplicate slide ID ${JSON.stringify(slide.id)}`, slide.line);
       slides.set(slide.id, slide);
-      this._checkAttrs(slide.attributes, new Set(['id', 'title', 'width', 'height', 'only_this', 'start_here', 'skip_return']), slide.line);
+      this._checkAttrs(slide.attributes, new Set(['id', 'title', 'width', 'height', 'only_this', 'start_here', 'skip_return', 'transition']), slide.line);
       for (const flag of ['start_here', 'only_this', 'skip_return']) {
         if (!['true', 'false'].includes(slide.attributes[flag] ?? 'false')) throw new MarkupError(`${flag} must be true or false`, slide.line);
       }
+      ASTTransformer._checkTransition(slide.attributes, slide.line);
     }
     const styles = document.styles;
     for (const slide of document.slides) {
@@ -759,12 +788,17 @@ export class ASTTransformer {
     for (const s of item.spans) if (s.color) ASTTransformer._checkColor(s.color, item.line);
   }
 
+  private static _checkTransition(attrs: Attributes, line: number): void {
+    if ('transition' in attrs && !['zoom', 'cut'].includes(attrs.transition)) throw new MarkupError('transition must be zoom or cut', line);
+  }
+
   /** Validate an include or import and register its parent link. */
   private _checkChild(item: IncludeSpec | CodeSlideSpec, slide: SlideSpec, slides: Map<string, SlideSpec>, parents: Map<string, string>): void {
-    this._checkAttrs(item.attributes, new Set([...LAYOUT, 'step', 'only_this', 'start_here', 'skip_return']), item.line);
+    this._checkAttrs(item.attributes, new Set([...LAYOUT, 'step', 'only_this', 'start_here', 'skip_return', 'transition']), item.line);
     for (const flag of ['start_here', 'only_this', 'skip_return']) {
       if (!['true', 'false'].includes(item.attributes[flag] ?? 'false')) throw new MarkupError(`${flag} must be true or false`, item.line);
     }
+    ASTTransformer._checkTransition(item.attributes, item.line);
     if ('anchor' in item.attributes) ASTTransformer._checkAnchorFor(item, item.attributes.anchor, item.line);
     if ('step' in item.attributes && stepValue(item.attributes, 'step', item.line) === 0) {
       throw new MarkupError('A child visit step must be at least one', item.line);

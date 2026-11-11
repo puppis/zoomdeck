@@ -77,11 +77,11 @@ include. A slide's natural canvas defaults to 16 × 9; pass <code>{ size: [20, 1
 <td>runs on entry: <code>await ctx.play(...)</code>, <code>await ctx.wait(s)</code>, <code>ctx.stop(options)</code>; an <code>async *</code> generator may <code>yield ctx.visit(child)</code></td>
 </tr>
 <tr>
-<td><code>addChild(child, { center, width, height, angle, strokeColor, strokeOpacity, strokeWidth, onlyThis, startHere })</code></td>
+<td><code>addChild(child, { center, width, height, angle, strokeColor, strokeOpacity, strokeWidth, onlyThis, startHere, transition })</code></td>
 <td>place a child viewport in this canvas</td>
 </tr>
 <tr>
-<td>options <code>skipReturn</code>, <code>onlyThis</code>, <code>startHere</code>, <code>size</code>, <code>build</code>, <code>program</code></td>
+<td>options <code>skipReturn</code>, <code>onlyThis</code>, <code>startHere</code>, <code>transition</code>, <code>size</code>, <code>build</code>, <code>program</code></td>
 <td>the same flags as the markup attributes; callbacks instead of subclassing</td>
 </tr>
 </tbody>

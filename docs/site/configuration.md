@@ -48,6 +48,7 @@ description: Every key of deck.json, the layout and presenter options, and the c
 | `margin` | 0.65 | distance of the flow from the canvas edges |
 | `gap` | 0.35 | distance between flowing blocks and default `buff` |
 | `lineGap` | 0.12 | extra space between wrapped lines |
+| `listIndent` | 0.6 | marker column of list items and indentation per nesting level |
 | `animationTime` | 0.35 | duration of fades |
 | `defaultSlideSize` | `[16, 9]` | canvas of slides without `width`/`height` |
 | `textAnchor` | `left-baseline` | default anchor of text (`top-left` or `center` possible) |
@@ -57,6 +58,7 @@ description: Every key of deck.json, the layout and presenter options, and the c
 | Key | Default | Meaning |
 | --- | --- | --- |
 | `transitionTime` | 0.7 | seconds of each camera move; 0 jumps |
+| `transition` | `zoom` | `cut` replaces the view at once between slides, like turning PDF pages; a slide's own `transition=` overrides it |
 | `padding` | 1 | camera width multiplier around a focused slide |
 | `pauseOnEntry` | true | stop after entering a slide, before its first step |
 | `pauseOnReturn` | true | stop after returning to a parent |

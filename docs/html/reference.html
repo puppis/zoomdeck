@@ -47,7 +47,7 @@
 <tbody>
 <tr>
 <td><code>::: slide {#id attrs} … :::</code></td>
-<td>a slide; attrs: <code>title</code>, <code>width</code>, <code>height</code>, <code>start_here</code>, <code>only_this</code>, <code>skip_return</code></td>
+<td>a slide; attrs: <code>title</code>, <code>width</code>, <code>height</code>, <code>start_here</code>, <code>only_this</code>, <code>skip_return</code>, <code>transition</code></td>
 </tr>
 <tr>
 <td><code>::: styles … :::</code></td>
@@ -76,8 +76,8 @@
 </thead>
 <tbody>
 <tr>
-<td>paragraph, <code># heading</code>, <code>- item</code></td>
-<td>text (attributes in <code>{…}</code> at the end of the block)</td>
+<td>paragraph, <code># heading</code>, <code>- item</code>, <code>1. item</code></td>
+<td>text (attributes in <code>{…}</code> at the end of the block); indented items nest</td>
 </tr>
 <tr>
 <td><code>[text]{attrs}</code></td>
@@ -119,7 +119,7 @@
 <tbody>
 <tr>
 <td><code>include</code>, <code>subslide</code></td>
-<td><code>[[include: #slide, placement, step, start_here, only_this, skip_return]]</code></td>
+<td><code>[[include: #slide, placement, step, start_here, only_this, skip_return, transition]]</code></td>
 </tr>
 <tr>
 <td><code>subslide</code></td>

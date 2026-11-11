@@ -43,6 +43,8 @@ export interface LayoutConfigOptions {
   margin?: number;
   gap?: number;
   lineGap?: number;
+  /** Indentation of nested list items per level, and the minimum width of the marker column. */
+  listIndent?: number;
   animationTime?: number;
   defaultSlideSize?: readonly [number, number];
   textAnchor?: 'left-baseline' | 'top-left' | 'center';
@@ -59,6 +61,7 @@ export class LayoutConfig {
   readonly margin: number;
   readonly gap: number;
   readonly lineGap: number;
+  readonly listIndent: number;
   readonly animationTime: number;
   readonly defaultSlideSize: readonly [number, number];
   readonly textAnchor: 'left-baseline' | 'top-left' | 'center';
@@ -73,6 +76,7 @@ export class LayoutConfig {
     this.margin = options.margin ?? 0.65;
     this.gap = options.gap ?? 0.35;
     this.lineGap = options.lineGap ?? 0.12;
+    this.listIndent = options.listIndent ?? 0.6;
     this.animationTime = options.animationTime ?? DEFAULT_ANIMATION_TIME;
     this.defaultSlideSize = options.defaultSlideSize ?? Slide.defaultSize;
     this.textAnchor = options.textAnchor ?? 'left-baseline';
@@ -81,7 +85,7 @@ export class LayoutConfig {
     for (const key of ['fontSize', 'headingSize', 'codeSize', 'animationTime'] as const) {
       if (!Number.isFinite(this[key]) || this[key] <= 0) throw new Error(`${key} must be finite and positive`);
     }
-    for (const key of ['margin', 'gap', 'lineGap'] as const) {
+    for (const key of ['margin', 'gap', 'lineGap', 'listIndent'] as const) {
       if (!Number.isFinite(this[key]) || this[key] < 0) throw new Error(`${key} must be finite and nonnegative`);
     }
   }
@@ -511,7 +515,9 @@ export class MarkupRenderer {
       obj = piece.mobject;
       if (obj.getWidth() > width) obj.scale(width / obj.getWidth());
     } else if (element.kind === 'text') {
-      obj = await this.text(element.spans, size, width, color, attrs.font);
+      obj = element.list?.marker
+        ? await this.listItem(element.spans, element.list.marker, size, width, color, attrs.font)
+        : await this.text(element.spans, size, width, color, attrs.font);
     } else if (element.kind === 'code') {
       obj = this.code(element.source, attrs.lang ?? '', size, width, color);
     } else {
@@ -620,6 +626,21 @@ export class MarkupRenderer {
       { fontSize, maxWidth, defaultColor, fontFamily: this.layout.fontFamilyFor(font), lineGap: this.layout.lineGap },
       (latex, color) => this.mathPiece(latex, color, fontSize),
     );
+  }
+
+  /**
+   * A list item: the marker in a hanging-indent column of at least `layout.listIndent`, the prose
+   * wrapped to the rest of `maxWidth` next to it, first baselines aligned.
+   */
+  async listItem(spans: InlineSpan[], marker: string, fontSize: number, maxWidth: number, defaultColor: string, font?: string): Promise<Mobject> {
+    const label = await this.text([span(marker)], fontSize, maxWidth, defaultColor, font);
+    if (!spans.some((s) => s.content.trim())) return label;
+    const column = Math.max(this.layout.listIndent, label.getWidth() + 0.15);
+    const body = await this.text(spans, fontSize, Math.max(maxWidth - column, 0.5), defaultColor, font);
+    body.shift([label.getLeft()[0] + column - body.getLeft()[0], baselineY(label) - baselineY(body), 0]);
+    const item = new Group(label, body) as Group & { markupBaselineFraction: number };
+    item.markupBaselineFraction = (baselineY(body) - item.getCenter()[1]) / item.getHeight();
+    return item;
   }
 
   /** Lay out a verbatim listing; it shrinks uniformly when wider than `maxWidth`. */

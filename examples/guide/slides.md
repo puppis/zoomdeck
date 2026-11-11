@@ -88,6 +88,8 @@ First line.\\
 Second line after an explicit break.
 
 - Bullet items are prose with a marker
+  - Nested items indent
+    1. Numbered lists nest too
 - Headings set size only: `#` to `######`
 
 ### A level-3 heading
@@ -105,6 +107,8 @@ First line.\\
 Second line after an explicit break. {x=0.6 width=9}
 
 - Bullet items are prose with a marker {x=0.6 width=9}
+  - Nested items indent {x=0.6 width=8.4}
+    1. Numbered lists nest too {x=0.6 width=7.8}
 - Headings set size only: `#` to `######` {x=0.6 width=9}
 
 ### A level-3 heading {x=0.6}
@@ -465,7 +469,7 @@ Look at this slide from its parent: the panel and the caption are gone while thi
 
 ```markdown {#children-source x=-9.35 y=3.7 width=9.5}
 [[include: #visited-second x=4.7 y=-2.2 width=7 step=2 skip_return=true]]
-[[include: #visited-first x=-4.7 y=-2.2 width=7 step=1]]
+[[include: #visited-first x=-4.7 y=-2.2 width=7 step=1 transition=cut]]
 
 [Revealed at step 2, before the second child]{#between x=-9.35 y=0.6 step=2}
 
@@ -473,13 +477,13 @@ Look at this slide from its parent: the panel and the caption are gone while thi
 ```
 
 [[include: #visited-second x=4.7 y=-2.2 width=7 step=2 skip_return=true]]
-[[include: #visited-first x=-4.7 y=-2.2 width=7 step=1]]
+[[include: #visited-first x=-4.7 y=-2.2 width=7 step=1 transition=cut]]
 
 [Revealed at step 2, before the second child]{#between x=-9.35 y=0.6 step=2}
 
 [[include: #missing x=7.3 y=2.3 width=4]]
 
-An include with `step` interleaves the child visit with the parent's fragments; without `step` it is visited in source order after the numbered steps. `skip_return=true` leaves a child straight for the next stop without zooming out first. An undefined slide (here `#missing`) is drawn as a red placeholder and skipped during playback. {x=-9.35 y=-4.9 width=19 font_size=22}
+An include with `step` interleaves the child visit with the parent's fragments; without `step` it is visited in source order after the numbered steps. `skip_return=true` leaves a child straight for the next stop without zooming out first. `transition=cut` enters and leaves a slide without the camera animation, like a PDF page (`"presenter": {"transition": "cut"}` does it for the whole deck). An undefined slide (here `#missing`) is drawn as a red placeholder and skipped during playback. {x=-9.35 y=-4.9 width=19 font_size=22}
 :::
 
 ::: slide {#visited-first}
