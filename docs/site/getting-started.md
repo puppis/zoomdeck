@@ -81,6 +81,9 @@ node bin/zoomdeck.mjs build path/to/deck.json -o build/my-deck
 node bin/zoomdeck.mjs build path/to/deck.json -o build/my-deck --one-file
 ```
 
+Ready-made editor setups (VS Code, Sublime Text, Emacs, Vim, JetBrains) that bind the preview and
+the export to shortcuts and save as you type are described in [Editors](editors.html).
+
 `serve` accepts `--port N`, `--no-open`, `--scene Name` and repeatable `--watch PATH`; `build`
 accepts `--show-outline` and `--scene Name`. The deck argument is a `deck.json`, a Markdown file or
 a JS/TS module exporting a deck definition. The single-file export opens by double-click and needs

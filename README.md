@@ -214,6 +214,14 @@ Zoomdeck/
 
 Run `npm test` for the unit tests and `npm run typecheck` for TypeScript.
 
+## Editors
+
+`editors/` holds ready-to-use configurations that bind the live preview (`zoomdeck serve`, which
+reloads the browser on save and keeps your position) and the one-file export to shortcuts, save
+decks as you type and highlight the dialect: a VS Code grammar with tasks and key bindings, a
+Sublime Text package, an Emacs mode, a Vim/Neovim plugin and JetBrains External Tools. The
+documentation page [Editors](docs/site/editors.md) explains each setup.
+
 ## Limitations
 
 - Text is rasterized to canvas textures and redrawn at the screen's resolution whenever the

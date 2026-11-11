@@ -1,0 +1,19 @@
+{
+  "name": "zoomdeck-markup",
+  "displayName": "Zoomdeck markup",
+  "description": "Highlights Zoomdeck slide containers, directives and attributes inside Markdown files.",
+  "version": "0.1.0",
+  "publisher": "zoomdeck",
+  "license": "MIT",
+  "engines": { "vscode": "^1.80.0" },
+  "categories": ["Programming Languages"],
+  "contributes": {
+    "grammars": [
+      {
+        "scopeName": "markdown.zoomdeck.injection",
+        "path": "./syntaxes/zoomdeck.injection.json",
+        "injectTo": ["text.html.markdown"]
+      }
+    ]
+  }
+}

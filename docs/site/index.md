@@ -90,6 +90,7 @@ the same way (`zoomdeck build <deck> -o <folder> --one-file`) gives a file like 
 <a href="animations.html"><strong>Animations</strong><span>Move, rotate, scale, recolor, effects, morphs, paths and trembling.</span></a>
 <a href="code-slides.html"><strong>Code-authored slides</strong><span>TypeScript slides with the full engine, mixed into Markdown decks.</span></a>
 <a href="player.html"><strong>The player</strong><span>Keys, settings, pen and spotlight, reverse playback.</span></a>
+<a href="editors.html"><strong>Editors</strong><span>Save-to-preview and export shortcuts for VS Code, Sublime Text, Emacs, Vim and JetBrains, with highlighting.</span></a>
 <a href="exporting.html"><strong>Exporting a deck</strong><span>A static folder, or one HTML file that plays anywhere.</span></a>
 <a href="configuration.html"><strong>Configuration</strong><span>Every key of deck.json and the command line.</span></a>
 <a href="reference.html"><strong>Reference</strong><span>Every directive and attribute on one page.</span></a>

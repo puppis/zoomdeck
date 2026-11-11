@@ -23,7 +23,7 @@ const NAV: Array<{ title: string; pages: string[] }> = [
   { title: 'Start', pages: ['index', 'getting-started', 'concepts'] },
   { title: 'Writing slides', pages: ['slides', 'text', 'math', 'images', 'shapes', 'sketch', 'icons', 'enclosures', 'tables-charts', 'code', 'positioning', 'styles', 'groups', 'live-pages'] },
   { title: 'Motion', pages: ['fragments', 'animations', 'focus'] },
-  { title: 'Beyond markup', pages: ['code-slides', 'player', 'exporting', 'configuration', 'reference'] },
+  { title: 'Beyond markup', pages: ['code-slides', 'player', 'editors', 'exporting', 'configuration', 'reference'] },
 ];
 
 function escapeHtml(text: string): string {

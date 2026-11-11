@@ -1,0 +1,4 @@
+{
+  // Save when the window loses focus, so switching to the browser shows the latest text.
+  "save_on_focus_lost": true
+}

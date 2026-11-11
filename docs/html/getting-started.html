@@ -30,7 +30,7 @@
       </section>
       <section>
         <h4>Beyond markup</h4>
-        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html">Reference</a></li></ul>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="player.html">The player</a></li><li><a href="editors.html">Editors</a></li><li><a href="exporting.html">Exporting a deck</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html">Reference</a></li></ul>
       </section>
   </nav>
   <main id="content">
@@ -109,6 +109,8 @@ while <code>x</code>, <code>y</code>, <code>width</code> on an include place the
 
 <span class="tk-comment"># One self-contained HTML file with every asset embedded.</span>
 <span class="tk-keyword">node</span> bin/zoomdeck.mjs build path/to/deck.json <span class="tk-attribute">-o</span> build/my-deck <span class="tk-attribute">--one-file</span></code></pre>
+<p>Ready-made editor setups (VS Code, Sublime Text, Emacs, Vim, JetBrains) that bind the preview and
+the export to shortcuts and save as you type are described in <a href="editors.html">Editors</a>.</p>
 <p><code>serve</code> accepts <code>--port N</code>, <code>--no-open</code>, <code>--scene Name</code> and repeatable <code>--watch PATH</code>; <code>build</code>
 accepts <code>--show-outline</code> and <code>--scene Name</code>. The deck argument is a <code>deck.json</code>, a Markdown file or
 a JS/TS module exporting a deck definition. The single-file export opens by double-click and needs

@@ -1,0 +1,16 @@
+{
+  "target": "exec",
+  "selector": "text.html.markdown, source.json",
+  "working_dir": "$file_path",
+  "shell_cmd": "zoomdeck build \"$file\" -o \"$file_path/build\" --one-file",
+  "variants": [
+    {
+      "name": "Preview",
+      "shell_cmd": "zoomdeck serve \"$file\""
+    },
+    {
+      "name": "Build folder",
+      "shell_cmd": "zoomdeck build \"$file\" -o \"$file_path/build\""
+    }
+  ]
+}
