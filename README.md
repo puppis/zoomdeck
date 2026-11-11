@@ -214,6 +214,14 @@ Zoomdeck/
 
 Run `npm test` for the unit tests and `npm run typecheck` for TypeScript.
 
+## The `zoomdeck` command
+
+`npm link` inside the checkout (after `npm install`) creates a global `zoomdeck` command that
+runs the checkout; `zoomdeck --help` confirms it, `node bin/zoomdeck.mjs` is the equivalent
+without the link. If a shell or an editor reports `command not found`, npm's global `bin`
+directory (`npm prefix -g`) is missing from that program's `PATH`; the
+[Getting started](docs/site/getting-started.md) page explains the fixes.
+
 ## Editors
 
 `editors/` holds ready-to-use configurations that bind the live preview (`zoomdeck serve`, which

@@ -68,17 +68,50 @@ Open it with `/?deck=path/to/deck.json` on the dev page, or with the command lin
 slide needs an `#id`; the slide nobody includes is the root; `width` on a slide sets its canvas,
 while `x`, `y`, `width` on an include place the child inside the parent.
 
+## Installing the `zoomdeck` command
+
+The command line lives in `bin/zoomdeck.mjs`, which the checkout can run directly as
+`node bin/zoomdeck.mjs …`. To call it as plain `zoomdeck` from any folder, from an editor or from
+a script, link it into npm's global `bin` directory once, from inside the checkout:
+
+```bash
+cd Zoomdeck
+npm install        # dependencies first, if you have not yet
+npm link           # creates the global `zoomdeck` command, pointing at this checkout
+zoomdeck --help    # prints the usage
+```
+
+`npm link` makes a symbolic link, so the command always runs the current state of the checkout
+and `git pull` updates it; `npm unlink -g zoomdeck` removes it. `npm install -g .` copies the
+package instead and must be repeated after updates.
+
+**`zoomdeck: command not found`** afterwards means the global `bin` directory is not on the
+`PATH` of the shell that runs the command:
+
+- In a terminal, `npm prefix -g` prints npm's global prefix; its `bin` subfolder (for example
+  `/usr/local/bin`, `/opt/homebrew/bin`, or `~/.nvm/versions/node/<version>/bin` with nvm) must
+  appear in `echo $PATH`. Node installers normally arrange this for your shell; nvm does it in
+  `~/.zshrc` or `~/.bashrc`.
+- Editors started from the Dock, the Start menu or a launcher do not read your shell profile, so
+  their `PATH` is the system default. The Sublime Text package in `editors/` therefore runs its
+  commands through a login shell; for other editors, either start the editor from a terminal, or
+  write the full path of the command into the configuration (`which zoomdeck` prints it; for
+  Emacs set `zoomdeck-command`, for Vim `g:zoomdeck_command`, and for VS Code and JetBrains edit
+  the command in the task or tool). See [Editors](editors.html).
+- With nvm, the link belongs to the Node version that was active when you ran `npm link`; after
+  switching versions run it again.
+
 ## The command line
 
 ```bash
 # Live preview of any deck (also outside this checkout): reloads on save, keeps your position.
-node bin/zoomdeck.mjs serve path/to/deck.json
+zoomdeck serve path/to/deck.json          # or: node bin/zoomdeck.mjs serve path/to/deck.json
 
 # Static bundle: index.html + assets/ + deck/. Host or copy the whole folder.
-node bin/zoomdeck.mjs build path/to/deck.json -o build/my-deck
+zoomdeck build path/to/deck.json -o build/my-deck
 
 # One self-contained HTML file with every asset embedded.
-node bin/zoomdeck.mjs build path/to/deck.json -o build/my-deck --one-file
+zoomdeck build path/to/deck.json -o build/my-deck --one-file
 ```
 
 Ready-made editor setups (VS Code, Sublime Text, Emacs, Vim, JetBrains) that bind the preview and

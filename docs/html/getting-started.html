@@ -101,14 +101,40 @@ guide deck uses; <code>background</code> and <code>layout.color</code> change th
 <p>Open it with <code>/?deck=path/to/deck.json</code> on the dev page, or with the command line below. Every
 slide needs an <code>#id</code>; the slide nobody includes is the root; <code>width</code> on a slide sets its canvas,
 while <code>x</code>, <code>y</code>, <code>width</code> on an include place the child inside the parent.</p>
+<h2 id="installing-the-zoomdeck-command">Installing the <code>zoomdeck</code> command<a class="anchor" href="#installing-the-zoomdeck-command" aria-label="Link to this section">#</a></h2><p>The command line lives in <code>bin/zoomdeck.mjs</code>, which the checkout can run directly as
+<code>node bin/zoomdeck.mjs …</code>. To call it as plain <code>zoomdeck</code> from any folder, from an editor or from
+a script, link it into npm's global <code>bin</code> directory once, from inside the checkout:</p>
+<pre><code class="language-bash"><span class="tk-keyword">cd</span> Zoomdeck
+<span class="tk-keyword">npm</span> install        <span class="tk-comment"># dependencies first, if you have not yet</span>
+<span class="tk-keyword">npm</span> link           <span class="tk-comment"># creates the global `zoomdeck` command, pointing at this checkout</span>
+zoomdeck <span class="tk-attribute">--help</span>    <span class="tk-comment"># prints the usage</span></code></pre>
+<p><code>npm link</code> makes a symbolic link, so the command always runs the current state of the checkout
+and <code>git pull</code> updates it; <code>npm unlink -g zoomdeck</code> removes it. <code>npm install -g .</code> copies the
+package instead and must be repeated after updates.</p>
+<p><strong><code>zoomdeck: command not found</code></strong> afterwards means the global <code>bin</code> directory is not on the
+<code>PATH</code> of the shell that runs the command:</p>
+<ul>
+<li>In a terminal, <code>npm prefix -g</code> prints npm's global prefix; its <code>bin</code> subfolder (for example
+<code>/usr/local/bin</code>, <code>/opt/homebrew/bin</code>, or <code>~/.nvm/versions/node/&lt;version&gt;/bin</code> with nvm) must
+appear in <code>echo $PATH</code>. Node installers normally arrange this for your shell; nvm does it in
+<code>~/.zshrc</code> or <code>~/.bashrc</code>.</li>
+<li>Editors started from the Dock, the Start menu or a launcher do not read your shell profile, so
+their <code>PATH</code> is the system default. The Sublime Text package in <code>editors/</code> therefore runs its
+commands through a login shell; for other editors, either start the editor from a terminal, or
+write the full path of the command into the configuration (<code>which zoomdeck</code> prints it; for
+Emacs set <code>zoomdeck-command</code>, for Vim <code>g:zoomdeck_command</code>, and for VS Code and JetBrains edit
+the command in the task or tool). See <a href="editors.html">Editors</a>.</li>
+<li>With nvm, the link belongs to the Node version that was active when you ran <code>npm link</code>; after
+switching versions run it again.</li>
+</ul>
 <h2 id="the-command-line">The command line<a class="anchor" href="#the-command-line" aria-label="Link to this section">#</a></h2><pre><code class="language-bash"><span class="tk-comment"># Live preview of any deck (also outside this checkout): reloads on save, keeps your position.</span>
-<span class="tk-keyword">node</span> bin/zoomdeck.mjs serve path/to/deck.json
+zoomdeck serve path/to/deck.json          <span class="tk-comment"># or: node bin/zoomdeck.mjs serve path/to/deck.json</span>
 
 <span class="tk-comment"># Static bundle: index.html + assets/ + deck/. Host or copy the whole folder.</span>
-<span class="tk-keyword">node</span> bin/zoomdeck.mjs build path/to/deck.json <span class="tk-attribute">-o</span> build/my-deck
+zoomdeck build path/to/deck.json <span class="tk-attribute">-o</span> build/my-deck
 
 <span class="tk-comment"># One self-contained HTML file with every asset embedded.</span>
-<span class="tk-keyword">node</span> bin/zoomdeck.mjs build path/to/deck.json <span class="tk-attribute">-o</span> build/my-deck <span class="tk-attribute">--one-file</span></code></pre>
+zoomdeck build path/to/deck.json <span class="tk-attribute">-o</span> build/my-deck <span class="tk-attribute">--one-file</span></code></pre>
 <p>Ready-made editor setups (VS Code, Sublime Text, Emacs, Vim, JetBrains) that bind the preview and
 the export to shortcuts and save as you type are described in <a href="editors.html">Editors</a>.</p>
 <p><code>serve</code> accepts <code>--port N</code>, <code>--no-open</code>, <code>--scene Name</code> and repeatable <code>--watch PATH</code>; <code>build</code>
@@ -135,7 +161,7 @@ every key.</p>
       <a class="next" href="concepts.html">Concepts →</a>
     </footer>
   </main>
-  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#install">Install</a></li><li><a href="#a-first-deck">A first deck</a></li><li><a href="#the-command-line">The command line</a></li><li><a href="#what-a-deck-folder-contains">What a deck folder contains</a></li><li><a href="#next-steps">Next steps</a></li></ul></nav>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#install">Install</a></li><li><a href="#a-first-deck">A first deck</a></li><li><a href="#installing-the-zoomdeck-command">Installing the zoomdeck command</a></li><li><a href="#the-command-line">The command line</a></li><li><a href="#what-a-deck-folder-contains">What a deck folder contains</a></li><li><a href="#next-steps">Next steps</a></li></ul></nav>
 </div>
 </body>
 </html>

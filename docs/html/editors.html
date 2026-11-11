@@ -49,10 +49,21 @@ exports it as a single HTML file into a <code>build/</code> folder next to it. B
 </ol>
 <pre><code class="language-bash">zoomdeck serve path/to/slides.md            <span class="tk-comment"># or deck.json; opens http://localhost:5173/</span>
 zoomdeck build path/to/deck.json <span class="tk-attribute">-o</span> build <span class="tk-attribute">--one-file</span></code></pre>
-<p>The <code>zoomdeck</code> command is installed globally with <code>npm install -g .</code> (or <code>npm link</code>) from the
-Zoomdeck checkout, once Node 20.19+ or 22.12+ is in place. Inside a project that lists <code>zoomdeck</code>
-as a dependency, <code>npx zoomdeck</code> works too; every configuration below has a single place where the
-command is named, so <code>node /path/to/Zoomdeck/bin/zoomdeck.mjs</code> can replace it.</p>
+<h2 id="the-zoomdeck-command">The <code>zoomdeck</code> command<a class="anchor" href="#the-zoomdeck-command" aria-label="Link to this section">#</a></h2><p>All configurations call a <code>zoomdeck</code> command. It exists once you have run <code>npm link</code> inside the
+Zoomdeck checkout (after <code>npm install</code>, on Node 20.19+ or 22.12+), as described under
+<a href="getting-started.html#installing-the-zoomdeck-command">Installing the command</a>; <code>zoomdeck --help</code>
+in a terminal confirms it. Inside a project that lists <code>zoomdeck</code> as a dependency, <code>npx zoomdeck</code>
+works as well.</p>
+<p>If an editor reports <strong><code>zoomdeck: command not found</code></strong> although the terminal finds it, the editor
+was started from the Dock, the Start menu or a launcher and did not read your shell profile, so
+npm's global <code>bin</code> directory (or nvm's, or Homebrew's) is missing from its <code>PATH</code>. The Sublime
+Text package below runs its commands through a login shell for that reason; VS Code's tasks run
+in its integrated terminal, which loads the profile; JetBrains IDEs and Vim's terminal inherit
+it too. For the remaining cases, start the editor from a terminal once, or put the full path of
+the command (<code>which zoomdeck</code>) into the configuration: each one names the command in a single
+place (<code>zoomdeck-command</code> in Emacs, <code>g:zoomdeck_command</code> in Vim, the task or tool definition in
+VS Code and JetBrains, the <code>shell_cmd</code> lines in Sublime Text). <code>node /path/to/Zoomdeck/bin/zoomdeck.mjs</code>
+is an equivalent that needs no link, as long as <code>node</code> itself is on that <code>PATH</code>.</p>
 <p>The configurations live in the repository under <code>editors/</code>. Highlighting adds, on top of the
 editor's Markdown, the slide and styles containers, the <code>[[directive: …]]</code> lines, <code>#id</code>s,
 <code>.classes</code>, <code>key=value</code> attributes, quoted strings and numbers. Errors in a deck appear in the
@@ -100,6 +111,9 @@ export.</li>
 <li><code>save_on_focus_lost</code>, so switching to the browser saves the deck first. For saving while you
 type, add a plugin such as <em>auto-save</em> from Package Control.</li>
 </ul>
+<p>The build system runs its commands through <code>zsh -lic</code> on macOS and <code>bash -lic</code> on Linux, so the
+<code>zoomdeck</code> command is found with the <code>PATH</code> of your shell even when Sublime Text was launched from
+the Dock. On Windows the commands run directly; make sure <code>npm prefix -g</code> is on the system <code>PATH</code>.</p>
 <h2 id="emacs">Emacs<a class="anchor" href="#emacs" aria-label="Link to this section">#</a></h2><pre><code class="language-elisp">(add-to-list 'load-path &quot;/path/to/Zoomdeck/editors/emacs&quot;)
 (require 'zoomdeck)</code></pre>
 <p><code>zoomdeck-mode</code> derives from <code>markdown-mode</code> when it is installed (otherwise from <code>text-mode</code>),
@@ -107,7 +121,9 @@ highlights the dialect and is chosen automatically for files that open with <cod
 <code>::: styles</code>. Its keys: <strong>C-c C-p</strong> serves the deck in a <code>*zoomdeck preview*</code> compilation buffer,
 <strong>C-c C-b</strong> exports one HTML file, <strong>C-c C-k</strong> stops the server. <code>zoomdeck-autosave-mode</code> (on by
 default) saves the deck after one idle second; <code>zoomdeck-command</code>, <code>zoomdeck-build-directory</code>,
-<code>zoomdeck-autosave</code> and <code>zoomdeck-autosave-delay</code> are customizable.</p>
+<code>zoomdeck-autosave</code> and <code>zoomdeck-autosave-delay</code> are customizable. A graphical Emacs started
+from the Dock may not see the shell's <code>PATH</code>: either install the <code>exec-path-from-shell</code> package,
+or set <code>zoomdeck-command</code> to the full path that <code>which zoomdeck</code> prints.</p>
 <h2 id="vim-and-neovim">Vim and Neovim<a class="anchor" href="#vim-and-neovim" aria-label="Link to this section">#</a></h2><p>Copy <code>editors/vim/plugin/</code> and <code>editors/vim/after/</code> into <code>~/.vim/</code> or <code>~/.config/nvim/</code>, or hand
 <code>Zoomdeck/editors/vim</code> to your plugin manager. Markdown buffers whose first lines open a slide or
 styles block get the mappings <strong>&lt;leader&gt;zp</strong> (<code>:ZoomdeckPreview</code>, in a terminal split) and
@@ -131,7 +147,7 @@ grammar that most editors can load, and the browser reports mistakes with their 
       <a class="next" href="exporting.html">Exporting a deck →</a>
     </footer>
   </main>
-  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#the-loop">The loop</a></li><li><a href="#visual-studio-code">Visual Studio Code</a></li><li><a href="#sublime-text">Sublime Text</a></li><li><a href="#emacs">Emacs</a></li><li><a href="#vim-and-neovim">Vim and Neovim</a></li><li><a href="#jetbrains-ides">JetBrains IDEs</a></li><li><a href="#any-other-editor">Any other editor</a></li></ul></nav>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#the-loop">The loop</a></li><li><a href="#the-zoomdeck-command">The zoomdeck command</a></li><li><a href="#visual-studio-code">Visual Studio Code</a></li><li><a href="#sublime-text">Sublime Text</a></li><li><a href="#emacs">Emacs</a></li><li><a href="#vim-and-neovim">Vim and Neovim</a></li><li><a href="#jetbrains-ides">JetBrains IDEs</a></li><li><a href="#any-other-editor">Any other editor</a></li></ul></nav>
 </div>
 </body>
 </html>

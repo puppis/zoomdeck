@@ -270,7 +270,8 @@ async function inlineHtml(html, outDir) {
 }
 
 const [command, ...rest] = process.argv.slice(2);
+if (command === undefined || command === '-h' || command === '--help' || command === 'help') usage();
 const options = parseArgs(rest);
 if (command === 'serve') serve(options).catch((error) => { console.error(error); process.exit(1); });
 else if (command === 'build') build(options).catch((error) => { console.error(error); process.exit(1); });
-else usage(command ? `unknown command ${command}` : undefined);
+else usage(`unknown command ${command}`);

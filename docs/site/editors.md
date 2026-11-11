@@ -20,10 +20,24 @@ zoomdeck serve path/to/slides.md            # or deck.json; opens http://localho
 zoomdeck build path/to/deck.json -o build --one-file
 ```
 
-The `zoomdeck` command is installed globally with `npm install -g .` (or `npm link`) from the
-Zoomdeck checkout, once Node 20.19+ or 22.12+ is in place. Inside a project that lists `zoomdeck`
-as a dependency, `npx zoomdeck` works too; every configuration below has a single place where the
-command is named, so `node /path/to/Zoomdeck/bin/zoomdeck.mjs` can replace it.
+## The `zoomdeck` command
+
+All configurations call a `zoomdeck` command. It exists once you have run `npm link` inside the
+Zoomdeck checkout (after `npm install`, on Node 20.19+ or 22.12+), as described under
+[Installing the command](getting-started.html#installing-the-zoomdeck-command); `zoomdeck --help`
+in a terminal confirms it. Inside a project that lists `zoomdeck` as a dependency, `npx zoomdeck`
+works as well.
+
+If an editor reports **`zoomdeck: command not found`** although the terminal finds it, the editor
+was started from the Dock, the Start menu or a launcher and did not read your shell profile, so
+npm's global `bin` directory (or nvm's, or Homebrew's) is missing from its `PATH`. The Sublime
+Text package below runs its commands through a login shell for that reason; VS Code's tasks run
+in its integrated terminal, which loads the profile; JetBrains IDEs and Vim's terminal inherit
+it too. For the remaining cases, start the editor from a terminal once, or put the full path of
+the command (`which zoomdeck`) into the configuration: each one names the command in a single
+place (`zoomdeck-command` in Emacs, `g:zoomdeck_command` in Vim, the task or tool definition in
+VS Code and JetBrains, the `shell_cmd` lines in Sublime Text). `node /path/to/Zoomdeck/bin/zoomdeck.mjs`
+is an equivalent that needs no link, as long as `node` itself is on that `PATH`.
 
 The configurations live in the repository under `editors/`. Highlighting adds, on top of the
 editor's Markdown, the slide and styles containers, the `[[directive: …]]` lines, `#id`s,
@@ -59,6 +73,10 @@ folder). It provides:
 - `save_on_focus_lost`, so switching to the browser saves the deck first. For saving while you
   type, add a plugin such as *auto-save* from Package Control.
 
+The build system runs its commands through `zsh -lic` on macOS and `bash -lic` on Linux, so the
+`zoomdeck` command is found with the `PATH` of your shell even when Sublime Text was launched from
+the Dock. On Windows the commands run directly; make sure `npm prefix -g` is on the system `PATH`.
+
 ## Emacs
 
 ```elisp
@@ -71,7 +89,9 @@ highlights the dialect and is chosen automatically for files that open with `:::
 `::: styles`. Its keys: **C-c C-p** serves the deck in a `*zoomdeck preview*` compilation buffer,
 **C-c C-b** exports one HTML file, **C-c C-k** stops the server. `zoomdeck-autosave-mode` (on by
 default) saves the deck after one idle second; `zoomdeck-command`, `zoomdeck-build-directory`,
-`zoomdeck-autosave` and `zoomdeck-autosave-delay` are customizable.
+`zoomdeck-autosave` and `zoomdeck-autosave-delay` are customizable. A graphical Emacs started
+from the Dock may not see the shell's `PATH`: either install the `exec-path-from-shell` package,
+or set `zoomdeck-command` to the full path that `which zoomdeck` prints.
 
 ## Vim and Neovim
 

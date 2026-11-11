@@ -1,16 +1,28 @@
 {
+  // Ctrl+B / ⌘B exports one HTML file next to the deck; the variants start the preview server
+  // or write the static folder export. On macOS and Linux the commands run through a login,
+  // interactive shell so that the `zoomdeck` command installed with `npm link` (or by nvm or
+  // Homebrew, which only your shell profile puts on the PATH) is found even when Sublime Text
+  // was started from the Dock or a launcher. To use a checkout without installing the command,
+  // replace `zoomdeck` below by `node /path/to/Zoomdeck/bin/zoomdeck.mjs`.
   "target": "exec",
   "selector": "text.html.markdown, source.json",
   "working_dir": "$file_path",
   "shell_cmd": "zoomdeck build \"$file\" -o \"$file_path/build\" --one-file",
+  "osx": { "shell_cmd": "/bin/zsh -lic 'zoomdeck build \"$file\" -o \"$file_path/build\" --one-file'" },
+  "linux": { "shell_cmd": "bash -lic 'zoomdeck build \"$file\" -o \"$file_path/build\" --one-file'" },
   "variants": [
     {
       "name": "Preview",
-      "shell_cmd": "zoomdeck serve \"$file\""
+      "shell_cmd": "zoomdeck serve \"$file\"",
+      "osx": { "shell_cmd": "/bin/zsh -lic 'zoomdeck serve \"$file\"'" },
+      "linux": { "shell_cmd": "bash -lic 'zoomdeck serve \"$file\"'" }
     },
     {
       "name": "Build folder",
-      "shell_cmd": "zoomdeck build \"$file\" -o \"$file_path/build\""
+      "shell_cmd": "zoomdeck build \"$file\" -o \"$file_path/build\"",
+      "osx": { "shell_cmd": "/bin/zsh -lic 'zoomdeck build \"$file\" -o \"$file_path/build\"'" },
+      "linux": { "shell_cmd": "bash -lic 'zoomdeck build \"$file\" -o \"$file_path/build\"'" }
     }
   ]
 }
