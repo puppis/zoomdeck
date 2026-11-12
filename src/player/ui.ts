@@ -426,6 +426,29 @@ export class PlayerUI {
     return this._editSource;
   }
 
+  /**
+   * Run `action` once no modifier key is held, or after a moment. The editor is launched by
+   * the server right away, and some editors read a modifier held at launch as a request for
+   * a special mode (Option opens Sublime Text in safe mode on macOS), so the gesture's own key
+   * must be up first.
+   */
+  private _whenModifiersReleased(action: () => void): void {
+    let done = false;
+    const run = () => {
+      if (done) return;
+      done = true;
+      document.removeEventListener('keyup', onKey, true);
+      window.removeEventListener('blur', run);
+      action();
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (!event.altKey && !event.shiftKey && !event.ctrlKey && !event.metaKey) run();
+    };
+    document.addEventListener('keyup', onKey, true);
+    window.addEventListener('blur', run);
+    window.setTimeout(run, 2500);
+  }
+
   /** Show a message in the header for a few seconds, then the player state again. */
   notice(message: string): void {
     if (this._noticeTimer !== null) clearTimeout(this._noticeTimer);
@@ -1073,7 +1096,8 @@ export class PlayerUI {
       }
       if (tool === 'edit') {
         event.preventDefault();
-        if (this._editSource) this._editSource({ x: event.clientX, y: event.clientY });
+        const at = { x: event.clientX, y: event.clientY };
+        if (this._editSource) this._whenModifiersReleased(() => this._editSource?.(at));
         else this.notice('Open the deck with zoomdeck serve to jump to the editor');
         return;
       }
