@@ -471,7 +471,8 @@ target may be changed only once per step.
 - **`animate`** interpolates toward a target state: `x`, `y` or `at=` move the element's anchor
   (`anchor=` picks another point), `dx`/`dy` add an offset, `angle` rotates by that many radians,
   `scale` scales by that factor, `opacity` and `color` set final values. The ID may name an
-  **included slide**: its viewport then moves, rotates or scales, and the whole subtree follows.
+  **included slide**: its viewport then moves, rotates or scales, and the whole subtree follows
+  (give the include `preview=true` so the child, otherwise hidden until visited, is seen moving).
 - **`effect`** plays a named engine effect on an element: `indicate`, `wiggle`, `circumscribe`,
   `flash`, `focus`, `grow`, `shrink`, `write`, `create`, `uncreate`, `draw`, `wave`; `color` and
   `scale` tune the ones that take them. Effects do not change the visibility state.

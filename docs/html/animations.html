@@ -56,7 +56,7 @@
 <span class="tk-directive">[[transform:</span> <span class="tk-attribute">#before</span> -&gt; <span class="tk-attribute">#after</span>, <span class="tk-attribute">step=</span><span class="tk-number">4</span>, <span class="tk-attribute">run_time=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
 <span class="tk-directive">[[move_along:</span> <span class="tk-attribute">#ball</span>, <span class="tk-attribute">step=</span><span class="tk-number">5</span>, <span class="tk-attribute">path=#orbit</span>, <span class="tk-attribute">run_time=</span><span class="tk-number">2</span>, <span class="tk-attribute">rate=</span>linear<span class="tk-directive">]]</span>
 <span class="tk-directive">[[animate:</span> <span class="tk-attribute">#satellite</span>, <span class="tk-attribute">step=</span><span class="tk-number">6</span>, <span class="tk-attribute">x=</span><span class="tk-number">7.5</span>, <span class="tk-attribute">y=</span><span class="tk-number">-3.6</span>, <span class="tk-attribute">angle=</span><span class="tk-number">-0.3</span>, <span class="tk-attribute">run_time=</span><span class="tk-number">1.5</span><span class="tk-directive">]]</span>
-<span class="tk-directive">[[include:</span> <span class="tk-attribute">#satellite</span> <span class="tk-attribute">x=</span><span class="tk-number">5.5</span> <span class="tk-attribute">y=</span><span class="tk-number">-3.6</span> <span class="tk-attribute">width=</span><span class="tk-number">4</span> <span class="tk-attribute">step=</span><span class="tk-number">7</span><span class="tk-directive">]]</span></code></pre>
+<span class="tk-directive">[[include:</span> <span class="tk-attribute">#satellite</span> <span class="tk-attribute">x=</span><span class="tk-number">5.5</span> <span class="tk-attribute">y=</span><span class="tk-number">-3.6</span> <span class="tk-attribute">width=</span><span class="tk-number">4</span> <span class="tk-attribute">step=</span><span class="tk-number">7</span> <span class="tk-attribute">preview=</span>true<span class="tk-directive">]]</span></code></pre>
 <p>Animation directives play at a numbered step together with the fades of that step. They share
 <code>run_time</code>, <code>lag</code> and <code>rate</code>; targets must be visible at that step, and a target may be changed
 only once per step.</p>
@@ -96,7 +96,9 @@ only once per step.</p>
 </tbody>
 </table>
 <p>The ID may name an <strong>included slide</strong>: its viewport then moves, rotates or scales, and the whole
-subtree follows, as in the guide where a child is slid and tilted before it is visited.</p>
+subtree follows, as in the guide where a child is slid and tilted before it is visited. A child is
+invisible until its first visit, so give its include <code>preview=true</code> when it is animated earlier:
+the move is then seen, instead of the child appearing already moved when it is entered.</p>
 <h2 id="effect">effect<a class="anchor" href="#effect" aria-label="Link to this section">#</a></h2><p><code>[[effect: name #id, step=N, …]]</code> plays an engine effect without changing visibility:</p>
 <p><code>indicate</code>, <code>wiggle</code>, <code>circumscribe</code>, <code>flash</code>, <code>focus</code>, <code>grow</code>, <code>shrink</code>, <code>write</code>, <code>create</code>,
 <code>uncreate</code>, <code>draw</code>, <code>wave</code>. <code>color</code> and <code>scale</code> tune the ones that take them.</p>

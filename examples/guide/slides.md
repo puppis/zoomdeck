@@ -849,7 +849,7 @@ A fence names its language (python, javascript, typescript, c-like, bash, json, 
 [[transform: #before -> #after, step=4, run_time=1]]
 [[move_along: #ball, step=5, path=#orbit, run_time=2, rate=linear]]
 [[animate: #satellite, step=6, x=7.5, y=-3.6, angle=-0.3, run_time=1.5]]
-[[include: #satellite x=5.5 y=-3.6 width=4 step=7]]
+[[include: #satellite x=5.5 y=-3.6 width=4 step=7 preview=true]]
 ```
 
 [[dot: #ball x=1.5 y=1.5 radius=0.3 color=GOLD_E]]
@@ -868,7 +868,7 @@ A fence names its language (python, javascript, typescript, c-like, bash, json, 
 [[transform: #before -> #after, step=4, run_time=1]]
 [[move_along: #ball, step=5, path=#orbit, run_time=2, rate=linear]]
 [[animate: #satellite, step=6, x=7.5, y=-3.6, angle=-0.3, run_time=1.5]]
-[[include: #satellite x=5.5 y=-3.6 width=4 step=7]]
+[[include: #satellite x=5.5 y=-3.6 width=4 step=7 preview=true]]
 
 `animate` moves an anchor to `x`/`y` or `at=` and applies `angle` (radians), `scale`, `opacity` and `color` targets; `effect` plays a named effect (indicate, wiggle, circumscribe, flash, focus, grow, shrink, write, create, uncreate, draw, wave); `transform` morphs one element into a hidden one; `move_along` follows a shape. All take `step`, `run_time`, `lag` and `rate`, an included slide can be animated by its ID, and `enter=`/`exit=` replace an element's fades. {x=-9.35 y=-3 width=9.5 font_size=17}
 :::
@@ -876,7 +876,7 @@ A fence names its language (python, javascript, typescript, c-like, bash, json, 
 ::: slide {#satellite}
 ## A moving child
 
-This slide's viewport was slid and tilted by `[[animate: #satellite ...]]` in its parent before being visited; its content followed. {x=-7.35 width=14.7 font_size=24}
+This slide's viewport was slid and tilted by `[[animate: #satellite ...]]` in its parent before being visited; `preview=true` on the include kept its content visible meanwhile, so it followed the move. {x=-7.35 width=14.7 font_size=24}
 :::
 
 ::: slide {#media width=20}

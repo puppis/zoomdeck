@@ -12,7 +12,7 @@ description: Move, rotate, scale, recolor and fade elements, play named effects,
 [[transform: #before -> #after, step=4, run_time=1]]
 [[move_along: #ball, step=5, path=#orbit, run_time=2, rate=linear]]
 [[animate: #satellite, step=6, x=7.5, y=-3.6, angle=-0.3, run_time=1.5]]
-[[include: #satellite x=5.5 y=-3.6 width=4 step=7]]
+[[include: #satellite x=5.5 y=-3.6 width=4 step=7 preview=true]]
 ```
 
 Animation directives play at a numbered step together with the fades of that step. They share
@@ -33,7 +33,9 @@ only once per step.
 | `opacity`, `color` | final values |
 
 The ID may name an **included slide**: its viewport then moves, rotates or scales, and the whole
-subtree follows, as in the guide where a child is slid and tilted before it is visited.
+subtree follows, as in the guide where a child is slid and tilted before it is visited. A child is
+invisible until its first visit, so give its include `preview=true` when it is animated earlier:
+the move is then seen, instead of the child appearing already moved when it is entered.
 
 ## effect
 
