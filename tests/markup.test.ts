@@ -69,6 +69,14 @@ describe('MarkupParser', () => {
     expect(plain.list).toBeNull();
   });
 
+  it('accepts preview=true|false on slides and children', () => {
+    const document = new MarkupParser().parse('::: slide {#a}\n[[include: #b preview=true]]\n:::\n::: slide {#b preview=false}\nx\n:::');
+    const include = document.slides[0].items.find((item): item is IncludeSpec => item instanceof IncludeSpec);
+    expect(include?.attributes.preview).toBe('true');
+    expect(document.slides[1].attributes.preview).toBe('false');
+    expect(() => new MarkupParser().parse('::: slide {#a}\n[[include: #b preview=maybe]]\n:::\n::: slide {#b}\nx\n:::')).toThrow(/preview must be true or false/);
+  });
+
   it('accepts transition=zoom|cut on slides and children only', () => {
     const document = new MarkupParser().parse('::: slide {#a transition=cut}\n[[include: #b transition=zoom]]\n:::\n::: slide {#b}\nx\n:::');
     expect(document.slides[0].attributes.transition).toBe('cut');

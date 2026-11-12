@@ -13,8 +13,8 @@ links to the page with the explanations and examples.
 
 | Syntax | Purpose |
 | --- | --- |
-| `::: slide {#id attrs} … :::` | a slide; attrs: `title`, `width`, `height`, `start_here`, `only_this`, `skip_return`, `transition` |
-| `[[include: #slide, placement, step, start_here, only_this, skip_return, transition]]` | a child slide placed in this one; `subslide: #id` is the same |
+| `::: slide {#id attrs} … :::` | a slide; attrs: `title`, `width`, `height`, `start_here`, `only_this`, `skip_return`, `transition`, `preview` |
+| `[[include: #slide, placement, step, start_here, only_this, skip_return, transition, preview]]` | a child slide placed in this one; `subslide: #id` is the same |
 | `[[subslide: ClassName, placement, step, …]]` | a code-authored child ([Code-authored slides](code-slides.html)) |
 | `[[import: path.md]]` | splices a Markdown file in, between slides or inside one |
 | `::: styles … :::` | style definitions, `name: attributes` per line, at the top of the file |
@@ -50,7 +50,7 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
 | `title`, `poster` | iframes | label and preview image |
 | `rules`, `header`, `padding`, `border_color`, `header_color`, `header_opacity`, `stripe_opacity` | tables | rules, header row, cell padding and shading |
 | `type`, `colors`, `axis_color`, `border_color`, `grid`, `legend`, `values`, `min`, `max`, `header` | charts | chart kind, palette, axes, gridlines, legend, value labels and axis bounds |
-| `href` | every element, group, connection and attachment | URL opened when the element is clicked (`#slide=id` and `#step=N` move within the deck) |
+| `href` | every element, group, connection and attachment | URL opened when the element is clicked; `#slide=id` and `#step=N` move within the deck on a double-click |
 
 ## Diagrams
 
@@ -114,7 +114,7 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
 | `enter`, `exit` | elements | `fade`, `grow`, `write`, `create`, `draw` / `fade`, `shrink`, `uncreate` |
 | `tremble`, `tremble_amplitude`, `tremble_rate` | shapes, icons, connections, attachments, math, groups, tables, charts | `true`, `N` or `N-M`: vibration over a range of steps, its size and frequency |
 | `focus_only` | static elements | visible only while the slide is focused |
-| `start_here`, `only_this`, `skip_return`, `transition` | slides, includes, subslides | opening stop, partial preparation, leaving a subtree without zooming out, `zoom` or `cut` ([Slides and the tree](slides.html#flags)) |
+| `start_here`, `only_this`, `skip_return`, `transition`, `preview` | slides, includes, subslides | opening stop, partial preparation, leaving a subtree without zooming out, `zoom` or `cut`, content shown before the first visit ([Slides and the tree](slides.html#flags)) |
 
 ## Names
 

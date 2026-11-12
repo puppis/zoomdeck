@@ -65,7 +65,7 @@ and when a viewport moves every descendant follows.</p>
 order, each visit zooming the camera into the child's viewport; returning zooms back out. The
 order within a slide is the source order of its includes, unless an include carries <code>step=N</code>,
 which interleaves the visit with the parent's numbered fragments. A child's content is invisible
-until its first visit and fades in then, unless <code>presenter.revealOnEntry</code> is <code>false</code>. <code>skip_return</code> and <code>skip_next</code>
+until its first visit and fades in then, unless its include says <code>preview=true</code> or <code>presenter.revealOnEntry</code> is <code>false</code>. <code>skip_return</code> and <code>skip_next</code>
 let a presentation flow from one child straight to the next.</p>
 <h2 id="coordinates">Coordinates<a class="anchor" href="#coordinates" aria-label="Link to this section">#</a></h2><p>Inside a slide, coordinates are the slide's own: the origin is the center of the canvas, <code>x</code> grows
 to the right and <code>y</code> upwards, and one unit is one unit of the canvas whatever the zoom level. Text

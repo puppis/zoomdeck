@@ -72,6 +72,7 @@ export class MarkupSlide extends Slide {
       startHere: (spec.attributes.start_here ?? 'false') === 'true',
       skipReturn: (spec.attributes.skip_return ?? 'false') === 'true',
       transition: (spec.attributes.transition as TransitionMode | undefined) ?? null,
+      preview: (spec.attributes.preview ?? 'false') === 'true',
     });
     this.spec = spec;
     this.renderer = options.renderer;
@@ -462,6 +463,7 @@ export class SlideBuilder {
         if ('start_here' in attrs) child.startHere = attrs.start_here === 'true';
         if ('skip_return' in attrs) child.skipReturn = attrs.skip_return === 'true';
         if ('transition' in attrs) child.transition = attrs.transition as TransitionMode;
+        if ('preview' in attrs) child.preview = attrs.preview === 'true';
         let width = numberValue(attrs, 'width', item.line);
         const height = numberValue(attrs, 'height', item.line);
         if (width === null && height === null) width = Math.min(6, parent.width - 2 * renderer.layout.margin);

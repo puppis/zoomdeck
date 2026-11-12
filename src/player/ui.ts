@@ -555,6 +555,17 @@ export class PlayerUI {
     this._highlights.style.height = `${height * scale}px`;
   }
 
+  /** Remove the dots left by the clicks of a double-click (recent single-point strokes). */
+  dropTaps(): void {
+    const now = performance.now();
+    for (let n = 0; n < 2 && this._strokes.length; n++) {
+      const path = this._strokes[this._strokes.length - 1];
+      if ((path.getAttribute('d') ?? '').includes(' L ') || now - Number(path.dataset.time) > 1500) break;
+      this._strokes.pop();
+      path.remove();
+    }
+  }
+
   private _endStroke(): void {
     this._stroke = null;
     this.stageHost.classList.remove('stroking');
@@ -596,6 +607,7 @@ export class PlayerUI {
       (tool === 'pen' ? this._sketches : this._ink).append(path);
       this._strokes.push(path);
       this._undone = [];
+      path.dataset.time = String(performance.now());
       this._stroke = { path, tool, data: `M ${x} ${y} l 0.001 0` };
       this.stageHost.classList.add('stroking');
     } else this._stroke.data += ` L ${x} ${y}`;

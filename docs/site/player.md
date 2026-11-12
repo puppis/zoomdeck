@@ -54,6 +54,10 @@ With the default gestures:
   off by default, and binding it to a key (for example Alt) in the settings makes that key +
   click behave like the `→` key.
 
+- **Double-click** a link that points inside the deck (`#slide=`, `#step=`) to follow it; a single
+  click over such a link draws, since it often covers a whole tile. Links to pages outside the deck
+  open on a single click.
+
 Strokes belong to the current slide and clear when the slide changes; undo, redo and clear act on
 the current slide's strokes. Links and live pages keep working under a plain pen: clicking one
 opens it rather than drawing, with no highlight while the pointer rests on it.

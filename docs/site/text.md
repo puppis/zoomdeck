@@ -62,13 +62,14 @@ element of its own, which then must be a whole block.
 ## Links
 
 `[label](https://…)` renders an underlined label that opens the page in a new tab; `mailto:` and
-relative URLs work too. Links are clickable wherever the text is visible on screen, including in
-parent previews.
+relative URLs work too. Links are clickable while their slide is the one on screen, not in a
+parent's preview of it.
 
 Any element can be a link as a whole: `href=` on a paragraph, heading, image, formula, shape,
 icon, arrow, brace, box, blob, table, chart or group opens its URL in a new tab when the element
-is clicked. The element's look does not change, and the link is active wherever the element is on
-screen and visible.
+is clicked. The element's look does not change. Targets inside the deck, `#slide=id` and
+`#step=N`, are followed on a **double-click** instead: such links often cover whole tiles, and a
+single click over them keeps drawing with the pen. The dots left by the two clicks are removed.
 
 ```markdown
 [[icon: document #paper x=0 y=0 size=1.2 label="the paper" href=https://arxiv.org/abs/1234.56789]]

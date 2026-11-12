@@ -68,7 +68,7 @@ description: Every key of deck.json, the layout and presenter options, and the c
 | `slideBorderColor`, `slideBorderWidth` | `#FC6255`, 3 | border style |
 | `showSlideGrid` | false | draw a coordinate grid on the focused slide |
 | `reversePlayback` | true | play stops backwards on the left key |
-| `revealOnEntry` | true | children start invisible and fade in when first entered; `false` shows every slide's content from the start, as the guide's front page does |
+| `revealOnEntry` | true | children start invisible and fade in when first entered; `false` shows every slide's content from the start; `preview=true` on an include does it for one child |
 
 ## Command line
 

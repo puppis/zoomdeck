@@ -77,6 +77,7 @@ keep their final appearance as previews.
 | `only_this=true` | slide, include | prepare only this subtree while editing; everything else becomes a placeholder |
 | `skip_return=true` | slide, include, subslide | leave this subtree straight for the next stop, without zooming back to the parent first |
 | `transition=cut` | slide, include, subslide | enter and leave this slide without a camera animation; `transition=zoom` restores the zoom under a `cut` deck |
+| `preview=true` | slide, include, subslide | show the child's content before its first visit instead of fading it in on entry, as the tiles of the guide's front page do |
 
 `skip_return` is the clean way to move from one subslide to its next sibling without going back
 to the parent: the camera goes directly from the finished child to the sibling.

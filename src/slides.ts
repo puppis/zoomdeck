@@ -58,6 +58,8 @@ export interface SlideOptions {
   /** How the camera moves into and out of this slide: `cut` replaces the view at once, `zoom`
    * animates; unset follows the presenter's `transition`. */
   transition?: TransitionMode | null;
+  /** Show this slide's content before its first visit instead of fading it in on entry. */
+  preview?: boolean;
   /** Lightweight topology callback receiving this slide. */
   declare?: (slide: Slide) => void;
 }
@@ -91,6 +93,7 @@ export interface AddChildOptions extends PlacementStyle {
   onlyThis?: boolean;
   startHere?: boolean;
   transition?: TransitionMode | null;
+  preview?: boolean;
 }
 
 /** A logical canvas and resumable program in a presentation tree. */
@@ -105,6 +108,8 @@ export class Slide {
   onlyThis: boolean;
   startHere: boolean;
   transition: TransitionMode | null;
+  /** Content visible before the first visit (a tile on an overview, say). */
+  preview: boolean;
   parent: Slide | null = null;
   nextSibling: Slide | null = null;
   /** Invisible engine rectangle placing this slide in its parent's canvas. */
@@ -130,6 +135,7 @@ export class Slide {
     this.onlyThis = Boolean(options.onlyThis);
     this.startHere = Boolean(options.startHere);
     this.transition = checkTransition(options.transition);
+    this.preview = Boolean(options.preview);
     this._declareCallback = options.declare ?? null;
     this._buildCallback = options.build ?? null;
     this._programCallback = options.program ?? null;
@@ -161,6 +167,7 @@ export class Slide {
     if (options.onlyThis != null) child.onlyThis = Boolean(options.onlyThis);
     if (options.startHere != null) child.startHere = Boolean(options.startHere);
     if (options.transition !== undefined) child.transition = checkTransition(options.transition);
+    if (options.preview !== undefined) child.preview = Boolean(options.preview);
     let { width, height } = options;
     if (width == null && height == null) width = this.width / 2;
     if (width == null) width = positive(height as number, 'height') * child.width / child.height;

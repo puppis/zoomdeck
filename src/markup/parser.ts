@@ -533,8 +533,8 @@ export class ASTTransformer {
     for (const slide of document.slides) {
       if (!IDENTIFIER.test(slide.id) || slides.has(slide.id)) throw new MarkupError(`Invalid or duplicate slide ID ${JSON.stringify(slide.id)}`, slide.line);
       slides.set(slide.id, slide);
-      this._checkAttrs(slide.attributes, new Set(['id', 'title', 'width', 'height', 'only_this', 'start_here', 'skip_return', 'transition']), slide.line);
-      for (const flag of ['start_here', 'only_this', 'skip_return']) {
+      this._checkAttrs(slide.attributes, new Set(['id', 'title', 'width', 'height', 'only_this', 'start_here', 'skip_return', 'transition', 'preview']), slide.line);
+      for (const flag of ['start_here', 'only_this', 'skip_return', 'preview']) {
         if (!['true', 'false'].includes(slide.attributes[flag] ?? 'false')) throw new MarkupError(`${flag} must be true or false`, slide.line);
       }
       ASTTransformer._checkTransition(slide.attributes, slide.line);
@@ -798,8 +798,8 @@ export class ASTTransformer {
 
   /** Validate an include or import and register its parent link. */
   private _checkChild(item: IncludeSpec | CodeSlideSpec, slide: SlideSpec, slides: Map<string, SlideSpec>, parents: Map<string, string>): void {
-    this._checkAttrs(item.attributes, new Set([...LAYOUT, 'step', 'only_this', 'start_here', 'skip_return', 'transition']), item.line);
-    for (const flag of ['start_here', 'only_this', 'skip_return']) {
+    this._checkAttrs(item.attributes, new Set([...LAYOUT, 'step', 'only_this', 'start_here', 'skip_return', 'transition', 'preview']), item.line);
+    for (const flag of ['start_here', 'only_this', 'skip_return', 'preview']) {
       if (!['true', 'false'].includes(item.attributes[flag] ?? 'false')) throw new MarkupError(`${flag} must be true or false`, item.line);
     }
     ASTTransformer._checkTransition(item.attributes, item.line);

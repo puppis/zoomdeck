@@ -91,12 +91,13 @@ palette name (<code>BLUE</code>, <code>RED</code>, <code>TEAL</code>, <code>ORAN
 color. A color-only span stays inline; any other attribute makes the bracketed text a positioned
 element of its own, which then must be a whole block.</p>
 <h2 id="links">Links<a class="anchor" href="#links" aria-label="Link to this section">#</a></h2><p><code>[label](https://…)</code> renders an underlined label that opens the page in a new tab; <code>mailto:</code> and
-relative URLs work too. Links are clickable wherever the text is visible on screen, including in
-parent previews.</p>
+relative URLs work too. Links are clickable while their slide is the one on screen, not in a
+parent's preview of it.</p>
 <p>Any element can be a link as a whole: <code>href=</code> on a paragraph, heading, image, formula, shape,
 icon, arrow, brace, box, blob, table, chart or group opens its URL in a new tab when the element
-is clicked. The element's look does not change, and the link is active wherever the element is on
-screen and visible.</p>
+is clicked. The element's look does not change. Targets inside the deck, <code>#slide=id</code> and
+<code>#step=N</code>, are followed on a <strong>double-click</strong> instead: such links often cover whole tiles, and a
+single click over them keeps drawing with the pen. The dots left by the two clicks are removed.</p>
 <pre><code class="language-markdown"><span class="tk-directive">[[icon:</span> document <span class="tk-attribute">#paper</span> <span class="tk-attribute">x=</span><span class="tk-number">0</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">size=</span><span class="tk-number">1.2</span> <span class="tk-attribute">label=</span><span class="tk-string">&quot;the paper&quot;</span> <span class="tk-attribute">href=</span>https://arxiv.org/abs/<span class="tk-number">1234.56789</span><span class="tk-directive">]]</span>
 
 <span class="tk-directive">::: </span><span class="tk-attribute">{.group #team x=</span><span class="tk-number">4</span><span class="tk-attribute"> y=</span><span class="tk-number">0</span><span class="tk-attribute"> href=https://example.org/team}</span>

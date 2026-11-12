@@ -38,7 +38,7 @@ reference, and every topic page opens the matching chapter of the guide deck wit
 The guide is Zoomdeck's own demonstration and the companion of these pages: a presentation in
 which every chapter shows a feature next to the listing that produces it, organized in the same
 sections as this documentation. **[Open the guide](guide.html)**: its front page lists the
-sections and jumps to any of them on a click, and each chapter links back to its page here.
+sections and jumps to any of them on a double-click, and each chapter links back to its page here.
 
 The guide is a single self-contained HTML file next to these pages, exported from
 `examples/guide/` when you run `npm install` (and again by `npm run docs`); it runs from disk or

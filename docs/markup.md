@@ -38,6 +38,8 @@ every construct of this page live, each next to the listing that produced it; op
   `only_this=true` prepares only that subtree while editing; everything else becomes a placeholder.
 - `skip_return=true` on a slide, include or subslide leaves that subtree straight for the next stop
   (the next sibling, or the parent's next fragment) without zooming back out first.
+- `preview=true` on a slide, include or subslide shows its content before its first visit instead of
+  fading it in on entry.
 - `transition=cut` on a slide, include or subslide replaces the view at once when the camera moves
   into or out of that slide, like turning a PDF page; `transition=zoom` restores the animation for
   one slide when `presenter.transition` is `cut` for the whole deck.

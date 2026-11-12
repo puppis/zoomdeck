@@ -180,6 +180,15 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
     void player.goTo(index, false);
     return true;
   };
+  // A double-click follows them (a click draws, even over a tile); the two dots it left go away.
+  ui.stageHost.addEventListener('dblclick', (event) => {
+    if (event.button !== 0) return;
+    const hash = links.deckLinkAt(event.clientX, event.clientY);
+    if (hash && links.navigate?.(hash)) {
+      event.preventDefault();
+      ui.dropTaps();
+    }
+  });
   const restored = resumedClip(resume, navigation);
   const startClip = navigation.startSlide === null ? null : player.firstEntry(navigation.startSlide);
   const initial = restored ?? (startClip !== null && startClip >= 0 ? startClip : hashStep ?? 0);

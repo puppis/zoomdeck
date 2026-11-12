@@ -624,7 +624,7 @@ export class SlideContext extends LocalScene {
     }
     const backgrounds = config.showSlideGrid ? [coordinateGrid(slide.width, slide.height)] : [];
     this.display = new Display(this, {
-      contentOpacity: slide.parent === null || slide instanceof PlaceholderSlide || !config.revealOnEntry ? 1 : 0,
+      contentOpacity: slide.parent === null || slide instanceof PlaceholderSlide || slide.preview || !config.revealOnEntry ? 1 : 0,
       gridOpacity: slide.parent === null && backgrounds.length ? 1 : 0,
       backgrounds,
       overlays: this._canvasBorder ? [this._canvasBorder] : [],
