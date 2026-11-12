@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Icons · Zoomdeck</title>
+<meta name="description" content="Thirty-nine diagram symbols built from geometry (people, machines, files, marks and actions) with configurable outline, fill and label, crisp or hand-drawn.">
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+</header>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Getting started</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+      </section>
+      <section>
+        <h4>Diagrams</h4>
+        <ul><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="icons.html" aria-current="page">Icons</a><ul class="subsections"><li><a href="#names">Names</a></li><li><a href="#attributes">Attributes</a></li><li><a href="#styling-icons-deck-wide">Styling icons deck-wide</a></li><li><a href="#from-code">From code</a></li></ul></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li></ul>
+      </section>
+      <section>
+        <h4>Layout and style</h4>
+        <ul><li><a href="positioning.html">Positioning</a></li><li><a href="groups.html">Groups</a></li><li><a href="styles.html">Styles</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion and interaction</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Presenting</h4>
+        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
+      </section>
+      <section>
+        <h4>Advanced</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>Icons</h1>
+      <p class="lead">Thirty-nine diagram symbols built from geometry (people, machines, files, marks and actions) with configurable outline, fill and label, crisp or hand-drawn.</p>
+      <p><a class="try" href="guide.html#slide=icons">Open in the guide ↗</a></p>
+<pre><code class="language-markdown"><span class="tk-directive">[[icon:</span> user <span class="tk-attribute">#alice</span> <span class="tk-attribute">x=</span><span class="tk-number">-7</span> <span class="tk-attribute">y=</span><span class="tk-number">-2.4</span> <span class="tk-attribute">size=</span><span class="tk-number">1.4</span> <span class="tk-attribute">color=</span>BLUE_E <span class="tk-attribute">label=</span><span class="tk-string">&quot;Alice&quot;</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[icon:</span> server <span class="tk-attribute">#api</span> <span class="tk-attribute">right-of:#alice</span> <span class="tk-attribute">buff=</span><span class="tk-number">3</span> <span class="tk-attribute">size=</span><span class="tk-number">1.4</span> <span class="tk-attribute">color=</span>GREEN_E <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.25</span> <span class="tk-attribute">label=</span><span class="tk-string">&quot;api&quot;</span> <span class="tk-attribute">label_side=</span>above<span class="tk-directive">]]</span>
+<span class="tk-directive">[[icon:</span> database <span class="tk-attribute">#db</span> <span class="tk-attribute">right-of:#api</span> <span class="tk-attribute">buff=</span><span class="tk-number">3</span> <span class="tk-attribute">size=</span><span class="tk-number">1.4</span> <span class="tk-attribute">color=</span>GOLD_E <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.3</span> <span class="tk-attribute">label=</span><span class="tk-string">&quot;orders&quot;</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[icon:</span> cloud <span class="tk-attribute">#cdn</span> <span class="tk-attribute">right-of:#db</span> <span class="tk-attribute">buff=</span><span class="tk-number">2</span> <span class="tk-attribute">size=</span><span class="tk-number">1.4</span> <span class="tk-attribute">color=</span>TEAL_E <span class="tk-attribute">label=</span><span class="tk-string">&quot;cdn&quot;</span> <span class="tk-attribute">sketch=</span>true<span class="tk-directive">]]</span>
+<span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#alice</span> -&gt; <span class="tk-attribute">#api</span>, <span class="tk-attribute">#req</span>, <span class="tk-attribute">label=</span><span class="tk-string">&quot;HTTPS&quot;</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#api</span> -&gt; <span class="tk-attribute">#db</span>, <span class="tk-attribute">#sql</span>, <span class="tk-attribute">label=</span><span class="tk-string">&quot;SQL&quot;</span>, <span class="tk-attribute">step=</span><span class="tk-number">1</span><span class="tk-directive">]]</span></code></pre>
+<p><code>[[icon: name #id …]]</code> draws one of the symbols that architecture and data-flow diagrams keep
+needing. Every icon is built from geometry (a few closed outlines and strokes inside a square
+box), so it is an ordinary vector element: it is placed by its center or by an <code>anchor</code>, it
+works as an endpoint of arrows and lines and as a target of braces, <a href="enclosures.html">boxes and blobs</a>,
+it fades in and out with <code>step</code> and <code>hide</code>, and it <a href="animations.html">animates</a> like a shape.</p>
+<h2 id="names">Names<a class="anchor" href="#names" aria-label="Link to this section">#</a></h2><table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Icons</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>People and machines</td>
+<td><code>user</code>, <code>users</code>, <code>client</code> (a laptop), <code>desktop</code>, <code>phone</code>, <code>server</code>, <code>database</code>, <code>cloud</code>, <code>globe</code></td>
+</tr>
+<tr>
+<td>Files and records</td>
+<td><code>document</code>, <code>folder</code>, <code>message</code> (an envelope), <code>calendar</code>, <code>chart</code></td>
+</tr>
+<tr>
+<td>Marks and places</td>
+<td><code>check</code>, <code>cross</code>, <code>question</code>, <code>exclamation</code>, <code>info</code>, <code>warning</code>, <code>star</code>, <code>flag</code>, <code>pin</code>, <code>home</code></td>
+</tr>
+<tr>
+<td>Actions and tools</td>
+<td><code>download</code>, <code>upload</code>, <code>search</code>, <code>arrival</code>, <code>departure</code>, <code>recycle</code>, <code>trash</code>, <code>key</code>, <code>lock</code>, <code>shield</code>, <code>bolt</code>, <code>gear</code>, <code>gears</code>, <code>puzzle</code>, <code>clock</code></td>
+</tr>
+</tbody>
+</table>
+<p>All of them share the same construction: one or two closed silhouettes that take the fill, plus
+strokes for the details, drawn with the same outline width inside a square box.</p>
+<h2 id="attributes">Attributes<a class="anchor" href="#attributes" aria-label="Link to this section">#</a></h2><table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>size</code></td>
+<td>1</td>
+<td>height of the icon's box, in logical units (widths follow the symbol)</td>
+</tr>
+<tr>
+<td><code>color</code></td>
+<td>the layout color</td>
+<td>outline color</td>
+</tr>
+<tr>
+<td><code>stroke_width</code></td>
+<td>2</td>
+<td>outline width, in the units of shapes</td>
+</tr>
+<tr>
+<td><code>fill_color</code></td>
+<td><code>color</code></td>
+<td>color of the silhouette parts (the body, the cylinder, the page, …)</td>
+</tr>
+<tr>
+<td><code>fill_opacity</code></td>
+<td>0</td>
+<td>opacity of that fill; details such as text lines and bands stay strokes</td>
+</tr>
+<tr>
+<td><code>label</code></td>
+<td></td>
+<td>inline text under the icon, with styling and math</td>
+</tr>
+<tr>
+<td><code>label_side</code></td>
+<td><code>below</code></td>
+<td><code>below</code>, <code>above</code>, <code>left</code> or <code>right</code></td>
+</tr>
+<tr>
+<td><code>font_size</code>, <code>font</code></td>
+<td>80% of the prose size, the prose face</td>
+<td>the label's size and font family</td>
+</tr>
+<tr>
+<td><code>sketch</code> and its tuning</td>
+<td><code>false</code></td>
+<td><a href="sketch.html">hand-drawn</a> rendering: <code>roughness</code>, <code>bowing</code>, <code>fill_style</code>, <code>hachure_angle</code>, <code>hachure_gap</code>, <code>fill_weight</code>, <code>seed</code></td>
+</tr>
+<tr>
+<td><code>tremble</code>, <code>tremble_amplitude</code>, <code>tremble_rate</code></td>
+<td></td>
+<td><a href="animations.html#tremble">vibration</a> over a range of steps</td>
+</tr>
+</tbody>
+</table>
+<p>Icons also take <code>opacity</code>, <code>step</code>, <code>hide</code>, <code>enter</code>, <code>exit</code>, <code>run_time</code>, <code>lag</code>, the placement
+attributes of <a href="positioning.html">Positioning</a> and <code>focus_only</code>. With a <code>label</code>, the icon and its
+label form one element: the arrow endpoints and the bounding box include the label, while a
+<a href="enclosures.html">blob</a> flows around the symbol and the label separately.</p>
+<h2 id="styling-icons-deck-wide">Styling icons deck-wide<a class="anchor" href="#styling-icons-deck-wide" aria-label="Link to this section">#</a></h2><p>Icons take the style roles <code>shape</code>, <code>icon</code> and <code>icon-&lt;name&gt;</code>, most specific last, so a deck can
+set a common look once:</p>
+<pre><code class="language-markdown"><span class="tk-directive">::: styles</span>
+icon: fill_opacity=0.15 stroke_width=2.5
+icon-database: color=GOLD_E
+shape: sketch=true
+<span class="tk-directive">:::</span></code></pre>
+<h2 id="from-code">From code<a class="anchor" href="#from-code" aria-label="Link to this section">#</a></h2><pre><code class="language-ts"><span class="tk-keyword">import</span> { makeIcon, ICON_NAMES, engine } <span class="tk-keyword">from</span> <span class="tk-string">'zoomdeck'</span>;
+
+<span class="tk-keyword">const</span> store = makeIcon(<span class="tk-string">'database'</span>, { size: <span class="tk-number">1.5</span>, color: engine.GOLD_E, fillColor: engine.GOLD_E, fillOpacity: <span class="tk-number">0.3</span> });
+<span class="tk-keyword">const</span> sketched = makeIcon(<span class="tk-string">'cloud'</span>, { size: <span class="tk-number">2</span>, sketch: { seed: <span class="tk-number">7</span>, roughness: <span class="tk-number">1.5</span> } });</code></pre>
+<p><code>makeIcon(name, options)</code> returns an engine <code>VGroup</code> with one member per part; <code>iconParts(name)</code>
+gives the SVG path data of those parts inside the unit box (y up), and <code>ICON_NAMES</code> lists the
+names. Hand-drawn icons keep their crisp counterpart in <code>markupOutline</code>.</p>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="shapes.html">← Shapes, connections and attachments</a>
+      <a class="next" href="enclosures.html">Boxes and blobs →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#names">Names</a></li><li><a href="#attributes">Attributes</a></li><li><a href="#styling-icons-deck-wide">Styling icons deck-wide</a></li><li><a href="#from-code">From code</a></li></ul></nav>
+</div>
+</body>
+</html>

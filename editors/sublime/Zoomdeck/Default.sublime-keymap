@@ -1,0 +1,8 @@
+[
+  { "keys": ["ctrl+alt+p"], "command": "build", "args": { "build_system": "Packages/Zoomdeck/Zoomdeck.sublime-build", "variant": "Preview" },
+    "context": [{ "key": "selector", "operator": "equal", "operand": "text.html.markdown" }] },
+  { "keys": ["ctrl+alt+j"], "command": "zoomdeck_jump",
+    "context": [{ "key": "selector", "operator": "equal", "operand": "text.html.markdown" }] },
+  { "keys": ["ctrl+alt+b"], "command": "build", "args": { "build_system": "Packages/Zoomdeck/Zoomdeck.sublime-build" },
+    "context": [{ "key": "selector", "operator": "equal", "operand": "text.html.markdown" }] }
+]

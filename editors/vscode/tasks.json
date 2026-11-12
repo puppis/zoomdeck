@@ -1,0 +1,34 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Zoomdeck: preview",
+      "detail": "Serve the deck of the current file; the browser reloads on every save and keeps its position. E or Alt+click in the browser opens the source line here.",
+      "type": "shell",
+      "command": "zoomdeck serve \"${file}\" --editor code",
+      "options": { "cwd": "${fileDirname}" },
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "clear": true }
+    },
+    {
+      "label": "Zoomdeck: jump to this line",
+      "detail": "Show the stop of the cursor line in the running preview.",
+      "type": "shell",
+      "command": "zoomdeck jump \"${file}\" ${lineNumber}",
+      "options": { "cwd": "${fileDirname}" },
+      "problemMatcher": [],
+      "presentation": { "reveal": "silent", "panel": "shared", "clear": true, "close": true, "showReuseMessage": false }
+    },
+    {
+      "label": "Zoomdeck: build HTML",
+      "detail": "Export the deck of the current file as one self-contained HTML file in ./build.",
+      "type": "shell",
+      "command": "zoomdeck build \"${file}\" -o \"${fileDirname}/build\" --one-file",
+      "options": { "cwd": "${fileDirname}" },
+      "problemMatcher": [],
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true }
+    }
+  ]
+}

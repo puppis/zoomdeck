@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zoomdeck</title>
+<meta name="description" content="Zooming presentations written in Markdown and played entirely in the browser.">
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+</header>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Getting started</h4>
+        <ul><li><a href="index.html" aria-current="page">Zoomdeck</a><ul class="subsections"><li><a href="#what-zoomdeck-does">What Zoomdeck does</a></li><li><a href="#start-here">Start here</a></li><li><a href="#the-guide-deck">The guide deck</a></li><li><a href="#documentation-map">Documentation map</a></li><li><a href="#the-project">The project</a></li></ul></li><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+      </section>
+      <section>
+        <h4>Diagrams</h4>
+        <ul><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li></ul>
+      </section>
+      <section>
+        <h4>Layout and style</h4>
+        <ul><li><a href="positioning.html">Positioning</a></li><li><a href="groups.html">Groups</a></li><li><a href="styles.html">Styles</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion and interaction</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Presenting</h4>
+        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
+      </section>
+      <section>
+        <h4>Advanced</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>Zoomdeck</h1>
+      <p class="lead">Zooming presentations written in Markdown and played entirely in the browser.</p>
+      <h2 id="what-zoomdeck-does">What Zoomdeck does<a class="anchor" href="#what-zoomdeck-does" aria-label="Link to this section">#</a></h2><p>A Zoomdeck presentation is a <strong>tree of slides</strong>. Each slide has its own logical canvas and a
+small animation program; child slides sit inside their parent's canvas as viewports. Presenting
+means visiting the tree in pre-order: the camera zooms into each child, plays its steps and zooms
+back out (or cuts, when you prefer), so the audience always sees where a detail belongs.</p>
+<p>You write slides in a Markdown dialect: prose, LaTeX formulas, images, video, shapes, diagram
+icons and arrows (crisp or hand-drawn), boxes and blobs around groups of elements, tables, charts,
+code listings, live web pages, fragments that appear on clicks, and animations such as moves,
+morphs and effects. When the dialect is not enough, a slide can be a small TypeScript class with
+the full animation engine at hand. Everything runs live on a WebGL canvas in the browser: a deck
+loads, records itself once, and then plays forwards and backwards instantly, with an outline, deep
+links, a pressure-sensitive pen, a highlighter, a whiteboard, a companion tablet, a spotlight or laser, links on any element and configurable keys and
+gestures. The same deck previews while you edit it and <a href="exporting.html">exports</a> to a static
+folder or to a single HTML file that plays from disk.</p>
+<h2 id="start-here">Start here<a class="anchor" href="#start-here" aria-label="Link to this section">#</a></h2><ol>
+<li><strong><a href="getting-started.html">Getting started</a></strong>: install with Node.js and npm, write a first deck,
+preview and export it from the command line.</li>
+<li><strong><a href="editors.html">Editors</a></strong>: ready-made setups for VS Code, Sublime Text, Emacs, Vim and
+JetBrains IDEs, so that saving a file updates the browser, a key jumps from a source line to
+its stop and back from a stop or an element to its line, and a shortcut exports the deck.</li>
+<li><strong><a href="concepts.html">Concepts</a></strong>: what a slide, a viewport and a stop are, and how a deck is
+recorded and replayed.</li>
+</ol>
+<p>The rest of the documentation follows the map below, from the content of a slide to the
+reference, and every topic page opens the matching chapter of the guide deck with its
+&quot;Open in the guide&quot; badge.</p>
+<h2 id="the-guide-deck">The guide deck<a class="anchor" href="#the-guide-deck" aria-label="Link to this section">#</a></h2><p>The guide is Zoomdeck's own demonstration and the companion of these pages: a presentation in
+which every chapter shows a feature next to the listing that produces it, organized in the same
+sections as this documentation. <strong><a href="guide.html">Open the guide</a></strong>: its front page lists the
+sections and jumps to any of them on a double-click, and each chapter links back to its page here.</p>
+<p>The guide is a single self-contained HTML file next to these pages, exported from
+<code>examples/guide/</code> when you run <code>npm install</code> (and again by <code>npm run docs</code>); it runs from disk or
+from any web server, and <code>npm run dev</code> opens the same deck live. Its sources (<code>slides.md</code>,
+<code>deck.json</code>, <code>code-slides.ts</code> and a few assets) are a good starting point for a deck of your own.</p>
+<h2 id="documentation-map">Documentation map<a class="anchor" href="#documentation-map" aria-label="Link to this section">#</a></h2><section class="map-section"><h3>Getting started</h3><p>Install, write a first deck, set up your editor, and learn how a deck is played.</p><ul><li><a href="getting-started.html">Getting started</a><span>Install the project, get the zoomdeck command, write a first deck, preview and export it, and set up your editor.</span></li><li><a href="editors.html">Editors</a><span>Edit a deck and see it in the browser as you type, jump between a source line and its stop in both directions, or export the deck with a shortcut; ready-made setups for VS Code, Sublime Text, Emacs, Vim/Neovim and JetBrains IDEs, with syntax highlighting.</span></li><li><a href="concepts.html">Concepts</a><span>Slides, logical coordinates, the zooming camera, and how a deck is recorded and replayed.</span></li></ul></section>
+<section class="map-section"><h3>Writing slides</h3><p>The tree of slides and the content of a slide: prose, formulas, images, listings, tables and charts.</p><ul><li><a href="slides.html">Slides and the tree</a> <a class="guide-link" href="guide.html#slide=tree" title="This topic in the guide deck">guide ↗</a><span>Slide containers, canvas sizes, includes, visit order, start and preview flags, placeholders.</span></li><li><a href="text.html">Text</a> <a class="guide-link" href="guide.html#slide=prose" title="This topic in the guide deck">guide ↗</a><span>Paragraphs, headings, emphasis, colors, code spans, line breaks, lists and links.</span></li><li><a href="math.html">Mathematics</a> <a class="guide-link" href="guide.html#slide=math" title="This topic in the guide deck">guide ↗</a><span>Inline and display formulas, containers for formula attributes, macros and colored LaTeX.</span></li><li><a href="images.html">Images and video</a> <a class="guide-link" href="guide.html#slide=images" title="This topic in the guide deck">guide ↗</a><span>SVG and raster images, animated PNG and GIF, and video files played through the browser.</span></li><li><a href="code.html">Code listings</a> <a class="guide-link" href="guide.html#slide=listings" title="This topic in the guide deck">guide ↗</a><span>Fenced code blocks as verbatim listings with syntax colors for common languages and for the slide dialect itself.</span></li><li><a href="tables-charts.html">Tables and charts</a> <a class="guide-link" href="guide.html#slide=tables" title="This topic in the guide deck">guide ↗</a><span>Pipe tables with styled cells, rules and shading, and bar, line and pie charts drawn from rows of numbers, crisp or hand-drawn.</span></li></ul></section>
+<section class="map-section"><h3>Diagrams</h3><p>Shapes, arrows, icons and enclosures, crisp or hand-drawn.</p><ul><li><a href="shapes.html">Shapes, connections and attachments</a> <a class="guide-link" href="guide.html#slide=shapes" title="This topic in the guide deck">guide ↗</a><span>Rectangles, circles, dots, ellipses, polygons, arcs and polylines; arrows and lines; braces, boxes and blobs.</span></li><li><a href="icons.html">Icons</a> <a class="guide-link" href="guide.html#slide=icons" title="This topic in the guide deck">guide ↗</a><span>Thirty-nine diagram symbols built from geometry (people, machines, files, marks and actions) with configurable outline, fill and label, crisp or hand-drawn.</span></li><li><a href="enclosures.html">Boxes and blobs</a> <a class="guide-link" href="guide.html#slide=enclosures" title="This topic in the guide deck">guide ↗</a><span>Surround a set of elements with a rectangle or with a smooth curve that keeps a chosen distance from every member, crisp or hand-drawn.</span></li><li><a href="sketch.html">Hand-drawn shapes</a> <a class="guide-link" href="guide.html#slide=sketch" title="This topic in the guide deck">guide ↗</a><span>sketch=true renders shapes, icons, arrows, lines, braces, boxes and blobs as if drawn by hand, with hatched or solid fills, through Rough.js.</span></li></ul></section>
+<section class="map-section"><h3>Layout and style</h3><p>Where things go and how they look: flow, anchors, constraints, groups and style sheets.</p><ul><li><a href="positioning.html">Positioning</a> <a class="guide-link" href="guide.html#slide=layout" title="This topic in the guide deck">guide ↗</a><span>Anchors, flow, explicit coordinates, relative constraints, at= expressions, offsets and sizes.</span></li><li><a href="groups.html">Groups</a> <a class="guide-link" href="guide.html#slide=groups" title="This topic in the guide deck">guide ↗</a><span>Several elements laid out in their own coordinates and handled as one element of the slide.</span></li><li><a href="styles.html">Styles</a> <a class="guide-link" href="guide.html#slide=styles" title="This topic in the guide deck">guide ↗</a><span>Named attribute sets applied by class tokens and automatically by roles such as heading, body or code.</span></li></ul></section>
+<section class="map-section"><h3>Motion and interaction</h3><p>What happens on each click: fragments, animations, focus-only decorations and live web pages.</p><ul><li><a href="fragments.html">Fragments and steps</a> <a class="guide-link" href="guide.html#slide=fragments" title="This topic in the guide deck">guide ↗</a><span>Reveal and hide elements on clicks, time the fades, advance automatically and skip events.</span></li><li><a href="animations.html">Animations</a> <a class="guide-link" href="guide.html#slide=animations" title="This topic in the guide deck">guide ↗</a><span>Move, rotate, scale, recolor and fade elements, play named effects, morph one element into another, follow paths, make geometry tremble, and move child viewports.</span></li><li><a href="focus.html">Focus-only decorations</a> <a class="guide-link" href="guide.html#slide=focus" title="This topic in the guide deck">guide ↗</a><span>Elements that appear only while their slide is focused, such as an opaque local canvas.</span></li><li><a href="live-pages.html">Live pages</a> <a class="guide-link" href="guide.html#slide=media" title="This topic in the guide deck">guide ↗</a><span>Embedded web pages shown while their slide is focused, with a poster for previews.</span></li></ul></section>
+<section class="map-section"><h3>Presenting</h3><p>The player and its tools, and exporting a deck to a folder or a single file.</p><ul><li><a href="player.html">The player</a> <a class="guide-link" href="guide.html#slide=player" title="This topic in the guide deck">guide ↗</a><span>Keyboard and pointer controls, the pen and its pressure styles, the whiteboard, a companion tablet, spotlight and laser, reverse playback, deep links, speed and fullscreen.</span></li><li><a href="exporting.html">Exporting a deck</a> <a class="guide-link" href="guide.html#slide=player" title="This topic in the guide deck">guide ↗</a><span>Turn a deck into a static folder or into one self-contained HTML file that plays anywhere, without Node or a server.</span></li></ul></section>
+<section class="map-section"><h3>Advanced</h3><p>Slides written in TypeScript, every configuration key, and the complete reference of the dialect.</p><ul><li><a href="code-slides.html">Code-authored slides</a> <a class="guide-link" href="guide.html#slide=code-slides" title="This topic in the guide deck">guide ↗</a><span>Slides written in TypeScript with the complete animation engine, used alone or placed as subslides of Markdown decks.</span></li><li><a href="configuration.html">Configuration</a> <a class="guide-link" href="guide.html#slide=config" title="This topic in the guide deck">guide ↗</a><span>Every key of deck.json, the layout and presenter options, and the command line.</span></li><li><a href="reference.html">Reference</a><span>Every container, element, directive and attribute of the dialect, grouped by topic, with the page that explains each.</span></li></ul></section>
+<h2 id="the-project">The project<a class="anchor" href="#the-project" aria-label="Link to this section">#</a></h2><p>Zoomdeck lives at <a href="https://github.com/puppis/zoomdeck">github.com/puppis/zoomdeck</a>; this site and
+the guide are published from it at <a href="https://puppis.github.io/zoomdeck/">puppis.github.io/zoomdeck</a>.
+It needs Node.js 20.19 or newer (or 22.12 or newer) to install and build, and a browser with
+WebGL 2 to play decks; nothing else, no Python, LaTeX or video tools. Exported decks are plain
+HTML files.</p>
+
+    </article>
+    <footer class="pager">
+      <span></span>
+      <a class="next" href="getting-started.html">Getting started →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#what-zoomdeck-does">What Zoomdeck does</a></li><li><a href="#start-here">Start here</a></li><li><a href="#the-guide-deck">The guide deck</a></li><li><a href="#documentation-map">Documentation map</a></li><li><a href="#the-project">The project</a></li></ul></nav>
+</div>
+</body>
+</html>

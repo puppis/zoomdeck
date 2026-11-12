@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Getting started · Zoomdeck</title>
+<meta name="description" content="Install the project, get the zoomdeck command, write a first deck, preview and export it, and set up your editor.">
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+</header>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Getting started</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html" aria-current="page">Getting started</a><ul class="subsections"><li><a href="#install">Install</a></li><li><a href="#the-zoomdeck-command">The zoomdeck command</a></li><li><a href="#a-first-deck">A first deck</a></li><li><a href="#preview-and-export">Preview and export</a></li><li><a href="#set-up-your-editor">Set up your editor</a></li><li><a href="#what-a-deck-folder-contains">What a deck folder contains</a></li><li><a href="#next-steps">Next steps</a></li></ul></li><li><a href="editors.html">Editors</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+      </section>
+      <section>
+        <h4>Diagrams</h4>
+        <ul><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li></ul>
+      </section>
+      <section>
+        <h4>Layout and style</h4>
+        <ul><li><a href="positioning.html">Positioning</a></li><li><a href="groups.html">Groups</a></li><li><a href="styles.html">Styles</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion and interaction</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Presenting</h4>
+        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
+      </section>
+      <section>
+        <h4>Advanced</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>Getting started</h1>
+      <p class="lead">Install the project, get the zoomdeck command, write a first deck, preview and export it, and set up your editor.</p>
+      <h2 id="install">Install<a class="anchor" href="#install" aria-label="Link to this section">#</a></h2><table>
+<thead>
+<tr>
+<th>Needed</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Node.js 20.19 or newer, or 22.12 or newer, with npm</td>
+<td>to install, preview, export and build the documentation; older and odd-numbered releases (such as 21.x) fail with <code>crypto.hash is not a function</code></td>
+</tr>
+<tr>
+<td>A browser with WebGL 2</td>
+<td>Chrome, Edge, Firefox and Safari of the last few years; this is where decks run</td>
+</tr>
+</tbody>
+</table>
+<p>Nothing else is required: no Python, no LaTeX installation (formulas render through MathJax in
+the browser), no video encoder, no font installation (the Latin Modern faces are bundled).</p>
+<pre><code class="language-bash"><span class="tk-keyword">git</span> clone https://github.com/puppis/zoomdeck.<span class="tk-keyword">git</span> Zoomdeck
+<span class="tk-keyword">cd</span> Zoomdeck
+<span class="tk-keyword">npm</span> install
+<span class="tk-keyword">npm</span> run dev</code></pre>
+<p><code>npm install</code> fetches the runtime dependencies (the <code>manim-web</code> rendering engine with Three.js
+and MathJax inside, <code>markdown-it</code> for the dialect, <code>gifuct-js</code> for GIFs, <code>roughjs</code> for hand-drawn
+shapes, and Vite for the preview and exports), checks the Node version first, and builds this
+documentation into <code>docs/html/</code>, including the standalone guide (<code>docs/html/guide.html</code>);
+<code>npm run docs</code> rebuilds it later.</p>
+<blockquote>
+<p><strong>Note</strong> On an older or odd-numbered Node release such as 21.x the install would otherwise stop
+inside the documentation build with <code>TypeError: crypto.hash is not a function</code>: that message
+comes from Vite, which needs the Node versions above, and not from a broken download.
+Installing a supported Node (for example with <code>nvm install --lts</code>) and running <code>npm install</code>
+again fixes it.</p>
+</blockquote>
+<p><code>npm run dev</code> starts a Vite development server (by default on <code>http://localhost:5173/</code>) and opens
+the <strong>guide deck</strong>. Other decks are selected through the query string:</p>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Opens</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/?deck=examples/guide/deck.json</code></td>
+<td>a Markdown deck with its configuration (the guide)</td>
+</tr>
+<tr>
+<td><code>/?deck=path/to/slides.md</code></td>
+<td>a bare Markdown file with default settings</td>
+</tr>
+<tr>
+<td><code>/?deck=examples/tree-deck&amp;scene=Demo</code></td>
+<td>a named export of a module</td>
+</tr>
+</tbody>
+</table>
+<p>The page reloads when a deck file under <code>examples/</code> changes and returns to the slide and step you
+were looking at.</p>
+<h2 id="the-zoomdeck-command">The <code>zoomdeck</code> command<a class="anchor" href="#the-zoomdeck-command" aria-label="Link to this section">#</a></h2><p>The command line lives in <code>bin/zoomdeck.mjs</code>, which the checkout can run directly as
+<code>node bin/zoomdeck.mjs …</code>. To call it as plain <code>zoomdeck</code> from any folder, from an editor or from
+a script, link it into npm's global <code>bin</code> directory once, from inside the checkout:</p>
+<pre><code class="language-bash"><span class="tk-keyword">cd</span> Zoomdeck
+<span class="tk-keyword">npm</span> install        <span class="tk-comment"># dependencies first, if you have not yet</span>
+<span class="tk-keyword">npm</span> link           <span class="tk-comment"># creates the global `zoomdeck` command, pointing at this checkout</span>
+zoomdeck <span class="tk-attribute">--help</span>    <span class="tk-comment"># prints the usage</span></code></pre>
+<p><code>npm link</code> makes a symbolic link, so the command always runs the current state of the checkout
+and <code>git pull</code> updates it; <code>npm unlink -g zoomdeck</code> removes it. <code>npm install -g .</code> copies the
+package instead and must be repeated after updates.</p>
+<p><strong><code>zoomdeck: command not found</code></strong> afterwards means the global <code>bin</code> directory is not on the
+<code>PATH</code> of the shell that runs the command:</p>
+<ul>
+<li>In a terminal, <code>npm prefix -g</code> prints npm's global prefix; its <code>bin</code> subfolder (for example
+<code>/usr/local/bin</code>, <code>/opt/homebrew/bin</code>, or <code>~/.nvm/versions/node/&lt;version&gt;/bin</code> with nvm) must
+appear in <code>echo $PATH</code>. Node installers normally arrange this for your shell; nvm does it in
+<code>~/.zshrc</code> or <code>~/.bashrc</code>.</li>
+<li>Editors started from the Dock, the Start menu or a launcher do not read your shell profile, so
+their <code>PATH</code> is the system default. The Emacs, Vim and Sublime Text setups in <code>editors/</code>
+therefore find the command themselves, through the checkout they belong to or the <code>PATH</code> of
+your login shell; for VS Code and JetBrains, either start the editor from a terminal, or write
+the full path of the command (<code>which zoomdeck</code> prints it) into the task or tool. See
+<a href="editors.html">Editors</a>.</li>
+<li>With nvm, the link belongs to the Node version that was active when you ran <code>npm link</code>; after
+switching versions run it again.</li>
+</ul>
+<h2 id="a-first-deck">A first deck<a class="anchor" href="#a-first-deck" aria-label="Link to this section">#</a></h2><p>Create a folder with a Markdown file and a configuration next to it.</p>
+<pre><code class="language-markdown"><span class="tk-directive">::: slide </span><span class="tk-attribute">{#start width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold"># </span><span class="tk-bold">My first deck</span>
+
+Slides are <span class="tk-type">`::: slide`</span> containers; this one has a 20 × 11.25 canvas.
+
+<span class="tk-directive">[[include:</span> <span class="tk-attribute">#details</span> <span class="tk-attribute">x=</span><span class="tk-number">4</span> <span class="tk-attribute">y=</span><span class="tk-number">-2</span> <span class="tk-attribute">width=</span><span class="tk-number">9</span><span class="tk-directive">]]</span>
+<span class="tk-directive">:::</span>
+
+<span class="tk-directive">::: slide </span><span class="tk-attribute">{#details}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">Details </span><span class="tk-attribute tk-bold">{y=</span><span class="tk-number tk-bold">3</span><span class="tk-attribute tk-bold">}</span>
+
+[Shown on the first click]<span class="tk-attribute">{#a step=</span><span class="tk-number">1</span><span class="tk-attribute">}</span>
+
+[And on the second]<span class="tk-attribute">{#b below:#a left-aligned:#a step=</span><span class="tk-number">2</span><span class="tk-attribute">}</span>
+<span class="tk-directive">:::</span></code></pre>
+<pre><code class="language-json">{
+  <span class="tk-attribute">&quot;markup&quot;</span>: <span class="tk-string">&quot;slides.md&quot;</span>,
+  <span class="tk-attribute">&quot;title&quot;</span>: <span class="tk-string">&quot;First deck&quot;</span>
+}</code></pre>
+<p>Every slide needs an <code>#id</code>; the slide nobody includes is the root; <code>width</code> on a slide sets its
+canvas, while <code>x</code>, <code>y</code>, <code>width</code> on an include place the child inside the parent. Without further
+keys a deck is black Latin Modern text on a white canvas, which is also what the guide deck uses;
+<code>background</code> and <code>layout.color</code> change the colors (<a href="configuration.html">Configuration</a> lists
+every key).</p>
+<p>Open the deck with <code>/?deck=path/to/deck.json</code> on the dev page, or with the command line below.</p>
+<h2 id="preview-and-export">Preview and export<a class="anchor" href="#preview-and-export" aria-label="Link to this section">#</a></h2><pre><code class="language-bash"><span class="tk-comment"># Live preview of any deck (also outside this checkout): reloads on save, keeps your position.</span>
+zoomdeck serve path/to/deck.json          <span class="tk-comment"># or: node bin/zoomdeck.mjs serve path/to/deck.json</span>
+
+<span class="tk-comment"># Static bundle: index.html + assets/ + deck/. Host or copy the whole folder.</span>
+zoomdeck build path/to/deck.json <span class="tk-attribute">-o</span> build/my-deck
+
+<span class="tk-comment"># One self-contained HTML file with every asset embedded.</span>
+zoomdeck build path/to/deck.json <span class="tk-attribute">-o</span> build/my-deck <span class="tk-attribute">--one-file</span></code></pre>
+<p>Both commands accept the <code>deck.json</code> or the Markdown file: a Markdown file whose folder holds a
+<code>deck.json</code> naming it is served or built through that configuration, so handing the file you are
+editing to the command (as the editor setups do) gives the same result as naming <code>deck.json</code>.</p>
+<p>The preview listens on <code>http://127.0.0.1:8000/</code>, or on the next free port when 8000 is busy
+(another preview is probably still running; the printed address is the one to use). <code>--port N</code>
+insists on a port. The server stops with Ctrl+C, and also by itself when the program that
+started it (an editor's build panel or task) ends.</p>
+<p><code>serve</code> accepts <code>--port N</code>, <code>--host</code> (also listen on the network, for a <a href="player.html#a-tablet-as-a-drawing-pad">tablet</a>), <code>--no-open</code>, <code>--editor NAME</code> (the editor that the player's E key and Alt + click open source lines with), <code>--scene Name</code> and repeatable <code>--watch PATH</code>; <code>build</code>
+accepts <code>--show-outline</code> and <code>--scene Name</code>. <code>zoomdeck jump &lt;file&gt; &lt;line&gt;</code> moves the running
+preview to the stop of a source line. The deck argument is a <code>deck.json</code>, a Markdown file or
+a JS/TS module exporting a deck definition. The single-file export opens by double-click and needs
+no server; <a href="exporting.html">Exporting a deck</a> has the details.</p>
+<h2 id="set-up-your-editor">Set up your editor<a class="anchor" href="#set-up-your-editor" aria-label="Link to this section">#</a></h2><p>Editing is most comfortable when the browser follows your typing: start the preview once, and
+every save reloads the page at the stop you were looking at. The <code>editors/</code> folder of the
+repository holds ready-made setups for <strong>VS Code, Sublime Text, Emacs, Vim/Neovim and JetBrains
+IDEs</strong> that save after a second of idle typing, bind the preview, the jump to the current line
+and the single-file export to shortcuts (Ctrl+Alt+P, Ctrl+Alt+J and Ctrl+Alt+B, or ⌘ variants),
+let the browser open a stop's or an element's source line in the editor (E, Alt + click), and
+highlight the dialect's directives and attributes inside Markdown. <a href="editors.html">Editors</a>
+explains each one and what to do when an editor cannot find the command.</p>
+<h2 id="what-a-deck-folder-contains">What a deck folder contains<a class="anchor" href="#what-a-deck-folder-contains" aria-label="Link to this section">#</a></h2><pre><code class="language-text">my-deck/
+├── slides.md        the slides, in the Markdown dialect
+├── deck.json        title, colors, typography, presenter options, styles, macros
+├── code-slides.ts   optional: Slide classes used by [[subslide: Name]]
+├── parts/           optional: Markdown files spliced in with [[import: path.md]]
+└── assets/          images, videos, pages referenced from slides.md</code></pre>
+<p>Paths in <code>slides.md</code> resolve relative to the Markdown file.</p>
+<h2 id="next-steps">Next steps<a class="anchor" href="#next-steps" aria-label="Link to this section">#</a></h2><ul>
+<li><a href="concepts.html">Concepts</a> explains slides, coordinates and how playback is recorded.</li>
+<li><a href="slides.html">Slides and the tree</a> starts the topic-by-topic tour of the dialect; the sidebar
+follows the same order, from the content of a slide to the reference.</li>
+<li>The <a href="guide.html">guide deck</a> shows each topic live; its front page lists the sections, and
+every documentation page opens its chapter with the &quot;Open in the guide&quot; badge.</li>
+</ul>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="index.html">← Zoomdeck</a>
+      <a class="next" href="editors.html">Editors →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#install">Install</a></li><li><a href="#the-zoomdeck-command">The zoomdeck command</a></li><li><a href="#a-first-deck">A first deck</a></li><li><a href="#preview-and-export">Preview and export</a></li><li><a href="#set-up-your-editor">Set up your editor</a></li><li><a href="#what-a-deck-folder-contains">What a deck folder contains</a></li><li><a href="#next-steps">Next steps</a></li></ul></nav>
+</div>
+</body>
+</html>

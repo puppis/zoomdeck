@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Editors · Zoomdeck</title>
+<meta name="description" content="Edit a deck and see it in the browser as you type, jump between a source line and its stop in both directions, or export the deck with a shortcut; ready-made setups for VS Code, Sublime Text, Emacs, Vim/Neovim and JetBrains IDEs, with syntax highlighting.">
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+</header>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Getting started</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html" aria-current="page">Editors</a><ul class="subsections"><li><a href="#the-loop">The loop</a></li><li><a href="#forward-and-inverse-search">Forward and inverse search</a></li><li><a href="#the-zoomdeck-command">The zoomdeck command</a></li><li><a href="#visual-studio-code">Visual Studio Code</a></li><li><a href="#sublime-text">Sublime Text</a></li><li><a href="#emacs">Emacs</a></li><li><a href="#vim-and-neovim">Vim and Neovim</a></li><li><a href="#jetbrains-ides">JetBrains IDEs</a></li><li><a href="#any-other-editor">Any other editor</a></li></ul></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+      </section>
+      <section>
+        <h4>Diagrams</h4>
+        <ul><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li></ul>
+      </section>
+      <section>
+        <h4>Layout and style</h4>
+        <ul><li><a href="positioning.html">Positioning</a></li><li><a href="groups.html">Groups</a></li><li><a href="styles.html">Styles</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion and interaction</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Presenting</h4>
+        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
+      </section>
+      <section>
+        <h4>Advanced</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>Editors</h1>
+      <p class="lead">Edit a deck and see it in the browser as you type, jump between a source line and its stop in both directions, or export the deck with a shortcut; ready-made setups for VS Code, Sublime Text, Emacs, Vim/Neovim and JetBrains IDEs, with syntax highlighting.</p>
+      <h2 id="the-loop">The loop<a class="anchor" href="#the-loop" aria-label="Link to this section">#</a></h2><p>Zoomdeck's preview server does the heavy lifting: start it once on a deck and it opens the
+browser, watches the deck folder, reloads the page whenever a file is saved and puts the player
+back at the stop you were looking at. Editing therefore needs only two things from an editor:</p>
+<ol>
+<li><strong>Save without thinking about it.</strong> Every setup below saves the deck after a second of idle
+typing (or when the editor loses focus), so the browser follows you.</li>
+<li><strong>Three shortcuts.</strong> One starts the preview server for the deck of the current file, one
+shows the stop of the current line in the browser, the third exports the deck as a single
+HTML file into a <code>build/</code> folder next to it. The command itself picks up the <code>deck.json</code> that
+names the file, so the deck's title, styles, macros and slide classes apply whichever file is
+open.</li>
+</ol>
+<pre><code class="language-bash">zoomdeck serve path/to/slides.md <span class="tk-attribute">--editor</span> code   <span class="tk-comment"># or deck.json; opens http://127.0.0.1:8000/</span>
+zoomdeck jump path/to/slides.md <span class="tk-number">42</span>               <span class="tk-comment"># the browser shows the stop of line 42</span>
+zoomdeck build path/to/deck.json <span class="tk-attribute">-o</span> build <span class="tk-attribute">--one-file</span></code></pre>
+<h2 id="forward-and-inverse-search">Forward and inverse search<a class="anchor" href="#forward-and-inverse-search" aria-label="Link to this section">#</a></h2><p>While the preview server runs, the editor and the browser follow each other, as a LaTeX editor
+and a PDF viewer do with SyncTeX:</p>
+<ul>
+<li><strong>Forward search</strong>, editor → browser: <code>zoomdeck jump &lt;file&gt; &lt;line&gt;</code> (also <code>file:line</code>) moves
+the player to the stop that shows that line. The setups below bind it to a key and save the
+file first, so the browser shows what you see. The stop chosen is the one at which everything
+written up to that line has appeared: a line inside a slide's text goes to the slide, the line
+of an element with <code>step=3</code> to its third step, a line after an <code>[[include: …]]</code> to the return
+from that child, and a line of an imported file to the slide it belongs to. The command finds
+the server by itself: every preview registers where it runs and which folders it serves, and
+the jump goes to the preview of the file's folder (to every running preview when none matches,
+since a file may be imported from elsewhere).</li>
+<li><strong>Inverse search</strong>, browser → editor: the <strong>E</strong> key opens the source line of the current stop
+in the editor, and <strong>Alt + click</strong> opens the line of the element under the pointer: the text,
+formula, image, shape or listing you clicked, also inside a child's preview tile, or the
+<code>[[include: …]]</code> line when you click a tile's empty area. The modifier is the &quot;Click: open the
+source of the element&quot; gesture of the Pointer settings (Control works too, the context menu is
+suppressed). For this the server must know your editor: <code>zoomdeck serve … --editor &lt;name&gt;</code>,
+where the name is <code>emacs</code>, <code>sublime</code>, <code>code</code> (also <code>codium</code>, <code>cursor</code>), <code>vim</code>, <code>gvim</code>, <code>mvim</code>,
+<code>textmate</code>, <code>zed</code>, <code>jetbrains</code> (the first IDE launcher on the <code>PATH</code>) or one of <code>idea</code>,
+<code>webstorm</code>, <code>pycharm</code>, <code>phpstorm</code>, <code>goland</code>, <code>clion</code>, <code>rubymine</code>, <code>rider</code>, <code>rustrover</code>, or any
+command with <code>{file}</code> and <code>{line}</code> in it, such as <code>--editor &quot;gedit +{line} {file}&quot;</code> (quote an
+argument that contains spaces). The environment variable <code>ZOOMDECK_EDITOR</code> is the default.
+The setups below pass the right value when they start the preview, so nothing needs
+configuring; the server prints what it will run. Without an editor the player says so in its
+header when you press E.</li>
+</ul>
+<p>Both directions work on saved files: after an edit the browser reloads at the same stop, and a
+jump sent during the reload is picked up when the page is back.</p>
+<h2 id="the-zoomdeck-command">The <code>zoomdeck</code> command<a class="anchor" href="#the-zoomdeck-command" aria-label="Link to this section">#</a></h2><p>All configurations call a <code>zoomdeck</code> command. It exists once you have run <code>npm link</code> inside the
+Zoomdeck checkout (after <code>npm install</code>, on Node 20.19+ or 22.12+), as described under
+<a href="getting-started.html#the-zoomdeck-command">The <code>zoomdeck</code> command</a>; <code>zoomdeck --help</code>
+in a terminal confirms it. Inside a project that lists <code>zoomdeck</code> as a dependency, <code>npx zoomdeck</code>
+works as well.</p>
+<p>If an editor reports <strong><code>zoomdeck: command not found</code></strong> although the terminal finds it, the editor
+was started from the Dock, the Start menu or a launcher and did not read your shell profile, so
+npm's global <code>bin</code> directory (or nvm's, or Homebrew's) is missing from its <code>PATH</code>. The Emacs,
+Vim and Sublime Text setups below cope with that by themselves: when the command is not on the
+editor's path they run the <code>bin/zoomdeck.mjs</code> of the checkout they belong to with <code>node</code>, or ask
+your login shell where the command is. VS Code's tasks run in its integrated terminal, which
+loads the profile, and JetBrains IDEs inherit it too. For the remaining cases, start the editor
+from a terminal once, or put the full path of the command (<code>which zoomdeck</code>) into the
+configuration: each one names the command in a single place (<code>zoomdeck-command</code> in Emacs,
+<code>g:zoomdeck_command</code> in Vim, the task or tool definition in VS Code and JetBrains, the
+<code>shell_cmd</code> lines in Sublime Text). <code>node /path/to/Zoomdeck/bin/zoomdeck.mjs</code> is an equivalent
+that needs no link, as long as <code>node</code> itself is on that <code>PATH</code>.</p>
+<p>The configurations live in the repository under <code>editors/</code>. Highlighting adds, on top of the
+editor's Markdown, the slide and styles containers, the <code>[[directive: …]]</code> lines, <code>#id</code>s,
+<code>.classes</code>, <code>key=value</code> attributes, quoted strings and numbers. Errors in a deck appear in the
+browser with their line number (and file, for imported files), so the browser window doubles as
+the editor's problems panel.</p>
+<p><strong>If the browser opens on a page that refuses to connect</strong>, read the build panel or terminal:
+the server prints the address it actually listens on, <code>http://127.0.0.1:8000/</code> or the next free
+port when a previous preview still holds 8000. Stopping that previous preview (Tools ▸ Cancel
+Build in Sublime Text, closing the task terminal in VS Code, <code>C-c C-k</code> in Emacs, closing the
+terminal split in Vim, the stop button of the tool window in JetBrains) frees the port; a server
+also stops on its own when the program that started it ends.</p>
+<h2 id="visual-studio-code">Visual Studio Code<a class="anchor" href="#visual-studio-code" aria-label="Link to this section">#</a></h2><table>
+<thead>
+<tr>
+<th>What</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Highlighting</td>
+<td><code>editors/vscode/zoomdeck-markup/</code>: copy the folder into <code>~/.vscode/extensions/</code> and reload the window; it injects the dialect into Markdown files</td>
+</tr>
+<tr>
+<td>Tasks</td>
+<td><code>editors/vscode/tasks.json</code>: copy to <code>.vscode/tasks.json</code> in the deck's workspace</td>
+</tr>
+<tr>
+<td>Shortcuts</td>
+<td><code>editors/vscode/keybindings.json</code>: paste its entries into your <code>keybindings.json</code> (Command Palette ▸ &quot;Open Keyboard Shortcuts (JSON)&quot;)</td>
+</tr>
+<tr>
+<td>Autosave</td>
+<td><code>editors/vscode/settings.json</code>: <code>files.autoSave: afterDelay</code> with a 600 ms delay</td>
+</tr>
+</tbody>
+</table>
+<p>Then, with the deck open: <strong>Ctrl+Alt+P</strong> (⌘⌥P on macOS) starts the preview in a dedicated
+terminal, <strong>Ctrl+Alt+J</strong> (⌘⌥J) shows the stop of the cursor line in the browser, <strong>Ctrl+Alt+B</strong>
+(⌘⌥B) exports <code>build/index.html</code> next to the file. The build task is also the default build
+task, so Ctrl+Shift+B works as well. Stop the preview by closing its terminal. The preview task
+passes <code>--editor code</code>, so E or Alt+click in the browser opens the line in VS Code through its
+<code>code</code> command (Command Palette ▸ &quot;Shell Command: Install 'code' command in PATH&quot; on macOS, if
+it is missing).</p>
+<h2 id="sublime-text">Sublime Text<a class="anchor" href="#sublime-text" aria-label="Link to this section">#</a></h2><p>Copy <code>editors/sublime/Zoomdeck/</code> to <code>Packages/Zoomdeck</code> (Preferences ▸ Browse Packages… opens the
+folder). It provides:</p>
+<ul>
+<li><strong>Zoomdeck Markdown</strong>, a syntax that extends Markdown (Sublime Text 4); files whose first line
+opens a slide or styles block select it automatically, others through View ▸ Syntax.</li>
+<li>A build system with three variants: <strong>Ctrl+Alt+B</strong> exports one HTML file (also Ctrl+B / ⌘B,
+since Zoomdeck is the build system of Markdown files), <strong>Ctrl+Alt+P</strong> starts the preview in the
+build panel (Tools ▸ Cancel Build stops it), and &quot;Build folder&quot; writes the static folder
+export.</li>
+<li><strong>Ctrl+Alt+J</strong> shows the stop of the cursor line in the browser; E or Alt+click in the browser
+brings Sublime Text to the line (the preview is started with <code>--editor</code> pointing at the running
+Sublime Text, whatever its path).</li>
+<li>Command Palette entries (&quot;Zoomdeck: Preview deck&quot;, &quot;Jump to this line in the browser&quot;, &quot;Build
+HTML file&quot;, &quot;Build static folder&quot;).</li>
+<li><code>save_on_focus_lost</code>, so switching to the browser saves the deck first. For saving while you
+type, add a plugin such as <em>auto-save</em> from Package Control.</li>
+</ul>
+<p>The build system's target is <code>zoomdeck_exec</code>, a small plugin in the package: it asks your login
+shell (the one in <code>$SHELL</code>) for its <code>PATH</code> once and runs the command with it, so <code>zoomdeck</code> is
+found even when Sublime Text was launched from the Dock, a launcher or a menu, which otherwise
+gives it the bare system <code>PATH</code>. If the command still is not found, check that a terminal finds it
+(<code>which zoomdeck</code>), run &quot;Zoomdeck: Re-read the shell PATH&quot; from the Command Palette after
+installing it, or write its absolute path (or <code>node /path/to/Zoomdeck/bin/zoomdeck.mjs</code>) into the
+<code>command</code> setting of <code>Packages/User/Zoomdeck.sublime-settings</code>. The Sublime console (View ▸ Show
+Console) prints what the plugin found. Tools ▸ Cancel Build stops the preview server.</p>
+<h2 id="emacs">Emacs<a class="anchor" href="#emacs" aria-label="Link to this section">#</a></h2><pre><code class="language-elisp">(add-to-list 'load-path &quot;/path/to/Zoomdeck/editors/emacs&quot;)
+(require 'zoomdeck)</code></pre>
+<p><code>zoomdeck-mode</code> derives from <code>markdown-mode</code> when it is installed (otherwise from <code>text-mode</code>),
+highlights the dialect and is chosen automatically for files that open with <code>::: slide</code> or
+<code>::: styles</code>. Its keys: <strong>C-c C-p</strong> serves the deck in a <code>*zoomdeck preview*</code> compilation buffer,
+<strong>C-c C-j</strong> shows the stop of the current line in the browser, <strong>C-c C-b</strong> exports one HTML
+file, <strong>C-c C-k</strong> stops the server. E or Alt+click in the browser brings Emacs to the line: the
+preview is started with an <code>emacsclient</code> command for this Emacs session (<code>zoomdeck-inverse-search</code>,
+on by default, starts the Emacs server when it is not running). <code>zoomdeck-autosave-mode</code> (on by
+default) saves the deck after one idle second; <code>zoomdeck-command</code>, <code>zoomdeck-build-directory</code>,
+<code>zoomdeck-autosave</code> and <code>zoomdeck-autosave-delay</code> are customizable. The mode finds the command
+by itself: on Emacs's own path, else in the checkout the package was loaded from (its
+<code>bin/zoomdeck.mjs</code> run with <code>node</code>), else on the path of your login shell, which a graphical Emacs
+often does not inherit; <code>zoomdeck-command</code> overrides all of that, for example with
+<code>&quot;node /path/to/Zoomdeck/bin/zoomdeck.mjs&quot;</code>. &quot;command not found&quot; in the compilation buffer
+therefore means an Emacs older than this package: reload <code>zoomdeck.el</code>.</p>
+<h2 id="vim-and-neovim">Vim and Neovim<a class="anchor" href="#vim-and-neovim" aria-label="Link to this section">#</a></h2><p>Copy <code>editors/vim/plugin/</code> and <code>editors/vim/after/</code> into <code>~/.vim/</code> or <code>~/.config/nvim/</code>, or hand
+<code>Zoomdeck/editors/vim</code> to your plugin manager. Markdown buffers whose first lines open a slide or
+styles block get the mappings <strong>&lt;leader&gt;zp</strong> (<code>:ZoomdeckPreview</code>, in a terminal split),
+<strong>&lt;leader&gt;zj</strong> (<code>:ZoomdeckJump</code>, the stop of the cursor line in the browser) and
+<strong>&lt;leader&gt;zb</strong> (<code>:ZoomdeckBuild</code>), are saved after <code>updatetime</code> idle milliseconds (lowered to
+one second), and highlight the dialect through <code>after/syntax/markdown.vim</code>. E or Alt+click in
+the browser brings Vim to the line through its server: Neovim always has one, Vim needs
+<code>+clientserver</code> and a name (<code>vim --servername DECK</code>; gvim and MacVim name themselves), and
+without one the preview starts without inverse search. The plugin finds the command on Vim's
+path, else runs the checkout's own <code>bin/zoomdeck.mjs</code> with <code>node</code>, else asks your login shell;
+<code>g:zoomdeck_command</code> overrides it, and <code>g:zoomdeck_autosave = 0</code> turns the idle save off.</p>
+<h2 id="jetbrains-ides">JetBrains IDEs<a class="anchor" href="#jetbrains-ides" aria-label="Link to this section">#</a></h2><p>Copy <code>editors/jetbrains/External Tools.xml</code> to <code>&lt;configuration directory&gt;/tools/External Tools.xml</code> and restart the IDE (WebStorm, IntelliJ IDEA, PyCharm and the others share the
+format). Three tools appear under Tools ▸ External Tools ▸ Zoomdeck, <strong>Preview</strong>, <strong>Jump to
+this line</strong> and <strong>Build HTML</strong>, each acting on the current file; assign them keys under
+Settings ▸ Keymap ▸ External Tools. The preview passes <code>--editor jetbrains</code>, which runs the first
+IDE launcher found on the <code>PATH</code> (<code>idea</code>, <code>webstorm</code>, <code>pycharm</code>, …; Tools ▸ Create Command-line
+Launcher creates one); replace it with your IDE's name in the XML to be sure. JetBrains IDEs save files automatically when they lose focus and after idle time
+(Settings ▸ Appearance &amp; Behavior ▸ System Settings ▸ Autosave). For highlighting, install the
+TextMate Bundles plugin and add <code>editors/vscode/zoomdeck-markup</code> as a bundle.</p>
+<h2 id="any-other-editor">Any other editor<a class="anchor" href="#any-other-editor" aria-label="Link to this section">#</a></h2><p>The ingredients are the same everywhere: a command that runs <code>zoomdeck serve &lt;file&gt; --editor …</code>
+(with your editor's name, or a command containing <code>{file}</code> and <code>{line}</code>), one that runs
+<code>zoomdeck jump &lt;file&gt; &lt;line&gt;</code> with the cursor line, and one that runs
+<code>zoomdeck build &lt;file&gt; -o build --one-file</code> from the file's directory, an autosave after a short
+idle delay, and Markdown highlighting. The VS Code grammar is a plain TextMate grammar that most
+editors can load, and the browser reports mistakes with their line number. An editor that can
+send an HTTP request needs no command for the forward search: <code>POST /__zoomdeck/sync/jump</code> on
+the preview's address with a JSON body <code>{&quot;file&quot;: &quot;/absolute/path.md&quot;, &quot;line&quot;: 42}</code> (or the same
+as <code>?file=…&amp;line=…</code> on a GET) does what <code>zoomdeck jump</code> does, and <code>GET /__zoomdeck/sync</code> answers
+with the configured editor.</p>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="getting-started.html">← Getting started</a>
+      <a class="next" href="concepts.html">Concepts →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#the-loop">The loop</a></li><li><a href="#forward-and-inverse-search">Forward and inverse search</a></li><li><a href="#the-zoomdeck-command">The zoomdeck command</a></li><li><a href="#visual-studio-code">Visual Studio Code</a></li><li><a href="#sublime-text">Sublime Text</a></li><li><a href="#emacs">Emacs</a></li><li><a href="#vim-and-neovim">Vim and Neovim</a></li><li><a href="#jetbrains-ides">JetBrains IDEs</a></li><li><a href="#any-other-editor">Any other editor</a></li></ul></nav>
+</div>
+</body>
+</html>

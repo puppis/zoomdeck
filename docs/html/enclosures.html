@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boxes and blobs · Zoomdeck</title>
+<meta name="description" content="Surround a set of elements with a rectangle or with a smooth curve that keeps a chosen distance from every member, crisp or hand-drawn.">
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+</header>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Getting started</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+      </section>
+      <section>
+        <h4>Diagrams</h4>
+        <ul><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html" aria-current="page">Boxes and blobs</a><ul class="subsections"><li><a href="#boxes">Boxes</a></li><li><a href="#blobs">Blobs</a></li><li><a href="#from-code">From code</a></li></ul></li><li><a href="sketch.html">Hand-drawn shapes</a></li></ul>
+      </section>
+      <section>
+        <h4>Layout and style</h4>
+        <ul><li><a href="positioning.html">Positioning</a></li><li><a href="groups.html">Groups</a></li><li><a href="styles.html">Styles</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion and interaction</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Presenting</h4>
+        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
+      </section>
+      <section>
+        <h4>Advanced</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>Boxes and blobs</h1>
+      <p class="lead">Surround a set of elements with a rectangle or with a smooth curve that keeps a chosen distance from every member, crisp or hand-drawn.</p>
+      <p><a class="try" href="guide.html#slide=enclosures">Open in the guide ↗</a></p>
+<pre><code class="language-markdown"><span class="tk-directive">[[icon:</span> server <span class="tk-attribute">#web</span> <span class="tk-attribute">x=</span><span class="tk-number">-6.5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.9</span> <span class="tk-attribute">size=</span><span class="tk-number">1.1</span> <span class="tk-attribute">color=</span>GREEN_E <span class="tk-attribute">label=</span><span class="tk-string">&quot;web&quot;</span> <span class="tk-attribute">label_side=</span>right<span class="tk-directive">]]</span>
+<span class="tk-directive">[[icon:</span> server <span class="tk-attribute">#worker</span> <span class="tk-attribute">x=</span><span class="tk-number">-6.5</span> <span class="tk-attribute">y=</span><span class="tk-number">-3.9</span> <span class="tk-attribute">size=</span><span class="tk-number">1.1</span> <span class="tk-attribute">color=</span>GREEN_E <span class="tk-attribute">label=</span><span class="tk-string">&quot;worker&quot;</span> <span class="tk-attribute">label_side=</span>right<span class="tk-directive">]]</span>
+<span class="tk-directive">[[icon:</span> database <span class="tk-attribute">#store</span> <span class="tk-attribute">x=</span><span class="tk-number">-1.5</span> <span class="tk-attribute">y=</span><span class="tk-number">-2.9</span> <span class="tk-attribute">size=</span><span class="tk-number">1.1</span> <span class="tk-attribute">color=</span>GOLD_E <span class="tk-attribute">label=</span><span class="tk-string">&quot;store&quot;</span> <span class="tk-attribute">label_side=</span>right<span class="tk-directive">]]</span>
+<span class="tk-directive">[[box:</span> <span class="tk-attribute">#web</span> <span class="tk-attribute">#worker</span>, <span class="tk-attribute">#tier</span>, <span class="tk-attribute">buff=</span><span class="tk-number">0.3</span>, <span class="tk-attribute">corner_radius=</span><span class="tk-number">0.2</span>, <span class="tk-attribute">color=</span>GRAY, <span class="tk-attribute">step=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[blob:</span> <span class="tk-attribute">#web</span> <span class="tk-attribute">#worker</span> <span class="tk-attribute">#store</span>, <span class="tk-attribute">#backend</span>, <span class="tk-attribute">buff=</span><span class="tk-number">0.45</span>, <span class="tk-attribute">smoothness=</span><span class="tk-number">0.7</span>, <span class="tk-attribute">color=</span>GREEN_E, <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.08</span>, <span class="tk-attribute">step=</span><span class="tk-number">2</span>, <span class="tk-attribute">hide=</span><span class="tk-number">3</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[blob:</span> <span class="tk-attribute">#store</span>, <span class="tk-attribute">#attention</span>, <span class="tk-attribute">buff=</span><span class="tk-number">0.3</span>, <span class="tk-attribute">color=</span>RED, <span class="tk-attribute">sketch=</span>true, <span class="tk-attribute">step=</span><span class="tk-number">3</span>, <span class="tk-attribute">tremble=</span><span class="tk-number">3</span><span class="tk-directive">]]</span></code></pre>
+<p>A <code>box</code> or a <code>blob</code> encloses one or more elements. The elements come first, separated by
+spaces, up to the first comma; the enclosure's own <code>#id</code> and attributes follow. Enclosures are
+<a href="shapes.html#attachments">attachments</a>: they are created after layout, so they may name elements
+defined later, and they cannot anchor other elements.</p>
+<h2 id="boxes">Boxes<a class="anchor" href="#boxes" aria-label="Link to this section">#</a></h2><p><code>[[box: #a #b …, #id, …]]</code> draws the joint bounding rectangle of its targets, grown by <code>buff</code>
+(0.15 by default), optionally with <code>corner_radius</code>. It takes <code>color</code>, <code>stroke_width</code>,
+<code>fill_color</code>, <code>fill_opacity</code>, <code>opacity</code>, <code>step</code>, <code>hide</code>, timing and <code>sketch=true</code>. A box around
+one element is the familiar surrounding rectangle.</p>
+<h2 id="blobs">Blobs<a class="anchor" href="#blobs" aria-label="Link to this section">#</a></h2><p><code>[[blob: #a #b …, #id, …]]</code> draws a smooth closed curve that stays at distance <code>buff</code> (0.3 by
+default) from every target, following their arrangement instead of their joint rectangle: an
+L-shaped group gets an L-shaped blob, and targets too far apart for their margins to touch get
+separate loops.</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>buff</code></td>
+<td>0.3</td>
+<td>distance between the targets and the curve</td>
+</tr>
+<tr>
+<td><code>smoothness</code></td>
+<td>0.5</td>
+<td>from 0 (the plain outline of the margins, with creases where they meet) to 1 (neighbours merge into one soft shape)</td>
+</tr>
+<tr>
+<td><code>color</code>, <code>stroke_width</code></td>
+<td>the layout color, 2</td>
+<td>the curve</td>
+</tr>
+<tr>
+<td><code>fill_color</code>, <code>fill_opacity</code></td>
+<td><code>color</code>, 0</td>
+<td>the enclosed area</td>
+</tr>
+<tr>
+<td><code>sketch</code> and its tuning</td>
+<td><code>false</code></td>
+<td>a <a href="sketch.html">hand-drawn</a> curve with a hatched or solid fill</td>
+</tr>
+<tr>
+<td><code>tremble</code>, <code>tremble_amplitude</code>, <code>tremble_rate</code></td>
+<td></td>
+<td>a <a href="animations.html#tremble">vibrating</a> curve, which suits hand-drawn blobs well</td>
+</tr>
+</tbody>
+</table>
+<p>A blob flows around the parts of a composite target separately: the members of a
+<a href="groups.html">group</a>, or an <a href="icons.html">icon</a> and its label. Blobs take <code>opacity</code>, <code>step</code>,
+<code>hide</code>, <code>enter</code>, <code>exit</code>, <code>run_time</code> and <code>lag</code> like other attachments.</p>
+<h2 id="from-code">From code<a class="anchor" href="#from-code" aria-label="Link to this section">#</a></h2><pre><code class="language-ts"><span class="tk-keyword">import</span> { blobMobject, blobOutline, engine } <span class="tk-keyword">from</span> <span class="tk-string">'zoomdeck'</span>;
+
+<span class="tk-keyword">const</span> rects = [{ x: <span class="tk-number">0</span>, y: <span class="tk-number">0</span>, width: <span class="tk-number">2</span>, height: <span class="tk-number">1</span> }, { x: <span class="tk-number">1.5</span>, y: -<span class="tk-number">1.6</span>, width: <span class="tk-number">1</span>, height: <span class="tk-number">1</span> }];
+<span class="tk-keyword">const</span> curve = blobMobject(rects, { buff: <span class="tk-number">0.4</span>, smoothness: <span class="tk-number">0.7</span> });
+curve.setStyle({ strokeColor: engine.GREEN_E, strokeWidth: <span class="tk-number">2</span> }).setFill(engine.GREEN_E, <span class="tk-number">0.1</span>);</code></pre>
+<p><code>blobOutline(rects, options)</code> returns the traced loops as arrays of anchor points,
+<code>blobMobject</code> the smooth engine <code>VMobject</code> through them, and <code>blobField</code> the underlying distance
+field. Rectangles are given by center and size in logical units.</p>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="icons.html">← Icons</a>
+      <a class="next" href="sketch.html">Hand-drawn shapes →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#boxes">Boxes</a></li><li><a href="#blobs">Blobs</a></li><li><a href="#from-code">From code</a></li></ul></nav>
+</div>
+</body>
+</html>

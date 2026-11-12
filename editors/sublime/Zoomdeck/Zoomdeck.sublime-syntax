@@ -1,0 +1,60 @@
+%YAML 1.2
+---
+# Zoomdeck's Markdown dialect: Markdown plus slide containers, directives and attribute blocks.
+# Requires Sublime Text 4 (the `extends` key). Select it with View ▸ Syntax ▸ Zoomdeck Markdown;
+# files whose first line opens a slide or styles block pick it automatically.
+name: Zoomdeck Markdown
+scope: text.html.markdown.zoomdeck
+version: 2
+extends: Packages/Markdown/Markdown.sublime-syntax
+file_extensions: []
+first_line_match: '^(?:<!--.*?-->\s*)?:::\s*(?:slide|styles)\b'
+contexts:
+  main:
+    - meta_prepend: true
+    - match: '^\s*(:::)\s*(slide|styles)?(?=\s*(?:\{|$))'
+      captures:
+        1: punctuation.definition.block.zoomdeck
+        2: keyword.control.container.zoomdeck
+      push: line-attributes
+    - match: '^\s*(\[\[)([a-z_]+)(:)'
+      captures:
+        1: punctuation.definition.directive.zoomdeck
+        2: keyword.control.directive.zoomdeck
+        3: punctuation.separator.zoomdeck
+      push: directive
+    - match: '(?=\{[^{}\n]*\}\s*$)'
+      push: line-attributes
+  line-attributes:
+    - meta_content_scope: meta.attributes.zoomdeck
+    - match: $
+      pop: true
+    - include: attributes
+  directive:
+    - meta_content_scope: meta.directive.zoomdeck
+    - match: '\]\]'
+      scope: punctuation.definition.directive.zoomdeck
+      pop: true
+    - include: attributes
+  attributes:
+    - match: '"'
+      scope: punctuation.definition.string.begin.zoomdeck
+      push:
+        - meta_scope: string.quoted.double.zoomdeck
+        - match: '\\.'
+          scope: constant.character.escape.zoomdeck
+        - match: '"'
+          scope: punctuation.definition.string.end.zoomdeck
+          pop: true
+    - match: '#[A-Za-z_][\w.-]*'
+      scope: entity.name.tag.id.zoomdeck
+    - match: '\.[A-Za-z_][\w-]*'
+      scope: entity.other.attribute-name.class.zoomdeck
+    - match: '->'
+      scope: keyword.operator.arrow.zoomdeck
+    - match: '([A-Za-z_][\w-]*)(=|:)(?=\S)'
+      captures:
+        1: variable.parameter.zoomdeck
+        2: keyword.operator.assignment.zoomdeck
+    - match: '-?\d+(?:\.\d+)?'
+      scope: constant.numeric.zoomdeck

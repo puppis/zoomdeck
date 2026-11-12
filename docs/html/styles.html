@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Styles · Zoomdeck</title>
+<meta name="description" content="Named attribute sets applied by class tokens and automatically by roles such as heading, body or code.">
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+</header>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Getting started</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+      </section>
+      <section>
+        <h4>Diagrams</h4>
+        <ul><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li></ul>
+      </section>
+      <section>
+        <h4>Layout and style</h4>
+        <ul><li><a href="positioning.html">Positioning</a></li><li><a href="groups.html">Groups</a></li><li><a href="styles.html" aria-current="page">Styles</a><ul class="subsections"><li><a href="#classes">Classes</a></li><li><a href="#roles">Roles</a></li><li><a href="#resolution">Resolution</a></li></ul></li></ul>
+      </section>
+      <section>
+        <h4>Motion and interaction</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Presenting</h4>
+        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
+      </section>
+      <section>
+        <h4>Advanced</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>Styles</h1>
+      <p class="lead">Named attribute sets applied by class tokens and automatically by roles such as heading, body or code.</p>
+      <p><a class="try" href="guide.html#slide=styles">Open in the guide ↗</a></p>
+<pre><code class="language-json"><span class="tk-attribute">&quot;styles&quot;</span>: {
+  <span class="tk-attribute">&quot;footnote&quot;</span>: { <span class="tk-attribute">&quot;font_size&quot;</span>: <span class="tk-number">18</span>, <span class="tk-attribute">&quot;color&quot;</span>: <span class="tk-string">&quot;GRAY&quot;</span> },
+  <span class="tk-attribute">&quot;heading&quot;</span>: <span class="tk-string">&quot;color=BLUE_E&quot;</span>
+}</code></pre>
+<pre><code class="language-markdown"><span class="tk-directive">::: styles</span>
+callout: color=ORANGE font_size=30
+<span class="tk-directive">:::</span>
+
+[A side remark]<span class="tk-attribute">{.footnote below:#body left-aligned:#body}</span>
+[Look here]<span class="tk-attribute">{#c .callout x=</span><span class="tk-number">0</span><span class="tk-attribute"> y=</span><span class="tk-number">-2</span><span class="tk-attribute">}</span></code></pre>
+<p>A <strong>style</strong> is a named set of attributes. Styles are defined in <code>deck.json</code> under <code>styles</code>, as
+objects or attribute strings, or in a <code>::: styles</code> block at the top of the Markdown file (one
+<code>name: attributes</code> line each); the Markdown definition wins for the same name.</p>
+<h2 id="classes">Classes<a class="anchor" href="#classes" aria-label="Link to this section">#</a></h2><p>Elements, includes and imports opt into styles with <code>.name</code> tokens in their attribute list. Several
+classes may be listed; later ones win.</p>
+<h2 id="roles">Roles<a class="anchor" href="#roles" aria-label="Link to this section">#</a></h2><p>Styles named after a <strong>role</strong> apply automatically to every element of that role:</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Applies to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>heading</code>, <code>h1</code> … <code>h6</code></td>
+<td>headings (the level-specific name wins)</td>
+</tr>
+<tr>
+<td><code>body</code></td>
+<td>paragraphs and list items</td>
+</tr>
+<tr>
+<td><code>math</code>, <code>code</code>, <code>image</code>, <code>iframe</code>, <code>group</code>, <code>include</code></td>
+<td>that element kind, or child viewports</td>
+</tr>
+<tr>
+<td><code>shape</code>, and <code>rectangle</code>, <code>circle</code>, <code>dot</code>, <code>ellipse</code>, <code>polygon</code>, <code>arc</code>, <code>polyline</code></td>
+<td>shapes</td>
+</tr>
+<tr>
+<td><code>connection</code>, <code>arrow</code>, <code>line</code></td>
+<td>arrows and lines</td>
+</tr>
+<tr>
+<td><code>attachment</code>, <code>brace</code>, <code>box</code></td>
+<td>braces and boxes</td>
+</tr>
+</tbody>
+</table>
+<h2 id="resolution">Resolution<a class="anchor" href="#resolution" aria-label="Link to this section">#</a></h2><p>An element's own attributes win, then its classes, then its roles, then the layout defaults.
+A style may set any attribute the element accepts (<code>anchor</code>, <code>width</code>, <code>opacity</code>, <code>stroke_width</code>,
+<code>enter</code>, …); an attribute the element kind does not accept is reported like any misplaced
+attribute, naming the element's line.</p>
+<blockquote>
+<p><strong>Tip</strong> Put common typography in <code>layout</code> (<code>fontSize</code>, <code>headingSize</code>, <code>codeSize</code>, <code>font</code>,
+<code>color</code>) and use styles for the few recurring variations: footnotes, callouts, captions.
+A <code>shape: sketch=true</code> style (with <code>connection</code> and <code>attachment</code>) makes a whole deck
+<a href="sketch.html">hand-drawn</a>.</p>
+</blockquote>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="groups.html">← Groups</a>
+      <a class="next" href="fragments.html">Fragments and steps →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#classes">Classes</a></li><li><a href="#roles">Roles</a></li><li><a href="#resolution">Resolution</a></li></ul></nav>
+</div>
+</body>
+</html>

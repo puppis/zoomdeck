@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fragments and steps · Zoomdeck</title>
+<meta name="description" content="Reveal and hide elements on clicks, time the fades, advance automatically and skip events.">
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+</header>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Getting started</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+      </section>
+      <section>
+        <h4>Diagrams</h4>
+        <ul><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li></ul>
+      </section>
+      <section>
+        <h4>Layout and style</h4>
+        <ul><li><a href="positioning.html">Positioning</a></li><li><a href="groups.html">Groups</a></li><li><a href="styles.html">Styles</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion and interaction</h4>
+        <ul><li><a href="fragments.html" aria-current="page">Fragments and steps</a><ul class="subsections"><li><a href="#steps">Steps</a></li><li><a href="#timing">Timing</a></li><li><a href="#entrance-and-exit-styles">Entrance and exit styles</a></li><li><a href="#automatic-advancement">Automatic advancement</a></li><li><a href="#skipping-the-next-event">Skipping the next event</a></li><li><a href="#animated-images">Animated images</a></li></ul></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Presenting</h4>
+        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
+      </section>
+      <section>
+        <h4>Advanced</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>Fragments and steps</h1>
+      <p class="lead">Reveal and hide elements on clicks, time the fades, advance automatically and skip events.</p>
+      <p><a class="try" href="guide.html#slide=fragments">Open in the guide ↗</a></p>
+<pre><code class="language-markdown">[Visible on entry, hidden at step 3]<span class="tk-attribute">{#hint x=</span><span class="tk-number">0.6</span><span class="tk-attribute"> y=</span><span class="tk-number">1.7</span><span class="tk-attribute"> hide=</span><span class="tk-number">3</span><span class="tk-attribute">}</span>
+
+[Appears at step 1]<span class="tk-attribute">{#one x=</span><span class="tk-number">0.6</span><span class="tk-attribute"> y=</span><span class="tk-number">0.9</span><span class="tk-attribute"> step=</span><span class="tk-number">1</span><span class="tk-attribute"> color=GREEN}</span>
+
+[Step 2 reveals this, then advances by itself]<span class="tk-attribute">{#two x=</span><span class="tk-number">0.6</span><span class="tk-attribute"> y=</span><span class="tk-number">0.1</span><span class="tk-attribute"> step=</span><span class="tk-number">2</span><span class="tk-attribute"> color=YELLOW}</span>
+<span class="tk-directive">[[next:</span> <span class="tk-attribute">step=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
+
+[Step 3 shows this and hides the hint]<span class="tk-attribute">{#three x=</span><span class="tk-number">0.6</span><span class="tk-attribute"> y=</span><span class="tk-number">-0.7</span><span class="tk-attribute"> step=</span><span class="tk-number">3</span><span class="tk-attribute">}</span>
+
+<span class="tk-directive">[[show:</span> <span class="tk-attribute">#hint</span> <span class="tk-attribute">step=</span><span class="tk-number">4</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[hide:</span> <span class="tk-attribute">#one</span> <span class="tk-attribute">step=</span><span class="tk-number">4</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[skip_next:</span> <span class="tk-attribute">step=</span><span class="tk-number">4</span><span class="tk-directive">]]</span>
+
+[Never shown: step 5 is skipped]<span class="tk-attribute">{#five x=</span><span class="tk-number">0.6</span><span class="tk-attribute"> y=</span><span class="tk-number">-1.5</span><span class="tk-attribute"> step=</span><span class="tk-number">5</span><span class="tk-attribute">}</span>
+
+[Step 6 follows step 4 directly]<span class="tk-attribute">{#six x=</span><span class="tk-number">0.6</span><span class="tk-attribute"> y=</span><span class="tk-number">-2.3</span><span class="tk-attribute"> step=</span><span class="tk-number">6</span><span class="tk-attribute"> color=RED}</span></code></pre>
+<h2 id="steps">Steps<a class="anchor" href="#steps" aria-label="Link to this section">#</a></h2><p>An omitted <code>step</code> (or <code>step=0</code>) makes an element part of the slide's initial content; <code>step=N</code>
+fades it in at click N and <code>hide=M</code> fades it out later. <code>[[show: #id step=N]]</code> and
+<code>[[hide: #id step=N]]</code> repeat changes as often as needed. Showing a visible element or hiding a
+hidden one is an error, reported with its line.</p>
+<p>Numbers are local to each slide and need not be consecutive: a lone <code>step=4</code> creates one click,
+not four. All changes sharing a number play together, followed by a pause; if a step also visits
+children, the parent's changes play first.</p>
+<h2 id="timing">Timing<a class="anchor" href="#timing" aria-label="Link to this section">#</a></h2><p><a class="try" href="guide.html#slide=anchors">Open in the guide ↗</a></p>
+<p>Each fade lasts <code>layout.animationTime</code> unless the element sets <code>run_time=S</code>; <code>lag=S</code> delays its
+start inside the step, so one click can stagger several elements. A <code>show</code>/<code>hide</code> directive may
+carry its own <code>run_time</code>, <code>lag</code> and <code>rate</code>.</p>
+<pre><code class="language-markdown">[Fades in over 1.5 s]<span class="tk-attribute">{#slow x=</span><span class="tk-number">-3.5</span><span class="tk-attribute"> y=</span><span class="tk-number">-0.4</span><span class="tk-attribute"> step=</span><span class="tk-number">1</span><span class="tk-attribute"> run_time=</span><span class="tk-number">1.5</span><span class="tk-attribute">}</span>
+[Starts 0.5 s later]<span class="tk-attribute">{#later below:#slow left-aligned:#slow step=</span><span class="tk-number">1</span><span class="tk-attribute"> lag=</span><span class="tk-number">0.5</span><span class="tk-attribute">}</span></code></pre>
+<h2 id="entrance-and-exit-styles">Entrance and exit styles<a class="anchor" href="#entrance-and-exit-styles" aria-label="Link to this section">#</a></h2><p><code>enter=</code> and <code>exit=</code> on an element (or on <code>show</code>/<code>hide</code> directives) replace the default fades:</p>
+<table>
+<thead>
+<tr>
+<th><code>enter=</code></th>
+<th><code>exit=</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fade</code> (default), <code>grow</code>, <code>write</code>, <code>create</code>, <code>draw</code></td>
+<td><code>fade</code> (default), <code>shrink</code>, <code>uncreate</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>write</code>, <code>create</code>, <code>draw</code> and <code>uncreate</code> suit vector content (formulas and shapes).</p>
+<h2 id="automatic-advancement">Automatic advancement<a class="anchor" href="#automatic-advancement" aria-label="Link to this section">#</a></h2><p><code>[[next: step=N]]</code> advances to the following stop automatically once step N (and the child
+visits it triggers) has finished; <code>step=0</code> marks the slide's entry. Chains of <code>next</code> play without
+clicks; backward and outline jumps show the recorded states without starting playback.</p>
+<h2 id="skipping-the-next-event">Skipping the next event<a class="anchor" href="#skipping-the-next-event" aria-label="Link to this section">#</a></h2><p><code>[[skip_next: step=N]]</code> omits exactly one following event: a fragment step, a child visit (with
+its whole subtree) or the return to the parent, even across numeric gaps. On a child's last step
+it suppresses the zoom back to the parent, which is also what <code>skip_return=true</code> on the include
+does more declaratively.</p>
+<h2 id="animated-images">Animated images<a class="anchor" href="#animated-images" aria-label="Link to this section">#</a></h2><p>Images with <code>play=once</code> or <code>play=loop</code> play when they are revealed: finite ones finish before the
+pause, loops become a looping stop that the next click leaves. See <a href="images.html">Images</a>.</p>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="styles.html">← Styles</a>
+      <a class="next" href="animations.html">Animations →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#steps">Steps</a></li><li><a href="#timing">Timing</a></li><li><a href="#entrance-and-exit-styles">Entrance and exit styles</a></li><li><a href="#automatic-advancement">Automatic advancement</a></li><li><a href="#skipping-the-next-event">Skipping the next event</a></li><li><a href="#animated-images">Animated images</a></li></ul></nav>
+</div>
+</body>
+</html>

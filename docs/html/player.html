@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The player · Zoomdeck</title>
+<meta name="description" content="Keyboard and pointer controls, the pen and its pressure styles, the whiteboard, a companion tablet, spotlight and laser, reverse playback, deep links, speed and fullscreen.">
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+</header>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Getting started</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+      </section>
+      <section>
+        <h4>Diagrams</h4>
+        <ul><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li></ul>
+      </section>
+      <section>
+        <h4>Layout and style</h4>
+        <ul><li><a href="positioning.html">Positioning</a></li><li><a href="groups.html">Groups</a></li><li><a href="styles.html">Styles</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion and interaction</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Presenting</h4>
+        <ul><li><a href="player.html" aria-current="page">The player</a><ul class="subsections"><li><a href="#controls">Controls</a></li><li><a href="#settings">Settings</a></li><li><a href="#pointer-tools">Pointer tools</a></li><li><a href="#the-pen">The pen</a></li><li><a href="#the-whiteboard">The whiteboard</a></li><li><a href="#a-tablet-as-a-drawing-pad">A tablet as a drawing pad</a></li><li><a href="#reverse-playback">Reverse playback</a></li><li><a href="#cuts">Cuts</a></li><li><a href="#outline-and-deep-links">Outline and deep links</a></li><li><a href="#loops-and-automatic-advancement">Loops and automatic advancement</a></li><li><a href="#editing-preview">Editing preview</a></li><li><a href="#static-exports">Static exports</a></li></ul></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
+      </section>
+      <section>
+        <h4>Advanced</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>The player</h1>
+      <p class="lead">Keyboard and pointer controls, the pen and its pressure styles, the whiteboard, a companion tablet, spotlight and laser, reverse playback, deep links, speed and fullscreen.</p>
+      <p><a class="try" href="guide.html#slide=player">Open in the guide ↗</a></p>
+<h2 id="controls">Controls<a class="anchor" href="#controls" aria-label="Link to this section">#</a></h2><table>
+<thead>
+<tr>
+<th>Default keys</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>→</code>, Space</td>
+<td>next stop (plays its animations)</td>
+</tr>
+<tr>
+<td><code>←</code></td>
+<td>previous stop, playing the current stop backwards</td>
+</tr>
+<tr>
+<td>Home</td>
+<td>first stop</td>
+</tr>
+<tr>
+<td>R</td>
+<td>replay the current stop</td>
+</tr>
+<tr>
+<td>⌘Z / Ctrl+Z</td>
+<td>undo the last pen or highlighter stroke</td>
+</tr>
+<tr>
+<td>⌘⇧Z / Ctrl+Shift+Z / Ctrl+Y</td>
+<td>redo a stroke</td>
+</tr>
+<tr>
+<td>Delete, Backspace</td>
+<td>clear all strokes on this slide</td>
+</tr>
+<tr>
+<td>L</td>
+<td>switch the pointer tool between spotlight and laser</td>
+</tr>
+<tr>
+<td>W</td>
+<td>show or hide the whiteboard; while it is shown the arrows scroll it</td>
+</tr>
+<tr>
+<td>E</td>
+<td>open the source line of this stop in the editor (preview server with <code>--editor</code>; see <a href="editors.html#forward-and-inverse-search">Editors</a>)</td>
+</tr>
+<tr>
+<td>F</td>
+<td>toggle fullscreen; Esc leaves it</td>
+</tr>
+<tr>
+<td>O</td>
+<td>toggle the slide outline</td>
+</tr>
+<tr>
+<td>,</td>
+<td>open the settings</td>
+</tr>
+</tbody>
+</table>
+<p>The footer has previous/next buttons, a progress bar, the pen settings, the speed control
+(0.5× to 2×), the settings gear and the fullscreen button. The header shows the breadcrumb of the
+current slide and the player state.</p>
+<h2 id="settings">Settings<a class="anchor" href="#settings" aria-label="Link to this section">#</a></h2><p>The gear button (or the <code>,</code> key) opens the settings dialog, in five parts:</p>
+<ul>
+<li><strong>Pointer</strong>: the tool shown by the pointer gesture (spotlight or laser) and the modifier keys
+of each gesture: the pen, the spotlight/highlighter, click-to-advance and the click that opens
+an element's source in the editor (Alt by default). Each can be &quot;Plain&quot;
+(no key), one of Shift, Control, Alt, ⌘/Win or a pair of them, or &quot;Off&quot;; choosing keys already
+used by another gesture frees them from it.</li>
+<li><strong>Pen</strong>: how pressure and motion shape a stroke; see <a href="#the-pen">The pen</a>.</li>
+<li><strong>Tablet</strong>: pairing a companion tablet; see <a href="#a-tablet-as-a-drawing-pad">A tablet as a drawing pad</a>.</li>
+<li><strong>Keyboard</strong>: every action with its keys. Click a key to remove it, or choose &quot;Add key&quot; and press
+the new combination, which may include modifiers; a combination already used elsewhere moves to
+the new action.</li>
+<li><strong>Advanced</strong>: the reverse-playback switch, on by default.</li>
+</ul>
+<p>&quot;Restore default gestures&quot;, &quot;Restore the default pen&quot; and &quot;Restore default keys&quot; undo the changes
+of their section. Settings are stored in the browser and apply to every deck you open there.</p>
+<h2 id="pointer-tools">Pointer tools<a class="anchor" href="#pointer-tools" aria-label="Link to this section">#</a></h2><p>With the default gestures:</p>
+<ul>
+<li>
+<p><strong>Drag</strong> draws with the pen; a click leaves a dot. Color and tip size are in the footer, where
+&quot;Default&quot; is the deck's text color.</p>
+</li>
+<li>
+<p>Hold <strong>Shift</strong> for a spotlight that follows the pointer, or a red laser dot: the <code>L</code> key (or the
+Pointer setting) switches between the two. Shift + scroll resizes either; <strong>Shift + drag</strong> draws a
+highlighter stroke.</p>
+</li>
+<li>
+<p>A click never moves between stops unless you ask for it: the &quot;Click: next stop&quot; gesture is
+off by default, and binding it to a key (for example Alt) in the settings makes that key +
+click behave like the <code>→</code> key.</p>
+</li>
+<li>
+<p><strong>Alt + click</strong> an element to open its source line in your editor, when the deck is served by
+<code>zoomdeck serve --editor …</code> (the element nearest to the pointer counts, a text inside a tile
+before the tile); the <code>E</code> key opens the line of the current stop. See
+<a href="editors.html#forward-and-inverse-search">Editors</a>.</p>
+</li>
+<li>
+<p><strong>Double-click</strong> a link that points inside the deck (<code>#slide=</code>, <code>#step=</code>) to follow it; a single
+click over such a link draws, since it often covers a whole tile. Links to pages outside the deck
+open on a single click.</p>
+</li>
+</ul>
+<p>Strokes belong to the current slide and clear when the slide changes; undo, redo and clear act on
+the current slide's strokes (or on the whiteboard's while it is shown). Links and live pages keep
+working under a plain pen: clicking one opens it rather than drawing, with no highlight while the
+pointer rests on it. On a touch screen a finger never draws, so a resting palm leaves no marks;
+drawing takes a pen, a stylus or the mouse. A <strong>fingertip rubbed over a stroke erases it</strong>, and
+undo brings it back where it was; two fingers scroll the whiteboard. The colors in the footer are
+swatches, the first being the deck's own text color.</p>
+<h2 id="the-pen">The pen<a class="anchor" href="#the-pen" aria-label="Link to this section">#</a></h2><p>A stroke is a path of samples with pressure, drawn as a filled shape whose width varies along it,
+the way drawing applications render ink. A pen with a pressure sensor (Apple Pencil, a Wacom
+tablet, a pen-enabled laptop) shapes the line as you press; with a mouse or a basic stylus the width
+follows the speed of the hand instead, so a quick flick ends thin. Samples are taken from the
+browser's raw pointer stream, before the frame is painted, which keeps the line close to the tip.</p>
+<p>The <strong>Pen</strong> section of the settings holds the look:</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Preset</td>
+<td>Ballpoint (light pressure effect), Fountain pen (strong, tapered), Marker (constant width), Brush (strongest); moving a slider makes it Custom</td>
+</tr>
+<tr>
+<td>Pencil width</td>
+<td>width of a pencil stroke relative to the tip size, 0.2 to 1.5 (0.6 by default: a pencil draws finer than a mouse at the same tip); mouse strokes are not affected</td>
+</tr>
+<tr>
+<td>Pencil pressure</td>
+<td>how much a real pressure sensor counts, 0.2 to 1.5 (0.6 by default, so a pencil draws about as light as a mouse); mouse strokes are not affected</td>
+</tr>
+<tr>
+<td>Pressure effect</td>
+<td>how much pressure widens the line, from -1 (harder is thinner) to 1</td>
+</tr>
+<tr>
+<td>Smoothing</td>
+<td>softening of the outline</td>
+</tr>
+<tr>
+<td>Steadying</td>
+<td>how far the line lags behind the hand, which irons out jitter</td>
+</tr>
+<tr>
+<td>Taper the ends</td>
+<td>thin the stroke in and out</td>
+</tr>
+<tr>
+<td>Vary the width with speed</td>
+<td>pressure simulated from speed when the device reports none</td>
+</tr>
+</tbody>
+</table>
+<p>Pencil strokes use half the steadying, since a pressure pen reports dense and precise positions,
+the line is extended with the browser's prediction of the pen's next positions so it stays under
+the tip, and fast strokes are drawn along a smooth curve through the samples, so quick handwriting
+keeps round curves. Changing a setting redraws the strokes already on screen, so you can tune the look
+against a line you just drew. Color and tip size stay in the footer; the tip size is the width at medium pressure.
+The highlighter always has a constant width.</p>
+<h2 id="the-whiteboard">The whiteboard<a class="anchor" href="#the-whiteboard" aria-label="Link to this section">#</a></h2><p><code>W</code> (or the Whiteboard button in the footer) covers the slides with a blank page in the deck's
+background color, dotted to show where it scrolls. Draw on it as on a slide. It is a single page
+without edges: the <strong>arrow keys</strong> glide the view by a quarter of its width or height, the <strong>mouse
+wheel</strong> or a <strong>two-finger scroll</strong> on a trackpad moves it directly, and on a touch screen two
+fingers drag it. Space still moves the presentation underneath, so <code>W</code> again returns to the slides
+where you left them.</p>
+<p>The whiteboard keeps its content while you move through the deck, and its undo, redo and clear are
+its own: nothing done there touches the strokes on slides. Its content lasts until the page is
+reloaded.</p>
+<h2 id="a-tablet-as-a-drawing-pad">A tablet as a drawing pad<a class="anchor" href="#a-tablet-as-a-drawing-pad" aria-label="Link to this section">#</a></h2><p>A tablet on the same network can show the current slide and let you draw on it with a pencil,
+mirroring the strokes on the presenting screen as they are drawn, in both directions. The tablet
+runs none of the engine: it shows a picture of the presenting screen's view, which the presenter
+sends again whenever a stop settles or the window is resized, and draws the strokes itself as
+vector ink on top. The page therefore loads at once on any tablet, answers the pencil
+immediately, and accepts no gesture other than drawing: a pencil or a finger never selects,
+scrolls or zooms anything.</p>
+<ol>
+<li>Serve the deck so that other devices can reach it: <code>zoomdeck serve deck.json --host</code>, or
+<code>npm run dev -- --host</code> from the checkout. Pairing needs this server; an exported HTML file
+opened from disk cannot pair.</li>
+<li>On the presenting computer, open the settings and, under <strong>Tablet</strong>, choose &quot;Show the pairing
+code&quot;. A QR code and an address appear.</li>
+<li>Scan the code with the tablet (or type the address): the pad page opens there, with the
+current slide and a toolbar for the tool (pen or highlighter), color swatches, tip size, undo,
+redo, clear and the whiteboard, and nothing else. A fingertip erases the stroke it touches. Adding it to the home screen gives it the whole
+screen.</li>
+</ol>
+<p><strong>Over a cable.</strong> The pairing needs a network between the two devices, not necessarily Wi-Fi. On
+a Mac, plug the iPad in, open System Settings → General → Sharing → Internet Sharing, share your
+connection &quot;from&quot; the interface you use (Wi-Fi) &quot;to&quot; iPad USB, and turn it on; the computer gets an
+address on the cable (192.168.2.1 as a rule), the pairing panel shows a code for it next to the
+Wi-Fi one, and the tablet scans that one. The cable link is private and steadier than a crowded
+Wi-Fi. An iPad with a cellular plan can also share its own connection to the computer over USB
+(Personal Hotspot), which works the same way.</p>
+<p>The pad follows the presentation and cannot move it, so a stray touch never changes the slide.
+Strokes, undo, redo, clear, and the whiteboard with its scrolling are shared both ways; each
+page draws the shared strokes with its own pen style, so the presenting screen always shows them
+in the style chosen there. An Apple Pencil hovering over the tablet
+shows as a red dot on the presenting screen. A graphics tablet without a screen (a Wacom) needs no
+pairing: plugged into the computer, it drives the pointer and draws with pressure directly.</p>
+<p>The guide's chapter <a href="guide.html#slide=tablet">Pen, whiteboard and tablet</a> is a test page
+for all of this: shapes to trace, a strip for the pressure, a box to write in with the palm resting,
+and the checklist to go through once the tablet is paired.</p>
+<p>The pad page needs almost no memory, since the deck itself stays on the computer. Opening the
+deck itself on a tablet, as a viewer, is also possible when it is small enough: Safari closes a page
+that uses too much memory (&quot;A problem repeatedly occurred&quot;), so text is rasterized at the same
+base density on every screen and only the lines in view are sharpened to the screen's density.</p>
+<h2 id="reverse-playback">Reverse playback<a class="anchor" href="#reverse-playback" aria-label="Link to this section">#</a></h2><p>Going back plays the stop's animations in reverse: fades, property animations, effects, morphs and
+camera moves retrace their path, including zooming back into a child you just left. Videos, loops
+and updater-driven waits cannot run backwards and are passed over. Pressing <code>←</code> again during a
+reverse settles it and steps back once more, so quick presses step through stops.
+<code>&quot;presenter&quot;: { &quot;reversePlayback&quot;: false }</code> restores instant jumps.</p>
+<h2 id="cuts">Cuts<a class="anchor" href="#cuts" aria-label="Link to this section">#</a></h2><p><code>&quot;presenter&quot;: { &quot;transition&quot;: &quot;cut&quot; }</code> replaces the view at once when the camera moves between
+slides, like turning the pages of a PDF, while fragments and animations inside a slide still
+play. <code>transition=cut</code> on a slide, include or subslide does the same for that slide alone, and
+<code>transition=zoom</code> brings the zoom back for one slide of a <code>cut</code> deck.</p>
+<h2 id="outline-and-deep-links">Outline and deep links<a class="anchor" href="#outline-and-deep-links" aria-label="Link to this section">#</a></h2><p>The outline lists every slide; clicking one jumps to its first stop. The address bar follows the
+current stop as <code>#step=N</code>, which can be shared or bookmarked; <code>#slide=id</code> opens the first stop of a
+slide by its markup ID (or a slide by name).</p>
+<h2 id="loops-and-automatic-advancement">Loops and automatic advancement<a class="anchor" href="#loops-and-automatic-advancement" aria-label="Link to this section">#</a></h2><p>Looping stops (<code>play=loop</code>, <code>stop({ loop: true })</code>) repeat until the next click. Stops marked with
+<code>next</code> or <code>autoNext</code> advance by themselves once played; backward moves never trigger them.</p>
+<h2 id="editing-preview">Editing preview<a class="anchor" href="#editing-preview" aria-label="Link to this section">#</a></h2><p><code>zoomdeck serve</code> and the dev page reload when the deck's files change and return to the
+slide and step you were on, using a bookmark saved just before the reload. Parse and reference
+errors are shown with the offending line. The editor and the player also follow each other:
+<code>zoomdeck jump &lt;file&gt; &lt;line&gt;</code> shows the stop of a source line, and <code>E</code> or Alt + click opens the
+source of a stop or of an element in the editor named by <code>--editor</code>; <a href="editors.html#forward-and-inverse-search">Editors</a>
+explains both and the ready-made setups.</p>
+<h2 id="static-exports">Static exports<a class="anchor" href="#static-exports" aria-label="Link to this section">#</a></h2><p>A deck can be exported as a static folder or as one self-contained HTML file that opens from
+disk; both keep the complete player, including settings and deep links. See
+<a href="exporting.html">Exporting a deck</a>.</p>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="live-pages.html">← Live pages</a>
+      <a class="next" href="exporting.html">Exporting a deck →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#controls">Controls</a></li><li><a href="#settings">Settings</a></li><li><a href="#pointer-tools">Pointer tools</a></li><li><a href="#the-pen">The pen</a></li><li><a href="#the-whiteboard">The whiteboard</a></li><li><a href="#a-tablet-as-a-drawing-pad">A tablet as a drawing pad</a></li><li><a href="#reverse-playback">Reverse playback</a></li><li><a href="#cuts">Cuts</a></li><li><a href="#outline-and-deep-links">Outline and deep links</a></li><li><a href="#loops-and-automatic-advancement">Loops and automatic advancement</a></li><li><a href="#editing-preview">Editing preview</a></li><li><a href="#static-exports">Static exports</a></li></ul></nav>
+</div>
+</body>
+</html>

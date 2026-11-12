@@ -1,0 +1,28 @@
+<!-- Zoomdeck preview and export as External Tools for WebStorm, IntelliJ IDEA, PyCharm and the
+     other JetBrains IDEs. Copy this file to <IDE configuration directory>/tools/External Tools.xml
+     (Help ▸ Show Log in Finder/Explorer opens the directory one level below it), restart the IDE,
+     then assign shortcuts under Settings ▸ Keymap ▸ External Tools ▸ Zoomdeck. -->
+<toolSet name="Zoomdeck">
+  <tool name="Preview" description="Serve the deck of the current file; the browser reloads on save, and E or Alt+click there opens the source line here" showInMainMenu="true" showInEditor="true" showInProject="true" showInSearchPopup="true" disabled="false" useConsole="true" showConsoleOnStdOut="true" showConsoleOnStdErr="true" synchronizeAfterRun="true">
+    <exec>
+      <option name="COMMAND" value="zoomdeck" />
+      <!-- `jetbrains` picks the first IDE launcher on the PATH (idea, webstorm, pycharm, …); name yours to be sure. -->
+      <option name="PARAMETERS" value="serve &quot;$FilePath$&quot; --editor jetbrains" />
+      <option name="WORKING_DIRECTORY" value="$FileDir$" />
+    </exec>
+  </tool>
+  <tool name="Jump to this line" description="Show the stop of the cursor line in the running preview" showInMainMenu="true" showInEditor="true" showInProject="false" showInSearchPopup="true" disabled="false" useConsole="false" showConsoleOnStdOut="false" showConsoleOnStdErr="true" synchronizeAfterRun="false">
+    <exec>
+      <option name="COMMAND" value="zoomdeck" />
+      <option name="PARAMETERS" value="jump &quot;$FilePath$&quot; $LineNumber$" />
+      <option name="WORKING_DIRECTORY" value="$FileDir$" />
+    </exec>
+  </tool>
+  <tool name="Build HTML" description="Export the deck of the current file as one HTML file in ./build" showInMainMenu="true" showInEditor="true" showInProject="true" showInSearchPopup="true" disabled="false" useConsole="true" showConsoleOnStdOut="true" showConsoleOnStdErr="true" synchronizeAfterRun="true">
+    <exec>
+      <option name="COMMAND" value="zoomdeck" />
+      <option name="PARAMETERS" value="build &quot;$FilePath$&quot; -o &quot;$FileDir$/build&quot; --one-file" />
+      <option name="WORKING_DIRECTORY" value="$FileDir$" />
+    </exec>
+  </tool>
+</toolSet>

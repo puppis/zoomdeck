@@ -1,0 +1,8 @@
+{
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 600,
+  "[markdown]": {
+    "editor.wordWrap": "on",
+    "editor.quickSuggestions": { "other": false, "comments": false, "strings": false }
+  }
+}

@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Images and video · Zoomdeck</title>
+<meta name="description" content="SVG and raster images, animated PNG and GIF, and video files played through the browser.">
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+</header>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Getting started</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html" aria-current="page">Images and video</a><ul class="subsections"><li><a href="#images">Images</a></li><li><a href="#animated-images">Animated images</a></li><li><a href="#video">Video</a></li></ul></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+      </section>
+      <section>
+        <h4>Diagrams</h4>
+        <ul><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li></ul>
+      </section>
+      <section>
+        <h4>Layout and style</h4>
+        <ul><li><a href="positioning.html">Positioning</a></li><li><a href="groups.html">Groups</a></li><li><a href="styles.html">Styles</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion and interaction</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Presenting</h4>
+        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
+      </section>
+      <section>
+        <h4>Advanced</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>Images and video</h1>
+      <p class="lead">SVG and raster images, animated PNG and GIF, and video files played through the browser.</p>
+      <p><a class="try" href="guide.html#slide=images">Open in the guide ↗</a></p>
+<pre><code class="language-markdown">![Vector artwork](<span class="tk-string">assets/slides.svg</span>)<span class="tk-attribute">{#svg x=</span><span class="tk-number">-6.5</span><span class="tk-attribute"> y=</span><span class="tk-number">-2.6</span><span class="tk-attribute"> width=</span><span class="tk-number">4</span><span class="tk-attribute">}</span>
+
+![Plays once when revealed](<span class="tk-string">assets/orbit.png</span>)<span class="tk-attribute">{#once x=</span><span class="tk-number">0</span><span class="tk-attribute"> y=</span><span class="tk-number">-2.6</span><span class="tk-attribute"> width=</span><span class="tk-number">3</span><span class="tk-attribute"> play=once step=</span><span class="tk-number">1</span><span class="tk-attribute">}</span>
+
+![Loops until the next click](<span class="tk-string">assets/orbit.png</span>)<span class="tk-attribute">{#loop right-of:#once buff=</span><span class="tk-number">1.5</span><span class="tk-attribute"> width=</span><span class="tk-number">3</span><span class="tk-attribute"> play=loop step=</span><span class="tk-number">2</span><span class="tk-attribute"> hide=</span><span class="tk-number">3</span><span class="tk-attribute">}</span>
+
+![A recording](<span class="tk-string">assets/clip.mp4</span>)<span class="tk-attribute">{#movie width=</span><span class="tk-number">7.5</span><span class="tk-attribute"> play=once step=</span><span class="tk-number">4</span><span class="tk-attribute">}</span></code></pre>
+<h2 id="images">Images<a class="anchor" href="#images" aria-label="Link to this section">#</a></h2><p>An image occupies a block of its own, is centered on <code>x</code>, <code>y</code> (or placed by <code>anchor=</code>, <code>at=</code>
+and the relative constraints), and is sized with <code>width</code> (<code>height</code> scales it to fit). Paths
+resolve relative to the Markdown file; <code>data:</code> URIs and absolute URLs work too.</p>
+<ul>
+<li><strong>SVG</strong> files keep nested transforms and inherited styles. <code>&lt;text&gt;</code> inside an SVG is not
+rendered: outline text before exporting.</li>
+<li><strong>Raster</strong> files may be PNG, JPEG, GIF or WebP.</li>
+</ul>
+<h2 id="animated-images">Animated images<a class="anchor" href="#animated-images" aria-label="Link to this section">#</a></h2><p>Multi-slide <strong>APNG</strong> and <strong>GIF</strong> files accept <code>play=</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>play=once</code></td>
+<td>one complete cycle at the file's frame durations, keeping the last frame</td>
+</tr>
+<tr>
+<td><code>play=loop</code></td>
+<td>the reveal is its own stop that advances automatically into a browser loop; the next click leaves the loop</td>
+</tr>
+</tbody>
+</table>
+<p>A hidden animated image shown again restarts at its first frame; images sharing a step play
+together, finite ones before loops. Single-slide files cannot request playback.</p>
+<h2 id="video">Video<a class="anchor" href="#video" aria-label="Link to this section">#</a></h2><p>A video file (<code>.mp4</code>, <code>.webm</code>, <code>.ogv</code>, <code>.mov</code>) uses the same syntax and plays through the
+browser's decoder:</p>
+<ul>
+<li><code>play=once</code> plays one pass as its own stop; <code>play=loop</code> keeps looping until the next click;
+without <code>play</code> the first frame is shown as a still.</li>
+<li>Videos start <strong>muted</strong> so that playback is never blocked by autoplay rules; <code>muted=false</code>
+turns the sound on (the first click of the deck counts as the gesture browsers require).</li>
+<li>Playback follows the clip's clock: the speed control resyncs rather than slows the video, and
+backward navigation jumps over a video instead of rewinding it.</li>
+<li><code>--one-file</code> exports embed videos as data URIs, which grows the file quickly; prefer the folder
+export for decks with long videos.</li>
+</ul>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="math.html">← Mathematics</a>
+      <a class="next" href="code.html">Code listings →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#images">Images</a></li><li><a href="#animated-images">Animated images</a></li><li><a href="#video">Video</a></li></ul></nav>
+</div>
+</body>
+</html>
