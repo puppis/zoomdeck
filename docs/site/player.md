@@ -50,11 +50,13 @@ With the default gestures:
 - Hold **Shift** for a spotlight that follows the pointer, or a red laser dot: the `L` key (or the
   Pointer setting) switches between the two. Shift + scroll resizes either; **Shift + drag** draws a
   highlighter stroke.
-- **Alt + click** goes to the next stop, like the `→` key.
+- A click never moves between stops unless you ask for it: the "Click: next stop" gesture is
+  off by default, and binding it to a key (for example Alt) in the settings makes that key +
+  click behave like the `→` key.
 
 Strokes belong to the current slide and clear when the slide changes; undo, redo and clear act on
 the current slide's strokes. Links and live pages keep working under a plain pen: clicking one
-opens it rather than drawing.
+opens it rather than drawing, with no highlight while the pointer rests on it.
 
 ## Reverse playback
 

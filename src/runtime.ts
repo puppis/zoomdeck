@@ -35,7 +35,7 @@ import { Transform, point, positive, type Vec3 } from './geometry';
 import { coordinateGrid } from './guides';
 import { slideKeys } from './position';
 import { captureMember, memberChanged, restoreMember, type MemberState } from './snapshot';
-import { installPatches } from './patches';
+import { DISPLAY_SLIDE_KEY, installPatches } from './patches';
 
 installPatches();
 
@@ -629,6 +629,7 @@ export class SlideContext extends LocalScene {
       backgrounds,
       overlays: this._canvasBorder ? [this._canvasBorder] : [],
     });
+    this.display.group.userData[DISPLAY_SLIDE_KEY] = slide;
   }
 
   /** Width of the slide's logical canvas. */

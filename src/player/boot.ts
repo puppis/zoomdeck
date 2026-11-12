@@ -96,7 +96,7 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
     },
   });
   stage.attach(presenter);
-  const links = new LinkLayer(ui.stageHost, stage);
+  const links = new LinkLayer(ui.stageHost, stage, presenter);
   const iframes = new IframeLayer(ui.stageHost, stage, presenter);
   stage.afterRender.push(() => links.update(), () => iframes.update());
   try {

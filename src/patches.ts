@@ -13,6 +13,8 @@ import { Mobject } from 'manim-web';
 
 /** Marker stored in `userData` of every display group created by this library. */
 export const DISPLAY_GROUP_FLAG = 'zoomdeckDisplay';
+/** `userData` key under which a display group names the slide it draws. */
+export const DISPLAY_SLIDE_KEY = 'zoomdeckSlide';
 
 let installed = false;
 
@@ -30,6 +32,9 @@ function withNeutralDisplay<T>(mobject: Mobject, measure: () => T): T {
   } finally {
     groups.forEach((group, index) => {
       group.matrix.copy(saved[index]);
+      // The measurement may have pushed the neutral matrix into the world matrices; restore the
+      // group's own at once (callers read it) and let the next render refresh the subtree.
+      group.updateWorldMatrix(true, false);
       group.matrixWorldNeedsUpdate = true;
     });
   }

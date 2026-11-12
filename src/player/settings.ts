@@ -53,7 +53,7 @@ export interface PointerActionInfo {
 export const POINTER_ACTIONS: PointerActionInfo[] = [
   { name: 'pen', label: 'Pen: drag to draw' },
   { name: 'pointer', label: 'Spotlight or laser while held; drag to highlight' },
-  { name: 'advance', label: 'Click: next stop' },
+  { name: 'advance', label: 'Click: next stop (off unless you bind a key)' },
 ];
 
 /** Modifier combinations a pointer action can be bound to; `''` is a plain click or drag. */
@@ -62,7 +62,8 @@ export const MODIFIER_COMBOS = ['', 'Shift', 'Control', 'Alt', 'Meta', 'Shift+Co
 /** Modifier combination of each pointer action; null leaves the action without a gesture. */
 export type PointerBindings = Record<PointerAction, string | null>;
 
-export const DEFAULT_POINTER_BINDINGS: PointerBindings = { pen: '', pointer: 'Shift', advance: 'Alt' };
+/** Click-to-advance has no gesture by default: a click on a slide draws, and only the keys move between stops. */
+export const DEFAULT_POINTER_BINDINGS: PointerBindings = { pen: '', pointer: 'Shift', advance: null };
 
 export type PointerMode = 'spotlight' | 'laser';
 

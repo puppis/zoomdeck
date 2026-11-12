@@ -64,8 +64,7 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
 .zd-stage .iframes iframe { position: absolute; border: 0; pointer-events: auto; background: #fff; }
 .zd-stage.spotlight-active .iframes iframe, .zd-stage.tool-held .iframes iframe, .zd-stage.stroking .iframes iframe { pointer-events: none; }
 .zd-stage .links { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
-.zd-stage .links a { position: absolute; display: block; pointer-events: auto; cursor: pointer; border-radius: 2px; }
-.zd-stage .links a:hover { background: rgba(127, 127, 127, 0.18); }
+.zd-stage .links a { position: absolute; display: block; pointer-events: auto; cursor: pointer; }
 .zd-stage.spotlight-active .links a, .zd-stage.tool-held .links a, .zd-stage.stroking .links a { pointer-events: none; }
 .zd-stage .highlights {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);

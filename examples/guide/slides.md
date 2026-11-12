@@ -904,7 +904,7 @@ Videos use the image syntax with a video file (MP4, WebM, Ogg): `play=once` play
 
 **Keys:** → or Space next · ← previous (plays the stop backwards) · Home first stop · R replay · L spotlight or laser · F fullscreen · O outline · , settings, where every key and gesture can be changed. {x=-9.35 width=19 font_size=21}
 
-**Pointer:** drag to draw with the pen; hold Shift for a spotlight or laser, Shift + drag to highlight, Alt + click for the next stop. Colors, tip sizes and the speed control sit in the toolbar; ⌘Z undoes a stroke, Delete clears them. {x=-9.35 width=19 font_size=21}
+**Pointer:** drag to draw with the pen; hold Shift for a spotlight or laser, Shift + drag to highlight. A click never changes the stop unless the settings bind a key to it. Colors, tip sizes and the speed control sit in the toolbar; ⌘Z undoes a stroke, Delete clears them. {x=-9.35 width=19 font_size=21}
 
 **Links:** `#step=N` or `#slide=id` opens a stop directly, also as `href=` on any element (this guide's front page is built that way); the outline lists every slide; the preview server restores your position after each reload. {x=-9.35 width=19 font_size=21}
 

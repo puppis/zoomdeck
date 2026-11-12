@@ -7,7 +7,9 @@
 import * as THREE from 'three';
 import { LINKED_LINES, type StyledLine } from '../markup/text';
 import { LINKED_OBJECTS } from '../links';
-import { DISPLAY_GROUP_FLAG } from '../patches';
+import { DISPLAY_GROUP_FLAG, DISPLAY_SLIDE_KEY } from '../patches';
+import type { Presenter } from '../runtime';
+import type { Slide } from '../slides';
 import type { Stage } from './stage';
 
 let nextLineId = 1;
@@ -17,6 +19,39 @@ const lineIds = new WeakMap<StyledLine, number>();
 function displayGroup(object: THREE.Object3D): THREE.Object3D | null {
   for (let node = object.parent; node; node = node.parent) if (node.userData[DISPLAY_GROUP_FLAG]) return node;
   return null;
+}
+
+/**
+ * Whether an object belongs to the focused slide. Only that slide's links are live: an
+ * ancestor's element may overlap the child's viewport (a tile linking to that very child,
+ * say) and would otherwise catch every click on it, and a descendant's links are tiny and
+ * unexpected until the camera reaches it.
+ */
+function inFocus(object: THREE.Object3D, focused: Slide | null): boolean {
+  if (!focused) return true;
+  const slide = displayGroup(object)?.userData[DISPLAY_SLIDE_KEY] as Slide | undefined;
+  return !slide || slide === focused;
+}
+
+const partBox = new THREE.Box3();
+
+/**
+ * World bounds of an object's visible geometry, from each part's own bounding box (strokes
+ * are instanced lines whose template vertices mean nothing; their geometry box is exact),
+ * with the world matrices refreshed first. False when nothing visible has geometry.
+ */
+function worldBounds(object: THREE.Object3D, box: THREE.Box3): boolean {
+  box.makeEmpty();
+  object.updateWorldMatrix(true, false);
+  object.traverseVisible((node) => {
+    if (node !== object) node.updateWorldMatrix(false, false);
+    const geometry = (node as THREE.Mesh).geometry as THREE.BufferGeometry | undefined;
+    if (!geometry?.attributes.position) return;
+    geometry.computeBoundingBox();
+    if (!geometry.boundingBox || geometry.boundingBox.isEmpty()) return;
+    box.union(partBox.copy(geometry.boundingBox).applyMatrix4(node.matrixWorld));
+  });
+  return !box.isEmpty();
 }
 
 function attached(object: THREE.Object3D, root: THREE.Object3D): boolean {
@@ -33,8 +68,9 @@ export class LinkLayer {
   navigate: ((hash: string) => boolean) | null = null;
   private readonly _anchors = new Map<string, HTMLAnchorElement>();
   private readonly _vector = new THREE.Vector3();
+  private readonly _box = new THREE.Box3();
 
-  constructor(host: HTMLElement, private readonly stage: Stage) {
+  constructor(host: HTMLElement, private readonly stage: Stage, private readonly presenter: Presenter) {
     this.element = document.createElement('div');
     this.element.className = 'links';
     this.element.setAttribute('aria-label', 'Links on the current slides');
@@ -44,15 +80,17 @@ export class LinkLayer {
   /** Reposition the hit areas; call after the stage has rendered. */
   update(): void {
     const root = this.stage.scene.threeScene;
+    const focused = this.presenter.focused?.slide ?? null;
     const seen = new Set<string>();
     for (const line of LINKED_LINES) {
       const object = line.getThreeObject();
-      if (!attached(object, root) || line.opacity <= 0.02) continue;
+      if (!attached(object, root) || line.opacity <= 0.02 || !inFocus(object, focused)) continue;
       let id = lineIds.get(line);
       if (id === undefined) {
         id = nextLineId++;
         lineIds.set(line, id);
       }
+      object.updateWorldMatrix(true, false);
       line.links.forEach((link, index) => {
         const key = `${id}:${index}`;
         seen.add(key);
@@ -73,19 +111,15 @@ export class LinkLayer {
     }
     for (const [mobject, href] of LINKED_OBJECTS) {
       const object = mobject.getThreeObject();
-      if (!attached(object, root)) continue;
-      // Point bounds are slide-local (stroke meshes would be too generous); the display group maps them to the world.
-      const { min, max } = mobject.getBounds();
-      if (!Number.isFinite(min.x) || !Number.isFinite(max.x)) continue;
-      const frame = displayGroup(object);
+      if (!attached(object, root) || !inFocus(object, focused)) continue;
+      if (!worldBounds(object, this._box)) continue;
+      const { min, max } = this._box;
       let left = Infinity;
       let top = Infinity;
       let right = -Infinity;
       let bottom = -Infinity;
       for (const [x, y] of [[min.x, min.y], [max.x, min.y], [max.x, max.y], [min.x, max.y]]) {
-        this._vector.set(x, y, 0);
-        if (frame) this._vector.applyMatrix4(frame.matrixWorld);
-        const pixel = this.stage.worldToPixel(this._vector.x, this._vector.y);
+        const pixel = this.stage.worldToPixel(x, y);
         left = Math.min(left, pixel.x);
         right = Math.max(right, pixel.x);
         top = Math.min(top, pixel.y);

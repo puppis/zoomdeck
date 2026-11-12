@@ -127,11 +127,13 @@ are stored in the browser and apply to every deck you open there.</p>
 <li>Hold <strong>Shift</strong> for a spotlight that follows the pointer, or a red laser dot: the <code>L</code> key (or the
 Pointer setting) switches between the two. Shift + scroll resizes either; <strong>Shift + drag</strong> draws a
 highlighter stroke.</li>
-<li><strong>Alt + click</strong> goes to the next stop, like the <code>→</code> key.</li>
+<li>A click never moves between stops unless you ask for it: the &quot;Click: next stop&quot; gesture is
+off by default, and binding it to a key (for example Alt) in the settings makes that key +
+click behave like the <code>→</code> key.</li>
 </ul>
 <p>Strokes belong to the current slide and clear when the slide changes; undo, redo and clear act on
 the current slide's strokes. Links and live pages keep working under a plain pen: clicking one
-opens it rather than drawing.</p>
+opens it rather than drawing, with no highlight while the pointer rests on it.</p>
 <h2 id="reverse-playback">Reverse playback<a class="anchor" href="#reverse-playback" aria-label="Link to this section">#</a></h2><p>Going back plays the stop's animations in reverse: fades, property animations, effects, morphs and
 camera moves retrace their path, including zooming back into a child you just left. Videos, loops
 and updater-driven waits cannot run backwards and are passed over. Pressing <code>←</code> again during a

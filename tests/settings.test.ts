@@ -6,12 +6,13 @@ import {
 describe('player settings', () => {
   beforeEach(() => localStorage.clear());
 
-  it('draws with a plain drag, shows the pointer tool on Shift and advances on Alt + click by default', () => {
+  it('draws with a plain drag, shows the pointer tool on Shift and leaves click-to-advance off by default', () => {
     const settings = defaultSettings();
     expect(settings.pointer).toEqual(DEFAULT_POINTER_BINDINGS);
     expect(pointerActionFor(settings, '')).toBe('pen');
     expect(pointerActionFor(settings, 'Shift')).toBe('pointer');
-    expect(pointerActionFor(settings, 'Alt')).toBe('advance');
+    expect(pointerActionFor(settings, 'Alt')).toBeNull();
+    expect(settings.pointer.advance).toBeNull();
     expect(pointerActionFor(settings, 'Control')).toBeNull();
     expect(settings.pointerMode).toBe('spotlight');
     expect(settings.bindings.pointer).toEqual(['l']);
