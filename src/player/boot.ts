@@ -121,7 +121,8 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
   };
   // Text is redrawn at the screen's resolution whenever the camera comes to rest or the stage is resized.
   player.on('state', ({ state }) => {
-    if (state !== 'playing') stage.refreshText();
+    if (state === 'playing') stage.unrestText();
+    else stage.refreshText();
   });
   // Every visible line is redrawn after a resize; wait for the window to settle rather than redraw on each step.
   let refresh: number | null = null;

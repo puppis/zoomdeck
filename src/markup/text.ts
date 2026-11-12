@@ -153,6 +153,8 @@ export class StyledLine extends Text {
   private _layout: LineLayout | null = null;
   /** Canvas density relative to the base resolution; 1 until the player asks for another. */
   private _density = 1;
+  /** Whether the texture is aligned to the screen's pixels with plain filtering (the camera rests). */
+  private _resting = false;
 
   constructor(options: StyledLineOptions) {
     super({
@@ -199,9 +201,57 @@ export class StyledLine extends Text {
     if (Math.abs(density / this._density - 1) <= DENSITY_TOLERANCE) return false;
     this._density = density;
     this._draw(layout);
+    const texture = this._texture;
     this._updateMesh();
+    // A canvas of another size gets a fresh texture, mipmapped and unaligned again.
+    if (this._texture !== texture) this._resting = false;
     this._markDirty();
     return true;
+  }
+
+  /**
+   * Rest the line on the screen: shift its texture by the fraction of a pixel that separates
+   * the quad from the pixel grid, so texels and pixels coincide, and sample it without mipmaps,
+   * which would otherwise blend in a little of the half-resolution level. `toPixel` maps world
+   * coordinates to device pixels. A rotated line only gets the plain filtering.
+   */
+  restOnScreen(toPixel: (x: number, y: number) => { x: number; y: number }): void {
+    const texture = this._texture;
+    const canvas = this._canvas;
+    const mesh = this._mesh;
+    if (!texture || !canvas || !mesh) return;
+    mesh.updateWorldMatrix(true, false);
+    const m = mesh.matrixWorld.elements;
+    const rotated = Math.abs(m[1]) > 1e-6 * Math.abs(m[0]) || Math.abs(m[4]) > 1e-6 * Math.abs(m[5]);
+    if (rotated) texture.offset.set(0, 0);
+    else {
+      const corner = new THREE.Vector3(-this._worldWidth / 2, this._worldHeight / 2, 0).applyMatrix4(mesh.matrixWorld);
+      const pixel = toPixel(corner.x, corner.y);
+      const nearest = (value: number) => {
+        const fraction = value - Math.floor(value);
+        return fraction > 0.5 ? fraction - 1 : fraction;
+      };
+      // Screen pixel k samples texel k - left; adding the fraction back lands on texel centers.
+      texture.offset.set(nearest(pixel.x) / canvas.width, -nearest(pixel.y) / canvas.height);
+    }
+    if (!this._resting) {
+      this._resting = true;
+      texture.minFilter = THREE.LinearFilter;
+      texture.generateMipmaps = false;
+      texture.needsUpdate = true;
+    }
+  }
+
+  /** Back to mipmapped, unaligned sampling for the camera's motion. */
+  unrest(): void {
+    const texture = this._texture;
+    if (!texture) return;
+    texture.offset.set(0, 0);
+    if (!this._resting) return;
+    this._resting = false;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.generateMipmaps = true;
+    texture.needsUpdate = true;
   }
 
   /** Draw the laid-out runs onto the canvas at the current density. */

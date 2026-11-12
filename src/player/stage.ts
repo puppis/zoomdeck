@@ -6,7 +6,7 @@
 import { Scene } from 'manim-web';
 import type { Presenter } from '../runtime';
 import type { Vec3 } from '../geometry';
-import { TEXT_LINES, textBasePxPerWorld } from '../markup/text';
+import { TEXT_LINES, textBasePxPerWorld, type StyledLine } from '../markup/text';
 
 export interface StageOptions {
   background: string;
@@ -111,6 +111,16 @@ export class Stage {
    * prose is sharp wherever the camera has come to rest. Lines outside the
    * view keep their current bitmaps. Renders again when anything changed.
    */
+  private readonly _resting = new Set<StyledLine>();
+
+  /** The camera is about to move: visible lines go back to mipmapped, unaligned sampling. */
+  unrestText(): void {
+    if (this._resting.size === 0) return;
+    for (const line of this._resting) line.unrest();
+    this._resting.clear();
+    this.render();
+  }
+
   refreshText(): void {
     const presenter = this.presenter;
     if (!presenter || !TEXT_LINES.size) return;
@@ -118,6 +128,12 @@ export class Stage {
     const center = presenter.camera.center;
     const pixelRatio = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
     const pxPerWorld = (this._width * pixelRatio) / view.width;
+    const canvas = this.container.querySelector('canvas');
+    const deviceRatio = canvas && this._width ? canvas.width / this._width : pixelRatio;
+    const toDevicePixel = (x: number, y: number) => {
+      const pixel = this.worldToPixel(x, y);
+      return { x: pixel.x * deviceRatio, y: pixel.y * deviceRatio };
+    };
     const marginX = view.width * 0.25;
     const marginY = view.height * 0.25;
     const root = this.scene.threeScene;
@@ -137,6 +153,17 @@ export class Stage {
         || y + halfHeight < center[1] - view.height / 2 - marginY || y - halfHeight > center[1] + view.height / 2 + marginY;
       // Lines out of view go back to the base density, so zooming around never accumulates large canvases.
       if (line.rasterizeAt(outside ? textBasePxPerWorld() : pxPerWorld * scale)) changed = true;
+      if (outside) {
+        if (this._resting.delete(line)) {
+          line.unrest();
+          changed = true;
+        }
+        continue;
+      }
+      // At rest, the texels of a visible line sit on the screen's pixels, sampled without mipmaps.
+      line.restOnScreen(toDevicePixel);
+      this._resting.add(line);
+      changed = true;
     }
     if (changed) this.render();
   }
