@@ -110,16 +110,19 @@ class ZoomdeckJumpCommand(sublime_plugin.TextCommand):
         sublime.set_timeout_async(lambda: self._send(command, env, line), 0)
 
     def _send(self, command, env, line):
+        shown = ' '.join(command)
         try:
             result = subprocess.run(command, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=20)
             output = result.stdout.decode('utf-8', 'replace').strip()
             if result.returncode == 0:
                 sublime.status_message('Zoomdeck: line %d sent to the preview' % line)
-            else:
-                sublime.status_message('Zoomdeck: ' + (output.splitlines() or ['jump failed'])[-1])
-                print('Zoomdeck jump:', output)
+                return
+            problem = output or 'the command failed with status %d' % result.returncode
         except Exception as error:  # noqa: BLE001
-            sublime.status_message('Zoomdeck: cannot run the jump command (%s)' % error)
+            problem = 'cannot run the command: %s' % error
+        # A jump that fails means a missing preview or command, which deserves more than a status flash.
+        print('Zoomdeck jump failed:', shown, '\n', problem)
+        sublime.error_message('Zoomdeck: the jump to line %d failed.\n\n%s\n\nCommand: %s' % (line, problem, shown))
 
     def is_enabled(self):
         return bool(self.view.file_name())

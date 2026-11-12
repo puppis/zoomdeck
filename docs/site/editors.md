@@ -55,6 +55,15 @@ and a PDF viewer do with SyncTeX:
 Both directions work on saved files: after an edit the browser reloads at the same stop, and a
 jump sent during the reload is picked up when the page is back.
 
+**When a jump does nothing**, run the same command in a terminal, `zoomdeck jump path/to/slides.md 42`:
+it says whether a preview was found. "No preview is running" means the deck is served by a
+`zoomdeck` older than this feature (a preview started before an update keeps running the old
+code until it is restarted; a copy installed with `npm install -g .` must be reinstalled, a link
+made with `npm link` follows the checkout) or by one that does not watch the file's folder. An
+"unknown command" answer means the `zoomdeck` on the editor's `PATH` is outdated. The editor
+setups show the command's answer when it fails: a dialog in Sublime Text, the `*zoomdeck jump*`
+message in Emacs, the task terminal in VS Code.
+
 ## The `zoomdeck` command
 
 All configurations call a `zoomdeck` command. It exists once you have run `npm link` inside the

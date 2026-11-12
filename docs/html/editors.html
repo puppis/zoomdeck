@@ -93,6 +93,14 @@ header when you press E.</li>
 </ul>
 <p>Both directions work on saved files: after an edit the browser reloads at the same stop, and a
 jump sent during the reload is picked up when the page is back.</p>
+<p><strong>When a jump does nothing</strong>, run the same command in a terminal, <code>zoomdeck jump path/to/slides.md 42</code>:
+it says whether a preview was found. &quot;No preview is running&quot; means the deck is served by a
+<code>zoomdeck</code> older than this feature (a preview started before an update keeps running the old
+code until it is restarted; a copy installed with <code>npm install -g .</code> must be reinstalled, a link
+made with <code>npm link</code> follows the checkout) or by one that does not watch the file's folder. An
+&quot;unknown command&quot; answer means the <code>zoomdeck</code> on the editor's <code>PATH</code> is outdated. The editor
+setups show the command's answer when it fails: a dialog in Sublime Text, the <code>*zoomdeck jump*</code>
+message in Emacs, the task terminal in VS Code.</p>
 <h2 id="the-zoomdeck-command">The <code>zoomdeck</code> command<a class="anchor" href="#the-zoomdeck-command" aria-label="Link to this section">#</a></h2><p>All configurations call a <code>zoomdeck</code> command. It exists once you have run <code>npm link</code> inside the
 Zoomdeck checkout (after <code>npm install</code>, on Node 20.19+ or 22.12+), as described under
 <a href="getting-started.html#the-zoomdeck-command">The <code>zoomdeck</code> command</a>; <code>zoomdeck --help</code>
