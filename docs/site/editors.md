@@ -118,8 +118,8 @@ folder). It provides:
   build panel (Tools ▸ Cancel Build stops it), and "Build folder" writes the static folder
   export.
 - **Ctrl+Alt+J** shows the stop of the cursor line in the browser; E or Alt+click in the browser
-  brings Sublime Text to the line (the preview is started with `--editor` pointing at the running
-  Sublime Text, whatever its path).
+  brings Sublime Text to the line (the preview is started with `--editor` pointing at the `subl`
+  launcher of the running Sublime Text, wherever it is installed).
 - Command Palette entries ("Zoomdeck: Preview deck", "Jump to this line in the browser", "Build
   HTML file", "Build static folder").
 - `save_on_focus_lost`, so switching to the browser saves the deck first. For saving while you

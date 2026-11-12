@@ -54,9 +54,29 @@ def zoomdeck_command():
     return command.split()
 
 
+def subl_path():
+    """The `subl` launcher of this Sublime Text, which hands `file:line` to the running instance.
+
+    The `sublime_text` binary itself must not be used on macOS: run directly, it starts a second
+    instance (in safe mode) and treats `file:line` as a file name. `subl` lives next to the binary
+    on Linux and Windows and under Contents/SharedSupport/bin in the macOS application bundle.
+    """
+    executable = sublime.executable_path()
+    folder = os.path.dirname(executable)
+    candidates = {
+        'osx': [os.path.join(os.path.dirname(folder), 'SharedSupport', 'bin', 'subl')],
+        'windows': [os.path.join(folder, 'subl.exe')],
+        'linux': [os.path.join(folder, 'subl'), executable],
+    }[sublime.platform()]
+    for candidate in candidates:
+        if os.path.exists(candidate):
+            return candidate
+    return 'subl'
+
+
 def editor_template():
     """The `--editor` command that opens `{file}` at `{line}` in this Sublime Text."""
-    return '"%s" {file}:{line}' % sublime.executable_path()
+    return '"%s" {file}:{line}' % subl_path()
 
 
 class ZoomdeckExecCommand(ExecCommand):
