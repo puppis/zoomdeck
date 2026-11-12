@@ -1,6 +1,0 @@
-[
-  { "caption": "Zoomdeck: Preview deck", "command": "build", "args": { "build_system": "Packages/Zoomdeck/Zoomdeck.sublime-build", "variant": "Preview" } },
-  { "caption": "Zoomdeck: Build HTML file", "command": "build", "args": { "build_system": "Packages/Zoomdeck/Zoomdeck.sublime-build" } },
-  { "caption": "Zoomdeck: Build static folder", "command": "build", "args": { "build_system": "Packages/Zoomdeck/Zoomdeck.sublime-build", "variant": "Build folder" } },
-  { "caption": "Zoomdeck: Re-read the shell PATH", "command": "zoomdeck_forget_path" }
-]

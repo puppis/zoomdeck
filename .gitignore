@@ -1,8 +1,0 @@
-node_modules/
-dist/
-build/
-.vite/
-.claude/
-*.log
-.DS_Store
-docs/html/guide.html
