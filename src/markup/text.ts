@@ -61,11 +61,12 @@ const MIN_DENSITY = 0.2;
 const MAX_DENSITY = 6;
 const MAX_CANVAS_PX = 8192;
 /**
- * Relative change of density that triggers a redraw. The textures are mipmapped, so a canvas
- * even 5% larger than its size on screen is blended with its half-resolution level and looks
- * soft; only a mismatch this small is invisible.
+ * Relative change of density that triggers a redraw. At rest the texels must coincide with the
+ * screen's pixels: a canvas even half a percent larger than its size on screen drifts by pixels
+ * across a long line, which the pixel snapping of its left edge cannot cure. Only rounding
+ * noise is ignored.
  */
-const DENSITY_TOLERANCE = 0.02;
+const DENSITY_TOLERANCE = 1e-4;
 
 /** The run layout of a line at the base canvas resolution, from which every redraw is drawn. */
 interface LineLayout {
@@ -153,6 +154,8 @@ export class StyledLine extends Text {
   private _layout: LineLayout | null = null;
   /** Canvas density relative to the base resolution; 1 until the player asks for another. */
   private _density = 1;
+  /** The share of the canvas the quad shows: the texels actually drawn, not the rounded-up canvas size. */
+  private _mapping = { x: 1, y: 1 };
   /** Whether the texture is aligned to the screen's pixels with plain filtering (the camera rests). */
   private _resting = false;
 
@@ -205,8 +208,21 @@ export class StyledLine extends Text {
     this._updateMesh();
     // A canvas of another size gets a fresh texture, mipmapped and unaligned again.
     if (this._texture !== texture) this._resting = false;
+    this._applyMapping(0, 0);
     this._markDirty();
     return true;
+  }
+
+  /**
+   * Map the quad onto exactly the texels drawn (the canvas is a whole number of texels, the
+   * drawing `layout × density` of them), shifted by a fraction of a texel for pixel alignment.
+   * The texture is flipped vertically, so the drawn rows are the top of its coordinate range.
+   */
+  private _applyMapping(shiftX: number, shiftY: number): void {
+    const texture = this._texture;
+    if (!texture) return;
+    texture.repeat.set(this._mapping.x, this._mapping.y);
+    texture.offset.set(shiftX, 1 - this._mapping.y + shiftY);
   }
 
   /**
@@ -223,7 +239,7 @@ export class StyledLine extends Text {
     mesh.updateWorldMatrix(true, false);
     const m = mesh.matrixWorld.elements;
     const rotated = Math.abs(m[1]) > 1e-6 * Math.abs(m[0]) || Math.abs(m[4]) > 1e-6 * Math.abs(m[5]);
-    if (rotated) texture.offset.set(0, 0);
+    if (rotated) this._applyMapping(0, 0);
     else {
       const corner = new THREE.Vector3(-this._worldWidth / 2, this._worldHeight / 2, 0).applyMatrix4(mesh.matrixWorld);
       const pixel = toPixel(corner.x, corner.y);
@@ -232,7 +248,7 @@ export class StyledLine extends Text {
         return fraction > 0.5 ? fraction - 1 : fraction;
       };
       // Screen pixel k samples texel k - left; adding the fraction back lands on texel centers.
-      texture.offset.set(nearest(pixel.x) / canvas.width, -nearest(pixel.y) / canvas.height);
+      this._applyMapping(nearest(pixel.x) / canvas.width, -nearest(pixel.y) / canvas.height);
     }
     if (!this._resting) {
       this._resting = true;
@@ -246,7 +262,7 @@ export class StyledLine extends Text {
   unrest(): void {
     const texture = this._texture;
     if (!texture) return;
-    texture.offset.set(0, 0);
+    this._applyMapping(0, 0);
     if (!this._resting) return;
     this._resting = false;
     texture.minFilter = THREE.LinearMipmapLinearFilter;
@@ -262,6 +278,7 @@ export class StyledLine extends Text {
     const k = this._density;
     canvas.width = Math.max(1, Math.ceil(layout.width * k));
     canvas.height = Math.max(1, Math.ceil(layout.height * k));
+    this._mapping = { x: (layout.width * k) / canvas.width, y: (layout.height * k) / canvas.height };
     ctx.setTransform(k, 0, 0, k, 0, 0);
     ctx.clearRect(0, 0, layout.width, layout.height);
     ctx.textBaseline = 'alphabetic';
