@@ -12,6 +12,18 @@ import {
   ACTIONS, DEFAULT_POINTER_BINDINGS, MODIFIER_COMBOS, POINTER_ACTIONS, type ActionName, type PlayerSettings, type PointerAction, type PointerMode,
   actionFor, defaultSettings, describeCombo, describeModifiers, keyCombo, loadSettings, modifierCombo, pointerActionFor, saveSettings,
 } from './settings';
+import {
+  DEFAULT_PEN_STYLE, InkSurface, PEN_PRESETS, PEN_PRESET_LABELS, newStrokeId, type InkSample, type InkStroke, type InkTool, type PenPreset,
+} from './ink';
+import { PadLink, fetchPairingInfo, padLinkAvailable, padUrl, type InkOp, type InkSurfaceName, type PadMessage } from './pad';
+import { Swatches } from './swatches';
+
+/** How far from a stroke's path, in screen pixels, a fingertip still erases it. */
+const ERASE_REACH_PX = 12;
+
+const HIGHLIGHTER_COLOR = '#ffdf00';
+/** Fraction of the whiteboard viewport one arrow press scrolls. */
+const BOARD_STEP = 0.25;
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -50,13 +62,17 @@ export class PlayerUI {
   private readonly _loading: HTMLElement;
   private readonly _loadingText: HTMLElement;
   private readonly _outlineToggle: HTMLButtonElement;
-  private readonly _penColor: HTMLSelectElement;
+  private readonly _penColor: Swatches;
   private readonly _penSize: HTMLSelectElement;
   private readonly _speed: HTMLSelectElement;
   private readonly _spotlight: HTMLElement;
   private readonly _highlights: SVGSVGElement;
-  private readonly _ink: SVGGElement;
-  private readonly _sketches: SVGGElement;
+  private readonly _slideInk: InkSurface;
+  private readonly _boardLayer: HTMLElement;
+  private readonly _board: SVGSVGElement;
+  private readonly _boardInk: InkSurface;
+  private readonly _remoteCursor: HTMLElement;
+  private readonly _boardButton: HTMLButtonElement;
   private readonly _buttons = new Map<number, HTMLButtonElement>();
   private readonly _deck: ResolvedDeck;
   private _player: Player | null = null;
@@ -66,11 +82,19 @@ export class PlayerUI {
   private _modifiers = '';
   private _pointer: { x: number; y: number } | null = null;
   private _radius = 96;
-  private _stroke: { path: SVGPathElement; tool: 'pen' | 'highlighter'; data: string } | null = null;
-  /** Strokes of the current slide in drawing order, and the ones undone (for redo). */
-  private _strokes: SVGPathElement[] = [];
-  private _undone: SVGPathElement[] = [];
+  /** The stroke being drawn: its surface, pointer, and the samples not yet sent to the other device. */
+  private _live: { id: string; tool: InkTool; surface: InkSurfaceName; pointerId: number; pending: InkSample[]; frame: number | null; pressure: boolean; announce: boolean } | null = null;
   private _highlightedSlide: number | null = null;
+  private _boardOn = false;
+  private _boardPan = { x: 0, y: 0 };
+  private _boardTarget = { x: 0, y: 0 };
+  private _boardFrame: number | null = null;
+  private readonly _touches = new Map<number, { x: number; y: number }>();
+  /** When a pen was last seen: fingers near a working pen are palms, not erasers. */
+  private _penSeen = 0;
+  private _pad: PadLink | null = null;
+  private _padsSeen = new Set<string>();
+  private _frameTimer: number | null = null;
   private readonly _useLocation: boolean;
   private readonly _settings: PlayerSettings;
   private readonly _dialog: HTMLDialogElement;
@@ -119,27 +143,28 @@ export class PlayerUI {
     const header = el('header', {}, this._outlineToggle, this._breadcrumb, this._state);
 
     this.stageHost = el('div', { class: 'zd-stage', tabindex: '0', 'aria-label': 'Presentation' });
+    const penStyle = () => this._settings.pen;
     this._highlights = document.createElementNS(SVG_NS, 'svg');
-    this._highlights.setAttribute('class', 'highlights');
+    this._highlights.setAttribute('class', 'highlights slide');
     this._highlights.setAttribute('aria-hidden', 'true');
-    this._ink = document.createElementNS(SVG_NS, 'g');
-    this._ink.setAttribute('class', 'highlight-ink');
-    this._sketches = document.createElementNS(SVG_NS, 'g');
-    this._sketches.setAttribute('class', 'sketches');
-    this._highlights.append(this._ink, this._sketches);
+    this._slideInk = new InkSurface(this._highlights, penStyle, 'slide-ink');
+    // The whiteboard: an opaque page over the slides with its own strokes, scrolled over an unbounded plane.
+    this._boardLayer = el('div', { class: 'whiteboard', hidden: '', 'aria-label': 'Whiteboard' });
+    this._board = document.createElementNS(SVG_NS, 'svg');
+    this._board.setAttribute('class', 'highlights board');
+    this._board.setAttribute('aria-hidden', 'true');
+    this._boardInk = new InkSurface(this._board, penStyle, 'board-ink');
+    this._boardLayer.append(this._board);
     this._spotlight = el('div', { class: 'spotlight', 'aria-hidden': 'true' });
+    this._remoteCursor = el('div', { class: 'remote-cursor', hidden: '', 'aria-hidden': 'true' });
     this._error = el('p', { class: 'error', role: 'alert', hidden: '' });
     this._loadingText = el('span', { text: 'Preparing slides…' });
     this._loading = el('div', { class: 'loading', role: 'status' }, el('span', { class: 'spinner' }), this._loadingText);
-    this.stageHost.append(this._highlights, this._spotlight, this._error, this._loading);
+    this.stageHost.append(this._boardLayer, this._highlights, this._spotlight, this._remoteCursor, this._error, this._loading);
 
     this._previous = el('button', { class: 'previous', 'aria-label': 'Previous stop', title: 'Previous stop (←)', text: '←' });
     this._next = el('button', { class: 'next', 'aria-label': 'Next stop', title: 'Next stop (→)', text: '→' });
-    this._penColor = el('select', { 'aria-label': 'Pen color', title: 'Pen color' });
-    for (const [value, label] of [
-      ['foreground', 'Default'], ['#000000', 'Black'], ['#FFFFFF', 'White'], ['#EF4444', 'Red'],
-      ['#FACC15', 'Yellow'], ['#22C55E', 'Green'], ['#3B82F6', 'Blue'],
-    ]) this._penColor.append(el('option', { value, text: label }));
+    this._penColor = new Swatches(deck.foreground, () => this._finishStroke());
     this._penSize = el('select', { 'aria-label': 'Pen tip size', title: 'Pen tip size' });
     for (const size of ['1', '3', '6', '10']) {
       const option = el('option', { value: size, text: `${size} px` });
@@ -153,6 +178,8 @@ export class PlayerUI {
       this._speed.append(option);
     }
     this._counter = el('span', { class: 'counter' });
+    this._boardButton = el('button', { class: 'board-button', text: 'Whiteboard', title: 'Show or hide the whiteboard (W)', 'aria-pressed': 'false' });
+    this._boardButton.addEventListener('click', () => this.toggleWhiteboard());
     const fullscreen = el('button', { class: 'fullscreen', text: 'Fullscreen' });
     const settingsButton = el('button', { class: 'settings-button', 'aria-label': 'Settings', title: 'Settings', text: '⚙' });
     this._dialog = this._buildSettingsDialog();
@@ -164,8 +191,9 @@ export class PlayerUI {
       el(
         'div',
         { class: 'pen-controls', role: 'group', 'aria-label': 'Pen settings' },
-        el('label', {}, 'Pen ', this._penColor),
+        el('label', {}, 'Pen ', this._penColor.element),
         el('label', {}, 'Tip ', this._penSize),
+        this._boardButton,
       ),
       el('label', { class: 'speed' }, 'Speed ', this._speed),
       this._counter,
@@ -185,8 +213,7 @@ export class PlayerUI {
     this._speed.addEventListener('change', () => {
       if (this._player) this._player.speed = Number(this._speed.value);
     });
-    this._penColor.addEventListener('change', () => this._endStroke());
-    this._penSize.addEventListener('change', () => this._endStroke());
+    this._penSize.addEventListener('change', () => this._finishStroke());
     this._installPointerTools();
     document.addEventListener('keydown', (event) => this._onKeyDown(event));
     if (deck.showOutline) this.toggleOutline();
@@ -212,7 +239,8 @@ export class PlayerUI {
       `${keys('next')}: continue`, `${keys('previous')}: previous stop`, `${keys('replay')}: replay`, `${keys('home')}: overview`,
       `${keys('fullscreen')}: fullscreen`, `${keys('exit')}: normal view`, `${keys('outline')}: toggle outline`,
       ...gestures,
-      `${keys('undo')}: undo stroke`, `${keys('redo')}: redo stroke`, `${keys('clear')}: clear strokes`, `${keys('settings')}: settings`,
+      `${keys('undo')}: undo stroke`, `${keys('redo')}: redo stroke`, `${keys('clear')}: clear strokes`,
+      `${keys('whiteboard')}: whiteboard (arrows, scrolling or two fingers move it)`, `${keys('settings')}: settings`,
     ];
     const nodes: Array<Node | string> = [];
     lines.forEach((line, index) => {
@@ -283,13 +311,12 @@ export class PlayerUI {
     player.on('clipchange', ({ index }) => {
       const clip = navigation.clips[index];
       if (clip.slide !== this._highlightedSlide) {
-        this._ink.replaceChildren();
-        this._sketches.replaceChildren();
-        this._strokes = [];
-        this._undone = [];
-        this._endStroke();
+        if (this._live?.surface === 'slide') this._finishStroke();
+        this._slideInk.reset();
+        this._broadcast({ type: 'ink', surface: 'slide', op: 'replace', strokes: [] });
       }
       this._highlightedSlide = clip.slide;
+      this._sendState();
       this._breadcrumb.textContent = ancestors(clip.slide).map((slide) => slide.name).join(' / ');
       this._counter.textContent = `${index + 1} / ${navigation.clips.length}`;
       this._progress.max = navigation.clips.length;
@@ -300,11 +327,18 @@ export class PlayerUI {
       if (this._useLocation) history.replaceState(null, '', `#step=${index + 1}`);
       this._layoutHighlights();
     });
-    player.on('state', ({ message }) => {
+    player.on('state', ({ state, message }) => {
       this._state.textContent = message;
+      // Once a stop settles (text sharpened by then), the tablet gets a fresh picture.
+      if (state !== 'playing' && state !== 'looping') this._requestFrame(250);
     });
     this._loading.hidden = true;
-    if (typeof ResizeObserver !== 'undefined') new ResizeObserver(() => this._layoutHighlights()).observe(this.stageHost);
+    if (typeof ResizeObserver !== 'undefined') {
+      new ResizeObserver(() => {
+        this._layoutHighlights();
+        this._requestFrame(400);
+      }).observe(this.stageHost);
+    }
     this._layoutHighlights();
   }
 
@@ -336,6 +370,12 @@ export class PlayerUI {
     }
     if (this._dialog.open) return;
     if (combo === 'Space' && /^(BUTTON|SUMMARY)$/.test(target.tagName)) return;
+    const arrow = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] }[combo];
+    if (this._boardOn && arrow) {
+      event.preventDefault();
+      this._panBoardBy(arrow[0], arrow[1]);
+      return;
+    }
     const action = actionFor(this._settings, combo);
     if (!action) return;
     event.preventDefault();
@@ -357,34 +397,34 @@ export class PlayerUI {
       case 'clear': this.clearStrokes(); break;
       case 'settings': this.openSettings(); break;
       case 'pointer': this.togglePointerMode(); break;
+      case 'whiteboard': this.toggleWhiteboard(); break;
     }
   }
 
-  /** Remove the most recent pen or highlighter stroke on the current slide. */
+  /** Remove the most recent stroke of the surface in front (the whiteboard when shown, else the slide). */
   undoStroke(): void {
-    this._endStroke();
-    const path = this._strokes.pop();
-    if (!path) return;
-    path.remove();
-    this._undone.push(path);
+    this._finishStroke();
+    const surface = this._activeSurface();
+    if (this._surface(surface).undo()) this._broadcast({ type: 'ink', surface, op: 'undo' });
   }
 
   /** Put back the last undone stroke. */
   redoStroke(): void {
-    const path = this._undone.pop();
-    if (!path) return;
-    (path.classList.contains('pen') ? this._sketches : this._ink).append(path);
-    this._strokes.push(path);
+    const surface = this._activeSurface();
+    if (this._surface(surface).redo()) this._broadcast({ type: 'ink', surface, op: 'redo' });
   }
 
-  /** Remove every stroke on the current slide; redo restores them one by one. */
+  /** Erase every stroke of the surface in front; undo brings them back one by one. */
   clearStrokes(): void {
-    this._endStroke();
-    while (this._strokes.length) {
-      const path = this._strokes.pop() as SVGPathElement;
-      path.remove();
-      this._undone.push(path);
-    }
+    this._finishStroke();
+    const surface = this._activeSurface();
+    if (this._surface(surface).clear().length) this._broadcast({ type: 'ink', surface, op: 'clear' });
+  }
+
+  /** Show or hide the whiteboard: a blank page with its own strokes and history, kept while slides change. */
+  toggleWhiteboard(on = !this._boardOn): void {
+    this._setBoardShown(on);
+    this._broadcast({ type: 'board', on, pan: { ...this._boardTarget } });
   }
 
   // ---------------------------------------------------------------------
@@ -395,6 +435,11 @@ export class PlayerUI {
   private _bindingsTable!: HTMLElement;
   private _pointerModeSelect!: HTMLSelectElement;
   private readonly _pointerSelects = new Map<PointerAction, HTMLSelectElement>();
+  private _penPreset!: HTMLSelectElement;
+  private readonly _penRanges = new Map<'thinning' | 'smoothing' | 'streamline' | 'pencilPressure' | 'pencilWidth', HTMLInputElement>();
+  private readonly _penToggles = new Map<'taper' | 'simulatePressure', HTMLInputElement>();
+  private _pairingStatus!: HTMLElement;
+  private _pairingPanel!: HTMLElement;
 
   openSettings(): void {
     this._syncSettingsForm();
@@ -455,13 +500,78 @@ export class PlayerUI {
       saveSettings(this._settings);
     });
 
+    // Pen: how pressure and motion shape a stroke.
+    this._penPreset = el('select', { 'aria-label': 'Pen preset' });
+    for (const [value, label] of Object.entries(PEN_PRESET_LABELS)) this._penPreset.append(el('option', { value, text: label }));
+    this._penPreset.addEventListener('change', () => {
+      const preset = this._penPreset.value as PenPreset;
+      if (preset !== 'custom') this._settings.pen = { preset, ...PEN_PRESETS[preset] };
+      else this._settings.pen = { ...this._settings.pen, preset };
+      this._penChanged();
+    });
+    const penRows = el('div', { class: 'bindings' });
+    penRows.append(el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Preset' }), this._penPreset));
+    const ranges: Array<['thinning' | 'smoothing' | 'streamline' | 'pencilPressure' | 'pencilWidth', string, number, number]> = [
+      ['pencilWidth', 'Pencil width, relative to the tip size (mouse strokes unaffected)', 0.2, 1.5],
+      ['pencilPressure', 'Pencil pressure (lower draws lighter; mouse strokes unaffected)', 0.2, 1.5],
+      ['thinning', 'Pressure effect (negative: harder is thinner)', -1, 1],
+      ['smoothing', 'Smoothing of the outline', 0, 1],
+      ['streamline', 'Steadying (the line lags the hand)', 0, 1],
+    ];
+    for (const [key, label, min, max] of ranges) {
+      const range = el('input', { type: 'range', min: String(min), max: String(max), step: '0.05', 'aria-label': label });
+      range.addEventListener('input', () => {
+        this._settings.pen = { ...this._settings.pen, preset: 'custom', [key]: Number(range.value) };
+        this._penChanged();
+      });
+      this._penRanges.set(key, range);
+      penRows.append(el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: label }), range));
+    }
+    const toggles: Array<['taper' | 'simulatePressure', string]> = [
+      ['taper', 'Taper the ends of a stroke'],
+      ['simulatePressure', 'Vary the width with speed when the device has no pressure sensor (mouse, basic styluses)'],
+    ];
+    for (const [key, label] of toggles) {
+      const toggle = el('input', { type: 'checkbox' });
+      toggle.addEventListener('change', () => {
+        this._settings.pen = { ...this._settings.pen, preset: 'custom', [key]: toggle.checked };
+        this._penChanged();
+      });
+      this._penToggles.set(key, toggle);
+      penRows.append(el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: label }), toggle));
+    }
+    const resetPen = el('button', { text: 'Restore the default pen' });
+    resetPen.addEventListener('click', () => {
+      this._settings.pen = { ...DEFAULT_PEN_STYLE };
+      this._penChanged();
+    });
+
+    // Tablet: pairing through the preview server.
+    this._pairingStatus = el('p', { class: 'note' });
+    this._pairingPanel = el('div', { class: 'pairing' });
+    const pairButton = el('button', { text: 'Show the pairing code' });
+    pairButton.addEventListener('click', () => void this._showPairing());
+
     dialog.append(
       el('header', {}, el('h2', { text: 'Settings' }), close),
       el('section', {},
         el('h3', { text: 'Pointer' }),
-        el('p', { class: 'note', text: 'Each gesture is the mouse used with the chosen keys held. Scrolling while the spotlight or laser is shown resizes it; pen color and tip size are in the bar at the bottom. Strokes belong to the slide they were drawn on and clear when you move to another slide.' }),
+        el('p', { class: 'note', text: 'Each gesture is the mouse used with the chosen keys held. Scrolling while the spotlight or laser is shown resizes it; pen color and tip size are in the bar at the bottom. Strokes belong to the slide they were drawn on and clear when you move to another slide; the whiteboard keeps its own.' }),
         gestures,
         resetPointer,
+      ),
+      el('section', {},
+        el('h3', { text: 'Pen' }),
+        el('p', { class: 'note', text: 'A pen or stylus with a pressure sensor (Apple Pencil, Wacom) shapes the line as you press; the sliders tune how. Changes also redraw the strokes already on screen.' }),
+        penRows,
+        resetPen,
+      ),
+      el('section', { class: 'tablet' },
+        el('h3', { text: 'Tablet' }),
+        el('p', { class: 'note', text: 'A tablet on the same network can show this deck and draw on it: open the code or address below on the tablet. It follows the presentation and cannot move it; strokes drawn on either device appear on both. Pairing needs the preview server started with --host (zoomdeck serve --host, or npm run dev -- --host).' }),
+        this._pairingStatus,
+        pairButton,
+        this._pairingPanel,
       ),
       el('section', {},
         el('h3', { text: 'Keyboard' }),
@@ -483,6 +593,63 @@ export class PlayerUI {
     this._reverseToggle.checked = this._settings.reversePlayback ?? this._player?.reversePlayback ?? this._deck.presenter.reversePlayback;
     this._pointerModeSelect.value = this._settings.pointerMode;
     for (const [action, select] of this._pointerSelects) select.value = this._settings.pointer[action] ?? 'off';
+    const pen = this._settings.pen;
+    this._penPreset.value = pen.preset;
+    for (const [key, range] of this._penRanges) range.value = String(pen[key]);
+    for (const [key, toggle] of this._penToggles) toggle.checked = pen[key];
+    this._pairingStatus.textContent = !padLinkAvailable()
+      ? 'Pairing is not available here: this deck is not served by the preview or development server.'
+      : this._padsSeen.size
+        ? `${this._padsSeen.size} tablet${this._padsSeen.size > 1 ? 's' : ''} connected.`
+        : 'No tablet connected yet.';
+  }
+
+  private _penChanged(): void {
+    saveSettings(this._settings);
+    this._syncSettingsForm();
+    this._slideInk.restyle();
+    this._boardInk.restyle();
+  }
+
+  /** Render the tablet's URL as a QR code, or explain what is missing. */
+  private async _showPairing(): Promise<void> {
+    this._pairingPanel.replaceChildren();
+    if (!this._pad) {
+      this._pairingPanel.append(el('p', { class: 'note', text: 'Pairing is not available here.' }));
+      return;
+    }
+    const info = await fetchPairingInfo();
+    if (!info) {
+      this._pairingPanel.append(el('p', { class: 'note', text: 'The server did not answer; is this the preview or development server?' }));
+      return;
+    }
+    if (!info.lan || info.addresses.length === 0) {
+      this._pairingPanel.append(el('p', { class: 'note', text: 'The server listens on this computer only. Restart it with --host (zoomdeck serve --host, or npm run dev -- --host) so the tablet can reach it, then come back here.' }));
+      return;
+    }
+    // One code per address: a tablet on a cable (USB sharing) reaches the computer on another
+    // link than the Wi-Fi, and only the tablet knows which one it can see.
+    const room = this._pad?.room ?? '';
+    if (info.addresses.length > 1) {
+      this._pairingPanel.append(el('p', { class: 'note', text: 'This computer has several network addresses; scan the one the tablet shares (the Wi-Fi, or the USB connection when sharing over the cable).' }));
+    }
+    let QRCode: typeof import('qrcode') | null = null;
+    try {
+      QRCode = await import('qrcode');
+    } catch {
+      QRCode = null;
+    }
+    for (const address of info.addresses.slice(0, 4)) {
+      const url = padUrl(address, info.port, room);
+      const canvas = el('canvas', { class: 'qr', 'aria-label': `Pairing code for ${address}` });
+      this._pairingPanel.append(el('div', { class: 'code' }, canvas, el('p', { class: 'note url', text: url })));
+      try {
+        if (QRCode) await QRCode.toCanvas(canvas, url, { width: 200, margin: 1 });
+        else canvas.remove();
+      } catch {
+        canvas.remove();
+      }
+    }
   }
 
   /** Bind a pointer action to a modifier combination, freeing it from any other action. */
@@ -494,7 +661,7 @@ export class PlayerUI {
     saveSettings(this._settings);
     this._syncSettingsForm();
     this._renderShortcuts();
-    this._endStroke();
+    this._finishStroke();
     this._updateSpotlight();
   }
 
@@ -534,7 +701,7 @@ export class PlayerUI {
   }
 
   // ---------------------------------------------------------------------
-  // Spotlight or laser, highlighter and pen overlays
+  // Ink: pen and highlighter strokes on the slide or the whiteboard
   // ---------------------------------------------------------------------
 
   private _viewportPixels(): { width: number; height: number } {
@@ -550,25 +717,37 @@ export class PlayerUI {
 
   private _layoutHighlights(): void {
     const { width, height, scale } = this._highlightGeometry();
-    this._highlights.setAttribute('viewBox', `${-width / 2} ${-height / 2} ${width} ${height}`);
-    this._highlights.style.width = `${width * scale}px`;
-    this._highlights.style.height = `${height * scale}px`;
-  }
-
-  /** Remove the dots left by the clicks of a double-click (recent single-point strokes). */
-  dropTaps(): void {
-    const now = performance.now();
-    for (let n = 0; n < 2 && this._strokes.length; n++) {
-      const path = this._strokes[this._strokes.length - 1];
-      if ((path.getAttribute('d') ?? '').includes(' L ') || now - Number(path.dataset.time) > 1500) break;
-      this._strokes.pop();
-      path.remove();
+    for (const svg of [this._highlights, this._board]) {
+      svg.setAttribute('viewBox', `${-width / 2} ${-height / 2} ${width} ${height}`);
+      svg.style.width = `${width * scale}px`;
+      svg.style.height = `${height * scale}px`;
     }
+    this._layoutBoardGrid();
   }
 
-  private _endStroke(): void {
-    this._stroke = null;
-    this.stageHost.classList.remove('stroking');
+  /** The dotted grid of the whiteboard scrolls with its content. */
+  private _layoutBoardGrid(): void {
+    const { scale } = this._highlightGeometry();
+    const cell = 50 * scale;
+    this._boardLayer.style.backgroundSize = `${cell}px ${cell}px`;
+    this._boardLayer.style.backgroundPosition =
+      `calc(50% - ${(this._boardPan.x * scale) % cell}px) calc(50% - ${(this._boardPan.y * scale) % cell}px)`;
+  }
+
+  /** Surface coordinates of a page point: slide units around the stage center, plus the whiteboard's pan. */
+  private _surfacePoint(clientX: number, clientY: number, surface: InkSurfaceName): { x: number; y: number } {
+    const { bounds, scale } = this._highlightGeometry();
+    const x = (clientX - bounds.left - bounds.width / 2) / scale;
+    const y = (clientY - bounds.top - bounds.height / 2) / scale;
+    return surface === 'board' ? { x: x + this._boardPan.x, y: y + this._boardPan.y } : { x, y };
+  }
+
+  private _activeSurface(): InkSurfaceName {
+    return this._boardOn ? 'board' : 'slide';
+  }
+
+  private _surface(name: InkSurfaceName): InkSurface {
+    return name === 'board' ? this._boardInk : this._slideInk;
   }
 
   /** The pointer action selected by the modifier keys currently held. */
@@ -576,7 +755,7 @@ export class PlayerUI {
     return pointerActionFor(this._settings, this._modifiers);
   }
 
-  private _drawingTool(): 'pen' | 'highlighter' | null {
+  private _drawingTool(): InkTool | null {
     const tool = this._activeTool();
     return tool === 'pen' ? 'pen' : tool === 'pointer' ? 'highlighter' : null;
   }
@@ -590,29 +769,201 @@ export class PlayerUI {
     this._state.textContent = this._settings.pointerMode === 'laser' ? 'Laser pointer' : 'Spotlight';
   }
 
-  private _addInk(event: PointerEvent | { clientX: number; clientY: number }): void {
-    const { bounds, scale } = this._highlightGeometry();
-    const x = (event.clientX - bounds.left - bounds.width / 2) / scale;
-    const y = (event.clientY - bounds.top - bounds.height / 2) / scale;
-    if (!this._stroke) {
-      const tool = this._drawingTool();
-      if (!tool) return;
-      const path = document.createElementNS(SVG_NS, 'path');
-      const highlighterWidth = this._settings.pointerMode === 'laser' ? this._radius / 3 : 2 * this._radius;
-      path.setAttribute('stroke-width', String((tool === 'pen' ? Number(this._penSize.value) : highlighterWidth) / scale));
-      if (tool === 'pen') {
-        path.setAttribute('stroke', this._penColor.value === 'foreground' ? this._deck.foreground : this._penColor.value);
-        path.classList.add('pen');
-      }
-      (tool === 'pen' ? this._sketches : this._ink).append(path);
-      this._strokes.push(path);
-      this._undone = [];
-      path.dataset.time = String(performance.now());
-      this._stroke = { path, tool, data: `M ${x} ${y} l 0.001 0` };
-      this.stageHost.classList.add('stroking');
-    } else this._stroke.data += ` L ${x} ${y}`;
-    this._stroke.path.setAttribute('d', this._stroke.data);
+  private _sample(event: { clientX: number; clientY: number; pressure?: number; pointerType?: string }, surface: InkSurfaceName): InkSample {
+    const { x, y } = this._surfacePoint(event.clientX, event.clientY, surface);
+    const p = event.pointerType === 'pen' && event.pressure ? event.pressure : 0.5;
+    return { x: Math.round(x * 100) / 100, y: Math.round(y * 100) / 100, p: Math.round(p * 1000) / 1000 };
   }
+
+  private _beginStroke(event: PointerEvent, tool: InkTool): void {
+    this._finishStroke();
+    const surface = this._activeSurface();
+    const { scale } = this._highlightGeometry();
+    const highlighterWidth = this._settings.pointerMode === 'laser' ? this._radius / 3 : 2 * this._radius;
+    const stroke: InkStroke = {
+      id: newStrokeId(this._pad?.id ?? 'local'),
+      tool,
+      color: tool === 'pen' ? (this._penColor.value === 'foreground' ? this._deck.foreground : this._penColor.value) : HIGHLIGHTER_COLOR,
+      size: (tool === 'pen' ? Number(this._penSize.value) : highlighterWidth) / scale,
+      pressure: event.pointerType === 'pen' && event.pressure > 0,
+      samples: [this._sample(event, surface)],
+    };
+    this._surface(surface).begin(stroke);
+    this._live = { id: stroke.id, tool, surface, pointerId: event.pointerId, pending: [], frame: null, pressure: stroke.pressure, announce: false };
+    try {
+      this.stageHost.setPointerCapture(event.pointerId);
+    } catch {
+      /* capture unavailable */
+    }
+    this.stageHost.classList.add('stroking');
+    this._broadcast({ type: 'ink', surface, op: 'begin', stroke });
+  }
+
+  /** Add the samples of a move event (every coalesced one) to the live stroke. */
+  private _extendStroke(event: PointerEvent): void {
+    const live = this._live;
+    if (!live || event.pointerId !== live.pointerId) return;
+    const events = event.getCoalescedEvents?.() ?? [];
+    const source = events.length ? events : [event];
+    const samples = source.map((sample) => this._sample(sample, live.surface));
+    const surface = this._surface(live.surface);
+    surface.extend(live.id, samples);
+    if (!live.pressure && source.some((sample) => sample.pointerType === 'pen' && sample.pressure > 0)) {
+      live.pressure = true;
+      live.announce = true;
+      surface.setPressure(live.id, true);
+    }
+    // Draw at once rather than at the next frame, with the browser's prediction of where the pen goes.
+    const predicted = (event.getPredictedEvents?.() ?? []).slice(0, 4).map((sample) => this._sample(sample, live.surface));
+    surface.drawLive(live.id, predicted);
+    if (!this._pad) return;
+    live.pending.push(...samples);
+    if (live.frame === null) {
+      live.frame = requestAnimationFrame(() => {
+        live.frame = null;
+        this._flushPending(live);
+      });
+    }
+  }
+
+  /** Send the samples gathered since the last frame to the other device. */
+  private _flushPending(live: NonNullable<PlayerUI['_live']>): void {
+    if (live.pending.length === 0 && !live.announce) return;
+    this._broadcast({ type: 'ink', surface: live.surface, op: 'extend', id: live.id, samples: live.pending, ...(live.announce ? { pressure: true as const } : {}) });
+    live.pending = [];
+    live.announce = false;
+  }
+
+  private _finishStroke(): void {
+    const live = this._live;
+    if (!live) return;
+    this._live = null;
+    if (live.frame !== null) cancelAnimationFrame(live.frame);
+    this._flushPending(live);
+    this._surface(live.surface).end(live.id);
+    this._broadcast({ type: 'ink', surface: live.surface, op: 'end', id: live.id });
+    try {
+      this.stageHost.releasePointerCapture(live.pointerId);
+    } catch {
+      /* not captured */
+    }
+    this.stageHost.classList.remove('stroking');
+  }
+
+  /** Remove the dots left by the clicks of a double-click. */
+  dropTaps(): void {
+    this._finishStroke();
+    const surface = this._activeSurface();
+    const dropped = this._surface(surface).dropRecentTaps(2, 1500);
+    for (let n = 0; n < dropped; n++) this._broadcast({ type: 'ink', surface, op: 'undo' });
+  }
+
+  // ---------------------------------------------------------------------
+  // Whiteboard panning: arrows glide by a quarter of the view, wheel and two fingers scroll directly
+  // ---------------------------------------------------------------------
+
+  /** Scroll the whiteboard by a fraction of its viewport; dy > 0 moves the view up. */
+  private _panBoardBy(dx: number, dy: number): void {
+    const { width, height } = this._viewportPixels();
+    this._setBoardPan(this._boardTarget.x + dx * width * BOARD_STEP, this._boardTarget.y - dy * height * BOARD_STEP, true);
+    this._broadcast({ type: 'board', on: this._boardOn, pan: { ...this._boardTarget } });
+  }
+
+  /** Move the whiteboard viewport to (x, y), at once or gliding there. */
+  private _setBoardPan(x: number, y: number, animate: boolean): void {
+    this._boardTarget = { x, y };
+    const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // A hidden page gets no animation frames, so a paired device in the background jumps instead.
+    if (!animate || reduced || document.hidden) {
+      if (this._boardFrame !== null) {
+        cancelAnimationFrame(this._boardFrame);
+        this._boardFrame = null;
+      }
+      this._applyBoardPan(x, y);
+      return;
+    }
+    if (this._boardFrame !== null) return;
+    const step = () => {
+      const dx = this._boardTarget.x - this._boardPan.x;
+      const dy = this._boardTarget.y - this._boardPan.y;
+      if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) {
+        this._boardFrame = null;
+        this._applyBoardPan(this._boardTarget.x, this._boardTarget.y);
+        return;
+      }
+      this._applyBoardPan(this._boardPan.x + dx * 0.2, this._boardPan.y + dy * 0.2);
+      this._boardFrame = requestAnimationFrame(step);
+    };
+    this._boardFrame = requestAnimationFrame(step);
+  }
+
+  private _applyBoardPan(x: number, y: number): void {
+    this._boardPan = { x, y };
+    this._boardInk.setPan(x, y);
+    this._layoutBoardGrid();
+  }
+
+  private _boardSyncFrame: number | null = null;
+
+  /** Tell the other device where the whiteboard is, at most once per frame. */
+  private _queueBoardBroadcast(): void {
+    if (!this._pad || this._boardSyncFrame !== null) return;
+    this._boardSyncFrame = requestAnimationFrame(() => {
+      this._boardSyncFrame = null;
+      this._broadcast({ type: 'board', on: this._boardOn, pan: { ...this._boardTarget } });
+    });
+  }
+
+  private _setBoardShown(on: boolean): void {
+    this._finishStroke();
+    this._boardOn = on;
+    this._boardLayer.hidden = !on;
+    this.stageHost.classList.toggle('board-on', on);
+    this._boardButton.setAttribute('aria-pressed', String(on));
+    this._state.textContent = on ? 'Whiteboard' : 'Slides';
+    this._updateSpotlight();
+  }
+
+  /**
+   * A fingertip rubbed over a stroke erases it. Not while a pen is at work or was just seen
+   * (that finger is a resting palm), and not for a wide contact, which is a palm as well.
+   */
+  private _fingerErase(event: PointerEvent): void {
+    // Safari reports a fingertip as 40 to 60 px across, a palm as well over 100; a hovering pen does not count as working.
+    if (this._touches.size !== 1 || this._live || performance.now() - this._penSeen < 300) return;
+    if (event.width > 90 || event.height > 90) return;
+    const surface = this._activeSurface();
+    const { scale } = this._highlightGeometry();
+    const point = this._surfacePoint(event.clientX, event.clientY, surface);
+    const id = this._surface(surface).strokeAt(point.x, point.y, ERASE_REACH_PX / scale);
+    if (!id) return;
+    this._surface(surface).erase(id);
+    this._broadcast({ type: 'ink', surface, op: 'erase', id });
+  }
+
+  /** Two fingers on a touch screen scroll the whiteboard; a single finger never draws, it erases. */
+  private _touchMove(event: PointerEvent): void {
+    const previous = this._touches.get(event.pointerId);
+    if (!previous) return;
+    this._touches.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (this._touches.size === 1) {
+      this._fingerErase(event);
+      return;
+    }
+    if (!this._boardOn || this._touches.size < 2) return;
+    const { scale } = this._highlightGeometry();
+    const share = this._touches.size;
+    this._setBoardPan(
+      this._boardTarget.x - (event.clientX - previous.x) / scale / share,
+      this._boardTarget.y - (event.clientY - previous.y) / scale / share,
+      false,
+    );
+    this._queueBoardBroadcast();
+  }
+
+  // ---------------------------------------------------------------------
+  // Spotlight or laser
+  // ---------------------------------------------------------------------
 
   private _updateSpotlight(): void {
     const stage = this.stageHost;
@@ -633,7 +984,7 @@ export class PlayerUI {
 
   private _releaseSpotlight(): void {
     this._modifiers = '';
-    this._endStroke();
+    this._finishStroke();
     this._updateSpotlight();
   }
 
@@ -642,19 +993,41 @@ export class PlayerUI {
     const modifierKeys = ['Shift', 'Control', 'Alt', 'Meta'];
     // Clicks on links, live pages and controls inside the stage are theirs, not the pen's.
     const interactive = (event: Event) => Boolean((event.target as Element | null)?.closest?.('a, iframe, button, select, input'));
+    // Cancelling touch events on the stage (not on links, pages or controls) ends Safari's gesture
+    // arbitration at once: with a palm resting, a pencil coming down otherwise looks like a pinch
+    // and its first events are held back, which loses the start of quick strokes.
+    for (const type of ['touchstart', 'touchmove', 'touchend'] as const) {
+      stage.addEventListener(type, (event) => { if (!interactive(event)) event.preventDefault(); }, { passive: false });
+    }
+    // Raw updates reach the page before the frame is painted, which is what makes a pen feel immediate.
+    const raw = 'onpointerrawupdate' in stage;
+    if (raw) {
+      stage.addEventListener('pointerrawupdate' as 'pointermove', (event: PointerEvent) => {
+        if (event.pointerType !== 'touch' && event.buttons & 1) this._extendStroke(event);
+      });
+    }
     stage.addEventListener('pointermove', (event) => {
-      if (event.pointerType === 'touch') return;
+      if (event.pointerType === 'touch') {
+        this._touchMove(event);
+        return;
+      }
+      if (event.pointerType === 'pen' && event.buttons & 1) this._penSeen = performance.now();
       this._pointer = { x: event.clientX, y: event.clientY };
       this._modifiers = modifierCombo(event);
-      if (this._stroke && this._stroke.tool !== this._drawingTool()) this._endStroke();
-      if (this._stroke && event.buttons & 1) {
-        for (const sample of event.getCoalescedEvents?.() ?? []) this._addInk(sample);
-        this._addInk(event);
-      } else if (this._stroke) this._endStroke();
+      if (this._live) {
+        if (!(event.buttons & 1)) this._finishStroke();
+        else if (!raw) this._extendStroke(event);
+      }
       this._updateSpotlight();
     });
     stage.addEventListener('pointerdown', (event) => {
-      if (event.button !== 0 || event.pointerType === 'touch' || interactive(event)) return;
+      if (event.pointerType === 'touch') {
+        this._touches.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        if (!interactive(event)) this._fingerErase(event);
+        return;
+      }
+      if (event.pointerType === 'pen') this._penSeen = performance.now();
+      if (event.button !== 0 || interactive(event)) return;
       this._modifiers = modifierCombo(event);
       this._pointer = { x: event.clientX, y: event.clientY };
       const tool = this._activeTool();
@@ -663,42 +1036,189 @@ export class PlayerUI {
         void this._player?.next();
         return;
       }
-      if (tool !== null) {
+      const drawing = this._drawingTool();
+      if (drawing) {
         event.preventDefault();
-        this._endStroke();
-        this._addInk(event);
+        this._beginStroke(event, drawing);
       }
       this._updateSpotlight();
     });
-    document.addEventListener('pointerup', () => this._endStroke());
-    stage.addEventListener('pointercancel', () => this._endStroke());
+    const release = (event: PointerEvent) => {
+      if (event.pointerType === 'touch') {
+        this._touches.delete(event.pointerId);
+        return;
+      }
+      if (event.pointerType === 'pen') this._penSeen = performance.now();
+      if (this._live && this._live.pointerId === event.pointerId) this._finishStroke();
+    };
+    document.addEventListener('pointerup', release);
+    stage.addEventListener('pointercancel', release);
     stage.addEventListener('contextmenu', (event) => {
       // Control + click is a context menu on macOS; keep it for the tools bound to Control.
       if (event.ctrlKey && pointerActionFor(this._settings, modifierCombo(event)) !== null) event.preventDefault();
     });
-    stage.addEventListener('pointerleave', () => { this._pointer = null; this._endStroke(); this._updateSpotlight(); });
+    stage.addEventListener('pointerleave', (event) => {
+      if (event.pointerType === 'touch') return;
+      this._pointer = null;
+      this._updateSpotlight();
+    });
     document.addEventListener('keydown', (event) => {
       const target = event.target as HTMLElement;
       if (!modifierKeys.includes(event.key) || /^(INPUT|SELECT|TEXTAREA)$/.test(target.tagName) || target.isContentEditable) return;
       this._modifiers = modifierCombo(event);
-      if (this._stroke && this._stroke.tool !== this._drawingTool()) this._endStroke();
+      if (this._live && this._live.tool !== this._drawingTool()) this._finishStroke();
       this._updateSpotlight();
     });
     document.addEventListener('keyup', (event) => {
       if (!modifierKeys.includes(event.key)) return;
       this._modifiers = modifierCombo(event);
-      if (this._stroke && this._stroke.tool !== this._drawingTool()) this._endStroke();
+      if (this._live && this._live.tool !== this._drawingTool()) this._finishStroke();
       this._updateSpotlight();
     });
     stage.addEventListener('wheel', (event) => {
+      const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? stage.clientHeight : 1;
+      if (this._boardOn && this._activeTool() !== 'pointer') {
+        event.preventDefault();
+        const { scale } = this._highlightGeometry();
+        this._setBoardPan(this._boardTarget.x + (event.deltaX * unit) / scale, this._boardTarget.y + (event.deltaY * unit) / scale, false);
+        this._queueBoardBroadcast();
+        return;
+      }
       if (this._activeTool() !== 'pointer' || this._pointer === null) return;
       event.preventDefault();
-      const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? stage.clientHeight : 1;
       const delta = Math.max(-1000, Math.min(1000, (event.deltaY || event.deltaX) * unit));
       this._radius *= Math.exp(-delta * 0.002);
       this._updateSpotlight();
     }, { passive: false });
     window.addEventListener('blur', () => this._releaseSpotlight());
     document.addEventListener('visibilitychange', () => { if (document.hidden) this._releaseSpotlight(); });
+  }
+
+  // ---------------------------------------------------------------------
+  // The companion tablet
+  // ---------------------------------------------------------------------
+
+  /** Join a pairing room: this page drives the stop and sends pictures; both devices draw. */
+  connectPad(link: PadLink): void {
+    this._pad = link;
+    link.on((message, from) => this._onPadMessage(message, from));
+    link.send({ type: 'hello', role: 'presenter' });
+    this._syncSettingsForm();
+  }
+
+  private _broadcast(message: PadMessage): void {
+    this._pad?.send(message);
+  }
+
+  private _sendState(): void {
+    if (!this._pad || !this._player) return;
+    this._pad.send({
+      type: 'state',
+      clip: this._player.index,
+      board: this._boardOn,
+      pan: { ...this._boardTarget },
+      aspect: this._deck.viewport.width / this._deck.viewport.height,
+      background: this._deck.background,
+      foreground: this._deck.foreground,
+    });
+  }
+
+  private _onPadMessage(message: PadMessage, from: string): void {
+    switch (message.type) {
+      case 'hello':
+        if (message.role !== 'pad') break;
+        this._padsSeen.add(from);
+        this._state.textContent = 'Tablet connected';
+        this._syncSettingsForm();
+        this._sendState();
+        this._pad?.send({ type: 'ink', surface: 'slide', op: 'replace', strokes: this._slideInk.strokes });
+        this._pad?.send({ type: 'ink', surface: 'board', op: 'replace', strokes: this._boardInk.strokes });
+        this._sendFrame();
+        break;
+      case 'board':
+        this._applyBoard(message.on, message.pan);
+        break;
+      case 'ink':
+        this._applyInk(message.surface, message);
+        break;
+      case 'hover':
+        this._showRemoteCursor(message);
+        break;
+      case 'state':
+      case 'frame':
+        break;
+    }
+  }
+
+  private _applyBoard(on: boolean, pan: { x: number; y: number }): void {
+    if (on !== this._boardOn) this._setBoardShown(on);
+    if (pan.x !== this._boardTarget.x || pan.y !== this._boardTarget.y) this._setBoardPan(pan.x, pan.y, true);
+  }
+
+  private _applyInk(surface: InkSurfaceName, op: InkOp): void {
+    const target = this._surface(surface);
+    switch (op.op) {
+      case 'begin': target.begin(op.stroke); break;
+      case 'extend':
+        target.extend(op.id, op.samples);
+        if (op.pressure) target.setPressure(op.id, true);
+        break;
+      case 'end': target.end(op.id); break;
+      case 'erase': target.erase(op.id); break;
+      case 'undo': target.undo(); break;
+      case 'redo': target.redo(); break;
+      case 'clear': target.clear(); break;
+      case 'replace': target.replace(op.strokes); break;
+    }
+  }
+
+  /** Send the tablet a picture of the current view, a moment after things settle. */
+  private _requestFrame(delay: number): void {
+    if (!this._pad || this._padsSeen.size === 0) return;
+    if (this._frameTimer !== null) clearTimeout(this._frameTimer);
+    this._frameTimer = window.setTimeout(() => {
+      this._frameTimer = null;
+      this._sendFrame();
+    }, delay);
+  }
+
+  /**
+   * Capture the deck's viewport (the letterboxed area the ink overlay covers) from the WebGL
+   * canvas right after a render, when its buffer is still readable, as a JPEG data URL.
+   */
+  private _sendFrame(): void {
+    const stage = this._stage;
+    const canvas = this.stageHost.querySelector('canvas');
+    if (!this._pad || !stage || !canvas || canvas.width === 0) return;
+    stage.render();
+    const { width, height, scale } = this._highlightGeometry();
+    const ratio = canvas.width / Math.max(1, this.stageHost.clientWidth);
+    const sw = Math.max(1, Math.round(width * scale * ratio));
+    const sh = Math.max(1, Math.round(height * scale * ratio));
+    const sx = Math.round((canvas.width - sw) / 2);
+    const sy = Math.round((canvas.height - sh) / 2);
+    const k = Math.min(1, 1600 / sw);
+    const target = document.createElement('canvas');
+    target.width = Math.max(1, Math.round(sw * k));
+    target.height = Math.max(1, Math.round(sh * k));
+    const context = target.getContext('2d');
+    if (!context) return;
+    context.fillStyle = this._deck.background;
+    context.fillRect(0, 0, target.width, target.height);
+    try {
+      context.drawImage(canvas, sx, sy, sw, sh, 0, 0, target.width, target.height);
+      this._pad.send({ type: 'frame', image: target.toDataURL('image/jpeg', 0.85), clip: this._player?.index ?? 0 });
+    } catch {
+      /* a tainted or lost canvas: the tablet keeps its last picture */
+    }
+  }
+
+  private _showRemoteCursor(message: { x: number; y: number; visible: boolean }): void {
+    this._remoteCursor.hidden = !message.visible;
+    if (!message.visible) return;
+    const { bounds, scale } = this._highlightGeometry();
+    const pan = this._boardOn ? this._boardPan : { x: 0, y: 0 };
+    this._remoteCursor.style.left = `${bounds.width / 2 + (message.x - pan.x) * scale}px`;
+    this._remoteCursor.style.top = `${bounds.height / 2 + (message.y - pan.y) * scale}px`;
   }
 }

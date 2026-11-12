@@ -180,19 +180,23 @@ Larger decks: the order in which children are visited, splitting the markup into
 ::: slide {#sec-presenting width=36}
 ## 6 · Presenting {x=-17.35 y=9.2}
 
-Playing a deck: keys, pointer tools and links in the player, and the configuration file and command line that preview and export it. {x=-17.35 y=8.1 width=25 font_size=26}
+Playing a deck: keys, pointer tools and links in the player, the configuration file and command line that preview and export it, and a page to try a pen or a tablet. {x=-17.35 y=8.1 width=25 font_size=26}
 
 [Documentation: Presenting ↗]{#sec-presenting-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/player.html}
 
 [Back to the overview]{#sec-presenting-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=guide}
 
-[The player]{#sec-presenting-cap-player x=-6 y=2.6999999999999997 anchor=bottom font_size=24 color=BLUE_E href=#slide=player}
-[[include: #player x=-6 y=-0.6 width=10 skip_return=true preview=true]]
-[[rectangle: #sec-presenting-hit-player x=-6 y=-0.6 width=10 height=5.625 opacity=0 href=#slide=player]]
+[The player]{#sec-presenting-cap-player x=-12 y=2.6999999999999997 anchor=bottom font_size=24 color=BLUE_E href=#slide=player}
+[[include: #player x=-12 y=-0.6 width=10 skip_return=true preview=true]]
+[[rectangle: #sec-presenting-hit-player x=-12 y=-0.6 width=10 height=5.625 opacity=0 href=#slide=player]]
 
-[deck.json and the command line]{#sec-presenting-cap-config x=6 y=2.6999999999999997 anchor=bottom font_size=24 color=BLUE_E href=#slide=config}
-[[include: #config x=6 y=-0.6 width=10 preview=true]]
-[[rectangle: #sec-presenting-hit-config x=6 y=-0.6 width=10 height=5.625 opacity=0 href=#slide=config]]
+[deck.json and the command line]{#sec-presenting-cap-config x=0 y=2.6999999999999997 anchor=bottom font_size=24 color=BLUE_E href=#slide=config}
+[[include: #config x=0 y=-0.6 width=10 skip_return=true preview=true]]
+[[rectangle: #sec-presenting-hit-config x=0 y=-0.6 width=10 height=5.625 opacity=0 href=#slide=config]]
+
+[Pen, whiteboard and tablet]{#sec-presenting-cap-tablet x=12 y=2.6999999999999997 anchor=bottom font_size=24 color=BLUE_E href=#slide=tablet}
+[[include: #tablet x=12 y=-0.6 width=10 preview=true]]
+[[rectangle: #sec-presenting-hit-tablet x=12 y=-0.6 width=10 height=5.625 opacity=0 href=#slide=tablet]]
 :::
 
 ::: slide {#tree width=20}
@@ -904,7 +908,7 @@ Videos use the image syntax with a video file (MP4, WebM, Ogg): `play=once` play
 
 **Keys:** → or Space next · ← previous (plays the stop backwards) · Home first stop · R replay · L spotlight or laser · F fullscreen · O outline · , settings, where every key and gesture can be changed. {x=-9.35 width=19 font_size=21}
 
-**Pointer:** drag to draw with the pen; hold Shift for a spotlight or laser, Shift + drag to highlight. A click never changes the stop unless the settings bind a key to it. Colors, tip sizes and the speed control sit in the toolbar; ⌘Z undoes a stroke, Delete clears them. {x=-9.35 width=19 font_size=21}
+**Pointer:** drag to draw with the pen, which follows the pressure of a pencil or stylus (the settings tune the look); hold Shift for a spotlight or laser, Shift + drag to highlight. A click never changes the stop unless the settings bind a key to it. W opens a whiteboard without edges, scrolled with the arrows or the wheel, with its own undo. A tablet on the network can pair from the settings and draw on the deck. {x=-9.35 width=19 font_size=21}
 
 **Links:** `#step=N` or `#slide=id` opens a stop directly, also as `href=` on any element (this guide's front page is built that way); the outline lists every slide; the preview server restores your position after each reload. {x=-9.35 width=19 font_size=21}
 
@@ -937,4 +941,36 @@ zoomdeck build examples/guide/deck.json \
 ```
 
 `deck.json` names the Markdown file and sets the title, the viewport proportions, `layout` (fonts and sizes), `presenter` (transitions and pauses), LaTeX `macros`, `styles` and the `classes` module of code-authored slides; every key has a default. The `zoomdeck` command previews a deck with live reload and exports it as a folder or as one file; editor setups bind both to shortcuts. {x=-9.35 y=-1.6 width=19 font_size=21}
+:::
+
+::: slide {#tablet width=20}
+## Pen, whiteboard and tablet
+
+[Documentation ↗]{#tablet-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/player.html#the-pen}
+
+[Trace the wave and the circle]{#tablet-cap-trace x=-9.35 y=3.9 anchor=left-baseline font_size=19 color=GRAY}
+
+[[polyline: #tablet-wave points="(-9.2,2.6) (-8.2,3.4) (-7.2,1.8) (-6.2,3.4) (-5.2,1.8) (-4.2,3.4) (-3.2,1.8) (-2.2,3.4) (-1.2,2.6)" color=GRAY stroke_width=2]]
+
+[[circle: #tablet-circle x=-7.6 y=-0.3 radius=1.2 color=GRAY stroke_width=2]]
+
+[[rectangle: #tablet-box x=-3.4 y=-0.3 width=5 height=2.4 corner_radius=0.25 color=GRAY stroke_width=2]]
+
+[write a word here, palm on the glass]{#tablet-word at=center:#tablet-box font_size=17 color=GRAY}
+
+[Light, then harder: one stroke along the strip]{#tablet-cap-press x=-9.35 y=-2.3 anchor=left-baseline font_size=19 color=GRAY}
+
+[[line: (-9.2,-3.1) -> (-1.0,-3.1), #tablet-strip, color=GRAY, stroke_width=1]]
+
+[[arrow: (-9.2,-3.6) -> (-1.0,-3.6), #tablet-arrow, color=GRAY, stroke_width=1]]
+
+1. **Pair.** Start the preview so that the tablet can reach it, for this guide `zoomdeck serve examples/guide/deck.json --host` from the checkout (or `npm run dev -- --host`), open the settings here (⚙ or ,), choose "Show the pairing code" under Tablet and scan it with the tablet, over Wi-Fi or over the cable with Internet Sharing to the iPad switched on. {x=0.6 width=9 font_size=18}
+2. **Trace** the wave and the circle on the tablet: the lines should appear here as you draw, without a visible delay. {x=0.6 width=9 font_size=18}
+3. **Press** lightly, then harder, along the strip: the width should follow. The Pen settings decide how much and redraw the strokes. {x=0.6 width=9 font_size=18}
+4. **Rest your palm** on the glass while writing in the box: a finger never draws. {x=0.6 width=9 font_size=18}
+5. **Whiteboard:** press W here, or the button on the tablet; draw, scroll with two fingers or the arrows; undo touches only the board. {x=0.6 width=9 font_size=18}
+6. **Hover** the pencil above the glass: a red dot follows it on this screen. {x=0.6 width=9 font_size=18}
+7. **Erase** a stroke by rubbing it with a fingertip; undo brings it back. {x=0.6 width=9 font_size=18}
+
+Without a tablet the same checks work with a mouse, whose strokes take their width from the speed of the hand, or with a graphics tablet plugged into the computer, which draws with pressure directly. {x=-9.35 y=-4.5 width=19 font_size=18 color=GRAY}
 :::

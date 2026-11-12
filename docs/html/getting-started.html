@@ -178,7 +178,7 @@ editing to the command (as the editor setups do) gives the same result as naming
 (another preview is probably still running; the printed address is the one to use). <code>--port N</code>
 insists on a port. The server stops with Ctrl+C, and also by itself when the program that
 started it (an editor's build panel or task) ends.</p>
-<p><code>serve</code> accepts <code>--port N</code>, <code>--no-open</code>, <code>--scene Name</code> and repeatable <code>--watch PATH</code>; <code>build</code>
+<p><code>serve</code> accepts <code>--port N</code>, <code>--host</code> (also listen on the network, for a <a href="player.html#a-tablet-as-a-drawing-pad">tablet</a>), <code>--no-open</code>, <code>--scene Name</code> and repeatable <code>--watch PATH</code>; <code>build</code>
 accepts <code>--show-outline</code> and <code>--scene Name</code>. The deck argument is a <code>deck.json</code>, a Markdown file or
 a JS/TS module exporting a deck definition. The single-file export opens by double-click and needs
 no server; <a href="exporting.html">Exporting a deck</a> has the details.</p>

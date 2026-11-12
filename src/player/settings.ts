@@ -3,8 +3,10 @@
  * `localStorage` so they follow the viewer from deck to deck.
  */
 
+import { DEFAULT_PEN_STYLE, sanitizePenStyle, type PenStyle } from './ink';
+
 export type ActionName =
-  | 'next' | 'previous' | 'home' | 'replay' | 'fullscreen' | 'outline' | 'undo' | 'redo' | 'clear' | 'settings' | 'exit' | 'pointer';
+  | 'next' | 'previous' | 'home' | 'replay' | 'fullscreen' | 'outline' | 'undo' | 'redo' | 'clear' | 'settings' | 'exit' | 'pointer' | 'whiteboard';
 
 export interface ActionInfo {
   name: ActionName;
@@ -21,6 +23,7 @@ export const ACTIONS: ActionInfo[] = [
   { name: 'redo', label: 'Redo a stroke' },
   { name: 'clear', label: 'Clear all strokes on this slide' },
   { name: 'pointer', label: 'Switch between spotlight and laser' },
+  { name: 'whiteboard', label: 'Show or hide the whiteboard' },
   { name: 'fullscreen', label: 'Toggle fullscreen' },
   { name: 'exit', label: 'Leave fullscreen' },
   { name: 'outline', label: 'Toggle the slide outline' },
@@ -36,6 +39,7 @@ export const DEFAULT_BINDINGS: Record<ActionName, string[]> = {
   redo: ['Meta+Shift+z', 'Control+Shift+z', 'Control+y'],
   clear: ['Delete', 'Backspace'],
   pointer: ['l'],
+  whiteboard: ['w'],
   fullscreen: ['f'],
   exit: ['Escape'],
   outline: ['o'],
@@ -74,6 +78,8 @@ export interface PlayerSettings {
   pointerMode: PointerMode;
   /** null keeps the deck's own setting. */
   reversePlayback: boolean | null;
+  /** How pressure and motion shape pen strokes. */
+  pen: PenStyle;
 }
 
 const STORAGE_KEY = 'zoomdeck:settings';
@@ -134,6 +140,7 @@ export function defaultSettings(): PlayerSettings {
     pointer: { ...DEFAULT_POINTER_BINDINGS },
     pointerMode: 'spotlight',
     reversePlayback: null,
+    pen: { ...DEFAULT_PEN_STYLE },
   };
 }
 
@@ -155,6 +162,7 @@ export function loadSettings(): PlayerSettings {
     }
     if (saved?.pointerMode === 'spotlight' || saved?.pointerMode === 'laser') settings.pointerMode = saved.pointerMode;
     if (typeof saved?.reversePlayback === 'boolean') settings.reversePlayback = saved.reversePlayback;
+    if (saved?.pen) settings.pen = sanitizePenStyle(saved.pen);
   } catch {
     /* no storage or corrupt data: defaults */
   }

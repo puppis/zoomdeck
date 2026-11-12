@@ -13,6 +13,7 @@ import { VideoClip } from '../video';
 import { loadDefaultFonts } from '../fonts';
 import type { Bookmark } from '../position';
 import { RasterImage } from '../raster';
+import { PadLink, padLinkAvailable, padRoom } from './pad';
 
 export interface RunDeckOptions {
   /** Element that receives the player page. Defaults to `document.body`. */
@@ -124,6 +125,8 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
   });
   stage.afterResize.push(() => stage.refreshText());
   ui.bind(player, stage, navigation);
+  // Under the preview or development server a tablet can pair with this page (settings, Tablet).
+  if (useLocation && padLinkAvailable()) ui.connectPad(new PadLink(padRoom()));
   if (log) console.info(`[zoomdeck] [+${((performance.now() - started) / 1000).toFixed(1)}s] Ready: ${navigation.clips.length} clips`);
 
   // The same-origin editing shell transfers a logical bookmark across reloads.

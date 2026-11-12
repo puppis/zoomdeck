@@ -136,7 +136,7 @@ The preview listens on `http://127.0.0.1:8000/`, or on the next free port when 8
 insists on a port. The server stops with Ctrl+C, and also by itself when the program that
 started it (an editor's build panel or task) ends.
 
-`serve` accepts `--port N`, `--no-open`, `--scene Name` and repeatable `--watch PATH`; `build`
+`serve` accepts `--port N`, `--host` (also listen on the network, for a [tablet](player.html#a-tablet-as-a-drawing-pad)), `--no-open`, `--scene Name` and repeatable `--watch PATH`; `build`
 accepts `--show-outline` and `--scene Name`. The deck argument is a `deck.json`, a Markdown file or
 a JS/TS module exporting a deck definition. The single-file export opens by double-click and needs
 no server; [Exporting a deck](exporting.html) has the details.

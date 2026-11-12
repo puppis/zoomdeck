@@ -74,6 +74,8 @@
     "gifuct-js": "^2.1.2",
     "manim-web": "^0.41.0",
     "markdown-it": "^14.1.0",
+    "perfect-freehand": "^1.2.3",
+    "qrcode": "^1.5.4",
     "roughjs": "^4.6.6",
     "three": "^0.186.1",
     "vite": "^7.0.0"
@@ -81,6 +83,7 @@
   "devDependencies": {
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^24.0.0",
+    "@types/qrcode": "^1.5.6",
     "happy-dom": "^18.0.0",
     "typescript": "^5.9.0",
     "vitest": "^3.2.0"

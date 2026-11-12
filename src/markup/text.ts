@@ -16,10 +16,19 @@ import type { InlineSpan } from './ast';
 export const PX_PER_WORLD_BASE = 96;
 const PADDING_PX = 2;
 
-/** Supersampling scale for text canvases, as in the engine's Text. */
+/**
+ * Supersampling scale of text canvases at rest. It is the same on every screen: the player
+ * redraws the lines in view at the screen's own density once the camera rests, so following
+ * the device pixel ratio here would only multiply the memory of the hundreds of lines out of
+ * view (a 2× tablet ran out of it and Safari killed the page).
+ */
 export function textResolutionScale(): number {
-  const dpr = typeof window !== 'undefined' && typeof window.devicePixelRatio === 'number' ? window.devicePixelRatio : 1;
-  return 2 * Math.min(Math.max(dpr, 1), 2);
+  return 2;
+}
+
+/** Canvas pixels per world unit of a line at rest. */
+export function textBasePxPerWorld(): number {
+  return PX_PER_WORLD_BASE * textResolutionScale();
 }
 
 export interface TextRun {

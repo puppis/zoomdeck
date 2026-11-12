@@ -42,9 +42,11 @@ the configuration and a one-page reference. `docs/markup.md` is the compact dial
 - **The browser player**: slide outline, breadcrumb, previous/next stops (backwards steps play
   the stop in reverse), replay, Home, speed, a settings dialog with editable key bindings, undo
   and redo of strokes,
-  fullscreen, deep links (`#step=N`), a pen (drag) with color and tip selectors, a spotlight or
-  laser (hold Shift, `L` switches) and a highlighter (Shift + drag) with configurable gestures,
-  `href=` links on any element, loops and automatic advancement.
+  fullscreen, deep links (`#step=N`), a pressure-sensitive pen (drag) with color, tip and
+  configurable ink styles, a spotlight or laser (hold Shift, `L` switches) and a highlighter
+  (Shift + drag) with configurable gestures, an unbounded whiteboard (`W`) with its own history,
+  a companion tablet that mirrors strokes both ways over the preview server, `href=` links on any
+  element, loops and automatic advancement.
 - **An editing preview** (`zoomdeck serve`) that reloads on save and restores the current
   slide and step, and **static exports** (`zoomdeck build`, `--one-file`).
 

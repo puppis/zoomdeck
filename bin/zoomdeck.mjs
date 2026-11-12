@@ -3,7 +3,7 @@
  * zoomdeck command line: preview a deck while editing, or build a
  * static HTML bundle (optionally a single self-contained file).
  *
- *   zoomdeck serve <deck> [--port N] [--no-open] [--watch PATH]...   (port 8000 or the next free one)
+ *   zoomdeck serve <deck> [--port N] [--host] [--no-open] [--watch PATH]...   (port 8000 or the next free one)
  *   zoomdeck build <deck> -o <folder> [--one-file] [--show-outline]
  *
  * `<deck>` is a `deck.json`, a Markdown file, or a JS/TS module exporting a
@@ -17,6 +17,7 @@ import { dirname, resolve, relative, basename, extname, join, sep } from 'node:p
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { exec } from 'node:child_process';
 import { tmpdir } from 'node:os';
+import { lanAddresses, padRelay } from './relay.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(here, '..');
@@ -25,17 +26,19 @@ const require = createRequire(import.meta.url);
 function usage(message) {
   if (message) console.error(`error: ${message}\n`);
   console.error(`usage:
-  zoomdeck serve <deck> [--port N] [--no-open] [--scene Name] [--watch PATH]...
+  zoomdeck serve <deck> [--port N] [--host] [--no-open] [--scene Name] [--watch PATH]...
+      --host also listens on the network, so a tablet can pair with the player
   zoomdeck build <deck> -o <folder> [--one-file] [--show-outline] [--scene Name]`);
   process.exit(message ? 2 : 0);
 }
 
 function parseArgs(argv) {
-  const options = { watch: [], open: true, oneFile: false, showOutline: false, port: null, output: null, scene: null, positional: [] };
+  const options = { watch: [], open: true, oneFile: false, showOutline: false, port: null, host: false, output: null, scene: null, positional: [] };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--port') options.port = Number(argv[++i]);
     else if (arg === '--no-open') options.open = false;
+    else if (arg === '--host') options.host = true;
     else if (arg === '--watch') options.watch.push(resolve(argv[++i]));
     else if (arg === '-o' || arg === '--output') options.output = resolve(argv[++i]);
     else if (arg === '--one-file') options.oneFile = true;
@@ -127,12 +130,12 @@ async function serve(options) {
     root: packageRoot,
     resolve: { alias: optionalStubs },
     optimizeDeps: { entries: ['index.html'] },
-    plugins: [dropEngineMuxers, reloadPlugin],
+    plugins: [dropEngineMuxers, reloadPlugin, padRelay()],
     // Bind the IPv4 loopback explicitly: "localhost" may resolve to ::1 only, which would leave
     // the printed 127.0.0.1 address refusing connections. Without --port, a busy 8000 falls
     // through to the next free port instead of failing, so a second preview can always start.
     server: {
-      host: '127.0.0.1',
+      host: options.host ? '0.0.0.0' : '127.0.0.1',
       port: options.port ?? 8000,
       strictPort: options.port !== null && options.port !== 0,
       fs: { allow: [packageRoot, ...watchRoots] },
@@ -147,6 +150,11 @@ async function serve(options) {
   if (options.scene) query.set('scene', options.scene);
   const url = `http://127.0.0.1:${port}/?${query.toString()}`;
   console.log(`Zoomdeck preview (${kind}) at ${url}`);
+  if (options.host) {
+    const lan = lanAddresses();
+    if (lan.length) console.log(`On the network: ${lan.map((address) => `http://${address}:${port}/`).join(', ')} (pair a tablet from the player's settings)`);
+    else console.log('No network address found; a tablet cannot reach this preview');
+  }
   if (options.port !== null && options.port !== 0 && port !== options.port) console.log(`(port ${options.port} was busy)`);
   console.log(`Watching ${watchRoots.map((root) => relative(process.cwd(), root) || '.').join(', ')} — press Ctrl+C to stop`);
   const stop = (reason) => {

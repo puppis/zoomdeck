@@ -67,13 +67,26 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
 .zd-stage .links a { position: absolute; display: block; pointer-events: auto; cursor: pointer; }
 .zd-stage .links a.deck { pointer-events: none; }
 .zd-stage.spotlight-active .links a, .zd-stage.tool-held .links a, .zd-stage.stroking .links a { pointer-events: none; }
+.zd-stage { touch-action: none; }
 .zd-stage .highlights {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
   overflow: visible; z-index: 2; pointer-events: none;
 }
-.zd-stage .highlight-ink { opacity: .4; }
-.zd-stage .highlights path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.zd-stage .highlight-ink path { stroke: #ffdf00; }
+.zd-stage .highlights path { stroke: none; }
+.zd-stage .highlights path.highlighter { fill-opacity: .4; }
+.zd-stage .whiteboard {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background-color: var(--background);
+  background-image: radial-gradient(circle, var(--border) 1px, transparent 1.5px);
+}
+.zd-stage .whiteboard[hidden] { display: none; }
+.zd-stage.board-on .highlights.slide { display: none; }
+.zd-stage.board-on .links a, .zd-stage.board-on .iframes iframe { pointer-events: none; }
+.zd-stage .remote-cursor {
+  position: absolute; z-index: 3; pointer-events: none; width: 24px; height: 24px; transform: translate(-50%, -50%); border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, #ffb5b5 12%, #ff2020 30%, rgba(255, 32, 32, .55) 52%, rgba(255, 32, 32, .2) 65%, transparent 75%);
+}
+.zd-stage .remote-cursor[hidden] { display: none; }
 .zd-stage.sketch-active { cursor: crosshair; }
 .zd-stage.spotlight-active, .zd-stage.sketch-active, .zd-stage.stroking { user-select: none; }
 .zd-stage .error, .zd-stage .loading {
@@ -88,7 +101,13 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
 .zd-app .buttons { display: flex; gap: 6px; }
 .zd-app .previous, .zd-app .next { min-width: 42px; font-size: 18px; padding: 4px 10px; }
 .zd-app .next { background: var(--hover); }
-.zd-app .pen-controls { display: flex; gap: 10px; }
+.zd-app .pen-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.zd-app .pen-controls button { padding: 5px 10px; font-size: 12px; }
+.zd-app .swatches { display: flex; gap: 6px; align-items: center; }
+.zd-app .swatch, .zd-app .pen-controls .swatch { width: 20px; height: 20px; padding: 0; border-radius: 50%; border: 1px solid var(--border); }
+.zd-app .swatch[aria-checked=true] { outline: 2px solid var(--foreground); outline-offset: 2px; }
+.zd-app .swatch[data-value=foreground] { box-shadow: inset 0 0 0 2px var(--background), inset 0 0 0 3px var(--border); }
+.zd-app .board-button[aria-pressed=true] { background: var(--hover); font-weight: 600; }
 .zd-app .pen-controls label, .zd-app .speed { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
 .zd-app select { padding: 5px 6px; }
 .zd-app .counter { margin-left: auto; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -129,6 +148,11 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
 .zd-app dialog.settings .keys { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .zd-app dialog.settings .chip { font: inherit; font-size: 12px; padding: 2px 8px; border-radius: 999px; }
 .zd-app dialog.settings .add { font-size: 12px; }
+.zd-app dialog.settings input[type=range] { width: 160px; }
+.zd-app dialog.settings .pairing { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 10px; }
+.zd-app dialog.settings .pairing .code { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.zd-app dialog.settings .pairing .qr { background: #fff; padding: 8px; border-radius: 8px; }
+.zd-app dialog.settings .pairing .url { user-select: all; overflow-wrap: anywhere; margin: 0; }
 .zd-app:fullscreen .zd-stage { width: 100vw; height: 100vh; }
 @media (prefers-reduced-motion: reduce) {
   .zd-app button, .zd-stage .spotlight { transition: none; }

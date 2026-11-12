@@ -6,7 +6,7 @@
 import { Scene } from 'manim-web';
 import type { Presenter } from '../runtime';
 import type { Vec3 } from '../geometry';
-import { TEXT_LINES } from '../markup/text';
+import { TEXT_LINES, textBasePxPerWorld } from '../markup/text';
 
 export interface StageOptions {
   background: string;
@@ -133,9 +133,10 @@ export class Stage {
       const y = m[13];
       const halfWidth = (line.getWidth() * scale) / 2;
       const halfHeight = (line.getHeight() * scale) / 2;
-      if (x + halfWidth < center[0] - view.width / 2 - marginX || x - halfWidth > center[0] + view.width / 2 + marginX) continue;
-      if (y + halfHeight < center[1] - view.height / 2 - marginY || y - halfHeight > center[1] + view.height / 2 + marginY) continue;
-      if (line.rasterizeAt(pxPerWorld * scale)) changed = true;
+      const outside = x + halfWidth < center[0] - view.width / 2 - marginX || x - halfWidth > center[0] + view.width / 2 + marginX
+        || y + halfHeight < center[1] - view.height / 2 - marginY || y - halfHeight > center[1] + view.height / 2 + marginY;
+      // Lines out of view go back to the base density, so zooming around never accumulates large canvases.
+      if (line.rasterizeAt(outside ? textBasePxPerWorld() : pxPerWorld * scale)) changed = true;
     }
     if (changed) this.render();
   }

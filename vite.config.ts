@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin } from 'vite';
 import { resolve, sep } from 'node:path';
+import { padRelay } from './bin/relay.mjs';
 
 // Development server: serves the player page and the example decks from this checkout.
 const optionalStubs = Object.fromEntries(
@@ -46,7 +47,7 @@ function deckReload(): Plugin {
 
 export default defineConfig({
   root: resolve(__dirname),
-  plugins: [dropEngineMuxers(resolve(__dirname, 'src/stubs/empty.ts')), deckReload()],
+  plugins: [dropEngineMuxers(resolve(__dirname, 'src/stubs/empty.ts')), deckReload(), padRelay()],
   resolve: { alias: optionalStubs },
   optimizeDeps: { entries: ['index.html'] },
   server: { fs: { allow: [resolve(__dirname), resolve(__dirname, '..')] } },
