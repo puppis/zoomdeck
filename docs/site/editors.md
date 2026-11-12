@@ -100,7 +100,8 @@ also stops on its own when the program that started it ends.
 
 Then, with the deck open: **Ctrl+Alt+B** (⌘⌥B on macOS) starts the preview in a dedicated
 terminal (B as in browser), **Ctrl+Alt+J** (⌘⌥J) shows the stop of the cursor line in the
-browser, **Ctrl+Alt+P** (⌘⌥P) exports `build/index.html` next to the file. The build task is also the default build
+browser, **Ctrl+Alt+P** (⌘⌥P) exports `build/index.html` next to the file. In deck files these
+bindings take precedence over VS Code's own use of ⌘⌥B / Ctrl+Alt+B (the secondary side bar). The build task is also the default build
 task, so Ctrl+Shift+B works as well. Stop the preview by closing its terminal. The preview task
 passes `--editor code`, so E or Alt+click in the browser opens the line in VS Code through its
 `code` command (Command Palette ▸ "Shell Command: Install 'code' command in PATH" on macOS, if
@@ -145,7 +146,9 @@ Console) prints what the plugin found. Tools ▸ Cancel Build stops the preview 
 highlights the dialect and is chosen automatically for files that open with `::: slide` or
 `::: styles`. Its keys: **C-c C-b** serves the deck in a `*zoomdeck preview*` compilation buffer,
 **C-c C-j** shows the stop of the current line in the browser, **C-c C-p** exports one HTML
-file, **C-c C-k** stops the server. E or Alt+click in the browser brings Emacs to the line: the
+file (the same three also on **C-M-b**, **C-M-j** and **C-M-p**, that is Ctrl+Alt+B, J and P as
+in the other editors, in deck buffers only; `zoomdeck-ctrl-alt-keys` set to nil keeps those keys
+for `backward-sexp` and friends), **C-c C-k** stops the server. E or Alt+click in the browser brings Emacs to the line: the
 preview is started with an `emacsclient` command for this Emacs session (`zoomdeck-inverse-search`,
 on by default, starts the Emacs server when it is not running). `zoomdeck-autosave-mode` (on by
 default) saves the deck after one idle second; `zoomdeck-command`, `zoomdeck-build-directory`,
@@ -162,7 +165,8 @@ Copy `editors/vim/plugin/` and `editors/vim/after/` into `~/.vim/` or `~/.config
 `Zoomdeck/editors/vim` to your plugin manager. Markdown buffers whose first lines open a slide or
 styles block get the mappings **\<leader\>zb** (`:ZoomdeckPreview`, in a terminal split),
 **\<leader\>zj** (`:ZoomdeckJump`, the stop of the cursor line in the browser) and
-**\<leader\>zp** (`:ZoomdeckBuild`), are saved after `updatetime` idle milliseconds (lowered to
+**\<leader\>zp** (`:ZoomdeckBuild`), plus Ctrl+Alt+B, J and P where the terminal or GUI
+delivers them (Neovim in a modern terminal, gvim, MacVim), are saved after `updatetime` idle milliseconds (lowered to
 one second), and highlight the dialect through `after/syntax/markdown.vim`. E or Alt+click in
 the browser brings Vim to the line through its server: Neovim always has one, Vim needs
 `+clientserver` and a name (`vim --servername DECK`; gvim and MacVim name themselves), and
@@ -176,7 +180,8 @@ Copy `editors/jetbrains/External Tools.xml` to `<configuration directory>/tools/
 Tools.xml` and restart the IDE (WebStorm, IntelliJ IDEA, PyCharm and the others share the
 format). Three tools appear under Tools ▸ External Tools ▸ Zoomdeck, **Preview**, **Jump to
 this line** and **Build HTML**, each acting on the current file; assign them keys under
-Settings ▸ Keymap ▸ External Tools. The preview passes `--editor jetbrains`, which runs the first
+Settings ▸ Keymap ▸ External Tools (Ctrl+Alt+B, J and P match the other editors; the IDE will
+ask about its own uses of the first and the last, Go to Implementation and Extract Parameter). The preview passes `--editor jetbrains`, which runs the first
 IDE launcher found on the `PATH` (`idea`, `webstorm`, `pycharm`, …; Tools ▸ Create Command-line
 Launcher creates one); replace it with your IDE's name in the XML to be sure. JetBrains IDEs save files automatically when they lose focus and after idle time
 (Settings ▸ Appearance & Behavior ▸ System Settings ▸ Autosave). For highlighting, install the

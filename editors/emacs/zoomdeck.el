@@ -13,6 +13,9 @@
 ;;   C-c C-p   zoomdeck-build     export one self-contained HTML file
 ;;   C-c C-k   zoomdeck-stop      stop the preview server
 ;;
+;; The same three commands are also on C-M-b, C-M-j and C-M-p (Ctrl+Alt+B, J, P), the keys
+;; of the other editor setups, in deck buffers only; `zoomdeck-ctrl-alt-keys' turns that off.
+;;
 ;; plus highlighting of slide containers, directives and attributes, and an
 ;; idle autosave (`zoomdeck-autosave-mode') so the browser follows your typing.
 ;; The preview is started with an editor command for the inverse search: E, or
@@ -81,6 +84,12 @@ Reads the shell's startup files, where nvm and npm usually add their folders to 
 (defcustom zoomdeck-autosave-delay 1
   "Idle seconds before an edited deck is saved."
   :type 'number)
+
+(defcustom zoomdeck-ctrl-alt-keys t
+  "Whether deck buffers also bind C-M-b, C-M-j and C-M-p to preview, jump and build.
+These are the Ctrl+Alt+B, J and P of the other editor setups; in a deck buffer they shadow
+`backward-sexp', `default-indent-new-line' and `backward-list'."
+  :type 'boolean)
 
 (defcustom zoomdeck-inverse-search t
   "Whether the preview opens source lines in this Emacs (E or Alt+click in the browser).
@@ -213,6 +222,13 @@ by `zoomdeck-preview' or `zoomdeck serve'."
 (define-derived-mode zoomdeck-mode zoomdeck--parent-mode "Zoomdeck"
   "Major mode for Zoomdeck decks: Markdown plus containers, directives and a live preview."
   (font-lock-add-keywords nil zoomdeck-font-lock-keywords)
+  (when zoomdeck-ctrl-alt-keys
+    (let ((map (make-sparse-keymap)))
+      (set-keymap-parent map zoomdeck-mode-map)
+      (define-key map (kbd "C-M-b") #'zoomdeck-preview)
+      (define-key map (kbd "C-M-j") #'zoomdeck-jump)
+      (define-key map (kbd "C-M-p") #'zoomdeck-build)
+      (use-local-map map)))
   (when zoomdeck-autosave (zoomdeck-autosave-mode 1)))
 
 ;;;###autoload

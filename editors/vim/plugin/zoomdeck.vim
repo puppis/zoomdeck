@@ -1,8 +1,8 @@
 " zoomdeck.vim — live preview and export of Zoomdeck decks from Vim and Neovim.
 "
-"   :ZoomdeckPreview  (<leader>zb)  serve the deck; the browser reloads on save
-"   :ZoomdeckJump     (<leader>zj)  show the stop of the cursor line in the browser
-"   :ZoomdeckBuild    (<leader>zp)  export one self-contained HTML file to ./build
+"   :ZoomdeckPreview  (<leader>zb, Ctrl+Alt+B)  serve the deck; the browser reloads on save
+"   :ZoomdeckJump     (<leader>zj, Ctrl+Alt+J)  show the stop of the cursor line in the browser
+"   :ZoomdeckBuild    (<leader>zp, Ctrl+Alt+P)  export one self-contained HTML file to ./build
 "
 " Buffers whose first lines open a slide or styles block get the mappings and
 " are saved automatically after `updatetime` idle milliseconds (default 1 s).
@@ -131,6 +131,10 @@ function! s:Setup() abort
   nnoremap <buffer> <silent> <leader>zb :ZoomdeckPreview<CR>
   nnoremap <buffer> <silent> <leader>zj :ZoomdeckJump<CR>
   nnoremap <buffer> <silent> <leader>zp :ZoomdeckBuild<CR>
+  " The Ctrl+Alt keys of the other editor setups, where the terminal or GUI delivers them.
+  nnoremap <buffer> <silent> <C-M-b> :ZoomdeckPreview<CR>
+  nnoremap <buffer> <silent> <C-M-j> :ZoomdeckJump<CR>
+  nnoremap <buffer> <silent> <C-M-p> :ZoomdeckBuild<CR>
   if g:zoomdeck_autosave
     if &updatetime > 1000 | set updatetime=1000 | endif
     autocmd CursorHold,CursorHoldI <buffer> silent! update
