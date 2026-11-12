@@ -129,11 +129,11 @@ package instead and must be repeated after updates.</p>
 appear in <code>echo $PATH</code>. Node installers normally arrange this for your shell; nvm does it in
 <code>~/.zshrc</code> or <code>~/.bashrc</code>.</li>
 <li>Editors started from the Dock, the Start menu or a launcher do not read your shell profile, so
-their <code>PATH</code> is the system default. The Sublime Text package in <code>editors/</code> therefore reads the
-<code>PATH</code> of your login shell before running the command; for other editors, either start the
-editor from a terminal, or write the full path of the command into the configuration
-(<code>which zoomdeck</code> prints it; for Emacs set <code>zoomdeck-command</code>, for Vim <code>g:zoomdeck_command</code>,
-and for VS Code and JetBrains edit the command in the task or tool). See <a href="editors.html">Editors</a>.</li>
+their <code>PATH</code> is the system default. The Emacs, Vim and Sublime Text setups in <code>editors/</code>
+therefore find the command themselves, through the checkout they belong to or the <code>PATH</code> of
+your login shell; for VS Code and JetBrains, either start the editor from a terminal, or write
+the full path of the command (<code>which zoomdeck</code> prints it) into the task or tool. See
+<a href="editors.html">Editors</a>.</li>
 <li>With nvm, the link belongs to the Node version that was active when you ran <code>npm link</code>; after
 switching versions run it again.</li>
 </ul>

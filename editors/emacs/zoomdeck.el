@@ -27,8 +27,44 @@
 (defgroup zoomdeck nil "Zoomdeck decks." :group 'text)
 
 (defcustom zoomdeck-command "zoomdeck"
-  "The zoomdeck command: the global binary, or e.g. \"node /path/to/bin/zoomdeck.mjs\"."
+  "The zoomdeck command: the global binary, or e.g. \"node /path/to/bin/zoomdeck.mjs\".
+Left at \"zoomdeck\", the command is looked up on Emacs's own path, then in the
+Zoomdeck checkout this file belongs to (its bin/zoomdeck.mjs run with node), then
+on the path of your login shell, which a graphical Emacs often does not inherit."
   :type 'string)
+
+(defconst zoomdeck--directory
+  (file-name-directory (or load-file-name (bound-and-true-p byte-compile-current-file) buffer-file-name ""))
+  "The folder this file was loaded from, to find the checkout's own command line.")
+
+(defvar zoomdeck--resolved nil "The command line found by `zoomdeck--command', cached.")
+
+(defun zoomdeck--login-shell-which (program)
+  "PROGRAM's full path according to the user's login shell, or nil.
+Reads the shell's startup files, where nvm and npm usually add their folders to PATH."
+  (let* ((shell (or (getenv "SHELL") "/bin/sh"))
+         (output (ignore-errors
+                   (with-temp-buffer
+                     (call-process shell nil t nil "-lic" (format "command -v %s" (shell-quote-argument program)))
+                     (buffer-string))))
+         (candidates (and output (reverse (split-string output "\n" t)))))
+    (cl-find-if (lambda (line) (and (file-name-absolute-p line) (file-executable-p line))) candidates)))
+
+(defun zoomdeck--command ()
+  "The command line prefix that runs zoomdeck, see `zoomdeck-command'."
+  (or (and (not (equal zoomdeck-command "zoomdeck")) zoomdeck-command)
+      zoomdeck--resolved
+      (setq zoomdeck--resolved
+            (let ((global (executable-find "zoomdeck")))
+              (cond
+               (global (shell-quote-argument global))
+               ((let* ((cli (expand-file-name "../../bin/zoomdeck.mjs" zoomdeck--directory))
+                       (node (and (file-exists-p cli)
+                                  (or (executable-find "node") (zoomdeck--login-shell-which "node")))))
+                  (and node (format "%s %s" (shell-quote-argument node) (shell-quote-argument cli)))))
+               ((let ((found (zoomdeck--login-shell-which "zoomdeck")))
+                  (and found (shell-quote-argument found))))
+               (t (user-error "Cannot find the zoomdeck command: run `npm link' in the Zoomdeck checkout, or set `zoomdeck-command' to e.g. \"node /path/to/Zoomdeck/bin/zoomdeck.mjs\"")))))))
 
 (defcustom zoomdeck-build-directory "build"
   "Folder, relative to the deck, where `zoomdeck-build' writes the export."
@@ -69,14 +105,14 @@
   "Serve the current deck; the browser opens, reloads on every save and keeps its position."
   (interactive)
   (zoomdeck--run "*zoomdeck preview*"
-                 (format "%s serve %s" zoomdeck-command (shell-quote-argument (zoomdeck--deck-file)))))
+                 (format "%s serve %s" (zoomdeck--command) (shell-quote-argument (zoomdeck--deck-file)))))
 
 ;;;###autoload
 (defun zoomdeck-build ()
   "Export the current deck as one self-contained HTML file in `zoomdeck-build-directory'."
   (interactive)
   (zoomdeck--run "*zoomdeck build*"
-                 (format "%s build %s -o %s --one-file" zoomdeck-command
+                 (format "%s build %s -o %s --one-file" (zoomdeck--command)
                          (shell-quote-argument (zoomdeck--deck-file))
                          (shell-quote-argument zoomdeck-build-directory))))
 

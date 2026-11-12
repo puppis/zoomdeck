@@ -31,14 +31,16 @@ works as well.
 
 If an editor reports **`zoomdeck: command not found`** although the terminal finds it, the editor
 was started from the Dock, the Start menu or a launcher and did not read your shell profile, so
-npm's global `bin` directory (or nvm's, or Homebrew's) is missing from its `PATH`. The Sublime
-Text package below reads the `PATH` of your login shell for that reason; VS Code's tasks run
-in its integrated terminal, which loads the profile; JetBrains IDEs and Vim's terminal inherit
-it too. For the remaining cases, start the editor from a terminal once, or put the full path of
-the command (`which zoomdeck`) into the configuration: each one names the command in a single
-place (`zoomdeck-command` in Emacs, `g:zoomdeck_command` in Vim, the task or tool definition in
-VS Code and JetBrains, the `shell_cmd` lines in Sublime Text). `node /path/to/Zoomdeck/bin/zoomdeck.mjs`
-is an equivalent that needs no link, as long as `node` itself is on that `PATH`.
+npm's global `bin` directory (or nvm's, or Homebrew's) is missing from its `PATH`. The Emacs,
+Vim and Sublime Text setups below cope with that by themselves: when the command is not on the
+editor's path they run the `bin/zoomdeck.mjs` of the checkout they belong to with `node`, or ask
+your login shell where the command is. VS Code's tasks run in its integrated terminal, which
+loads the profile, and JetBrains IDEs inherit it too. For the remaining cases, start the editor
+from a terminal once, or put the full path of the command (`which zoomdeck`) into the
+configuration: each one names the command in a single place (`zoomdeck-command` in Emacs,
+`g:zoomdeck_command` in Vim, the task or tool definition in VS Code and JetBrains, the
+`shell_cmd` lines in Sublime Text). `node /path/to/Zoomdeck/bin/zoomdeck.mjs` is an equivalent
+that needs no link, as long as `node` itself is on that `PATH`.
 
 The configurations live in the repository under `editors/`. Highlighting adds, on top of the
 editor's Markdown, the slide and styles containers, the `[[directive: …]]` lines, `#id`s,
@@ -103,9 +105,12 @@ highlights the dialect and is chosen automatically for files that open with `:::
 `::: styles`. Its keys: **C-c C-p** serves the deck in a `*zoomdeck preview*` compilation buffer,
 **C-c C-b** exports one HTML file, **C-c C-k** stops the server. `zoomdeck-autosave-mode` (on by
 default) saves the deck after one idle second; `zoomdeck-command`, `zoomdeck-build-directory`,
-`zoomdeck-autosave` and `zoomdeck-autosave-delay` are customizable. A graphical Emacs started
-from the Dock may not see the shell's `PATH`: either install the `exec-path-from-shell` package,
-or set `zoomdeck-command` to the full path that `which zoomdeck` prints.
+`zoomdeck-autosave` and `zoomdeck-autosave-delay` are customizable. The mode finds the command
+by itself: on Emacs's own path, else in the checkout the package was loaded from (its
+`bin/zoomdeck.mjs` run with `node`), else on the path of your login shell, which a graphical Emacs
+often does not inherit; `zoomdeck-command` overrides all of that, for example with
+`"node /path/to/Zoomdeck/bin/zoomdeck.mjs"`. "command not found" in the compilation buffer
+therefore means an Emacs older than this package: reload `zoomdeck.el`.
 
 ## Vim and Neovim
 
@@ -113,8 +118,10 @@ Copy `editors/vim/plugin/` and `editors/vim/after/` into `~/.vim/` or `~/.config
 `Zoomdeck/editors/vim` to your plugin manager. Markdown buffers whose first lines open a slide or
 styles block get the mappings **\<leader\>zp** (`:ZoomdeckPreview`, in a terminal split) and
 **\<leader\>zb** (`:ZoomdeckBuild`), are saved after `updatetime` idle milliseconds (lowered to
-one second), and highlight the dialect through `after/syntax/markdown.vim`. `g:zoomdeck_command`
-names the command and `g:zoomdeck_autosave = 0` turns the idle save off.
+one second), and highlight the dialect through `after/syntax/markdown.vim`. The plugin finds the
+command on Vim's path, else runs the checkout's own `bin/zoomdeck.mjs` with `node`, else asks
+your login shell; `g:zoomdeck_command` overrides it, and `g:zoomdeck_autosave = 0` turns the idle
+save off.
 
 ## JetBrains IDEs
 

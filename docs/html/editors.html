@@ -69,14 +69,16 @@ in a terminal confirms it. Inside a project that lists <code>zoomdeck</code> as 
 works as well.</p>
 <p>If an editor reports <strong><code>zoomdeck: command not found</code></strong> although the terminal finds it, the editor
 was started from the Dock, the Start menu or a launcher and did not read your shell profile, so
-npm's global <code>bin</code> directory (or nvm's, or Homebrew's) is missing from its <code>PATH</code>. The Sublime
-Text package below reads the <code>PATH</code> of your login shell for that reason; VS Code's tasks run
-in its integrated terminal, which loads the profile; JetBrains IDEs and Vim's terminal inherit
-it too. For the remaining cases, start the editor from a terminal once, or put the full path of
-the command (<code>which zoomdeck</code>) into the configuration: each one names the command in a single
-place (<code>zoomdeck-command</code> in Emacs, <code>g:zoomdeck_command</code> in Vim, the task or tool definition in
-VS Code and JetBrains, the <code>shell_cmd</code> lines in Sublime Text). <code>node /path/to/Zoomdeck/bin/zoomdeck.mjs</code>
-is an equivalent that needs no link, as long as <code>node</code> itself is on that <code>PATH</code>.</p>
+npm's global <code>bin</code> directory (or nvm's, or Homebrew's) is missing from its <code>PATH</code>. The Emacs,
+Vim and Sublime Text setups below cope with that by themselves: when the command is not on the
+editor's path they run the <code>bin/zoomdeck.mjs</code> of the checkout they belong to with <code>node</code>, or ask
+your login shell where the command is. VS Code's tasks run in its integrated terminal, which
+loads the profile, and JetBrains IDEs inherit it too. For the remaining cases, start the editor
+from a terminal once, or put the full path of the command (<code>which zoomdeck</code>) into the
+configuration: each one names the command in a single place (<code>zoomdeck-command</code> in Emacs,
+<code>g:zoomdeck_command</code> in Vim, the task or tool definition in VS Code and JetBrains, the
+<code>shell_cmd</code> lines in Sublime Text). <code>node /path/to/Zoomdeck/bin/zoomdeck.mjs</code> is an equivalent
+that needs no link, as long as <code>node</code> itself is on that <code>PATH</code>.</p>
 <p>The configurations live in the repository under <code>editors/</code>. Highlighting adds, on top of the
 editor's Markdown, the slide and styles containers, the <code>[[directive: …]]</code> lines, <code>#id</code>s,
 <code>.classes</code>, <code>key=value</code> attributes, quoted strings and numbers. Errors in a deck appear in the
@@ -146,15 +148,20 @@ highlights the dialect and is chosen automatically for files that open with <cod
 <code>::: styles</code>. Its keys: <strong>C-c C-p</strong> serves the deck in a <code>*zoomdeck preview*</code> compilation buffer,
 <strong>C-c C-b</strong> exports one HTML file, <strong>C-c C-k</strong> stops the server. <code>zoomdeck-autosave-mode</code> (on by
 default) saves the deck after one idle second; <code>zoomdeck-command</code>, <code>zoomdeck-build-directory</code>,
-<code>zoomdeck-autosave</code> and <code>zoomdeck-autosave-delay</code> are customizable. A graphical Emacs started
-from the Dock may not see the shell's <code>PATH</code>: either install the <code>exec-path-from-shell</code> package,
-or set <code>zoomdeck-command</code> to the full path that <code>which zoomdeck</code> prints.</p>
+<code>zoomdeck-autosave</code> and <code>zoomdeck-autosave-delay</code> are customizable. The mode finds the command
+by itself: on Emacs's own path, else in the checkout the package was loaded from (its
+<code>bin/zoomdeck.mjs</code> run with <code>node</code>), else on the path of your login shell, which a graphical Emacs
+often does not inherit; <code>zoomdeck-command</code> overrides all of that, for example with
+<code>&quot;node /path/to/Zoomdeck/bin/zoomdeck.mjs&quot;</code>. &quot;command not found&quot; in the compilation buffer
+therefore means an Emacs older than this package: reload <code>zoomdeck.el</code>.</p>
 <h2 id="vim-and-neovim">Vim and Neovim<a class="anchor" href="#vim-and-neovim" aria-label="Link to this section">#</a></h2><p>Copy <code>editors/vim/plugin/</code> and <code>editors/vim/after/</code> into <code>~/.vim/</code> or <code>~/.config/nvim/</code>, or hand
 <code>Zoomdeck/editors/vim</code> to your plugin manager. Markdown buffers whose first lines open a slide or
 styles block get the mappings <strong>&lt;leader&gt;zp</strong> (<code>:ZoomdeckPreview</code>, in a terminal split) and
 <strong>&lt;leader&gt;zb</strong> (<code>:ZoomdeckBuild</code>), are saved after <code>updatetime</code> idle milliseconds (lowered to
-one second), and highlight the dialect through <code>after/syntax/markdown.vim</code>. <code>g:zoomdeck_command</code>
-names the command and <code>g:zoomdeck_autosave = 0</code> turns the idle save off.</p>
+one second), and highlight the dialect through <code>after/syntax/markdown.vim</code>. The plugin finds the
+command on Vim's path, else runs the checkout's own <code>bin/zoomdeck.mjs</code> with <code>node</code>, else asks
+your login shell; <code>g:zoomdeck_command</code> overrides it, and <code>g:zoomdeck_autosave = 0</code> turns the idle
+save off.</p>
 <h2 id="jetbrains-ides">JetBrains IDEs<a class="anchor" href="#jetbrains-ides" aria-label="Link to this section">#</a></h2><p>Copy <code>editors/jetbrains/External Tools.xml</code> to <code>&lt;configuration directory&gt;/tools/External Tools.xml</code> and restart the IDE (WebStorm, IntelliJ IDEA, PyCharm and the others share the
 format). Two tools appear under Tools ▸ External Tools ▸ Zoomdeck, <strong>Preview</strong> and <strong>Build
 HTML</strong>, each acting on the current file; assign them keys under Settings ▸ Keymap ▸ External
