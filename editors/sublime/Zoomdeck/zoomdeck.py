@@ -16,6 +16,7 @@ the browser (forward search).
 import os
 import re
 import subprocess
+import time
 
 import sublime
 import sublime_plugin
@@ -93,8 +94,23 @@ class ZoomdeckExecCommand(ExecCommand):
         super().run(cmd=cmd, **kwargs)
 
 
+def log(message):
+    """Append a line to Zoomdeck.log in the cache folder and echo it on the console."""
+    print('Zoomdeck:', message)
+    try:
+        with open(os.path.join(sublime.cache_path(), 'Zoomdeck.log'), 'a', encoding='utf-8') as handle:
+            handle.write('%s %s\n' % (time.strftime('%H:%M:%S'), message))
+    except Exception:  # noqa: BLE001
+        pass
+
+
 class ZoomdeckJumpCommand(sublime_plugin.TextCommand):
-    """Forward search: save, then show the stop of the cursor line in the running preview."""
+    """Forward search: save, then show the stop of the cursor line in the running preview.
+
+    Everything slow (reading the login shell's PATH, running the command) happens off the UI
+    thread; the outcome goes to the status bar, the console and Zoomdeck.log in the cache folder,
+    and a failure also to a dialog.
+    """
 
     def run(self, edit):
         view = self.view
@@ -105,24 +121,26 @@ class ZoomdeckJumpCommand(sublime_plugin.TextCommand):
         if view.is_dirty():
             view.run_command('save')
         line = view.rowcol(view.sel()[0].begin())[0] + 1
-        env = dict(os.environ, PATH=login_shell_path())
-        command = zoomdeck_command() + ['jump', path, str(line)]
-        sublime.set_timeout_async(lambda: self._send(command, env, line), 0)
+        log('jump requested for %s:%d' % (path, line))
+        sublime.set_timeout_async(lambda: self._send(path, line), 0)
 
-    def _send(self, command, env, line):
+    def _send(self, path, line):
+        command = zoomdeck_command() + ['jump', path, str(line)]
         shown = ' '.join(command)
         try:
-            result = subprocess.run(command, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=20)
+            env = dict(os.environ, PATH=login_shell_path())
+            result = subprocess.run(command, env=env, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=20)
             output = result.stdout.decode('utf-8', 'replace').strip()
             if result.returncode == 0:
+                log('jump sent: %s' % output)
                 sublime.status_message('Zoomdeck: line %d sent to the preview' % line)
                 return
             problem = output or 'the command failed with status %d' % result.returncode
         except Exception as error:  # noqa: BLE001
             problem = 'cannot run the command: %s' % error
+        log('jump failed: %s -- %s' % (shown, problem))
         # A jump that fails means a missing preview or command, which deserves more than a status flash.
-        print('Zoomdeck jump failed:', shown, '\n', problem)
-        sublime.error_message('Zoomdeck: the jump to line %d failed.\n\n%s\n\nCommand: %s' % (line, problem, shown))
+        sublime.set_timeout(lambda: sublime.error_message('Zoomdeck: the jump to line %d failed.\n\n%s\n\nCommand: %s' % (line, problem, shown)), 0)
 
     def is_enabled(self):
         return bool(self.view.file_name())
