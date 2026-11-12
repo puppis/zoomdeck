@@ -6,7 +6,6 @@ preview it with `node bin/zoomdeck.mjs serve <deck>`.
 | Deck | Open with | What it shows |
 | --- | --- | --- |
 | **Guide** | `http://localhost:5173/` (the default) or `?deck=examples/guide/deck.json` | A tour of every feature of the Markdown dialect and the player, one chapter per topic, each showing the listing that produces it. It is the live companion of the documentation (`docs/html/index.html`), which links to its chapters with `#slide=` deep links. |
-| Minimal | `?deck=examples/minimal` | The smallest code-authored deck: a root with two child slides written as `Slide` subclasses in TypeScript. |
 | Tree deck | `?deck=examples/tree-deck&scene=Demo` (also `MovingFrames`, `AutomaticTree`) | Code-authored slides with nesting, resumable subcalls, replacement transforms, trackers, an animated viewport and automatic child traversal. |
 
 ## The guide as a template

@@ -39,7 +39,6 @@ the **guide deck**. Other decks are selected through the query string:
 | --- | --- |
 | `/?deck=examples/guide/deck.json` | a Markdown deck with its configuration (the guide) |
 | `/?deck=path/to/slides.md` | a bare Markdown file with default settings |
-| `/?deck=examples/minimal` | a code-authored deck module (`examples/minimal.ts`) |
 | `/?deck=examples/tree-deck&scene=Demo` | a named export of a module |
 
 The page reloads when a deck file under `examples/` changes and returns to the slide and step you

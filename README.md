@@ -78,7 +78,6 @@ chosen through the query string:
 
 - `http://localhost:5173/?deck=examples/guide/deck.json` — a Markdown deck with its configuration
 - `http://localhost:5173/?deck=path/to/slides.md` — a bare Markdown file with default settings
-- `http://localhost:5173/?deck=examples/minimal` — a code-authored deck module (`.ts`)
 - `http://localhost:5173/?deck=examples/tree-deck&scene=Demo` — a named export of a module
 
 ### Command line
@@ -98,60 +97,6 @@ node bin/zoomdeck.mjs build examples/guide/deck.json -o build/guide --one-file
 `--watch PATH`. `build` accepts `--show-outline` and `--scene Name`. The deck argument is a
 `deck.json`, a Markdown file, or a JS/TS module exporting a deck definition. Code-authored decks
 in `--one-file` mode embed the code but not images they load themselves.
-
-## A minimal deck in code
-
-Drawable objects (text, shapes, images) and animations come from the rendering engine, which the
-package re-exports as the `engine` namespace.
-
-```ts
-import { Slide, defineDeck, engine, type SlideContext } from 'zoomdeck';
-
-const { BLUE, Dot, FadeIn, Text } = engine;
-
-class Topic extends Slide {
-  override build(ctx: SlideContext) {
-    ctx.add(new Text({ text: this.name, fontSize: 42, color: ctx.foreground }).moveTo([0, 3, 0]));
-  }
-  override async construct(ctx: SlideContext) {
-    const dot = new Dot({ point: [-3, 0, 0], radius: 0.3, color: BLUE });
-    await ctx.play(new FadeIn(dot));
-    ctx.stop();
-    await ctx.play(dot.animate.shift([6, 0, 0]));
-  }
-}
-
-export default defineDeck({
-  title: 'Minimal',
-  deck: () => {
-    const root = new Slide('Overview', { build: (ctx) => { ctx.add(new Text({ text: 'Two topics', color: ctx.foreground }).moveTo([0, 3, 0])); } });
-    root.addChild(new Topic('Left'), { center: [-4, 0, 0], width: 7 });
-    root.addChild(new Topic('Right'), { center: [4, 0, 0], width: 7 });
-    return root;
-  },
-});
-```
-
-Programs are `async` functions (or async generators when they visit children) because every
-`ctx.play` returns a promise. Coordinates are the slide's own logical coordinates: the engine's
-world space *is* the slide's local space, so ordinary `moveTo`, `nextTo`, `shift` and `.animate`
-calls work unchanged inside any slide. `ctx.play(anim1, anim2, { runTime, rateFunc })` plays
-several animations together with a shared duration and rate function.
-
-| Task | API |
-| --- | --- |
-| Create a slide | `new Slide(name, { width: 8, startHere: true })` |
-| Nest a slide | `parent.addChild(child, { center, width, angle, strokeColor })` |
-| Animate, pause, stop | `await ctx.play(...)`, `await ctx.wait()`, `ctx.stop(opts)` |
-| Visit a child explicitly | `yield ctx.visit(child)` inside `async *construct` |
-| Align to the canvas | `ctx.toEdge(mob, [0, 1, 0], { buff: 0.7 })`, `ctx.toCorner(mob, ...)` |
-| Define a deck | `defineDeck({ deck, presenter, background, foreground, viewport })` |
-| Markdown deck | `markupDeck({ url, layout, presenter, ... })` or a `deck.json` |
-| Presenter options | `new PresenterConfig({...})` / plain options |
-| Animated images | `new RasterMovie(rasterImage, { plays })` with `RasterSource.load(url)` |
-
-Objects mutated outside animations (direct `shift` calls between plays) should be reported with
-`ctx.touch(obj)` so snapshots record them.
 
 ## Markdown decks
 
@@ -190,6 +135,13 @@ languages, shells, JSON, LaTeX, HTML/SVG and the dialect itself. SVG artwork kee
 transforms and inherited styles; `<text>` inside SVG files is not rendered, so export text as
 paths.
 
+## Slides in code, when the dialect is not enough
+
+Decks are written in Markdown. For the rare slide that needs the full animation engine, a
+`Slide` subclass in a TypeScript file can be placed in a Markdown deck with
+`[[subslide: Name]]`; [Code-authored slides](https://puppis.github.io/zoomdeck/code-slides.html)
+explains how, and `examples/tree-deck.ts` shows an entire deck written that way.
+
 ## Project layout
 
 ```text
@@ -209,7 +161,7 @@ Zoomdeck/
 │   └── dev.ts, index.html    development page
 ├── docs/site/, docs/html/    documentation sources and the built site (npm run docs)
 ├── docs/markup.md            compact reference of the Markdown dialect
-├── examples/                 the guide deck and two small code-authored decks
+├── examples/                 the guide deck, and one code-authored deck for the engine API
 └── tests/                    vitest unit tests (parser, code listings, colors, transforms, traversal)
 ```
 
