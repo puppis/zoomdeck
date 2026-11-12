@@ -98,9 +98,9 @@ also stops on its own when the program that started it ends.
 | Shortcuts | `editors/vscode/keybindings.json`: paste its entries into your `keybindings.json` (Command Palette ▸ "Open Keyboard Shortcuts (JSON)") |
 | Autosave | `editors/vscode/settings.json`: `files.autoSave: afterDelay` with a 600 ms delay |
 
-Then, with the deck open: **Ctrl+Alt+P** (⌘⌥P on macOS) starts the preview in a dedicated
-terminal, **Ctrl+Alt+J** (⌘⌥J) shows the stop of the cursor line in the browser, **Ctrl+Alt+B**
-(⌘⌥B) exports `build/index.html` next to the file. The build task is also the default build
+Then, with the deck open: **Ctrl+Alt+B** (⌘⌥B on macOS) starts the preview in a dedicated
+terminal (B as in browser), **Ctrl+Alt+J** (⌘⌥J) shows the stop of the cursor line in the
+browser, **Ctrl+Alt+P** (⌘⌥P) exports `build/index.html` next to the file. The build task is also the default build
 task, so Ctrl+Shift+B works as well. Stop the preview by closing its terminal. The preview task
 passes `--editor code`, so E or Alt+click in the browser opens the line in VS Code through its
 `code` command (Command Palette ▸ "Shell Command: Install 'code' command in PATH" on macOS, if
@@ -113,10 +113,10 @@ folder). It provides:
 
 - **Zoomdeck Markdown**, a syntax that extends Markdown (Sublime Text 4); files whose first line
   opens a slide or styles block select it automatically, others through View ▸ Syntax.
-- A build system with three variants: **Ctrl+Alt+B** exports one HTML file (also Ctrl+B / ⌘B,
-  since Zoomdeck is the build system of Markdown files), **Ctrl+Alt+P** starts the preview in the
-  build panel (Tools ▸ Cancel Build stops it), and "Build folder" writes the static folder
-  export.
+- A build system with three variants: **Ctrl+Alt+B** starts the preview in the build panel
+  (Tools ▸ Cancel Build stops it), **Ctrl+Alt+P** exports one HTML file (also Ctrl+B / ⌘B,
+  since Zoomdeck is the build system of Markdown files), and "Build folder" writes the static
+  folder export.
 - **Ctrl+Alt+J** shows the stop of the cursor line in the browser; E or Alt+click in the browser
   brings Sublime Text to the line (the preview is started with `--editor` pointing at the `subl`
   launcher of the running Sublime Text, wherever it is installed).
@@ -143,8 +143,8 @@ Console) prints what the plugin found. Tools ▸ Cancel Build stops the preview 
 
 `zoomdeck-mode` derives from `markdown-mode` when it is installed (otherwise from `text-mode`),
 highlights the dialect and is chosen automatically for files that open with `::: slide` or
-`::: styles`. Its keys: **C-c C-p** serves the deck in a `*zoomdeck preview*` compilation buffer,
-**C-c C-j** shows the stop of the current line in the browser, **C-c C-b** exports one HTML
+`::: styles`. Its keys: **C-c C-b** serves the deck in a `*zoomdeck preview*` compilation buffer,
+**C-c C-j** shows the stop of the current line in the browser, **C-c C-p** exports one HTML
 file, **C-c C-k** stops the server. E or Alt+click in the browser brings Emacs to the line: the
 preview is started with an `emacsclient` command for this Emacs session (`zoomdeck-inverse-search`,
 on by default, starts the Emacs server when it is not running). `zoomdeck-autosave-mode` (on by
@@ -160,9 +160,9 @@ therefore means an Emacs older than this package: reload `zoomdeck.el`.
 
 Copy `editors/vim/plugin/` and `editors/vim/after/` into `~/.vim/` or `~/.config/nvim/`, or hand
 `Zoomdeck/editors/vim` to your plugin manager. Markdown buffers whose first lines open a slide or
-styles block get the mappings **\<leader\>zp** (`:ZoomdeckPreview`, in a terminal split),
+styles block get the mappings **\<leader\>zb** (`:ZoomdeckPreview`, in a terminal split),
 **\<leader\>zj** (`:ZoomdeckJump`, the stop of the cursor line in the browser) and
-**\<leader\>zb** (`:ZoomdeckBuild`), are saved after `updatetime` idle milliseconds (lowered to
+**\<leader\>zp** (`:ZoomdeckBuild`), are saved after `updatetime` idle milliseconds (lowered to
 one second), and highlight the dialect through `after/syntax/markdown.vim`. E or Alt+click in
 the browser brings Vim to the line through its server: Neovim always has one, Vim needs
 `+clientserver` and a name (`vim --servername DECK`; gvim and MacVim name themselves), and

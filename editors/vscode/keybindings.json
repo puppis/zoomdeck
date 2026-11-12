@@ -1,7 +1,7 @@
 [
   {
-    "key": "ctrl+alt+p",
-    "mac": "cmd+alt+p",
+    "key": "ctrl+alt+b",
+    "mac": "cmd+alt+b",
     "command": "workbench.action.tasks.runTask",
     "args": "Zoomdeck: preview",
     "when": "editorLangId == markdown || resourceFilename == deck.json"
@@ -14,8 +14,8 @@
     "when": "editorLangId == markdown"
   },
   {
-    "key": "ctrl+alt+b",
-    "mac": "cmd+alt+b",
+    "key": "ctrl+alt+p",
+    "mac": "cmd+alt+p",
     "command": "workbench.action.tasks.runTask",
     "args": "Zoomdeck: build HTML",
     "when": "editorLangId == markdown || resourceFilename == deck.json"

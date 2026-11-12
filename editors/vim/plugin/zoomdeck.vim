@@ -1,8 +1,8 @@
 " zoomdeck.vim — live preview and export of Zoomdeck decks from Vim and Neovim.
 "
-"   :ZoomdeckPreview  (<leader>zp)  serve the deck; the browser reloads on save
+"   :ZoomdeckPreview  (<leader>zb)  serve the deck; the browser reloads on save
 "   :ZoomdeckJump     (<leader>zj)  show the stop of the cursor line in the browser
-"   :ZoomdeckBuild    (<leader>zb)  export one self-contained HTML file to ./build
+"   :ZoomdeckBuild    (<leader>zp)  export one self-contained HTML file to ./build
 "
 " Buffers whose first lines open a slide or styles block get the mappings and
 " are saved automatically after `updatetime` idle milliseconds (default 1 s).
@@ -128,9 +128,9 @@ function! s:IsDeck() abort
 endfunction
 
 function! s:Setup() abort
-  nnoremap <buffer> <silent> <leader>zp :ZoomdeckPreview<CR>
+  nnoremap <buffer> <silent> <leader>zb :ZoomdeckPreview<CR>
   nnoremap <buffer> <silent> <leader>zj :ZoomdeckJump<CR>
-  nnoremap <buffer> <silent> <leader>zb :ZoomdeckBuild<CR>
+  nnoremap <buffer> <silent> <leader>zp :ZoomdeckBuild<CR>
   if g:zoomdeck_autosave
     if &updatetime > 1000 | set updatetime=1000 | endif
     autocmd CursorHold,CursorHoldI <buffer> silent! update

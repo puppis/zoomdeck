@@ -8,9 +8,9 @@
 ;; `zoomdeck-mode' derives from `markdown-mode' when it is installed (plain
 ;; `text-mode' otherwise) and adds:
 ;;
-;;   C-c C-p   zoomdeck-preview   serve the deck; the browser reloads on save
+;;   C-c C-b   zoomdeck-preview   serve the deck; the browser reloads on save
 ;;   C-c C-j   zoomdeck-jump      show the stop of the current line in the browser
-;;   C-c C-b   zoomdeck-build     export one self-contained HTML file
+;;   C-c C-p   zoomdeck-build     export one self-contained HTML file
 ;;   C-c C-k   zoomdeck-stop      stop the preview server
 ;;
 ;; plus highlighting of slide containers, directives and attributes, and an
@@ -200,9 +200,9 @@ by `zoomdeck-preview' or `zoomdeck serve'."
 
 (defvar zoomdeck-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-c C-p") #'zoomdeck-preview)
+    (define-key map (kbd "C-c C-b") #'zoomdeck-preview)
     (define-key map (kbd "C-c C-j") #'zoomdeck-jump)
-    (define-key map (kbd "C-c C-b") #'zoomdeck-build)
+    (define-key map (kbd "C-c C-p") #'zoomdeck-build)
     (define-key map (kbd "C-c C-k") #'zoomdeck-stop)
     map)
   "Keymap of `zoomdeck-mode'.")

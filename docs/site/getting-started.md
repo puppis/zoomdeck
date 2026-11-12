@@ -148,7 +148,7 @@ Editing is most comfortable when the browser follows your typing: start the prev
 every save reloads the page at the stop you were looking at. The `editors/` folder of the
 repository holds ready-made setups for **VS Code, Sublime Text, Emacs, Vim/Neovim and JetBrains
 IDEs** that save after a second of idle typing, bind the preview, the jump to the current line
-and the single-file export to shortcuts (Ctrl+Alt+P, Ctrl+Alt+J and Ctrl+Alt+B, or ⌘ variants),
+and the single-file export to shortcuts (Ctrl+Alt+B for the browser preview, Ctrl+Alt+J and Ctrl+Alt+P, or ⌘ variants),
 let the browser open a stop's or an element's source line in the editor (E, Alt + click), and
 highlight the dialect's directives and attributes inside Markdown. [Editors](editors.html)
 explains each one and what to do when an editor cannot find the command.
