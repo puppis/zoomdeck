@@ -96,7 +96,8 @@ numbered lists are supported; headings only change the size. Lists nest by inden
 is one element whose marker (`•`, `–`, `◦` by depth, or the item's own number) sits in a column
 of `layout.listIndent` and whose prose wraps with a hanging indent; nested items shift one column
 per level, also under an explicit `x`. Blank lines separate elements. HTML comments are
-discarded and raw HTML is shown as text. Links (`[label](https://…)`, also `mailto:` and relative
+discarded and raw HTML is shown as text. `href=` on any element, group, connection or attachment
+makes the whole element a link that opens in a new tab. Links (`[label](https://…)`, also `mailto:` and relative
 URLs) are underlined and clickable in the player, opening in a new tab. Explicit line breaks take two
 trailing spaces, a backslash before the newline, or `\\`. Prose wraps to the element's `width`,
 mixed prose and math share one baseline, and a paragraph with inline math stays one element.

@@ -214,11 +214,11 @@ export const LAYOUT = new Set([...GEOMETRY, ...POSITION_REFERENCES, 'buff', 'dx'
 export const TIMING_ATTRS = new Set(['run_time', 'lag']);
 export const ELEMENT_ATTRS = new Set([
   'id', 'x', 'y', 'width', 'height', 'step', 'hide', 'color', 'font_size', 'font', 'focus_only', 'opacity', 'anchor', 'dx', 'dy', 'at', 'class',
-  'enter', 'exit', ...POSITION_REFERENCES, 'buff', ...TIMING_ATTRS,
+  'enter', 'exit', 'href', ...POSITION_REFERENCES, 'buff', ...TIMING_ATTRS,
 ]);
 /** Attributes of a `::: {.group}` container. */
 export const GROUP_ATTRS = new Set([
-  'id', 'x', 'y', 'width', 'step', 'hide', 'opacity', 'anchor', 'dx', 'dy', 'at', 'class', 'focus_only', 'enter', 'exit',
+  'id', 'x', 'y', 'width', 'step', 'hide', 'opacity', 'anchor', 'dx', 'dy', 'at', 'class', 'focus_only', 'enter', 'exit', 'href',
   ...POSITION_REFERENCES, 'buff', ...TIMING_ATTRS,
 ]);
 /** Anchor points: bounding-box center, edges and corners, plus the first baseline for text-like elements. */

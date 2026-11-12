@@ -77,6 +77,23 @@ describe('MarkupParser', () => {
     expect(() => new MarkupParser().parse('::: slide {#a}\n[[include: #b transition=none]]\n:::\n::: slide {#b}\nx\n:::')).toThrow(/zoom or cut/);
   });
 
+  it('accepts href on elements, shapes, groups, connections and attachments', () => {
+    const source = [
+      '::: slide {#a}',
+      'A paragraph {#p href=https://example.org}',
+      '[[circle: #c x=0 y=0 radius=1 href=mailto:someone@example.org]]',
+      '[[arrow: #p -> #c, #e, href=#slide=a]]',
+      '[[box: #c, #b, href=./notes.pdf]]',
+      '::: {.group #g href=/docs/}',
+      'inside',
+      ':::',
+      ':::',
+    ].join('\n');
+    const items = new MarkupParser().parse(source).slides[0].items as ElementSpec[];
+    expect(items.map((item) => item.attributes.href)).toEqual(['https://example.org', 'mailto:someone@example.org', '#slide=a', './notes.pdf', '/docs/']);
+    expect(() => new MarkupParser().parse('::: slide {#a}\nx {href=javascript:alert(1)}\n:::')).toThrow(/Unsupported link target/);
+  });
+
   it('rejects unknown references and inconsistent visibility', () => {
     expect(() => new MarkupParser().parse('::: slide {#a}\n[[include: #b]]\n[[include: #b]]\n:::')).toThrow(MarkupError);
     expect(() => new MarkupParser().parse('::: slide {#a}\n[x]{#x step=1}\n[[show: #x step=2]]\n:::')).toThrow(/Inconsistent/);

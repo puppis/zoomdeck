@@ -3,6 +3,7 @@
  * then validate references and compile fragment state into animation steps.
  */
 import MarkdownIt from 'markdown-it';
+import { LINK_TARGET } from '../links';
 import type StateInline from 'markdown-it/lib/rules_inline/state_inline.mjs';
 import type Token from 'markdown-it/lib/token.mjs';
 import {
@@ -127,7 +128,7 @@ function spans(tokens: Token[], bold = false, italic = false, color: string | nu
       }
       case 'link_open': {
         const target = token.attrGet('href');
-        if (target && !/^(https?:|mailto:|#|\/|\.)/i.test(target)) {
+        if (target && !LINK_TARGET.test(target)) {
           throw new MarkupError(`Unsupported link target ${JSON.stringify(target)}`);
         }
         links.push(target || null);
@@ -675,10 +676,10 @@ export class ASTTransformer {
     let allowed: Set<string>;
     if (item.kind === 'group') allowed = new Set(GROUP_ATTRS);
     else if (CONNECTIONS.has(item.kind)) {
-      allowed = new Set(['id', 'step', 'hide', 'color', 'from', 'to', 'label', 'font', 'font_size', 'opacity', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
+      allowed = new Set(['id', 'step', 'hide', 'color', 'from', 'to', 'label', 'font', 'font_size', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
     }
     else if (ATTACHMENTS.has(item.kind)) {
-      allowed = new Set(['id', 'target', 'step', 'hide', 'color', 'buff', 'opacity', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
+      allowed = new Set(['id', 'target', 'step', 'hide', 'color', 'buff', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
       if (item.kind === 'brace') for (const key of ['side', 'label', 'font_size', 'font']) allowed.add(key);
       else if (item.kind === 'blob') for (const key of ['smoothness', ...FILL_ATTRS]) allowed.add(key);
       else for (const key of ['corner_radius', ...FILL_ATTRS]) allowed.add(key);
@@ -703,7 +704,7 @@ export class ASTTransformer {
         else for (const key of ['width', 'height', 'corner_radius']) allowed.add(key);
       }
     } else if (item.kind === 'iframe') {
-      allowed = new Set(['id', 'url', 'x', 'y', 'width', 'height', 'anchor', 'at', 'dx', 'dy', 'class', 'title', 'poster', 'step', 'hide', 'color',
+      allowed = new Set(['id', 'url', 'x', 'y', 'width', 'height', 'anchor', 'at', 'dx', 'dy', 'class', 'title', 'poster', 'step', 'hide', 'color', 'href',
         ...POSITION_REFERENCES, 'buff', ...TIMING_ATTRS]);
     } else {
       allowed = new Set(ELEMENT_ATTRS);
@@ -715,6 +716,9 @@ export class ASTTransformer {
     }
     if (VECTOR_KINDS.has(item.kind)) for (const key of TREMBLE_ATTRS) allowed.add(key);
     this._checkAttrs(item.attributes, allowed, item.line);
+    if ('href' in item.attributes && !LINK_TARGET.test(item.attributes.href)) {
+      throw new MarkupError(`Unsupported link target ${JSON.stringify(item.attributes.href)}; use https://, mailto:, #, / or a relative path`, item.line);
+    }
     if (item.kind === 'icon') {
       if (!ICON_KINDS.has(item.source)) throw new MarkupError(`Unknown icon ${JSON.stringify(item.source)}; use one of ${[...ICON_KINDS].join(', ')}`, item.line);
       if ('label_side' in item.attributes && !LABEL_SIDES.has(item.attributes.label_side)) {

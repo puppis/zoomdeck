@@ -76,6 +76,7 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
 | `run_time`, `lag`, `rate` | fades and animations | duration, delay, rate function |
 | `enter`, `exit` | elements | `fade`, `grow`, `write`, `create`, `draw` / `fade`, `shrink`, `uncreate` |
 | `focus_only` | static elements | visible only while the slide is focused |
+| `href` | every element, group, connection and attachment | URL opened in a new tab when the element is clicked |
 | `play`, `muted` | animated images, videos | `once`, `loop`; sound for videos |
 | `lang` | listings | language name (normally from the fence info) |
 | `class` or `.name` | elements, children | styles |

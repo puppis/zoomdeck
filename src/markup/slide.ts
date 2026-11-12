@@ -6,6 +6,7 @@ import { Group, MoveAlongPath, ReplacementTransform, type Animation, type Mobjec
 import { sketchSeed, type OutlineMobject } from '../sketch';
 import { PropertyAnimation, RATE_FUNCTIONS, Tremble, enterAnimation, exitAnimation, makeEffect, type PropertyTargets } from '../animations';
 import { Slide, PlaceholderSlide, resolveSize, startingSlide, type TransitionMode } from '../slides';
+import { LINKED_OBJECTS } from '../links';
 import { RasterImage, RasterMovie } from '../raster';
 import { VideoClip, VideoPlay } from '../video';
 import { IframeHost } from './iframe';
@@ -135,6 +136,7 @@ export class MarkupSlide extends Slide {
         position = [Number(item.attributes.x ?? 0), Number(item.attributes.y ?? 0), 0];
       } else {
         obj = item instanceof GroupSpec ? await this._buildGroup(item, scope.width) : await this.renderer.make(item, Math.max(scope.width - indent, 0.5));
+        if (item.attributes.href) LINKED_OBJECTS.set(obj, item.attributes.href);
         this.elements.set(item.id, obj);
         scope.local.set(item.id, obj);
         elements.set(item.id, item);
@@ -203,6 +205,7 @@ export class MarkupSlide extends Slide {
     for (const item of items) {
       if (item instanceof ElementSpec && ATTACHMENTS.has(item.kind)) {
         const obj = await this.renderer.attachment(item, scope.local);
+        if (item.attributes.href) LINKED_OBJECTS.set(obj, item.attributes.href);
         this.elements.set(item.id, obj);
         scope.local.set(item.id, obj);
       }
@@ -210,6 +213,7 @@ export class MarkupSlide extends Slide {
     for (const item of items) {
       if (item instanceof ElementSpec && CONNECTIONS.has(item.kind)) {
         const obj = await this.renderer.connection(item, scope.local);
+        if (item.attributes.href) LINKED_OBJECTS.set(obj, item.attributes.href);
         this.elements.set(item.id, obj);
         scope.local.set(item.id, obj);
       }

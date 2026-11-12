@@ -4,7 +4,7 @@
  */
 
 export type ActionName =
-  | 'next' | 'previous' | 'home' | 'replay' | 'fullscreen' | 'outline' | 'undo' | 'redo' | 'clear' | 'settings' | 'exit';
+  | 'next' | 'previous' | 'home' | 'replay' | 'fullscreen' | 'outline' | 'undo' | 'redo' | 'clear' | 'settings' | 'exit' | 'pointer';
 
 export interface ActionInfo {
   name: ActionName;
@@ -20,6 +20,7 @@ export const ACTIONS: ActionInfo[] = [
   { name: 'undo', label: 'Undo the last pen or highlighter stroke' },
   { name: 'redo', label: 'Redo a stroke' },
   { name: 'clear', label: 'Clear all strokes on this slide' },
+  { name: 'pointer', label: 'Switch between spotlight and laser' },
   { name: 'fullscreen', label: 'Toggle fullscreen' },
   { name: 'exit', label: 'Leave fullscreen' },
   { name: 'outline', label: 'Toggle the slide outline' },
@@ -34,14 +35,42 @@ export const DEFAULT_BINDINGS: Record<ActionName, string[]> = {
   undo: ['Meta+z', 'Control+z'],
   redo: ['Meta+Shift+z', 'Control+Shift+z', 'Control+y'],
   clear: ['Delete', 'Backspace'],
+  pointer: ['l'],
   fullscreen: ['f'],
   exit: ['Escape'],
   outline: ['o'],
   settings: [','],
 };
 
+/** Mouse gestures on the stage: which modifier keys, held while clicking or dragging, select each tool. */
+export type PointerAction = 'pen' | 'pointer' | 'advance';
+
+export interface PointerActionInfo {
+  name: PointerAction;
+  label: string;
+}
+
+export const POINTER_ACTIONS: PointerActionInfo[] = [
+  { name: 'pen', label: 'Pen: drag to draw' },
+  { name: 'pointer', label: 'Spotlight or laser while held; drag to highlight' },
+  { name: 'advance', label: 'Click: next stop' },
+];
+
+/** Modifier combinations a pointer action can be bound to; `''` is a plain click or drag. */
+export const MODIFIER_COMBOS = ['', 'Shift', 'Control', 'Alt', 'Meta', 'Shift+Control', 'Shift+Alt', 'Control+Alt'];
+
+/** Modifier combination of each pointer action; null leaves the action without a gesture. */
+export type PointerBindings = Record<PointerAction, string | null>;
+
+export const DEFAULT_POINTER_BINDINGS: PointerBindings = { pen: '', pointer: 'Shift', advance: 'Alt' };
+
+export type PointerMode = 'spotlight' | 'laser';
+
 export interface PlayerSettings {
   bindings: Record<ActionName, string[]>;
+  pointer: PointerBindings;
+  /** The tool shown while the pointer gesture is held. */
+  pointerMode: PointerMode;
   /** null keeps the deck's own setting. */
   reversePlayback: boolean | null;
 }
@@ -75,8 +104,36 @@ export function describeCombo(combo: string): string {
   return combo.split('+').map((part) => PRETTY[part] ?? (part.length === 1 ? part.toUpperCase() : part)).join(IS_MAC ? '' : '+');
 }
 
+/** The modifier combination held during a pointer event, in the order of `MODIFIER_COMBOS`. */
+export function modifierCombo(event: { shiftKey: boolean; ctrlKey: boolean; altKey: boolean; metaKey: boolean }): string {
+  const parts: string[] = [];
+  if (event.shiftKey) parts.push('Shift');
+  if (event.ctrlKey) parts.push('Control');
+  if (event.altKey) parts.push('Alt');
+  if (event.metaKey) parts.push('Meta');
+  return parts.join('+');
+}
+
+/** Human-readable form of a pointer binding. */
+export function describeModifiers(combo: string | null): string {
+  if (combo === null) return 'Off';
+  if (combo === '') return 'Plain (no key)';
+  return combo.split('+').map((part) => PRETTY[part] ?? part).join(IS_MAC ? '' : '+');
+}
+
+/** The pointer action bound to a modifier combination, if any. */
+export function pointerActionFor(settings: PlayerSettings, combo: string): PointerAction | null {
+  for (const action of POINTER_ACTIONS) if (settings.pointer[action.name] === combo) return action.name;
+  return null;
+}
+
 export function defaultSettings(): PlayerSettings {
-  return { bindings: Object.fromEntries(Object.entries(DEFAULT_BINDINGS).map(([k, v]) => [k, [...v]])) as PlayerSettings['bindings'], reversePlayback: null };
+  return {
+    bindings: Object.fromEntries(Object.entries(DEFAULT_BINDINGS).map(([k, v]) => [k, [...v]])) as PlayerSettings['bindings'],
+    pointer: { ...DEFAULT_POINTER_BINDINGS },
+    pointerMode: 'spotlight',
+    reversePlayback: null,
+  };
 }
 
 export function loadSettings(): PlayerSettings {
@@ -89,6 +146,13 @@ export function loadSettings(): PlayerSettings {
         if (Array.isArray(list)) settings.bindings[action.name] = list.filter((item) => typeof item === 'string');
       }
     }
+    if (saved?.pointer) {
+      for (const action of POINTER_ACTIONS) {
+        const combo = saved.pointer[action.name];
+        if (combo === null || (typeof combo === 'string' && MODIFIER_COMBOS.includes(combo))) settings.pointer[action.name] = combo;
+      }
+    }
+    if (saved?.pointerMode === 'spotlight' || saved?.pointerMode === 'laser') settings.pointerMode = saved.pointerMode;
     if (typeof saved?.reversePlayback === 'boolean') settings.reversePlayback = saved.reversePlayback;
   } catch {
     /* no storage or corrupt data: defaults */

@@ -1,6 +1,6 @@
 /**
  * The browser interface: slide outline, navigation controls, keyboard
- * shortcuts, spotlight, highlighter and pen overlays, fullscreen, speed and
+ * shortcuts, spotlight or laser, highlighter and pen overlays, fullscreen, speed and
  * deep links, drawing on a live canvas instead of video clips.
  */
 import type { ResolvedDeck } from '../deck';
@@ -8,7 +8,10 @@ import type { NavigationData } from '../runtime';
 import type { Player } from './player';
 import type { Stage } from './stage';
 import playerCss from './player.css?inline';
-import { ACTIONS, type ActionName, type PlayerSettings, actionFor, defaultSettings, describeCombo, keyCombo, loadSettings, saveSettings } from './settings';
+import {
+  ACTIONS, DEFAULT_POINTER_BINDINGS, MODIFIER_COMBOS, POINTER_ACTIONS, type ActionName, type PlayerSettings, type PointerAction, type PointerMode,
+  actionFor, defaultSettings, describeCombo, describeModifiers, keyCombo, loadSettings, modifierCombo, pointerActionFor, saveSettings,
+} from './settings';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -59,8 +62,8 @@ export class PlayerUI {
   private _player: Player | null = null;
   private _stage: Stage | null = null;
   private _navigation: NavigationData | null = null;
-  private _shiftHeld = false;
-  private _controlHeld = false;
+  /** Modifier keys currently held, as a `modifierCombo` string. */
+  private _modifiers = '';
   private _pointer: { x: number; y: number } | null = null;
   private _radius = 96;
   private _stroke: { path: SVGPathElement; tool: 'pen' | 'highlighter'; data: string } | null = null;
@@ -134,7 +137,7 @@ export class PlayerUI {
     this._next = el('button', { class: 'next', 'aria-label': 'Next stop', title: 'Next stop (→)', text: '→' });
     this._penColor = el('select', { 'aria-label': 'Pen color', title: 'Pen color' });
     for (const [value, label] of [
-      ['foreground', 'Slide'], ['#000000', 'Black'], ['#FFFFFF', 'White'], ['#EF4444', 'Red'],
+      ['foreground', 'Default'], ['#000000', 'Black'], ['#FFFFFF', 'White'], ['#EF4444', 'Red'],
       ['#FACC15', 'Yellow'], ['#22C55E', 'Green'], ['#3B82F6', 'Blue'],
     ]) this._penColor.append(el('option', { value, text: label }));
     this._penSize = el('select', { 'aria-label': 'Pen tip size', title: 'Pen tip size' });
@@ -192,10 +195,23 @@ export class PlayerUI {
 
   private _renderShortcuts(): void {
     const keys = (action: ActionName) => this._settings.bindings[action].map(describeCombo).join(' / ') || '—';
+    const held = (action: PointerAction) => {
+      const combo = this._settings.pointer[action];
+      return combo === null ? null : combo === '' ? '' : `${describeModifiers(combo)} + `;
+    };
+    const pen = held('pen');
+    const pointer = held('pointer');
+    const advance = held('advance');
+    const gestures = [
+      pen === null ? null : `${pen || 'Plain '}drag: draw with the pen`,
+      pointer === null ? null : `${pointer ? `Hold ${pointer.slice(0, -3)}` : 'Hover'}: spotlight or laser (${keys('pointer')} switches)`,
+      pointer === null ? null : `${pointer || 'Plain '}drag: highlight · ${pointer || ''}scroll: resize`,
+      advance === null ? null : `${advance || 'Plain '}click: next stop`,
+    ].filter((line): line is string => line !== null);
     const lines = [
       `${keys('next')}: continue`, `${keys('previous')}: previous stop`, `${keys('replay')}: replay`, `${keys('home')}: overview`,
       `${keys('fullscreen')}: fullscreen`, `${keys('exit')}: normal view`, `${keys('outline')}: toggle outline`,
-      'Hold Shift: spotlight', 'Shift + scroll: resize spotlight', 'Shift + drag: highlight current slide', 'Control + drag: draw with pen',
+      ...gestures,
       `${keys('undo')}: undo stroke`, `${keys('redo')}: redo stroke`, `${keys('clear')}: clear strokes`, `${keys('settings')}: settings`,
     ];
     const nodes: Array<Node | string> = [];
@@ -340,6 +356,7 @@ export class PlayerUI {
       case 'redo': this.redoStroke(); break;
       case 'clear': this.clearStrokes(); break;
       case 'settings': this.openSettings(); break;
+      case 'pointer': this.togglePointerMode(); break;
     }
   }
 
@@ -376,6 +393,8 @@ export class PlayerUI {
 
   private _reverseToggle!: HTMLInputElement;
   private _bindingsTable!: HTMLElement;
+  private _pointerModeSelect!: HTMLSelectElement;
+  private readonly _pointerSelects = new Map<PointerAction, HTMLSelectElement>();
 
   openSettings(): void {
     this._syncSettingsForm();
@@ -387,42 +406,73 @@ export class PlayerUI {
     const dialog = el('dialog', { class: 'settings' });
     const close = el('button', { class: 'close', 'aria-label': 'Close settings', text: '×' });
     close.addEventListener('click', () => dialog.close());
+
+    // Pointer: the tool shown while its gesture is held, and the modifier keys of each gesture.
+    this._pointerModeSelect = el('select', { 'aria-label': 'Pointer tool' });
+    for (const [value, label] of [['spotlight', 'Spotlight'], ['laser', 'Laser pointer']]) {
+      this._pointerModeSelect.append(el('option', { value, text: label }));
+    }
+    this._pointerModeSelect.addEventListener('change', () => {
+      this._settings.pointerMode = this._pointerModeSelect.value as PointerMode;
+      saveSettings(this._settings);
+      this._updateSpotlight();
+    });
+    const gestures = el('div', { class: 'bindings' });
+    gestures.append(el('div', { class: 'binding gesture' },
+      el('span', { class: 'action', text: 'Tool shown while the pointer gesture is held' }), this._pointerModeSelect));
+    for (const action of POINTER_ACTIONS) {
+      const select = el('select', { 'aria-label': action.label });
+      for (const combo of MODIFIER_COMBOS) select.append(el('option', { value: combo, text: describeModifiers(combo) }));
+      select.append(el('option', { value: 'off', text: describeModifiers(null) }));
+      select.addEventListener('change', () => this._assignPointer(action.name, select.value === 'off' ? null : select.value));
+      this._pointerSelects.set(action.name, select);
+      gestures.append(el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: action.label }), select));
+    }
+    const resetPointer = el('button', { text: 'Restore default gestures' });
+    resetPointer.addEventListener('click', () => {
+      this._settings.pointer = { ...DEFAULT_POINTER_BINDINGS };
+      this._settings.pointerMode = 'spotlight';
+      saveSettings(this._settings);
+      this._syncSettingsForm();
+      this._renderShortcuts();
+      this._updateSpotlight();
+    });
+
+    this._bindingsTable = el('div', { class: 'bindings' });
+    const resetKeys = el('button', { text: 'Restore default keys' });
+    resetKeys.addEventListener('click', () => {
+      this._settings.bindings = defaultSettings().bindings;
+      this._capturing = null;
+      saveSettings(this._settings);
+      this._renderShortcuts();
+      this._renderBindings();
+    });
+
     this._reverseToggle = el('input', { type: 'checkbox' });
     this._reverseToggle.addEventListener('change', () => {
       this._settings.reversePlayback = this._reverseToggle.checked;
       if (this._player) this._player.reversePlayback = this._reverseToggle.checked;
       saveSettings(this._settings);
     });
-    this._bindingsTable = el('div', { class: 'bindings' });
-    const reset = el('button', { text: 'Restore default bindings' });
-    reset.addEventListener('click', () => {
-      this._settings.bindings = defaultSettings().bindings;
-      this._capturing = null;
-      saveSettings(this._settings);
-      this._renderBindings();
-    });
+
     dialog.append(
       el('header', {}, el('h2', { text: 'Settings' }), close),
       el('section', {},
-        el('h3', { text: 'Playback' }),
-        el('label', { class: 'row' }, this._reverseToggle, ' Play the current stop backwards on the previous-stop key'),
-        el('p', { class: 'note', text: 'Speed, pen color and tip size are in the bar at the bottom.' }),
+        el('h3', { text: 'Pointer' }),
+        el('p', { class: 'note', text: 'Each gesture is the mouse used with the chosen keys held. Scrolling while the spotlight or laser is shown resizes it; pen color and tip size are in the bar at the bottom. Strokes belong to the slide they were drawn on and clear when you move to another slide.' }),
+        gestures,
+        resetPointer,
       ),
       el('section', {},
         el('h3', { text: 'Keyboard' }),
         el('p', { class: 'note', text: 'Click a key to remove it, or “Add key” and press the new combination (Esc cancels). Settings are kept in this browser.' }),
         this._bindingsTable,
-        reset,
+        resetKeys,
       ),
       el('section', {},
-        el('h3', { text: 'Pointer' }),
-        el('ul', {},
-          el('li', { text: 'Click: next stop.' }),
-          el('li', { text: 'Hold Shift: spotlight; Shift + scroll resizes it.' }),
-          el('li', { text: 'Shift + drag: highlighter on the current slide.' }),
-          el('li', { text: 'Control + drag: pen; color and tip in the bottom bar.' }),
-          el('li', { text: 'Strokes belong to the slide they were drawn on and clear when you move to another slide.' }),
-        ),
+        el('h3', { text: 'Advanced' }),
+        el('label', { class: 'row' }, this._reverseToggle, ' Going to the previous stop plays the current stop backwards (off: jump straight to it)'),
+        el('p', { class: 'note', text: 'The playback speed is in the bar at the bottom.' }),
       ),
     );
     dialog.addEventListener('close', () => { this._capturing = null; });
@@ -431,6 +481,21 @@ export class PlayerUI {
 
   private _syncSettingsForm(): void {
     this._reverseToggle.checked = this._settings.reversePlayback ?? this._player?.reversePlayback ?? this._deck.presenter.reversePlayback;
+    this._pointerModeSelect.value = this._settings.pointerMode;
+    for (const [action, select] of this._pointerSelects) select.value = this._settings.pointer[action] ?? 'off';
+  }
+
+  /** Bind a pointer action to a modifier combination, freeing it from any other action. */
+  private _assignPointer(action: PointerAction, combo: string | null): void {
+    if (combo !== null) {
+      for (const other of POINTER_ACTIONS) if (other.name !== action && this._settings.pointer[other.name] === combo) this._settings.pointer[other.name] = null;
+    }
+    this._settings.pointer[action] = combo;
+    saveSettings(this._settings);
+    this._syncSettingsForm();
+    this._renderShortcuts();
+    this._endStroke();
+    this._updateSpotlight();
   }
 
   private _assignBinding(action: ActionName, combo: string): void {
@@ -469,7 +534,7 @@ export class PlayerUI {
   }
 
   // ---------------------------------------------------------------------
-  // Spotlight, highlighter and pen overlays
+  // Spotlight or laser, highlighter and pen overlays
   // ---------------------------------------------------------------------
 
   private _viewportPixels(): { width: number; height: number } {
@@ -492,10 +557,26 @@ export class PlayerUI {
 
   private _endStroke(): void {
     this._stroke = null;
+    this.stageHost.classList.remove('stroking');
+  }
+
+  /** The pointer action selected by the modifier keys currently held. */
+  private _activeTool(): PointerAction | null {
+    return pointerActionFor(this._settings, this._modifiers);
   }
 
   private _drawingTool(): 'pen' | 'highlighter' | null {
-    return this._controlHeld ? 'pen' : this._shiftHeld ? 'highlighter' : null;
+    const tool = this._activeTool();
+    return tool === 'pen' ? 'pen' : tool === 'pointer' ? 'highlighter' : null;
+  }
+
+  /** Switch the tool shown by the pointer gesture between the spotlight and the laser. */
+  togglePointerMode(): void {
+    this._settings.pointerMode = this._settings.pointerMode === 'laser' ? 'spotlight' : 'laser';
+    saveSettings(this._settings);
+    this._syncSettingsForm();
+    this._updateSpotlight();
+    this._state.textContent = this._settings.pointerMode === 'laser' ? 'Laser pointer' : 'Spotlight';
   }
 
   private _addInk(event: PointerEvent | { clientX: number; clientY: number }): void {
@@ -506,7 +587,8 @@ export class PlayerUI {
       const tool = this._drawingTool();
       if (!tool) return;
       const path = document.createElementNS(SVG_NS, 'path');
-      path.setAttribute('stroke-width', String((tool === 'pen' ? Number(this._penSize.value) : 2 * this._radius) / scale));
+      const highlighterWidth = this._settings.pointerMode === 'laser' ? this._radius / 3 : 2 * this._radius;
+      path.setAttribute('stroke-width', String((tool === 'pen' ? Number(this._penSize.value) : highlighterWidth) / scale));
       if (tool === 'pen') {
         path.setAttribute('stroke', this._penColor.value === 'foreground' ? this._deck.foreground : this._penColor.value);
         path.classList.add('pen');
@@ -515,12 +597,14 @@ export class PlayerUI {
       this._strokes.push(path);
       this._undone = [];
       this._stroke = { path, tool, data: `M ${x} ${y} l 0.001 0` };
+      this.stageHost.classList.add('stroking');
     } else this._stroke.data += ` L ${x} ${y}`;
     this._stroke.path.setAttribute('d', this._stroke.data);
   }
 
   private _updateSpotlight(): void {
     const stage = this.stageHost;
+    const tool = this._activeTool();
     if (this._pointer) {
       const bounds = stage.getBoundingClientRect();
       this._spotlight.style.setProperty('--spot-x', `${this._pointer.x - bounds.left}px`);
@@ -528,68 +612,74 @@ export class PlayerUI {
     }
     this._radius = Math.max(24, Math.min(this._radius, Math.max(stage.clientWidth, stage.clientHeight, 24)));
     this._spotlight.style.setProperty('--spot-radius', `${this._radius}px`);
-    stage.classList.toggle('spotlight-active', this._shiftHeld && !this._controlHeld && this._pointer !== null);
-    stage.classList.toggle('sketch-active', this._controlHeld && this._pointer !== null);
+    stage.classList.toggle('laser-mode', this._settings.pointerMode === 'laser');
+    stage.classList.toggle('spotlight-active', tool === 'pointer' && this._pointer !== null);
+    stage.classList.toggle('sketch-active', tool === 'pen' && this._pointer !== null);
+    // Links and live pages give way to a tool selected with a held key, never to a plain gesture.
+    stage.classList.toggle('tool-held', tool !== null && this._modifiers !== '' && this._pointer !== null);
   }
 
   private _releaseSpotlight(): void {
-    this._shiftHeld = this._controlHeld = false;
+    this._modifiers = '';
     this._endStroke();
     this._updateSpotlight();
   }
 
   private _installPointerTools(): void {
     const stage = this.stageHost;
+    const modifierKeys = ['Shift', 'Control', 'Alt', 'Meta'];
+    // Clicks on links, live pages and controls inside the stage are theirs, not the pen's.
+    const interactive = (event: Event) => Boolean((event.target as Element | null)?.closest?.('a, iframe, button, select, input'));
     stage.addEventListener('pointermove', (event) => {
       if (event.pointerType === 'touch') return;
       this._pointer = { x: event.clientX, y: event.clientY };
-      this._shiftHeld = event.shiftKey;
-      this._controlHeld = event.ctrlKey;
-      if (this._stroke?.tool !== this._drawingTool()) this._endStroke();
+      this._modifiers = modifierCombo(event);
+      if (this._stroke && this._stroke.tool !== this._drawingTool()) this._endStroke();
       if (this._stroke && event.buttons & 1) {
         for (const sample of event.getCoalescedEvents?.() ?? []) this._addInk(sample);
         this._addInk(event);
-      } else this._endStroke();
+      } else if (this._stroke) this._endStroke();
       this._updateSpotlight();
     });
     stage.addEventListener('pointerdown', (event) => {
-      if ((!event.shiftKey && !event.ctrlKey) || event.button !== 0 || event.pointerType === 'touch' || event.altKey || event.metaKey) {
-        if (event.button === 0 && !event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey) {
-          // A plain click advances, matching the native live player.
-          void this._player?.next();
-        }
+      if (event.button !== 0 || event.pointerType === 'touch' || interactive(event)) return;
+      this._modifiers = modifierCombo(event);
+      this._pointer = { x: event.clientX, y: event.clientY };
+      const tool = this._activeTool();
+      if (tool === 'advance') {
+        event.preventDefault();
+        void this._player?.next();
         return;
       }
-      this._shiftHeld = event.shiftKey;
-      this._controlHeld = event.ctrlKey;
-      event.preventDefault();
-      this._pointer = { x: event.clientX, y: event.clientY };
-      this._endStroke();
-      this._addInk(event);
+      if (tool !== null) {
+        event.preventDefault();
+        this._endStroke();
+        this._addInk(event);
+      }
       this._updateSpotlight();
     });
     document.addEventListener('pointerup', () => this._endStroke());
     stage.addEventListener('pointercancel', () => this._endStroke());
-    stage.addEventListener('contextmenu', (event) => { if (this._controlHeld || event.ctrlKey) event.preventDefault(); });
+    stage.addEventListener('contextmenu', (event) => {
+      // Control + click is a context menu on macOS; keep it for the tools bound to Control.
+      if (event.ctrlKey && pointerActionFor(this._settings, modifierCombo(event)) !== null) event.preventDefault();
+    });
     stage.addEventListener('pointerleave', () => { this._pointer = null; this._endStroke(); this._updateSpotlight(); });
     document.addEventListener('keydown', (event) => {
       const target = event.target as HTMLElement;
-      if (!['Shift', 'Control'].includes(event.key) || event.altKey || event.metaKey ||
-        /^(INPUT|SELECT|TEXTAREA)$/.test(target.tagName) || target.isContentEditable) return;
-      if (event.key === 'Control') this._controlHeld = true;
-      else this._shiftHeld = true;
-      if (this._stroke?.tool !== this._drawingTool()) this._endStroke();
+      if (!modifierKeys.includes(event.key) || /^(INPUT|SELECT|TEXTAREA)$/.test(target.tagName) || target.isContentEditable) return;
+      this._modifiers = modifierCombo(event);
+      if (this._stroke && this._stroke.tool !== this._drawingTool()) this._endStroke();
       this._updateSpotlight();
     });
     document.addEventListener('keyup', (event) => {
-      if (!['Shift', 'Control'].includes(event.key)) return;
-      this._shiftHeld = event.shiftKey;
-      this._controlHeld = event.ctrlKey;
-      if (this._stroke?.tool !== this._drawingTool()) this._endStroke();
+      if (!modifierKeys.includes(event.key)) return;
+      this._modifiers = modifierCombo(event);
+      if (this._stroke && this._stroke.tool !== this._drawingTool()) this._endStroke();
       this._updateSpotlight();
     });
     stage.addEventListener('wheel', (event) => {
-      if (!this._shiftHeld || this._controlHeld || this._pointer === null || event.ctrlKey || event.metaKey) return;
+      if (this._activeTool() !== 'pointer' || this._pointer === null) return;
       event.preventDefault();
       const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? stage.clientHeight : 1;
       const delta = Math.max(-1000, Math.min(1000, (event.deltaY || event.deltaX) * unit));

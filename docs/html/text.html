@@ -81,6 +81,15 @@ element of its own, which then must be a whole block.</p>
 <h2 id="links">Links<a class="anchor" href="#links" aria-label="Link to this section">#</a></h2><p><code>[label](https://…)</code> renders an underlined label that opens the page in a new tab; <code>mailto:</code> and
 relative URLs work too. Links are clickable wherever the text is visible on screen, including in
 parent previews.</p>
+<p>Any element can be a link as a whole: <code>href=</code> on a paragraph, heading, image, formula, shape,
+icon, arrow, brace, box, blob, table, chart or group opens its URL in a new tab when the element
+is clicked. The element's look does not change, and the link is active wherever the element is on
+screen and visible.</p>
+<pre><code class="language-markdown"><span class="tk-directive">[[icon:</span> document <span class="tk-attribute">#paper</span> <span class="tk-attribute">x=</span><span class="tk-number">0</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">size=</span><span class="tk-number">1.2</span> <span class="tk-attribute">label=</span><span class="tk-string">&quot;the paper&quot;</span> <span class="tk-attribute">href=</span>https://arxiv.org/abs/<span class="tk-number">1234.56789</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">::: </span><span class="tk-attribute">{.group #team x=</span><span class="tk-number">4</span><span class="tk-attribute"> y=</span><span class="tk-number">0</span><span class="tk-attribute"> href=https://example.org/team}</span>
+Our team
+<span class="tk-directive">:::</span></code></pre>
 <h2 id="typography-defaults">Typography defaults<a class="anchor" href="#typography-defaults" aria-label="Link to this section">#</a></h2><p>By default prose is set in <strong>Latin Modern Roman</strong> and code spans in <strong>Latin Modern Mono</strong>, the
 OpenType versions of the Computer Modern family LaTeX uses, both bundled with the player; formulas
 use MathJax's TeX fonts, and a <code>font_size</code> means the same em for all three, so a paragraph with

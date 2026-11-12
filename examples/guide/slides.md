@@ -177,16 +177,16 @@ Images are centered on `x`, `y` and sized by `width`. SVG files keep nested tran
 
 ```markdown {#shapes-source x=-9.35 y=3.7 width=19}
 [[rectangle: #box x=-6 y=-2.4 width=3.4 height=1.8 corner_radius=0.3 color=BLUE_E fill_opacity=0.15]]
-[[circle: #disk right-of:#box buff=2.5 radius=0.9 color=GREEN_E]]
+[[circle: #disk right-of:#box buff=2.5 radius=0.9 color=GREEN_E href=https://puppis.github.io/zoomdeck/]]
 [[polyline: #zigzag points="(3,-4) (5,-2) (7,-3.6) (9,-1.8)" color=ORANGE]]
 [[arrow: #box -> #disk, #edge, label="**labelled** $\to$"]]
 [[line: #disk -> (-1.2,-5), #drop, color=GRAY]]
 ```
 
-Shapes need an `#id`; `color`, `stroke_width`, `fill_color` and `fill_opacity` style them and every positioning attribute places them. Arrows and lines join element IDs, attached at the facing edges, or literal `(x,y)` points; labels take inline styling and math. {x=-9.35 y=0.7 width=19 font_size=22}
+Shapes need an `#id`; `color`, `stroke_width`, `fill_color` and `fill_opacity` style them and every positioning attribute places them. Arrows and lines join element IDs, attached at the facing edges, or literal `(x,y)` points; labels take inline styling and math. `href=` makes any element a clickable link (try the circle). {x=-9.35 y=0.7 width=19 font_size=22}
 
 [[rectangle: #box x=-6 y=-2.4 width=3.4 height=1.8 corner_radius=0.3 color=BLUE_E fill_opacity=0.15]]
-[[circle: #disk right-of:#box buff=2.5 radius=0.9 color=GREEN_E]]
+[[circle: #disk right-of:#box buff=2.5 radius=0.9 color=GREEN_E href=https://puppis.github.io/zoomdeck/]]
 [[polyline: #zigzag points="(3,-4) (5,-2) (7,-3.6) (9,-1.8)" color=ORANGE]]
 [[arrow: #box -> #disk, #edge, label="**labelled** $\to$"]]
 [[line: #disk -> (-1.2,-5), #drop, color=GRAY]]
@@ -716,9 +716,9 @@ node bin/zoomdeck.mjs build examples/guide/deck.json \
   -o build/guide --one-file
 ```
 
-**Keys:** → or Space next · ← previous (plays the stop backwards) · Home first stop · R replay · F fullscreen · O outline · , settings, where every key can be changed. {x=0.6 width=9 font_size=21}
+**Keys:** → or Space next · ← previous (plays the stop backwards) · Home first stop · R replay · L spotlight or laser · F fullscreen · O outline · , settings, where every key and gesture can be changed. {x=0.6 width=9 font_size=21}
 
-**Pointer:** hold Shift for a spotlight, Shift + drag to highlight, Control + drag to draw; colors, tip sizes and the speed control sit in the toolbar. ⌘Z undoes a stroke, Delete clears them. {x=0.6 width=9 font_size=21}
+**Pointer:** drag to draw with the pen; hold Shift for a spotlight or laser, Shift + drag to highlight, Alt + click for the next stop. Colors, tip sizes and the speed control sit in the toolbar; ⌘Z undoes a stroke, Delete clears them. {x=0.6 width=9 font_size=21}
 
 **Links:** `#step=N` or `#slide=id` opens a stop directly; the outline lists every slide; the preview server restores your position after each reload. {x=0.6 width=9 font_size=21}
 

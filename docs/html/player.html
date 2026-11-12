@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The player · Zoomdeck</title>
-<meta name="description" content="Keyboard and pointer controls, outline, reverse playback, deep links, pen and spotlight, speed and fullscreen.">
+<meta name="description" content="Keyboard and pointer controls, outline, reverse playback, deep links, pen, spotlight and laser, speed and fullscreen.">
 <link rel="stylesheet" href="docs.css">
 </head>
 <body>
@@ -36,7 +36,7 @@
   <main id="content">
     <article>
       <h1>The player</h1>
-      <p class="lead">Keyboard and pointer controls, outline, reverse playback, deep links, pen and spotlight, speed and fullscreen.</p>
+      <p class="lead">Keyboard and pointer controls, outline, reverse playback, deep links, pen, spotlight and laser, speed and fullscreen.</p>
       <p><a class="try" href="guide.html#slide=player">Open in the guide ↗</a></p>
 <h2 id="controls">Controls<a class="anchor" href="#controls" aria-label="Link to this section">#</a></h2><table>
 <thead>
@@ -75,6 +75,10 @@
 <td>clear all strokes on this slide</td>
 </tr>
 <tr>
+<td>L</td>
+<td>switch the pointer tool between spotlight and laser</td>
+</tr>
+<tr>
 <td>F</td>
 <td>toggle fullscreen; Esc leaves it</td>
 </tr>
@@ -91,17 +95,31 @@
 <p>The footer has previous/next buttons, a progress bar, the pen settings, the speed control
 (0.5× to 2×), the settings gear and the fullscreen button. The header shows the breadcrumb of the
 current slide and the player state.</p>
-<h2 id="settings">Settings<a class="anchor" href="#settings" aria-label="Link to this section">#</a></h2><p>The gear button (or the <code>,</code> key) opens the settings dialog. It lists every action with its keys:
-click a key to remove it, or choose &quot;Add key&quot; and press the new combination, which may include
-modifiers; a combination already used elsewhere moves to the new action. &quot;Restore default
-bindings&quot; undoes all changes. The dialog also holds the reverse-playback switch and a reference
-of the pointer gestures. Settings are stored in the browser and apply to every deck you open there.</p>
-<h2 id="pointer-tools">Pointer tools<a class="anchor" href="#pointer-tools" aria-label="Link to this section">#</a></h2><ul>
-<li>Hold <strong>Shift</strong> for a spotlight that follows the pointer; Shift + scroll resizes it.</li>
-<li><strong>Shift + drag</strong> draws a highlighter stroke, <strong>Control + drag</strong> draws with the pen; color and
-tip size are in the footer. Strokes belong to the current slide and clear when the slide changes;
-undo, redo and clear act on the current slide's strokes.</li>
+<h2 id="settings">Settings<a class="anchor" href="#settings" aria-label="Link to this section">#</a></h2><p>The gear button (or the <code>,</code> key) opens the settings dialog, in three parts:</p>
+<ul>
+<li><strong>Pointer</strong>: the tool shown by the pointer gesture (spotlight or laser) and the modifier keys
+of each gesture: the pen, the spotlight/highlighter and click-to-advance. Each can be &quot;Plain&quot;
+(no key), one of Shift, Control, Alt, ⌘/Win or a pair of them, or &quot;Off&quot;; choosing keys already
+used by another gesture frees them from it.</li>
+<li><strong>Keyboard</strong>: every action with its keys. Click a key to remove it, or choose &quot;Add key&quot; and press
+the new combination, which may include modifiers; a combination already used elsewhere moves to
+the new action.</li>
+<li><strong>Advanced</strong>: the reverse-playback switch, on by default.</li>
 </ul>
+<p>&quot;Restore default gestures&quot; and &quot;Restore default keys&quot; undo the changes of their section. Settings
+are stored in the browser and apply to every deck you open there.</p>
+<h2 id="pointer-tools">Pointer tools<a class="anchor" href="#pointer-tools" aria-label="Link to this section">#</a></h2><p>With the default gestures:</p>
+<ul>
+<li><strong>Drag</strong> draws with the pen; a click leaves a dot. Color and tip size are in the footer, where
+&quot;Default&quot; is the deck's text color.</li>
+<li>Hold <strong>Shift</strong> for a spotlight that follows the pointer, or a red laser dot: the <code>L</code> key (or the
+Pointer setting) switches between the two. Shift + scroll resizes either; <strong>Shift + drag</strong> draws a
+highlighter stroke.</li>
+<li><strong>Alt + click</strong> goes to the next stop, like the <code>→</code> key.</li>
+</ul>
+<p>Strokes belong to the current slide and clear when the slide changes; undo, redo and clear act on
+the current slide's strokes. Links and live pages keep working under a plain pen: clicking one
+opens it rather than drawing.</p>
 <h2 id="reverse-playback">Reverse playback<a class="anchor" href="#reverse-playback" aria-label="Link to this section">#</a></h2><p>Going back plays the stop's animations in reverse: fades, property animations, effects, morphs and
 camera moves retrace their path, including zooming back into a child you just left. Videos, loops
 and updater-driven waits cannot run backwards and are passed over. Pressing <code>←</code> again during a

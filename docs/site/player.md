@@ -1,6 +1,6 @@
 ---
 title: The player
-description: Keyboard and pointer controls, outline, reverse playback, deep links, pen and spotlight, speed and fullscreen.
+description: Keyboard and pointer controls, outline, reverse playback, deep links, pen, spotlight and laser, speed and fullscreen.
 ---
 
 <a class="try" href="guide.html#slide=player">Open in the guide ↗</a>
@@ -16,6 +16,7 @@ description: Keyboard and pointer controls, outline, reverse playback, deep link
 | ⌘Z / Ctrl+Z | undo the last pen or highlighter stroke |
 | ⌘⇧Z / Ctrl+Shift+Z / Ctrl+Y | redo a stroke |
 | Delete, Backspace | clear all strokes on this slide |
+| L | switch the pointer tool between spotlight and laser |
 | F | toggle fullscreen; Esc leaves it |
 | O | toggle the slide outline |
 | , | open the settings |
@@ -26,18 +27,34 @@ current slide and the player state.
 
 ## Settings
 
-The gear button (or the `,` key) opens the settings dialog. It lists every action with its keys:
-click a key to remove it, or choose "Add key" and press the new combination, which may include
-modifiers; a combination already used elsewhere moves to the new action. "Restore default
-bindings" undoes all changes. The dialog also holds the reverse-playback switch and a reference
-of the pointer gestures. Settings are stored in the browser and apply to every deck you open there.
+The gear button (or the `,` key) opens the settings dialog, in three parts:
+
+- **Pointer**: the tool shown by the pointer gesture (spotlight or laser) and the modifier keys
+  of each gesture: the pen, the spotlight/highlighter and click-to-advance. Each can be "Plain"
+  (no key), one of Shift, Control, Alt, ⌘/Win or a pair of them, or "Off"; choosing keys already
+  used by another gesture frees them from it.
+- **Keyboard**: every action with its keys. Click a key to remove it, or choose "Add key" and press
+  the new combination, which may include modifiers; a combination already used elsewhere moves to
+  the new action.
+- **Advanced**: the reverse-playback switch, on by default.
+
+"Restore default gestures" and "Restore default keys" undo the changes of their section. Settings
+are stored in the browser and apply to every deck you open there.
 
 ## Pointer tools
 
-- Hold **Shift** for a spotlight that follows the pointer; Shift + scroll resizes it.
-- **Shift + drag** draws a highlighter stroke, **Control + drag** draws with the pen; color and
-  tip size are in the footer. Strokes belong to the current slide and clear when the slide changes;
-  undo, redo and clear act on the current slide's strokes.
+With the default gestures:
+
+- **Drag** draws with the pen; a click leaves a dot. Color and tip size are in the footer, where
+  "Default" is the deck's text color.
+- Hold **Shift** for a spotlight that follows the pointer, or a red laser dot: the `L` key (or the
+  Pointer setting) switches between the two. Shift + scroll resizes either; **Shift + drag** draws a
+  highlighter stroke.
+- **Alt + click** goes to the next stop, like the `→` key.
+
+Strokes belong to the current slide and clear when the slide changes; undo, redo and clear act on
+the current slide's strokes. Links and live pages keep working under a plain pen: clicking one
+opens it rather than drawing.
 
 ## Reverse playback
 

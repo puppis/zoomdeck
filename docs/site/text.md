@@ -65,6 +65,19 @@ element of its own, which then must be a whole block.
 relative URLs work too. Links are clickable wherever the text is visible on screen, including in
 parent previews.
 
+Any element can be a link as a whole: `href=` on a paragraph, heading, image, formula, shape,
+icon, arrow, brace, box, blob, table, chart or group opens its URL in a new tab when the element
+is clicked. The element's look does not change, and the link is active wherever the element is on
+screen and visible.
+
+```markdown
+[[icon: document #paper x=0 y=0 size=1.2 label="the paper" href=https://arxiv.org/abs/1234.56789]]
+
+::: {.group #team x=4 y=0 href=https://example.org/team}
+Our team
+:::
+```
+
 ## Typography defaults
 
 By default prose is set in **Latin Modern Roman** and code spans in **Latin Modern Mono**, the

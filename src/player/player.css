@@ -52,14 +52,21 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
   transition: opacity 160ms ease;
 }
 .zd-stage.spotlight-active .spotlight { opacity: 1; }
+.zd-stage.laser-mode .spotlight { background: none; overflow: hidden; }
+.zd-stage.laser-mode .spotlight::after {
+  content: ''; position: absolute; pointer-events: none;
+  left: var(--spot-x, 50%); top: var(--spot-y, 50%); transform: translate(-50%, -50%);
+  width: calc(var(--spot-radius, 96px) / 3); height: calc(var(--spot-radius, 96px) / 3); border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, #ffb5b5 12%, #ff2020 30%, rgba(255, 32, 32, .55) 52%, rgba(255, 32, 32, .2) 65%, transparent 75%);
+}
+.zd-stage.laser-mode.spotlight-active { cursor: none; }
 .zd-stage .iframes { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 .zd-stage .iframes iframe { position: absolute; border: 0; pointer-events: auto; background: #fff; }
-.zd-stage.spotlight-active .iframes iframe, .zd-stage.sketch-active .iframes iframe { pointer-events: none; }
+.zd-stage.spotlight-active .iframes iframe, .zd-stage.tool-held .iframes iframe, .zd-stage.stroking .iframes iframe { pointer-events: none; }
 .zd-stage .links { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 .zd-stage .links a { position: absolute; display: block; pointer-events: auto; cursor: pointer; border-radius: 2px; }
 .zd-stage .links a:hover { background: rgba(127, 127, 127, 0.18); }
-.zd-stage.spotlight-active .links, .zd-stage.sketch-active .links { pointer-events: none; }
-.zd-stage.spotlight-active .links a, .zd-stage.sketch-active .links a { pointer-events: none; }
+.zd-stage.spotlight-active .links a, .zd-stage.tool-held .links a, .zd-stage.stroking .links a { pointer-events: none; }
 .zd-stage .highlights {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
   overflow: visible; z-index: 2; pointer-events: none;
@@ -68,7 +75,7 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
 .zd-stage .highlights path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
 .zd-stage .highlight-ink path { stroke: #ffdf00; }
 .zd-stage.sketch-active { cursor: crosshair; }
-.zd-stage.spotlight-active, .zd-stage.sketch-active { user-select: none; }
+.zd-stage.spotlight-active, .zd-stage.sketch-active, .zd-stage.stroking { user-select: none; }
 .zd-stage .error, .zd-stage .loading {
   position: absolute; z-index: 3; background: var(--background); border: 1px solid var(--border);
   padding: 18px; border-radius: 8px; max-width: 80%; color: var(--foreground);
@@ -117,6 +124,7 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
 .zd-app dialog.settings ul { margin: 0; padding-left: 18px; font-size: 14px; }
 .zd-app dialog.settings .binding { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid var(--border); font-size: 14px; }
 .zd-app dialog.settings .binding:first-child { border-top: 0; }
+.zd-app dialog.settings .binding.gesture { grid-template-columns: 1fr auto; }
 .zd-app dialog.settings .binding.capturing { background: rgba(127, 127, 127, 0.12); }
 .zd-app dialog.settings .keys { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .zd-app dialog.settings .chip { font: inherit; font-size: 12px; padding: 2px 8px; border-radius: 999px; }
