@@ -29,6 +29,8 @@ function attached(object: THREE.Object3D, root: THREE.Object3D): boolean {
 
 export class LinkLayer {
   readonly element: HTMLElement;
+  /** Handles a `#…` target inside the deck (a slide or step); returns false to let the browser follow it. */
+  navigate: ((hash: string) => boolean) | null = null;
   private readonly _anchors = new Map<string, HTMLAnchorElement>();
   private readonly _vector = new THREE.Vector3();
 
@@ -105,14 +107,19 @@ export class LinkLayer {
     let anchor = this._anchors.get(key);
     if (!anchor) {
       anchor = document.createElement('a');
-      anchor.target = '_blank';
       anchor.rel = 'noopener noreferrer';
+      anchor.addEventListener('click', (event) => {
+        const target = anchor?.getAttribute('href') ?? '';
+        if (target.startsWith('#') && this.navigate?.(target)) event.preventDefault();
+      });
       this._anchors.set(key, anchor);
       this.element.append(anchor);
     }
     if (anchor.getAttribute('href') !== href) {
       anchor.href = href;
       anchor.title = href;
+      // Targets inside the deck stay on this page; everything else opens a new tab.
+      anchor.target = href.startsWith('#') ? '_self' : '_blank';
     }
     anchor.style.left = `${left}px`;
     anchor.style.top = `${top}px`;

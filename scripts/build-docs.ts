@@ -18,12 +18,19 @@ const root = resolve(here, '..');
 const sourceDir = join(root, 'docs', 'site');
 const outDir = join(root, 'docs', 'html');
 
-/** Navigation: sections and their pages, in reading order. */
-const NAV: Array<{ title: string; pages: string[] }> = [
-  { title: 'Start', pages: ['index', 'getting-started', 'concepts'] },
-  { title: 'Writing slides', pages: ['slides', 'text', 'math', 'images', 'shapes', 'sketch', 'icons', 'enclosures', 'tables-charts', 'code', 'positioning', 'styles', 'groups', 'live-pages'] },
-  { title: 'Motion', pages: ['fragments', 'animations', 'focus'] },
-  { title: 'Beyond markup', pages: ['code-slides', 'player', 'editors', 'exporting', 'configuration', 'reference'] },
+/**
+ * Navigation: sections and their pages in reading order, from the first deck to the
+ * reference. The sidebar, the pager and the map on the index page all follow it; a page's
+ * `##` headings are its subsections.
+ */
+const NAV: Array<{ title: string; blurb: string; pages: string[] }> = [
+  { title: 'Getting started', blurb: 'Install, write a first deck, set up your editor, and learn how a deck is played.', pages: ['index', 'getting-started', 'editors', 'concepts'] },
+  { title: 'Writing slides', blurb: 'The tree of slides and the content of a slide: prose, formulas, images, listings, tables and charts.', pages: ['slides', 'text', 'math', 'images', 'code', 'tables-charts'] },
+  { title: 'Diagrams', blurb: 'Shapes, arrows, icons and enclosures, crisp or hand-drawn.', pages: ['shapes', 'icons', 'enclosures', 'sketch'] },
+  { title: 'Layout and style', blurb: 'Where things go and how they look: flow, anchors, constraints, groups and style sheets.', pages: ['positioning', 'groups', 'styles'] },
+  { title: 'Motion and interaction', blurb: 'What happens on each click: fragments, animations, focus-only decorations and live web pages.', pages: ['fragments', 'animations', 'focus', 'live-pages'] },
+  { title: 'Presenting', blurb: 'The player and its tools, and exporting a deck to a folder or a single file.', pages: ['player', 'exporting'] },
+  { title: 'Advanced', blurb: 'Slides written in TypeScript, every configuration key, and the complete reference of the dialect.', pages: ['code-slides', 'configuration', 'reference'] },
 ];
 
 function escapeHtml(text: string): string {
@@ -48,6 +55,8 @@ interface Page {
   description: string;
   html: string;
   headings: Array<{ id: string; text: string }>;
+  /** The guide chapter the page's first "Open in the guide" badge points at, if any. */
+  guide: string | null;
 }
 
 function slug(text: string): string {
@@ -91,7 +100,20 @@ function parsePage(name: string, source: string): Page {
     return defaultBlockquote(tokens, index, options, env, self);
   };
   const html = md.render(source);
-  return { name, title: meta.title ?? name, description: meta.description ?? '', html, headings };
+  const guide = /class="try" href="(guide\.html#slide=[^"]+)"/.exec(source)?.[1] ?? null;
+  return { name, title: meta.title ?? name, description: meta.description ?? '', html, headings, guide };
+}
+
+/** The documentation map for the index page: every section with its pages and their guide chapters. */
+function navMap(pages: Map<string, Page>): string {
+  return NAV.map((section) => {
+    const items = section.pages.filter((name) => name !== 'index').map((name) => {
+      const target = pages.get(name) as Page;
+      const guide = target.guide ? ` <a class="guide-link" href="${target.guide}" title="This topic in the guide deck">guide ↗</a>` : '';
+      return `<li><a href="${name}.html">${escapeHtml(target.title)}</a>${guide}<span>${escapeHtml(target.description)}</span></li>`;
+    }).join('');
+    return `<section class="map-section"><h3>${escapeHtml(section.title)}</h3><p>${escapeHtml(section.blurb)}</p><ul>${items}</ul></section>`;
+  }).join('\n');
 }
 
 function layout(page: Page, pages: Map<string, Page>, order: string[]): string {
@@ -104,10 +126,15 @@ function layout(page: Page, pages: Map<string, Page>, order: string[]): string {
         <ul>${section.pages.map((name) => {
           const target = pages.get(name);
           if (!target) return '';
-          const current = name === page.name ? ' aria-current="page"' : '';
-          return `<li><a href="${name}.html"${current}>${escapeHtml(target.title)}</a></li>`;
+          const current = name === page.name;
+          // The current page unfolds its subsections in place.
+          const subsections = current && target.headings.length
+            ? `<ul class="subsections">${target.headings.map((h) => `<li><a href="#${h.id}">${escapeHtml(h.text)}</a></li>`).join('')}</ul>`
+            : '';
+          return `<li><a href="${name}.html"${current ? ' aria-current="page"' : ''}>${escapeHtml(target.title)}</a>${subsections}</li>`;
         }).join('')}</ul>
       </section>`).join('');
+  const body = page.html.replace('<!-- nav-map -->', navMap(pages));
   const outline = page.headings.length
     ? `<nav class="outline" aria-label="On this page"><h4>On this page</h4><ul>${page.headings.map((h) => `<li><a href="#${h.id}">${escapeHtml(h.text)}</a></li>`).join('')}</ul></nav>`
     : '';
@@ -134,7 +161,7 @@ function layout(page: Page, pages: Map<string, Page>, order: string[]): string {
     <article>
       <h1>${escapeHtml(page.title)}</h1>
       ${page.description ? `<p class="lead">${escapeHtml(page.description)}</p>` : ''}
-      ${page.html}
+      ${body}
     </article>
     <footer class="pager">
       ${previous ? `<a class="prev" href="${previous.name}.html">← ${escapeHtml(previous.title)}</a>` : '<span></span>'}

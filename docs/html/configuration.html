@@ -17,27 +17,40 @@
 <div class="shell">
   <nav class="sidebar" aria-label="Documentation">
       <section>
-        <h4>Start</h4>
-        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <h4>Getting started</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="concepts.html">Concepts</a></li></ul>
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="tables-charts.html">Tables and charts</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
       </section>
       <section>
-        <h4>Motion</h4>
-        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li></ul>
+        <h4>Diagrams</h4>
+        <ul><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li></ul>
       </section>
       <section>
-        <h4>Beyond markup</h4>
-        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="player.html">The player</a></li><li><a href="editors.html">Editors</a></li><li><a href="exporting.html">Exporting a deck</a></li><li><a href="configuration.html" aria-current="page">Configuration</a></li><li><a href="reference.html">Reference</a></li></ul>
+        <h4>Layout and style</h4>
+        <ul><li><a href="positioning.html">Positioning</a></li><li><a href="groups.html">Groups</a></li><li><a href="styles.html">Styles</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion and interaction</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Presenting</h4>
+        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
+      </section>
+      <section>
+        <h4>Advanced</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="configuration.html" aria-current="page">Configuration</a><ul class="subsections"><li><a href="#deck-json">deck.json</a></li><li><a href="#layout">layout</a></li><li><a href="#presenter">presenter</a></li><li><a href="#command-line">Command line</a></li><li><a href="#development-page">Development page</a></li><li><a href="#package-scripts">Package scripts</a></li></ul></li><li><a href="reference.html">Reference</a></li></ul>
       </section>
   </nav>
   <main id="content">
     <article>
       <h1>Configuration</h1>
       <p class="lead">Every key of deck.json, the layout and presenter options, and the command line.</p>
-      <h2 id="deck-json">deck.json<a class="anchor" href="#deck-json" aria-label="Link to this section">#</a></h2><pre><code class="language-json">{
+      <p><a class="try" href="guide.html#slide=config">Open in the guide ↗</a></p>
+<h2 id="deck-json">deck.json<a class="anchor" href="#deck-json" aria-label="Link to this section">#</a></h2><pre><code class="language-json">{
   <span class="tk-attribute">&quot;markup&quot;</span>: <span class="tk-string">&quot;slides.md&quot;</span>,
   <span class="tk-attribute">&quot;title&quot;</span>: <span class="tk-string">&quot;Zoomdeck guide&quot;</span>,
   <span class="tk-attribute">&quot;root&quot;</span>: <span class="tk-string">&quot;guide&quot;</span>,
@@ -234,6 +247,11 @@
 <td>true</td>
 <td>play stops backwards on the left key</td>
 </tr>
+<tr>
+<td><code>revealOnEntry</code></td>
+<td>true</td>
+<td>children start invisible and fade in when first entered; <code>false</code> shows every slide's content from the start, as the guide's front page does</td>
+</tr>
 </tbody>
 </table>
 <h2 id="command-line">Command line<a class="anchor" href="#command-line" aria-label="Link to this section">#</a></h2><pre><code class="language-bash"><span class="tk-keyword">node</span> bin/zoomdeck.mjs serve &lt;deck&gt; [--port N] [--no-open] [--scene Name] [--watch PATH]...
@@ -274,7 +292,7 @@ module path, also <code>/@fs/absolute/path</code>) and <code>&amp;scene=</code> 
 
     </article>
     <footer class="pager">
-      <a class="prev" href="exporting.html">← Exporting a deck</a>
+      <a class="prev" href="code-slides.html">← Code-authored slides</a>
       <a class="next" href="reference.html">Reference →</a>
     </footer>
   </main>

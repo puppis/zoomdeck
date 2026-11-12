@@ -8,35 +8,197 @@ heading: color=BLUE_E
 ::: slide {#guide width=36}
 # Zoomdeck {x=-17.35 y=9.2}
 
-A tour of the Markdown dialect and the player: each slide pairs a listing with its result. Press → to follow the tree in pre-order, or pick a slide from the outline (O). {x=-17.35 y=8.2 width=35 font_size=28}
+A tour of the Markdown dialect and the player in six sections; each chapter pairs a listing with its result. Press → to follow the tree in pre-order, pick a slide from the outline (O), or click a section or chapter to jump to it. {x=-17.35 y=8.1 width=25 font_size=26}
 
-[[include: #tree x=-16.25 y=5.2 width=6 skip_return=true]]
-[[include: #prose x=-9.75 y=5.2 width=6 skip_return=true]]
-[[include: #math x=-3.25 y=5.2 width=6 skip_return=true]]
-[[include: #images x=3.25 y=5.2 width=6 skip_return=true]]
-[[include: #shapes x=9.75 y=5.2 width=6 skip_return=true]]
-[[include: #more-shapes x=16.25 y=5.2 width=6]]
-[[include: #sketch x=-16.25 y=1.3 width=6 skip_return=true]]
-[[include: #icons x=-9.75 y=1.3 width=6 skip_return=true]]
-[[include: #enclosures x=-3.25 y=1.3 width=6 skip_return=true]]
-[[include: #layout x=3.25 y=1.3 width=6 skip_return=true]]
-[[include: #anchors x=9.75 y=1.3 width=6 skip_return=true]]
-[[include: #styles x=16.25 y=1.3 width=6]]
-[[include: #groups x=-16.25 y=-2.6 width=6 skip_return=true]]
-[[include: #fragments x=-9.75 y=-2.6 width=6 skip_return=true]]
-[[include: #focus x=-3.25 y=-2.6 width=6 skip_return=true]]
-[[include: #children x=3.25 y=-2.6 width=6 skip_return=true]]
-[[include: #imports x=9.75 y=-2.6 width=6 skip_return=true]]
-[[include: #tables x=16.25 y=-2.6 width=6]]
-[[include: #code-slides x=-13 y=-6.5 width=6 skip_return=true]]
-[[include: #listings x=-6.5 y=-6.5 width=6 skip_return=true]]
-[[include: #animations x=0 y=-6.5 width=6 skip_return=true]]
-[[include: #media x=6.5 y=-6.5 width=6 skip_return=true]]
-[[include: #player x=13 y=-6.5 width=6]]
+[Documentation ↗]{#doc-link x=17.35 y=9.2 anchor=right-baseline font_size=26 color=BLUE_E href=https://puppis.github.io/zoomdeck/}
+
+[Source on GitHub ↗]{#github-link x=17.35 y=8.2 anchor=right-baseline font_size=26 color=BLUE_E href=https://github.com/puppis/zoomdeck}
+
+[1 · Slides and content]{#root-cap-sec-content x=-12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-content}
+[[include: #sec-content x=-12 y=2.9 width=10 skip_return=true]]
+[[rectangle: #root-hit-sec-content x=-12 y=2.9 width=10 height=5.625 opacity=0 href=#slide=sec-content]]
+
+[2 · Diagrams]{#root-cap-sec-diagrams x=0 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-diagrams}
+[[include: #sec-diagrams x=0 y=2.9 width=10 skip_return=true]]
+[[rectangle: #root-hit-sec-diagrams x=0 y=2.9 width=10 height=5.625 opacity=0 href=#slide=sec-diagrams]]
+
+[3 · Layout and style]{#root-cap-sec-layout x=12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-layout}
+[[include: #sec-layout x=12 y=2.9 width=10 skip_return=true]]
+[[rectangle: #root-hit-sec-layout x=12 y=2.9 width=10 height=5.625 opacity=0 href=#slide=sec-layout]]
+
+[4 · Motion and interaction]{#root-cap-sec-motion x=-12 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-motion}
+[[include: #sec-motion x=-12 y=-4.6 width=10 skip_return=true]]
+[[rectangle: #root-hit-sec-motion x=-12 y=-4.6 width=10 height=5.625 opacity=0 href=#slide=sec-motion]]
+
+[5 · Trees, files and code]{#root-cap-sec-structure x=0 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-structure}
+[[include: #sec-structure x=0 y=-4.6 width=10 skip_return=true]]
+[[rectangle: #root-hit-sec-structure x=0 y=-4.6 width=10 height=5.625 opacity=0 href=#slide=sec-structure]]
+
+[6 · Presenting]{#root-cap-sec-presenting x=12 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-presenting}
+[[include: #sec-presenting x=12 y=-4.6 width=10]]
+[[rectangle: #root-hit-sec-presenting x=12 y=-4.6 width=10 height=5.625 opacity=0 href=#slide=sec-presenting]]
+:::
+
+::: slide {#sec-content width=36}
+## 1 · Slides and content {x=-17.35 y=9.2}
+
+A deck is a tree of slides, and a slide holds prose, formulas, images, listings, tables and charts. These chapters cover everything a slide can contain. {x=-17.35 y=8.1 width=25 font_size=26}
+
+[Documentation: Slides and content ↗]{#sec-content-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/slides.html}
+
+[Back to the overview]{#sec-content-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=guide}
+
+[Slides form a tree]{#sec-content-cap-tree x=-12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=tree}
+[[include: #tree x=-12 y=2.9 width=10 skip_return=true]]
+[[rectangle: #sec-content-hit-tree x=-12 y=2.9 width=10 height=5.625 opacity=0 href=#slide=tree]]
+
+[Prose and inline styling]{#sec-content-cap-prose x=0 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=prose}
+[[include: #prose x=0 y=2.9 width=10 skip_return=true]]
+[[rectangle: #sec-content-hit-prose x=0 y=2.9 width=10 height=5.625 opacity=0 href=#slide=prose]]
+
+[Mathematics]{#sec-content-cap-math x=12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=math}
+[[include: #math x=12 y=2.9 width=10 skip_return=true]]
+[[rectangle: #sec-content-hit-math x=12 y=2.9 width=10 height=5.625 opacity=0 href=#slide=math]]
+
+[Images and animated images]{#sec-content-cap-images x=-12 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=images}
+[[include: #images x=-12 y=-4.6 width=10 skip_return=true]]
+[[rectangle: #sec-content-hit-images x=-12 y=-4.6 width=10 height=5.625 opacity=0 href=#slide=images]]
+
+[Code listings]{#sec-content-cap-listings x=0 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=listings}
+[[include: #listings x=0 y=-4.6 width=10 skip_return=true]]
+[[rectangle: #sec-content-hit-listings x=0 y=-4.6 width=10 height=5.625 opacity=0 href=#slide=listings]]
+
+[Tables and charts]{#sec-content-cap-tables x=12 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=tables}
+[[include: #tables x=12 y=-4.6 width=10]]
+[[rectangle: #sec-content-hit-tables x=12 y=-4.6 width=10 height=5.625 opacity=0 href=#slide=tables]]
+:::
+
+::: slide {#sec-diagrams width=36}
+## 2 · Diagrams {x=-17.35 y=9.2}
+
+Shapes, arrows and lines, braces and boxes, icons and blobs, drawn crisply or by hand: the building blocks of diagrams. {x=-17.35 y=8.1 width=25 font_size=26}
+
+[Documentation: Diagrams ↗]{#sec-diagrams-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/shapes.html}
+
+[Back to the overview]{#sec-diagrams-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=guide}
+
+[Shapes and connections]{#sec-diagrams-cap-shapes x=-12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=shapes}
+[[include: #shapes x=-12 y=2.9 width=10 skip_return=true]]
+[[rectangle: #sec-diagrams-hit-shapes x=-12 y=2.9 width=10 height=5.625 opacity=0 href=#slide=shapes]]
+
+[Braces, boxes and opacity]{#sec-diagrams-cap-more-shapes x=0 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=more-shapes}
+[[include: #more-shapes x=0 y=2.9 width=10 skip_return=true]]
+[[rectangle: #sec-diagrams-hit-more-shapes x=0 y=2.9 width=10 height=5.625 opacity=0 href=#slide=more-shapes]]
+
+[Hand-drawn shapes]{#sec-diagrams-cap-sketch x=12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=sketch}
+[[include: #sketch x=12 y=2.9 width=10 skip_return=true]]
+[[rectangle: #sec-diagrams-hit-sketch x=12 y=2.9 width=10 height=5.625 opacity=0 href=#slide=sketch]]
+
+[Icons for diagrams]{#sec-diagrams-cap-icons x=-6 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=icons}
+[[include: #icons x=-6 y=-4.6 width=10 skip_return=true]]
+[[rectangle: #sec-diagrams-hit-icons x=-6 y=-4.6 width=10 height=5.625 opacity=0 href=#slide=icons]]
+
+[Boxes and blobs]{#sec-diagrams-cap-enclosures x=6 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=enclosures}
+[[include: #enclosures x=6 y=-4.6 width=10]]
+[[rectangle: #sec-diagrams-hit-enclosures x=6 y=-4.6 width=10 height=5.625 opacity=0 href=#slide=enclosures]]
+:::
+
+::: slide {#sec-layout width=36}
+## 3 · Layout and style {x=-17.35 y=9.2}
+
+Where elements go and how they look: the vertical flow, coordinates and anchors, relative constraints, groups, and style sheets. {x=-17.35 y=8.1 width=25 font_size=26}
+
+[Documentation: Layout and style ↗]{#sec-layout-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/positioning.html}
+
+[Back to the overview]{#sec-layout-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=guide}
+
+[Positioning and relative layout]{#sec-layout-cap-layout x=-12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=layout}
+[[include: #layout x=-12 y=2.9 width=10 skip_return=true]]
+[[rectangle: #sec-layout-hit-layout x=-12 y=2.9 width=10 height=5.625 opacity=0 href=#slide=layout]]
+
+[Anchors, offsets and timing]{#sec-layout-cap-anchors x=0 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=anchors}
+[[include: #anchors x=0 y=2.9 width=10 skip_return=true]]
+[[rectangle: #sec-layout-hit-anchors x=0 y=2.9 width=10 height=5.625 opacity=0 href=#slide=anchors]]
+
+[Anchor expressions and styles]{#sec-layout-cap-styles x=12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=styles}
+[[include: #styles x=12 y=2.9 width=10 skip_return=true]]
+[[rectangle: #sec-layout-hit-styles x=12 y=2.9 width=10 height=5.625 opacity=0 href=#slide=styles]]
+
+[Groups]{#sec-layout-cap-groups x=0 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=groups}
+[[include: #groups x=0 y=-4.6 width=10]]
+[[rectangle: #sec-layout-hit-groups x=0 y=-4.6 width=10 height=5.625 opacity=0 href=#slide=groups]]
+:::
+
+::: slide {#sec-motion width=36}
+## 4 · Motion and interaction {x=-17.35 y=9.2}
+
+What happens on each click: fragments that appear and disappear, decorations seen only in focus, animations, video, live pages and going back. {x=-17.35 y=8.1 width=25 font_size=26}
+
+[Documentation: Motion and interaction ↗]{#sec-motion-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/fragments.html}
+
+[Back to the overview]{#sec-motion-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=guide}
+
+[Fragments and click steps]{#sec-motion-cap-fragments x=-12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=fragments}
+[[include: #fragments x=-12 y=2.9 width=10 skip_return=true]]
+[[rectangle: #sec-motion-hit-fragments x=-12 y=2.9 width=10 height=5.625 opacity=0 href=#slide=fragments]]
+
+[Decorations visible only in focus]{#sec-motion-cap-focus x=0 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=focus}
+[[include: #focus x=0 y=2.9 width=10 skip_return=true]]
+[[rectangle: #sec-motion-hit-focus x=0 y=2.9 width=10 height=5.625 opacity=0 href=#slide=focus]]
+
+[Animations from markup]{#sec-motion-cap-animations x=12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=animations}
+[[include: #animations x=12 y=2.9 width=10 skip_return=true]]
+[[rectangle: #sec-motion-hit-animations x=12 y=2.9 width=10 height=5.625 opacity=0 href=#slide=animations]]
+
+[Video, live pages and going back]{#sec-motion-cap-media x=0 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=media}
+[[include: #media x=0 y=-4.6 width=10]]
+[[rectangle: #sec-motion-hit-media x=0 y=-4.6 width=10 height=5.625 opacity=0 href=#slide=media]]
+:::
+
+::: slide {#sec-structure width=36}
+## 5 · Trees, files and code {x=-17.35 y=9.2}
+
+Larger decks: the order in which children are visited, splitting the markup into files, and slides written in TypeScript. {x=-17.35 y=8.1 width=25 font_size=26}
+
+[Documentation: Trees, files and code ↗]{#sec-structure-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/slides.html#visit-order}
+
+[Back to the overview]{#sec-structure-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=guide}
+
+[Children, visit order and placeholders]{#sec-structure-cap-children x=-12 y=2.6999999999999997 anchor=bottom font_size=24 color=BLUE_E href=#slide=children}
+[[include: #children x=-12 y=-0.6 width=10 skip_return=true]]
+[[rectangle: #sec-structure-hit-children x=-12 y=-0.6 width=10 height=5.625 opacity=0 href=#slide=children]]
+
+[Importing markup from files]{#sec-structure-cap-imports x=0 y=2.6999999999999997 anchor=bottom font_size=24 color=BLUE_E href=#slide=imports}
+[[include: #imports x=0 y=-0.6 width=10 skip_return=true]]
+[[rectangle: #sec-structure-hit-imports x=0 y=-0.6 width=10 height=5.625 opacity=0 href=#slide=imports]]
+
+[Code-authored slides]{#sec-structure-cap-code-slides x=12 y=2.6999999999999997 anchor=bottom font_size=24 color=BLUE_E href=#slide=code-slides}
+[[include: #code-slides x=12 y=-0.6 width=10]]
+[[rectangle: #sec-structure-hit-code-slides x=12 y=-0.6 width=10 height=5.625 opacity=0 href=#slide=code-slides]]
+:::
+
+::: slide {#sec-presenting width=36}
+## 6 · Presenting {x=-17.35 y=9.2}
+
+Playing a deck: keys, pointer tools and links in the player, and the configuration file and command line that preview and export it. {x=-17.35 y=8.1 width=25 font_size=26}
+
+[Documentation: Presenting ↗]{#sec-presenting-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/player.html}
+
+[Back to the overview]{#sec-presenting-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=guide}
+
+[The player]{#sec-presenting-cap-player x=-6 y=2.6999999999999997 anchor=bottom font_size=24 color=BLUE_E href=#slide=player}
+[[include: #player x=-6 y=-0.6 width=10 skip_return=true]]
+[[rectangle: #sec-presenting-hit-player x=-6 y=-0.6 width=10 height=5.625 opacity=0 href=#slide=player]]
+
+[deck.json and the command line]{#sec-presenting-cap-config x=6 y=2.6999999999999997 anchor=bottom font_size=24 color=BLUE_E href=#slide=config}
+[[include: #config x=6 y=-0.6 width=10]]
+[[rectangle: #sec-presenting-hit-config x=6 y=-0.6 width=10 height=5.625 opacity=0 href=#slide=config]]
 :::
 
 ::: slide {#tree width=20}
 ## Slides form a tree
+
+[Documentation ↗]{#tree-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/slides.html}
 
 Every slide is a `::: slide {#id}` container with its own logical canvas: 16 × 9 by default, or the size given by `width` and `height`. An `[[include: #id ...]]` places a child viewport in the parent's coordinates; the camera zooms into each child in turn and back out to its parent. {x=-9.35 width=19 font_size=22}
 
@@ -75,6 +237,8 @@ Returning zooms back out to the parent. {x=-3.35 y=0.2 width=7 font_size=20}
 
 ::: slide {#prose width=20}
 ## Prose and inline styling
+
+[Documentation ↗]{#prose-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/text.html}
 
 ```markdown {#prose-source x=-9.35 y=3.7 width=9.5}
 Paragraphs wrap to `width`. Use **bold**, *italic*,
@@ -121,6 +285,8 @@ Blank lines separate elements. Attributes in braces at the end of a block apply 
 ::: slide {#math width=20}
 ## Mathematics
 
+[Documentation ↗]{#math-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/math.html}
+
 ```markdown {#math-source x=-9.35 y=3.7 width=9.5}
 Inline math shares the baseline: $\int_0^1 x^2\,dx = \tfrac13$.
 
@@ -155,6 +321,8 @@ Single dollars give inline math, `$$` lines a display formula; a `::: {.element 
 ::: slide {#images width=20}
 ## Images and animated images
 
+[Documentation ↗]{#images-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/images.html}
+
 ```markdown {#images-source x=-9.35 y=3.7 width=19}
 ![Vector artwork](assets/slides.svg){#svg x=-6.5 y=-2.6 width=4}
 
@@ -175,6 +343,8 @@ Images are centered on `x`, `y` and sized by `width`. SVG files keep nested tran
 ::: slide {#shapes width=20}
 ## Shapes and connections
 
+[Documentation ↗]{#shapes-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/shapes.html}
+
 ```markdown {#shapes-source x=-9.35 y=3.7 width=19}
 [[rectangle: #box x=-6 y=-2.4 width=3.4 height=1.8 corner_radius=0.3 color=BLUE_E fill_opacity=0.15]]
 [[circle: #disk right-of:#box buff=2.5 radius=0.9 color=GREEN_E href=https://puppis.github.io/zoomdeck/]]
@@ -194,6 +364,8 @@ Shapes need an `#id`; `color`, `stroke_width`, `fill_color` and `fill_opacity` s
 
 ::: slide {#more-shapes width=20}
 ## More shapes, braces and boxes
+
+[Documentation ↗]{#more-shapes-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/shapes.html#attachments}
 
 ```markdown {#more-shapes-source x=-9.35 y=3.7 width=19}
 [[dot: #p x=-8.5 y=-2.4 color=GOLD_E]]
@@ -217,6 +389,8 @@ Point-defined shapes (`polygon`, `polyline`, `arc`) keep their coordinates unles
 ::: slide {#sketch width=20}
 ## Hand-drawn shapes
 
+[Documentation ↗]{#sketch-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/sketch.html}
+
 ```markdown {#sketch-source x=-9.35 y=3.7 width=19}
 [[rectangle: #hr x=-6.5 y=-3 width=3.4 height=1.8 color=BLUE_E fill_opacity=0.5 sketch=true]]
 [[circle: #hc right-of:#hr buff=1.5 radius=0.9 color=GREEN_E fill_opacity=0.6 fill_style=cross-hatch sketch=true]]
@@ -236,6 +410,8 @@ Point-defined shapes (`polygon`, `polyline`, `arc`) keep their coordinates unles
 
 ::: slide {#icons width=20}
 ## Icons for diagrams
+
+[Documentation ↗]{#icons-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/icons.html}
 
 ```markdown {#icons-source x=-9.35 y=3.7 width=19}
 [[icon: user #alice x=-7 y=-2.4 size=1.4 color=BLUE_E label="Alice"]]
@@ -259,6 +435,8 @@ Point-defined shapes (`polygon`, `polyline`, `arc`) keep their coordinates unles
 ::: slide {#enclosures width=20}
 ## Boxes and blobs around several elements
 
+[Documentation ↗]{#enclosures-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/enclosures.html}
+
 ```markdown {#enclosures-source x=-9.35 y=3.7 width=19}
 [[icon: server #web x=-6.5 y=-1.9 size=1.1 color=GREEN_E label="web" label_side=right]]
 [[icon: server #worker x=-6.5 y=-3.9 size=1.1 color=GREEN_E label="worker" label_side=right]]
@@ -280,6 +458,8 @@ A `box` or `blob` lists the elements it surrounds before the first comma, then i
 
 ::: slide {#layout width=20}
 ## Positioning and relative layout
+
+[Documentation ↗]{#layout-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/positioning.html}
 
 ```markdown {#layout-source x=-9.35 y=3.7 width=9.5}
 ### A heading {#h x=0.6 y=1.6}
@@ -315,6 +495,8 @@ For text, `x` is the left edge and `y` the first baseline; images, shapes and ch
 ::: slide {#anchors width=20}
 ## Anchors, offsets and timing
 
+[Documentation ↗]{#anchors-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/positioning.html#anchors}
+
 ```markdown {#anchors-source x=-9.35 y=3.7 width=19}
 ![](assets/tiles.png){#img x=-9.35 y=0.4 width=4 anchor=top-left}
 [[dot: #corner x=-9.35 y=0.4 radius=0.1 color=RED]]
@@ -341,6 +523,8 @@ For text, `x` is the left edge and `y` the first baseline; images, shapes and ch
 
 ::: slide {#styles width=20}
 ## Anchor expressions and styles
+
+[Documentation ↗]{#styles-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/styles.html}
 
 ```markdown {#styles-source x=-9.35 y=3.7 width=19}
 [[rectangle: #ref x=-6 y=-2.2 width=3 height=1.6 color=GRAY]]
@@ -377,6 +561,8 @@ heading: color=BLUE_E
 ::: slide {#groups width=20}
 ## Groups
 
+[Documentation ↗]{#groups-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/groups.html}
+
 ```markdown {#groups-source x=-9.35 y=3.7 width=9.5}
 ::: {.group #automaton x=2 y=-0.5 step=1}
 [[circle: #q0 x=0 y=0 radius=0.6 color=BLUE_E]]
@@ -407,6 +593,8 @@ A `::: {.group #id}` container lays out its members in their own coordinates and
 
 ::: slide {#fragments width=20}
 ## Fragments and click steps
+
+[Documentation ↗]{#fragments-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/fragments.html}
 
 ```markdown {#fragments-source x=-9.35 y=3.7 width=9.5}
 [Visible on entry, hidden at step 3]{#hint x=0.6 y=1.7 hide=3}
@@ -451,6 +639,8 @@ A `::: {.group #id}` container lays out its members in their own coordinates and
 ::: slide {#focus width=20}
 [[rectangle: #paper x=0 y=0 width=20 height=11.25 fill_color="#E2E8F0" fill_opacity=1 stroke_width=0 focus_only=true]]
 
+[Documentation ↗]{#focus-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/focus.html}
+
 ## Decorations visible only in focus
 
 ```markdown {#focus-source x=-9.35 y=3.7 width=19}
@@ -466,6 +656,8 @@ Look at this slide from its parent: the panel and the caption are gone while thi
 
 ::: slide {#children width=20}
 ## Children, visit order and placeholders
+
+[Documentation ↗]{#children-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/slides.html#visit-order}
 
 ```markdown {#children-source x=-9.35 y=3.7 width=9.5}
 [[include: #visited-second x=4.7 y=-2.2 width=7 step=2 skip_return=true]]
@@ -500,6 +692,8 @@ Mark one slide or include with `start_here=true` to open playback there. While e
 
 ::: slide {#imports width=20}
 ## Importing markup from files
+
+[Documentation ↗]{#imports-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/slides.html#splitting-a-deck-into-files}
 
 ```markdown {#imports-source x=-9.35 y=3.7 width=9.5}
 <!-- slides.md -->
@@ -537,6 +731,8 @@ Mark one slide or include with `start_here=true` to open playback there. While e
 ::: slide {#tables width=20}
 ## Tables and charts
 
+[Documentation ↗]{#tables-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/tables-charts.html}
+
 ````markdown {#tables-source x=-9.35 y=3.7 width=9.5}
 ::: {.element #sales x=5 y=1.3 rules=rows stripe_opacity=0.08}
 | Region | 2023 | 2024 |
@@ -571,6 +767,8 @@ A pipe table becomes a grid of styled cells; a `::: {.element ...}` container po
 ::: slide {#code-slides width=20}
 ## Code-authored slides
 
+[Documentation ↗]{#code-slides-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/code-slides.html}
+
 ```markdown {#import-source x=-9.35 y=3.7 width=9.5}
 [[subslide: Orbit x=5 y=-1.4 width=8 step=1]]
 ```
@@ -604,6 +802,8 @@ export class Orbit extends Slide {
 ::: slide {#listings width=20}
 ## Code listings
 
+[Documentation ↗]{#listings-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/code.html}
+
 ````markdown {#listings-source x=-9.35 y=3.7 width=9.5}
 ```python {#py x=0.6 y=3.7 width=9 step=1}
 def visit(slide):
@@ -633,6 +833,8 @@ A fence names its language (python, javascript, typescript, c-like, bash, json, 
 
 ::: slide {#animations width=20}
 ## Animations from markup
+
+[Documentation ↗]{#animations-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/animations.html}
 
 ```markdown {#animations-source x=-9.35 y=3.7 width=9.5 font_size=16}
 [[dot: #ball x=1.5 y=1.5 radius=0.3 color=GOLD_E]]
@@ -680,6 +882,8 @@ This slide's viewport was slid and tilted by `[[animate: #satellite ...]]` in it
 ::: slide {#media width=20}
 ## Video, live pages and going back
 
+[Documentation ↗]{#media-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/live-pages.html}
+
 ```markdown {#media-source x=-9.35 y=3.7 width=19}
 ![A silent clip](assets/clip.mp4){#movie x=-5 y=-1.2 width=7.5 play=once step=1}
 
@@ -694,13 +898,29 @@ Videos use the image syntax with a video file (MP4, WebM, Ogg): `play=once` play
 :::
 
 ::: slide {#player width=20}
-## The player and deck.json
+## The player
+
+[Documentation ↗]{#player-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/player.html}
+
+**Keys:** → or Space next · ← previous (plays the stop backwards) · Home first stop · R replay · L spotlight or laser · F fullscreen · O outline · , settings, where every key and gesture can be changed. {x=-9.35 width=19 font_size=21}
+
+**Pointer:** drag to draw with the pen; hold Shift for a spotlight or laser, Shift + drag to highlight, Alt + click for the next stop. Colors, tip sizes and the speed control sit in the toolbar; ⌘Z undoes a stroke, Delete clears them. {x=-9.35 width=19 font_size=21}
+
+**Links:** `#step=N` or `#slide=id` opens a stop directly, also as `href=` on any element (this guide's front page is built that way); the outline lists every slide; the preview server restores your position after each reload. {x=-9.35 width=19 font_size=21}
+
+**Export:** `zoomdeck build deck.json -o out` writes a static folder; `--one-file` writes one HTML file with the player, fonts and assets embedded, which opens without a server. This guide is such a file. {x=-9.35 width=19 font_size=21}
+:::
+
+::: slide {#config width=20}
+## deck.json and the command line
+
+[Documentation ↗]{#config-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/configuration.html}
 
 ```json {#deck-json x=-9.35 y=3.7 width=9.5}
 {
   "markup": "slides.md",
   "title": "Zoomdeck guide",
-  "imports": "code-slides.ts",
+  "classes": "code-slides.ts",
   "viewport": { "width": 16, "height": 9 },
   "layout": { "fontSize": 26, "headingSize": 40, "codeSize": 19 },
   "presenter": { "transitionTime": 0.8 },
@@ -708,19 +928,13 @@ Videos use the image syntax with a video file (MP4, WebM, Ogg): `play=once` play
 }
 ```
 
-```bash {#cli x=-9.35 y=-1.4 width=9.5}
+```bash {#cli x=0.6 y=3.7 width=9.5}
 # live preview: reloads on save, keeps your position
-node bin/zoomdeck.mjs serve examples/guide/deck.json
+zoomdeck serve examples/guide/deck.json
 # static folder, or one self-contained HTML file
-node bin/zoomdeck.mjs build examples/guide/deck.json \
+zoomdeck build examples/guide/deck.json \
   -o build/guide --one-file
 ```
 
-**Keys:** → or Space next · ← previous (plays the stop backwards) · Home first stop · R replay · L spotlight or laser · F fullscreen · O outline · , settings, where every key and gesture can be changed. {x=0.6 width=9 font_size=21}
-
-**Pointer:** drag to draw with the pen; hold Shift for a spotlight or laser, Shift + drag to highlight, Alt + click for the next stop. Colors, tip sizes and the speed control sit in the toolbar; ⌘Z undoes a stroke, Delete clears them. {x=0.6 width=9 font_size=21}
-
-**Links:** `#step=N` or `#slide=id` opens a stop directly; the outline lists every slide; the preview server restores your position after each reload. {x=0.6 width=9 font_size=21}
-
-**Export:** `zoomdeck build deck.json -o out` writes a static folder; `--one-file` writes one HTML file with the player, fonts and assets embedded, which opens without a server. This guide is such a file. {x=0.6 width=9 font_size=21}
+`deck.json` names the Markdown file and sets the title, the viewport proportions, `layout` (fonts and sizes), `presenter` (transitions and pauses), LaTeX `macros`, `styles` and the `classes` module of code-authored slides; every key has a default. The `zoomdeck` command previews a deck with live reload and exports it as a folder or as one file; editor setups bind both to shortcuts. {x=-9.35 y=-1.6 width=19 font_size=21}
 :::

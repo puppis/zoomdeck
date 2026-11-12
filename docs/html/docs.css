@@ -24,6 +24,17 @@ a:hover { text-decoration: underline; }
 .sidebar li a { display: block; padding: 4px 10px; border-radius: 6px; color: var(--fg); }
 .sidebar li a:hover { background: var(--sidebar-bg); text-decoration: none; }
 .sidebar li a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.sidebar .subsections { margin: 2px 0 6px 12px; border-left: 1px solid var(--border); }
+.sidebar .subsections li a { font-size: 13px; padding: 2px 10px; color: var(--muted); }
+.sidebar .subsections li a:hover { color: var(--accent); }
+.map-section { margin: 22px 0; padding: 14px 18px; border: 1px solid var(--border); border-radius: 10px; }
+.map-section h3 { margin: 0 0 4px; font-size: 18px; }
+.map-section > p { margin: 0 0 10px; color: var(--muted); font-size: 14px; }
+.map-section ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px 18px; }
+.map-section li { font-size: 14px; max-width: none; }
+.map-section li > a:first-child { font-weight: 600; }
+.map-section li span { display: block; color: var(--muted); }
+.guide-link { font-size: 12px; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: var(--accent-soft); }
 .outline { position: sticky; top: 57px; align-self: start; padding: 20px 0; font-size: 14px; }
 .outline li a { display: block; padding: 3px 0; color: var(--muted); }
 .outline li a:hover { color: var(--accent); }

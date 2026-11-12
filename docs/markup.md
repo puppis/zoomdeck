@@ -528,7 +528,8 @@ typewriter faces) unless `layout.font` or `layout.codeFont` name other families,
 are calibrated so that a `font_size` means the same em for text, code and math. `layout` takes `fontSize`, `headingSize`, `codeSize`, `color`, `font`, `codeFont`, `margin`,
 `gap`, `lineGap`, `listIndent`, `animationTime`, `defaultSlideSize` and `textAnchor`. `presenter` takes
 `transitionTime`, `transition` (`zoom` or `cut`), `padding`, `pauseOnEntry`, `pauseOnReturn`, `showSlideBorders`,
-`slideBorderColor`, `slideBorderWidth`, `showSlideGrid` and `reversePlayback` (default true: the
+`slideBorderColor`, `slideBorderWidth`, `showSlideGrid`, `revealOnEntry` (default true: children fade in
+when first entered; false shows them from the start) and `reversePlayback` (default true: the
 left key plays the current stop backwards, camera moves included; ops that cannot run backwards,
 such as videos and updater-driven waits, are passed over; `false` restores instant jumps). `viewport` sets the proportions the
 camera fits; `root` names the root slide explicitly; `showOutline` opens the outline at start.

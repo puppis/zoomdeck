@@ -13,6 +13,7 @@
   },
   "presenter": {
     "transitionTime": 0.8,
+    "revealOnEntry": false,
     "showSlideBorders": false
   },
   "macros": {

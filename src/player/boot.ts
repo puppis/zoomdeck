@@ -31,6 +31,18 @@ export interface RunningDeck {
   navigation: NavigationData;
 }
 
+/** The clip a `#step=N` or `#slide=id` hash points at (a markup slide by ID, or any slide by name), or null. */
+function clipForHash(hash: string, navigation: NavigationData, player: Player): number | null {
+  const step = hash.match(/^#step=(\d+)$/);
+  if (step) return Number(step[1]) - 1;
+  const slideLink = hash.match(/^#slide=(.+)$/);
+  if (!slideLink) return null;
+  const wanted = decodeURIComponent(slideLink[1]);
+  const slide = navigation.slides.find((candidate) => candidate.key === `markup:${wanted}`) ?? navigation.slides.find((candidate) => candidate.name === wanted);
+  const first = slide ? player.firstEntry(slide.id) : -1;
+  return first >= 0 ? first : null;
+}
+
 function progressMessage(event: ProgressEvent): string | null {
   if (event.phase === 'build') {
     const label = event.id !== undefined ? ` ${typeof event.id === 'string' ? `id="${event.id}"` : `#${event.id}`} "${event.name}"` : '';
@@ -159,17 +171,15 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
         /* storage unavailable */
       }
     });
-    const match = location.hash.match(/^#step=(\d+)$/);
-    hashStep = match ? Number(match[1]) - 1 : null;
-    // `#slide=id` opens the first stop of a markup slide (by ID) or of a slide (by name).
-    const slideLink = location.hash.match(/^#slide=(.+)$/);
-    if (slideLink) {
-      const wanted = decodeURIComponent(slideLink[1]);
-      const slide = navigation.slides.find((candidate) => candidate.key === `markup:${wanted}`) ?? navigation.slides.find((candidate) => candidate.name === wanted);
-      const first = slide ? player.firstEntry(slide.id) : -1;
-      if (first >= 0) hashStep = first;
-    }
+    hashStep = clipForHash(location.hash, navigation, player);
   }
+  // `href=#slide=id` and `href=#step=N` on elements move within the deck instead of opening a page.
+  links.navigate = (hash) => {
+    const index = clipForHash(hash, navigation, player);
+    if (index === null) return false;
+    void player.goTo(index, false);
+    return true;
+  };
   const restored = resumedClip(resume, navigation);
   const startClip = navigation.startSlide === null ? null : player.firstEntry(navigation.startSlide);
   const initial = restored ?? (startClip !== null && startClip >= 0 ? startClip : hashStep ?? 0);

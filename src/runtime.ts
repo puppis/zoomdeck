@@ -63,6 +63,8 @@ export interface PresenterConfigOptions {
   showSlideGrid?: boolean;
   /** Play a stop's animations backwards when navigating to the previous stop (default true). */
   reversePlayback?: boolean;
+  /** Children start invisible and fade in when first entered (default true); false shows every slide's content from the start. */
+  revealOnEntry?: boolean;
 }
 
 /** Timing and camera policy shared by every slide in one deck. */
@@ -79,9 +81,11 @@ export class PresenterConfig {
   readonly slideBorderWidth: number;
   readonly showSlideGrid: boolean;
   readonly reversePlayback: boolean;
+  readonly revealOnEntry: boolean;
 
   constructor(options: PresenterConfigOptions = {}) {
     this.reversePlayback = options.reversePlayback ?? true;
+    this.revealOnEntry = options.revealOnEntry ?? true;
     this.transitionTime = options.transitionTime ?? 0.7;
     if (!Number.isFinite(this.transitionTime) || this.transitionTime < 0) {
       throw new Error('transitionTime must be finite and nonnegative');
@@ -620,7 +624,7 @@ export class SlideContext extends LocalScene {
     }
     const backgrounds = config.showSlideGrid ? [coordinateGrid(slide.width, slide.height)] : [];
     this.display = new Display(this, {
-      contentOpacity: slide.parent === null || slide instanceof PlaceholderSlide ? 1 : 0,
+      contentOpacity: slide.parent === null || slide instanceof PlaceholderSlide || !config.revealOnEntry ? 1 : 0,
       gridOpacity: slide.parent === null && backgrounds.length ? 1 : 0,
       backgrounds,
       overlays: this._canvasBorder ? [this._canvasBorder] : [],

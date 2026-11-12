@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Reference · Zoomdeck</title>
-<meta name="description" content="Every directive and attribute of the dialect on one page.">
+<meta name="description" content="Every container, element, directive and attribute of the dialect, grouped by topic, with the page that explains each.">
 <link rel="stylesheet" href="docs.css">
 </head>
 <body>
@@ -17,27 +17,43 @@
 <div class="shell">
   <nav class="sidebar" aria-label="Documentation">
       <section>
-        <h4>Start</h4>
-        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <h4>Getting started</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="concepts.html">Concepts</a></li></ul>
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="tables-charts.html">Tables and charts</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
       </section>
       <section>
-        <h4>Motion</h4>
-        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li></ul>
+        <h4>Diagrams</h4>
+        <ul><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li></ul>
       </section>
       <section>
-        <h4>Beyond markup</h4>
-        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="player.html">The player</a></li><li><a href="editors.html">Editors</a></li><li><a href="exporting.html">Exporting a deck</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html" aria-current="page">Reference</a></li></ul>
+        <h4>Layout and style</h4>
+        <ul><li><a href="positioning.html">Positioning</a></li><li><a href="groups.html">Groups</a></li><li><a href="styles.html">Styles</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion and interaction</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Presenting</h4>
+        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
+      </section>
+      <section>
+        <h4>Advanced</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html" aria-current="page">Reference</a><ul class="subsections"><li><a href="#document-structure">Document structure</a></li><li><a href="#content-of-a-slide">Content of a slide</a></li><li><a href="#diagrams">Diagrams</a></li><li><a href="#layout">Layout</a></li><li><a href="#motion-and-interaction">Motion and interaction</a></li><li><a href="#names">Names</a></li><li><a href="#validation">Validation</a></li><li><a href="#limitations">Limitations</a></li></ul></li></ul>
       </section>
   </nav>
   <main id="content">
     <article>
       <h1>Reference</h1>
-      <p class="lead">Every directive and attribute of the dialect on one page.</p>
-      <h2 id="document-structure">Document structure<a class="anchor" href="#document-structure" aria-label="Link to this section">#</a></h2><table>
+      <p class="lead">Every container, element, directive and attribute of the dialect, grouped by topic, with the page that explains each.</p>
+      <p>The dialect in one place, in the order of the documentation: the structure of a document, the
+content of a slide, diagrams, layout, motion, and the names that attributes accept. Each group
+links to the page with the explanations and examples.</p>
+<h2 id="document-structure">Document structure<a class="anchor" href="#document-structure" aria-label="Link to this section">#</a></h2><p><a href="slides.html">Slides and the tree</a> · <a href="styles.html">Styles</a> · <a href="groups.html">Groups</a></p>
+<table>
 <thead>
 <tr>
 <th>Syntax</th>
@@ -50,12 +66,24 @@
 <td>a slide; attrs: <code>title</code>, <code>width</code>, <code>height</code>, <code>start_here</code>, <code>only_this</code>, <code>skip_return</code>, <code>transition</code></td>
 </tr>
 <tr>
+<td><code>[[include: #slide, placement, step, start_here, only_this, skip_return, transition]]</code></td>
+<td>a child slide placed in this one; <code>subslide: #id</code> is the same</td>
+</tr>
+<tr>
+<td><code>[[subslide: ClassName, placement, step, …]]</code></td>
+<td>a code-authored child (<a href="code-slides.html">Code-authored slides</a>)</td>
+</tr>
+<tr>
+<td><code>[[import: path.md]]</code></td>
+<td>splices a Markdown file in, between slides or inside one</td>
+</tr>
+<tr>
 <td><code>::: styles … :::</code></td>
 <td>style definitions, <code>name: attributes</code> per line, at the top of the file</td>
 </tr>
 <tr>
 <td><code>::: {.element attrs} … :::</code></td>
-<td>attributes for one paragraph, heading, image, formula or listing</td>
+<td>attributes for one paragraph, heading, image, formula, table or listing</td>
 </tr>
 <tr>
 <td><code>::: {.group #id attrs} … :::</code></td>
@@ -67,7 +95,10 @@
 </tr>
 </tbody>
 </table>
-<h2 id="elements">Elements<a class="anchor" href="#elements" aria-label="Link to this section">#</a></h2><table>
+<p>Attributes are space- or comma-separated <code>key=value</code> pairs; quoted values may contain spaces and
+commas; <code>(x,y)</code> tuples stay whole; <code>#id</code> sets the ID; <code>.name</code> applies a style.</p>
+<h2 id="content-of-a-slide">Content of a slide<a class="anchor" href="#content-of-a-slide" aria-label="Link to this section">#</a></h2><p><a href="text.html">Text</a> · <a href="math.html">Mathematics</a> · <a href="images.html">Images and video</a> · <a href="code.html">Code listings</a> · <a href="tables-charts.html">Tables and charts</a></p>
+<table>
 <thead>
 <tr>
 <th>Syntax</th>
@@ -84,12 +115,16 @@
 <td>a positioned text block, or a colored span when only <code>color</code>/<code>style</code> is given</td>
 </tr>
 <tr>
+<td><code>[label](url)</code></td>
+<td>a link inside prose</td>
+</tr>
+<tr>
 <td><code>$…$</code>, <code>$$ … $$</code></td>
 <td>inline math (part of a paragraph), display math</td>
 </tr>
 <tr>
 <td><code>![alt](path){attrs}</code></td>
-<td>image, animated image or video</td>
+<td>image, animated image or video (`play=once</td>
 </tr>
 <tr>
 <td><code>```lang {attrs}</code></td>
@@ -104,12 +139,64 @@
 <td>bar, line or pie chart</td>
 </tr>
 <tr>
-<td><code>[label](url)</code></td>
-<td>link</td>
+<td><code>[[iframe: url, #id, width, height, poster, title, placement, step]]</code></td>
+<td>a live web page (<a href="live-pages.html">Live pages</a>)</td>
 </tr>
 </tbody>
 </table>
-<h2 id="directives">Directives<a class="anchor" href="#directives" aria-label="Link to this section">#</a></h2><table>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>On</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>font_size</code>, <code>color</code>, <code>opacity</code></td>
+<td>elements</td>
+<td>typography and translucency</td>
+</tr>
+<tr>
+<td><code>font</code>, and <code>font_size</code> on labels</td>
+<td>text, connection and brace labels</td>
+<td>font family (<code>Zeyada</code>, the bundled handwriting face, or any loaded font)</td>
+</tr>
+<tr>
+<td><code>lang</code></td>
+<td>listings</td>
+<td>language name (normally from the fence info)</td>
+</tr>
+<tr>
+<td><code>play</code>, <code>muted</code></td>
+<td>animated images, videos</td>
+<td><code>once</code>, <code>loop</code>; sound for videos</td>
+</tr>
+<tr>
+<td><code>title</code>, <code>poster</code></td>
+<td>iframes</td>
+<td>label and preview image</td>
+</tr>
+<tr>
+<td><code>rules</code>, <code>header</code>, <code>padding</code>, <code>border_color</code>, <code>header_color</code>, <code>header_opacity</code>, <code>stripe_opacity</code></td>
+<td>tables</td>
+<td>rules, header row, cell padding and shading</td>
+</tr>
+<tr>
+<td><code>type</code>, <code>colors</code>, <code>axis_color</code>, <code>border_color</code>, <code>grid</code>, <code>legend</code>, <code>values</code>, <code>min</code>, <code>max</code>, <code>header</code></td>
+<td>charts</td>
+<td>chart kind, palette, axes, gridlines, legend, value labels and axis bounds</td>
+</tr>
+<tr>
+<td><code>href</code></td>
+<td>every element, group, connection and attachment</td>
+<td>URL opened when the element is clicked (<code>#slide=id</code> and <code>#step=N</code> move within the deck)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="diagrams">Diagrams<a class="anchor" href="#diagrams" aria-label="Link to this section">#</a></h2><p><a href="shapes.html">Shapes, connections and attachments</a> · <a href="icons.html">Icons</a> · <a href="enclosures.html">Boxes and blobs</a> · <a href="sketch.html">Hand-drawn shapes</a></p>
+<table>
 <thead>
 <tr>
 <th>Directive</th>
@@ -117,18 +204,6 @@
 </tr>
 </thead>
 <tbody>
-<tr>
-<td><code>include</code>, <code>subslide</code></td>
-<td><code>[[include: #slide, placement, step, start_here, only_this, skip_return, transition]]</code></td>
-</tr>
-<tr>
-<td><code>subslide</code></td>
-<td><code>[[subslide: ClassName, placement, step, …]]</code> (a code-authored child)</td>
-</tr>
-<tr>
-<td><code>import</code></td>
-<td><code>[[import: path.md]]</code> splices a Markdown file in, between slides or inside one</td>
-</tr>
 <tr>
 <td><code>rectangle</code>, <code>ellipse</code></td>
 <td><code>#id width height [corner_radius] fill_color fill_opacity …</code></td>
@@ -146,12 +221,12 @@
 <td><code>#id x y radius angle [start_angle] …</code></td>
 </tr>
 <tr>
-<td><code>arrow</code>, <code>line</code></td>
-<td><code>[[arrow: #a -&gt; #b, #id, label=&quot;…&quot;, color, stroke_width, step, hide]]</code> with <code>#id</code> or <code>(x,y)</code> endpoints</td>
-</tr>
-<tr>
 <td><code>icon</code></td>
 <td><code>[[icon: name #id size label label_side fill_color fill_opacity stroke_width …]]</code> (names under <a href="#names">Names</a>)</td>
+</tr>
+<tr>
+<td><code>arrow</code>, <code>line</code></td>
+<td><code>[[arrow: #a -&gt; #b, #id, label=&quot;…&quot;, color, stroke_width, step, hide]]</code> with <code>#id</code> or <code>(x,y)</code> endpoints</td>
 </tr>
 <tr>
 <td><code>brace</code></td>
@@ -161,39 +236,61 @@
 <td><code>box</code>, <code>blob</code></td>
 <td><code>[[box: #a #b …, #id, buff, corner_radius, fill_color, fill_opacity]]</code>, <code>[[blob: #a #b …, #id, buff, smoothness, fill_color, fill_opacity]]</code></td>
 </tr>
+</tbody>
+</table>
+<table>
+<thead>
 <tr>
-<td><code>iframe</code></td>
-<td><code>[[iframe: url, #id, width, height, poster, title, placement, step]]</code></td>
+<th>Attribute</th>
+<th>On</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>color</code>, <code>stroke_width</code></td>
+<td>shapes, icons, connections, attachments</td>
+<td>stroke color and width</td>
 </tr>
 <tr>
-<td><code>show</code>, <code>hide</code></td>
-<td><code>[[show: #id step=N run_time lag enter]]</code>, <code>[[hide: #id step=N run_time lag exit]]</code></td>
+<td><code>fill_color</code>, <code>fill_opacity</code></td>
+<td>shapes, icons, boxes, blobs</td>
+<td>fill</td>
 </tr>
 <tr>
-<td><code>animate</code></td>
-<td><code>[[animate: #id, step=N, x y at dx dy anchor angle scale opacity color, run_time lag rate]]</code></td>
+<td><code>size</code>, <code>label</code>, <code>label_side</code></td>
+<td>icons</td>
+<td>box height; caption text and its side (<code>below</code>, <code>above</code>, <code>left</code>, <code>right</code>)</td>
 </tr>
 <tr>
-<td><code>effect</code></td>
-<td><code>[[effect: name #id, step=N, color, scale, run_time, lag, rate]]</code></td>
+<td><code>buff</code></td>
+<td>attachments</td>
+<td>distance from the targets</td>
 </tr>
 <tr>
-<td><code>transform</code></td>
-<td><code>[[transform: #a -&gt; #b, step=N, run_time, lag, rate]]</code></td>
+<td><code>side</code></td>
+<td>braces</td>
+<td><code>bottom</code>, <code>top</code>, <code>left</code>, <code>right</code></td>
 </tr>
 <tr>
-<td><code>move_along</code></td>
-<td><code>[[move_along: #id, step=N, path=#shape, rotate, run_time, lag, rate]]</code></td>
+<td><code>corner_radius</code></td>
+<td>rectangles, boxes</td>
+<td>rounded corners</td>
 </tr>
 <tr>
-<td><code>next</code>, <code>skip_next</code></td>
-<td><code>[[next: step=N]]</code>, <code>[[skip_next: step=N]]</code></td>
+<td><code>smoothness</code></td>
+<td>blobs</td>
+<td>how softly neighbouring targets merge, 0 to 1</td>
+</tr>
+<tr>
+<td><code>sketch</code>, <code>roughness</code>, <code>bowing</code>, <code>fill_style</code>, <code>hachure_angle</code>, <code>hachure_gap</code>, <code>fill_weight</code>, <code>seed</code></td>
+<td>shapes, icons, connections, attachments</td>
+<td>hand-drawn rendering and its tuning</td>
 </tr>
 </tbody>
 </table>
-<p>Attributes are space- or comma-separated <code>key=value</code> pairs; quoted values may contain spaces and
-commas; <code>(x,y)</code> tuples stay whole; <code>#id</code> sets the ID; <code>.name</code> applies a style.</p>
-<h2 id="attributes">Attributes<a class="anchor" href="#attributes" aria-label="Link to this section">#</a></h2><table>
+<h2 id="layout">Layout<a class="anchor" href="#layout" aria-label="Link to this section">#</a></h2><p><a href="positioning.html">Positioning</a> · <a href="groups.html">Groups</a> · <a href="styles.html">Styles</a></p>
+<table>
 <thead>
 <tr>
 <th>Attribute</th>
@@ -238,50 +335,61 @@ commas; <code>(x,y)</code> tuples stay whole; <code>#id</code> sets the ID; <cod
 <td>wrapping width or size; viewport size for children</td>
 </tr>
 <tr>
-<td><code>font_size</code>, <code>color</code>, <code>opacity</code></td>
-<td>elements</td>
-<td>typography and translucency</td>
+<td><code>angle</code></td>
+<td>children, <code>animate</code></td>
+<td>rotation in radians</td>
 </tr>
 <tr>
-<td><code>font</code>, and <code>font_size</code> on labels</td>
-<td>text, connection and brace labels</td>
-<td>font family (<code>Zeyada</code>, the bundled handwriting face, or any loaded font)</td>
+<td><code>class</code> or <code>.name</code></td>
+<td>elements, children</td>
+<td>styles</td>
+</tr>
+</tbody>
+</table>
+<h2 id="motion-and-interaction">Motion and interaction<a class="anchor" href="#motion-and-interaction" aria-label="Link to this section">#</a></h2><p><a href="fragments.html">Fragments and steps</a> · <a href="animations.html">Animations</a> · <a href="focus.html">Focus-only decorations</a></p>
+<table>
+<thead>
+<tr>
+<th>Directive</th>
+<th>Form</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>show</code>, <code>hide</code></td>
+<td><code>[[show: #id step=N run_time lag enter]]</code>, <code>[[hide: #id step=N run_time lag exit]]</code></td>
 </tr>
 <tr>
-<td><code>fill_color</code>, <code>fill_opacity</code>, <code>stroke_width</code></td>
-<td>shapes, icons, boxes, blobs</td>
-<td>fill and stroke</td>
+<td><code>animate</code></td>
+<td><code>[[animate: #id, step=N, x y at dx dy anchor angle scale opacity color, run_time lag rate]]</code></td>
 </tr>
 <tr>
-<td><code>size</code>, <code>label</code>, <code>label_side</code></td>
-<td>icons</td>
-<td>box height; caption text and its side (<code>below</code>, <code>above</code>, <code>left</code>, <code>right</code>)</td>
+<td><code>effect</code></td>
+<td><code>[[effect: name #id, step=N, color, scale, run_time, lag, rate]]</code></td>
 </tr>
 <tr>
-<td><code>smoothness</code></td>
-<td>blobs</td>
-<td>how softly neighbouring targets merge, 0 to 1</td>
+<td><code>transform</code></td>
+<td><code>[[transform: #a -&gt; #b, step=N, run_time, lag, rate]]</code></td>
 </tr>
 <tr>
-<td><code>rules</code>, <code>header</code>, <code>padding</code>, <code>border_color</code>, <code>header_color</code>, <code>header_opacity</code>, <code>stripe_opacity</code></td>
-<td>tables</td>
-<td>rules, header row, cell padding and shading (<a href="tables-charts.html">Tables and charts</a>)</td>
+<td><code>move_along</code></td>
+<td><code>[[move_along: #id, step=N, path=#shape, rotate, run_time, lag, rate]]</code></td>
 </tr>
 <tr>
-<td><code>type</code>, <code>colors</code>, <code>axis_color</code>, <code>border_color</code>, <code>grid</code>, <code>legend</code>, <code>values</code>, <code>min</code>, <code>max</code>, <code>header</code></td>
-<td>charts</td>
-<td>chart kind, palette, axes, gridlines, legend, value labels and axis bounds</td>
+<td><code>next</code>, <code>skip_next</code></td>
+<td><code>[[next: step=N]]</code>, <code>[[skip_next: step=N]]</code></td>
 </tr>
+</tbody>
+</table>
+<table>
+<thead>
 <tr>
-<td><code>tremble</code>, <code>tremble_amplitude</code>, <code>tremble_rate</code></td>
-<td>shapes, icons, connections, attachments, math, groups, tables, charts</td>
-<td><code>true</code>, <code>N</code> or <code>N-M</code>: vibration over a range of steps, its size and frequency</td>
+<th>Attribute</th>
+<th>On</th>
+<th>Meaning</th>
 </tr>
-<tr>
-<td><code>sketch</code>, <code>roughness</code>, <code>bowing</code>, <code>fill_style</code>, <code>hachure_angle</code>, <code>hachure_gap</code>, <code>fill_weight</code>, <code>seed</code></td>
-<td>shapes, icons, connections, attachments</td>
-<td><a href="sketch.html">hand-drawn</a> rendering and its tuning</td>
-</tr>
+</thead>
+<tbody>
 <tr>
 <td><code>step</code>, <code>hide</code></td>
 <td>elements, children (<code>step</code>)</td>
@@ -298,39 +406,19 @@ commas; <code>(x,y)</code> tuples stay whole; <code>#id</code> sets the ID; <cod
 <td><code>fade</code>, <code>grow</code>, <code>write</code>, <code>create</code>, <code>draw</code> / <code>fade</code>, <code>shrink</code>, <code>uncreate</code></td>
 </tr>
 <tr>
+<td><code>tremble</code>, <code>tremble_amplitude</code>, <code>tremble_rate</code></td>
+<td>shapes, icons, connections, attachments, math, groups, tables, charts</td>
+<td><code>true</code>, <code>N</code> or <code>N-M</code>: vibration over a range of steps, its size and frequency</td>
+</tr>
+<tr>
 <td><code>focus_only</code></td>
 <td>static elements</td>
 <td>visible only while the slide is focused</td>
 </tr>
 <tr>
-<td><code>href</code></td>
-<td>every element, group, connection and attachment</td>
-<td>URL opened in a new tab when the element is clicked</td>
-</tr>
-<tr>
-<td><code>play</code>, <code>muted</code></td>
-<td>animated images, videos</td>
-<td><code>once</code>, <code>loop</code>; sound for videos</td>
-</tr>
-<tr>
-<td><code>lang</code></td>
-<td>listings</td>
-<td>language name (normally from the fence info)</td>
-</tr>
-<tr>
-<td><code>class</code> or <code>.name</code></td>
-<td>elements, children</td>
-<td>styles</td>
-</tr>
-<tr>
-<td><code>angle</code></td>
-<td>children, <code>animate</code></td>
-<td>rotation in radians</td>
-</tr>
-<tr>
-<td><code>title</code>, <code>poster</code></td>
-<td>iframes</td>
-<td>label and preview image</td>
+<td><code>start_here</code>, <code>only_this</code>, <code>skip_return</code>, <code>transition</code></td>
+<td>slides, includes, subslides</td>
+<td>opening stop, partial preparation, leaving a subtree without zooming out, <code>zoom</code> or <code>cut</code> (<a href="slides.html#flags">Slides and the tree</a>)</td>
 </tr>
 </tbody>
 </table>
@@ -348,11 +436,13 @@ commas; <code>(x,y)</code> tuples stay whole; <code>#id</code> sets the ID; <cod
 <li><strong>Style roles</strong>: <code>heading</code>, <code>h1</code> … <code>h6</code>, <code>body</code>, <code>math</code>, <code>code</code>, <code>image</code>, <code>iframe</code>, <code>group</code>,
 <code>include</code>, <code>shape</code> and shape kinds, <code>icon</code> and <code>icon-&lt;name&gt;</code>, <code>connection</code>, <code>arrow</code>, <code>line</code>,
 <code>attachment</code>, <code>brace</code>, <code>box</code>, <code>blob</code>, <code>table</code>, <code>chart</code>.</li>
+<li><strong>Link targets</strong>: <code>https://…</code>, <code>http://…</code>, <code>mailto:…</code>, <code>#slide=id</code>, <code>#step=N</code>, absolute (<code>/…</code>)
+and relative (<code>./…</code>) paths.</li>
 </ul>
 <h2 id="validation">Validation<a class="anchor" href="#validation" aria-label="Link to this section">#</a></h2><p>Mistakes are reported before anything is drawn, with the source line: unknown attributes,
 duplicate or missing IDs, conflicting constraints, positioning cycles, references across groups,
 inconsistent visibility, animations of hidden elements, invalid colors, unknown classes, effects
-and rates, and missing images.</p>
+and rates, unsupported link targets, and missing images.</p>
 <h2 id="limitations">Limitations<a class="anchor" href="#limitations" aria-label="Link to this section">#</a></h2><ul>
 <li>Text is rasterized to canvas textures, redrawn at the screen's resolution whenever the camera
 comes to rest (so it may soften briefly during a zoom); math, SVG and
@@ -369,7 +459,7 @@ shapes stay vector.</li>
       <span></span>
     </footer>
   </main>
-  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#document-structure">Document structure</a></li><li><a href="#elements">Elements</a></li><li><a href="#directives">Directives</a></li><li><a href="#attributes">Attributes</a></li><li><a href="#names">Names</a></li><li><a href="#validation">Validation</a></li><li><a href="#limitations">Limitations</a></li></ul></nav>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#document-structure">Document structure</a></li><li><a href="#content-of-a-slide">Content of a slide</a></li><li><a href="#diagrams">Diagrams</a></li><li><a href="#layout">Layout</a></li><li><a href="#motion-and-interaction">Motion and interaction</a></li><li><a href="#names">Names</a></li><li><a href="#validation">Validation</a></li><li><a href="#limitations">Limitations</a></li></ul></nav>
 </div>
 </body>
 </html>

@@ -3,6 +3,8 @@ title: Exporting a deck
 description: Turn a deck into a static folder or into one self-contained HTML file that plays anywhere, without Node or a server.
 ---
 
+<a class="try" href="guide.html#slide=player">Open in the guide ↗</a>
+
 A deck that previews on the dev page can be exported with the command line. Two forms exist.
 
 ## One self-contained file

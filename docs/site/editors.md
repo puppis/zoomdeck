@@ -25,7 +25,7 @@ zoomdeck build path/to/deck.json -o build --one-file
 
 All configurations call a `zoomdeck` command. It exists once you have run `npm link` inside the
 Zoomdeck checkout (after `npm install`, on Node 20.19+ or 22.12+), as described under
-[Installing the command](getting-started.html#installing-the-zoomdeck-command); `zoomdeck --help`
+[The `zoomdeck` command](getting-started.html#the-zoomdeck-command); `zoomdeck --help`
 in a terminal confirms it. Inside a project that lists `zoomdeck` as a dependency, `npx zoomdeck`
 works as well.
 

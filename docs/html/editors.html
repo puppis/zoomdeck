@@ -17,20 +17,32 @@
 <div class="shell">
   <nav class="sidebar" aria-label="Documentation">
       <section>
-        <h4>Start</h4>
-        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <h4>Getting started</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html" aria-current="page">Editors</a><ul class="subsections"><li><a href="#the-loop">The loop</a></li><li><a href="#the-zoomdeck-command">The zoomdeck command</a></li><li><a href="#visual-studio-code">Visual Studio Code</a></li><li><a href="#sublime-text">Sublime Text</a></li><li><a href="#emacs">Emacs</a></li><li><a href="#vim-and-neovim">Vim and Neovim</a></li><li><a href="#jetbrains-ides">JetBrains IDEs</a></li><li><a href="#any-other-editor">Any other editor</a></li></ul></li><li><a href="concepts.html">Concepts</a></li></ul>
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="tables-charts.html">Tables and charts</a></li><li><a href="code.html">Code listings</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="styles.html">Styles</a></li><li><a href="groups.html">Groups</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
       </section>
       <section>
-        <h4>Motion</h4>
-        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li></ul>
+        <h4>Diagrams</h4>
+        <ul><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li></ul>
       </section>
       <section>
-        <h4>Beyond markup</h4>
-        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="player.html">The player</a></li><li><a href="editors.html" aria-current="page">Editors</a></li><li><a href="exporting.html">Exporting a deck</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html">Reference</a></li></ul>
+        <h4>Layout and style</h4>
+        <ul><li><a href="positioning.html">Positioning</a></li><li><a href="groups.html">Groups</a></li><li><a href="styles.html">Styles</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion and interaction</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Presenting</h4>
+        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
+      </section>
+      <section>
+        <h4>Advanced</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html">Reference</a></li></ul>
       </section>
   </nav>
   <main id="content">
@@ -52,7 +64,7 @@ apply whichever file is open.</li>
 zoomdeck build path/to/deck.json <span class="tk-attribute">-o</span> build <span class="tk-attribute">--one-file</span></code></pre>
 <h2 id="the-zoomdeck-command">The <code>zoomdeck</code> command<a class="anchor" href="#the-zoomdeck-command" aria-label="Link to this section">#</a></h2><p>All configurations call a <code>zoomdeck</code> command. It exists once you have run <code>npm link</code> inside the
 Zoomdeck checkout (after <code>npm install</code>, on Node 20.19+ or 22.12+), as described under
-<a href="getting-started.html#installing-the-zoomdeck-command">Installing the command</a>; <code>zoomdeck --help</code>
+<a href="getting-started.html#the-zoomdeck-command">The <code>zoomdeck</code> command</a>; <code>zoomdeck --help</code>
 in a terminal confirms it. Inside a project that lists <code>zoomdeck</code> as a dependency, <code>npx zoomdeck</code>
 works as well.</p>
 <p>If an editor reports <strong><code>zoomdeck: command not found</code></strong> although the terminal finds it, the editor
@@ -156,8 +168,8 @@ grammar that most editors can load, and the browser reports mistakes with their 
 
     </article>
     <footer class="pager">
-      <a class="prev" href="player.html">← The player</a>
-      <a class="next" href="exporting.html">Exporting a deck →</a>
+      <a class="prev" href="getting-started.html">← Getting started</a>
+      <a class="next" href="concepts.html">Concepts →</a>
     </footer>
   </main>
   <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#the-loop">The loop</a></li><li><a href="#the-zoomdeck-command">The zoomdeck command</a></li><li><a href="#visual-studio-code">Visual Studio Code</a></li><li><a href="#sublime-text">Sublime Text</a></li><li><a href="#emacs">Emacs</a></li><li><a href="#vim-and-neovim">Vim and Neovim</a></li><li><a href="#jetbrains-ides">JetBrains IDEs</a></li><li><a href="#any-other-editor">Any other editor</a></li></ul></nav>

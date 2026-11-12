@@ -27,7 +27,8 @@ root (32 × 18)
 Playback walks the tree in pre-order: a slide runs its own steps and visits its children in
 order, each visit zooming the camera into the child's viewport; returning zooms back out. The
 order within a slide is the source order of its includes, unless an include carries `step=N`,
-which interleaves the visit with the parent's numbered fragments. `skip_return` and `skip_next`
+which interleaves the visit with the parent's numbered fragments. A child's content is invisible
+until its first visit and fades in then, unless `presenter.revealOnEntry` is `false`. `skip_return` and `skip_next`
 let a presentation flow from one child straight to the next.
 
 ## Coordinates
