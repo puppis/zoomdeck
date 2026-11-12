@@ -123,7 +123,15 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
   player.on('state', ({ state }) => {
     if (state !== 'playing') stage.refreshText();
   });
-  stage.afterResize.push(() => stage.refreshText());
+  // Every visible line is redrawn after a resize; wait for the window to settle rather than redraw on each step.
+  let refresh: number | null = null;
+  stage.afterResize.push(() => {
+    if (refresh !== null) clearTimeout(refresh);
+    refresh = window.setTimeout(() => {
+      refresh = null;
+      stage.refreshText();
+    }, 150);
+  });
   ui.bind(player, stage, navigation);
   // Under the preview or development server a tablet can pair with this page (settings, Tablet).
   if (useLocation && padLinkAvailable()) ui.connectPad(new PadLink(padRoom()));

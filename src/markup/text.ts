@@ -60,8 +60,12 @@ export const TEXT_LINES = new Set<StyledLine>();
 const MIN_DENSITY = 0.2;
 const MAX_DENSITY = 6;
 const MAX_CANVAS_PX = 8192;
-/** Relative change of density that triggers a redraw; smaller mismatches are not visible. */
-const DENSITY_TOLERANCE = 0.1;
+/**
+ * Relative change of density that triggers a redraw. The textures are mipmapped, so a canvas
+ * even 5% larger than its size on screen is blended with its half-resolution level and looks
+ * soft; only a mismatch this small is invisible.
+ */
+const DENSITY_TOLERANCE = 0.02;
 
 /** The run layout of a line at the base canvas resolution, from which every redraw is drawn. */
 interface LineLayout {
