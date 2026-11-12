@@ -126,8 +126,10 @@ folder). It provides:
 - A build system with three variants: **Ctrl+Alt+B** starts the preview in the build panel
   (Tools ▸ Cancel Build stops it), **Ctrl+Alt+P** exports one HTML file (also Ctrl+B / ⌘B,
   since Zoomdeck is the build system of Markdown files), and "Build folder" writes the static
-  folder export.
-- **Ctrl+Alt+J** shows the stop of the cursor line in the browser; E or Alt+click in the browser
+  folder export. On macOS use **⌘⌥B**, **⌘⌥J** and **⌘⌥P**: Sublime Text reads a
+  Control+Option combination through the character that Option types on your layout, which
+  is the letter itself only on a US keyboard.
+- **Ctrl+Alt+J** (⌘⌥J) shows the stop of the cursor line in the browser; E or Alt+click in the browser
   brings Sublime Text to the line (the preview is started with `--editor` pointing at the `subl`
   launcher of the running Sublime Text, wherever it is installed).
 - Command Palette entries ("Zoomdeck: Preview deck", "Jump to this line in the browser", "Build

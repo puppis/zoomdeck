@@ -1,0 +1,11 @@
+[
+  // On macOS the Command key variants: Sublime Text resolves ctrl+alt+<letter> through the
+  // character that Option+<letter> types, which on most non-US layouts is not the letter, so
+  // Control+Option combinations may never match. ⌘⌥ combinations are read as the plain letter.
+  { "keys": ["super+alt+b"], "command": "build", "args": { "build_system": "Packages/Zoomdeck/Zoomdeck.sublime-build", "variant": "Preview" },
+    "context": [{ "key": "selector", "operator": "equal", "operand": "text.html.markdown" }] },
+  { "keys": ["super+alt+j"], "command": "zoomdeck_jump",
+    "context": [{ "key": "selector", "operator": "equal", "operand": "text.html.markdown" }] },
+  { "keys": ["super+alt+p"], "command": "build", "args": { "build_system": "Packages/Zoomdeck/Zoomdeck.sublime-build" },
+    "context": [{ "key": "selector", "operator": "equal", "operand": "text.html.markdown" }] }
+]
