@@ -89,6 +89,8 @@ export class PlayerUI {
   private readonly _penColor: Swatches;
   /** Drawing mode: a plain drag of the mouse draws, and the pointer shows the pen in its color. */
   private _drawingOn = false;
+  /** What drawing was before the whiteboard turned it on, to come back to when the whiteboard goes. */
+  private _drawingBeforeBoard = false;
   private readonly _penSize: HTMLSelectElement;
   private readonly _speed: HTMLSelectElement;
   private readonly _spotlight: HTMLElement;
@@ -363,7 +365,7 @@ export class PlayerUI {
     const advance = held('advance');
     const edit = this._editSource ? held('edit') : null;
     const gestures = [
-      pen === null ? null : `${pen || 'Plain '}drag: draw with the pen while drawing is on (${keys('draw')} toggles; ${keys('color1')}–${keys('color7')} pick the color and turn it on; a stylus and the whiteboard always draw)`,
+      pen === null ? null : `${pen || 'Plain '}drag: draw with the pen while drawing is on (${keys('draw')} toggles it, the whiteboard turns it on; ${keys('color1')}–${keys('color7')} pick the color and turn it on; a stylus always draws)`,
       pointer === null ? null : `${pointer ? `Hold ${pointer.slice(0, -3)}` : 'Hover'}: spotlight or laser (${keys('pointer')} switches)`,
       pointer === null ? null : `${pointer || 'Plain '}drag: highlight · ${pointer || ''}scroll: resize`,
       advance === null ? null : `${advance || 'Plain '}click: next stop`,
@@ -1302,6 +1304,11 @@ export class PlayerUI {
   /** Whether a recording is being played: the deck then follows it and takes no navigation, drawing or links from the viewer. */
   get playingBack(): boolean {
     return this._playback !== null;
+  }
+
+  /** Whether drawing is on (D): a plain drag draws, and links and live pages under the pointer are inert. */
+  get drawingOn(): boolean {
+    return this._drawingOn;
   }
 
   /** Leave the recording: the deck is the viewer's again, where the recording left it. */
@@ -2255,18 +2262,23 @@ export class PlayerUI {
   }
 
   /**
-   * Whether the pen gesture draws: while drawing is on (D), on the whiteboard, which is there to
-   * be drawn on, and always for a stylus, which is held to draw. The mouse otherwise only clicks.
+   * Whether the pen gesture draws: while drawing is on (D, which the whiteboard turns on), and
+   * always for a stylus, which is held to draw. The mouse otherwise only clicks.
    */
   private _penReady(pointerType?: string): boolean {
-    return this._drawingOn || this._boardOn || pointerType === 'pen';
+    return this._drawingOn || pointerType === 'pen';
   }
 
-  /** Turn drawing on or off: the pointer shows the pen in its color while a plain drag draws. */
+  /**
+   * Turn drawing on or off: while on, a plain drag draws, the pointer is a pencil in the pen's
+   * color, and links and live pages under it are inert, so that a stroke can cross them.
+   */
   toggleDrawing(on = !this._drawingOn): void {
     if (this._playback || on === this._drawingOn) return;
     this._drawingOn = on;
     if (!on) this._finishStroke();
+    this.stageHost.classList.toggle('drawing-on', on);
+    if (on) this.stageHost.classList.remove('over-link');
     this._updatePenCursor();
     this._updateSpotlight();
     this._renderState();
@@ -2279,11 +2291,17 @@ export class PlayerUI {
     this._penColor.select(entry[0]);
   }
 
-  /** The pointer over the stage while drawing is on: a dot of the pen's color, ringed so that it shows on any ground. */
+  /** The pointer over the stage while drawing is on: a pencil in the pen's color, its tip the hot spot, edged in white and dark so that it shows on any ground. */
   private _updatePenCursor(): void {
     const color = this._penColor.value === 'foreground' ? this._deck.foreground : this._penColor.value;
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22"><circle cx="11" cy="11" r="7.5" fill="${color}" stroke="#000" stroke-opacity=".6" stroke-width="3"/><circle cx="11" cy="11" r="7.5" fill="none" stroke="#fff" stroke-width="1.5"/></svg>`;
-    this.stageHost.style.setProperty('--pen-cursor', `url("data:image/svg+xml,${encodeURIComponent(svg)}") 11 11, crosshair`);
+    const body = 'M4.4 15.3 16.9 2.9l4.2 4.2L8.7 19.6Z';
+    const tip = 'M3 21l1.4-5.7 4.3 4.3Z';
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g stroke-linejoin="round">`
+      + `<path d="${body}" fill="${color}" stroke="#fff" stroke-width="3" paint-order="stroke"/>`
+      + `<path d="${tip}" fill="#f3e3c3" stroke="#fff" stroke-width="3" paint-order="stroke"/>`
+      + `<path d="${body}" fill="none" stroke="#000" stroke-opacity=".7"/><path d="${tip}" fill="none" stroke="#000" stroke-opacity=".7"/>`
+      + `<path d="M13.4 6.4l4.2 4.2" fill="none" stroke="#000" stroke-opacity=".35"/><path d="M3 21l.5-2 1.5 1.5Z" fill="#333"/></g></svg>`;
+    this.stageHost.style.setProperty('--pen-cursor', `url("data:image/svg+xml,${encodeURIComponent(svg)}") 3 21, crosshair`);
   }
 
   /** Switch the tool shown by the pointer gesture between the spotlight and the laser. */
@@ -2449,11 +2467,19 @@ export class PlayerUI {
 
   private _setBoardShown(on: boolean): void {
     this._finishStroke();
-    if (on !== this._boardOn) this._note({ type: 'board', on });
+    const changed = on !== this._boardOn;
+    if (changed) this._note({ type: 'board', on });
     this._boardOn = on;
     this._boardLayer.hidden = !on;
     this.stageHost.classList.toggle('board-on', on);
     this._boardButton.setAttribute('aria-pressed', String(on));
+    // The whiteboard is there to be drawn on: it turns drawing on, and leaves it as it was before.
+    if (changed && on) {
+      this._drawingBeforeBoard = this._drawingOn;
+      this.toggleDrawing(true);
+    } else if (changed) {
+      this.toggleDrawing(this._drawingBeforeBoard);
+    }
     this._renderState();
     this._updateSpotlight();
   }

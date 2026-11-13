@@ -236,7 +236,7 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
   let tap: { x: number; y: number; at: number; href: string } | null = null;
   ui.stageHost.addEventListener('pointerdown', (event) => {
     tap = null;
-    if (ui.playingBack || event.button !== 0 || (event.target as Element | null)?.closest?.('iframe, button, select, input')) return;
+    if (ui.playingBack || ui.drawingOn || event.button !== 0 || (event.target as Element | null)?.closest?.('iframe, button, select, input')) return;
     const href = links.linkAt(event.clientX, event.clientY);
     if (href) tap = { x: event.clientX, y: event.clientY, at: performance.now(), href };
   });
@@ -249,10 +249,11 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
   });
   ui.stageHost.addEventListener('pointermove', (event) => {
     if (event.pointerType === 'touch') return;
-    ui.stageHost.classList.toggle('over-link', !ui.playingBack && !(event.buttons & 1) && links.linkAt(event.clientX, event.clientY) !== null);
+    // While drawing is on, links are inert and the pointer stays a pencil over them.
+    ui.stageHost.classList.toggle('over-link', !ui.playingBack && !ui.drawingOn && !(event.buttons & 1) && links.linkAt(event.clientX, event.clientY) !== null);
   });
   ui.stageHost.addEventListener('dblclick', (event) => {
-    if (ui.playingBack || event.button !== 0) return;
+    if (ui.playingBack || ui.drawingOn || event.button !== 0) return;
     const hash = links.deckLinkAt(event.clientX, event.clientY);
     if (hash && links.navigate?.(hash)) {
       event.preventDefault();

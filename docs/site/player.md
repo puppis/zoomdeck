@@ -70,12 +70,14 @@ of their section. Settings are stored in the browser and apply to every deck you
 With the default gestures:
 
 - **Drag** draws with the pen while drawing is on; a click leaves a dot. `D` turns drawing on or
-  off: while on, the pointer over the slides is a dot in the pen's color, and the header says Pen;
-  while off, the mouse only clicks and follows links, so that nothing is drawn by accident. The
-  keys `1` to `7` pick the color (Default, Black, White, Red, Yellow, Green, Blue) and turn drawing
-  on, as does a click on a swatch, which is how the color is changed in fullscreen. Color and tip
-  size are in the footer, where "Default" is the deck's text color. A stylus always draws, and so
-  does a drag on the whiteboard, whatever the drawing switch says.
+  off: while on, the pointer over the slides is a pencil in the pen's color, the header says Pen,
+  and links and live pages under the pointer are inert, so that a stroke can cross them; while
+  off, the mouse only clicks and follows links, so that nothing is drawn by accident. Showing the
+  whiteboard turns drawing on, and hiding it brings back what was before. The keys `1` to `7`
+  pick the color (Default, Black, White, Red, Yellow, Green, Blue) and turn drawing on, as does a
+  click on a swatch, which is how the color is changed in fullscreen. Color and tip size are in
+  the footer, where "Default" is the deck's text color. A stylus always draws, whatever the
+  drawing switch says.
 - Hold **Shift** for a spotlight that follows the pointer, or a red laser dot: the `L` key (or the
   Pointer setting) switches between the two. Shift + scroll resizes either; **Shift + drag** draws a
   highlighter stroke.
@@ -90,14 +92,14 @@ With the default gestures:
 - **Click** a link to follow it, that is a press and release without movement: a Markdown link, or
   any element with `href=`, which is how the guide's front page and its "Back to the overview"
   lines work. Targets inside the deck (`#slide=`, `#step=`) move to that stop; others open in a
-  new tab. A drag over a link still draws, and the pointer turns into a hand over one. A
-  double-click also follows a link inside the deck. An include is not a link by itself: the
+  new tab. The pointer turns into a hand over a link while drawing is off; while it is on, links
+  are inert and the pencil stays. A double-click also follows a link inside the deck. An include is not a link by itself: the
   guide's front page lays an invisible rectangle with `href=` over each tile.
 
 Strokes belong to the current slide and clear when the slide changes; undo, redo and clear act on
 the current slide's strokes (or on the whiteboard's while it is shown). Links and live pages keep
-working under a plain pen: clicking one opens it rather than drawing, with no highlight while the
-pointer rests on it. On a touch screen a finger never draws, so a resting palm leaves no marks;
+working while drawing is off: clicking one opens it, and a stylus drag over one still draws; while
+drawing is on they are inert. On a touch screen a finger never draws, so a resting palm leaves no marks;
 drawing takes a pen, a stylus or the mouse. A **fingertip rubbed over a stroke erases it**, and
 undo brings it back where it was; two fingers scroll the whiteboard. The colors in the footer are
 swatches, the first being the deck's own text color.

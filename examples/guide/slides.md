@@ -365,7 +365,7 @@ Raster files may be PNG, JPEG, GIF or WebP. A multi-frame APNG or GIF animates w
 
 **Tools.** L spotlight or laser (hold Shift to show it) · W whiteboard · C camera · S screen · R record · P print. {#player-tools below:#player-keys left-aligned:#player-keys buff=0.5 width=9 font_size=20}
 
-**Pointer.** D turns drawing on: a drag then draws with the pen (with pressure on a pencil or stylus), the pointer shows its color, and 1 to 7 pick it; Shift + drag highlights. A click never changes the stop unless the settings bind a key to it. {#player-pointer below:#player-tools left-aligned:#player-tools buff=0.5 width=9 font_size=20}
+**Pointer.** D turns drawing on (so does the whiteboard): a drag then draws with the pen (with pressure on a pencil or stylus), the pointer is a pencil in its color, 1 to 7 pick it, and links are inert; Shift + drag highlights. A click never changes the stop unless the settings bind a key to it. {#player-pointer below:#player-tools left-aligned:#player-tools buff=0.5 width=9 font_size=20}
 
 **Links.** `#step=N` or `#slide=id` opens a stop directly, also as `href=` on any element, followed with a click (the front page is built that way; a drag over it still draws); the outline lists every slide. {#player-links x=0.6 y=3.9 width=9 font_size=20}
 

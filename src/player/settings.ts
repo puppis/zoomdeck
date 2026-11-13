@@ -64,7 +64,7 @@ export const ACTIONS: ActionInfo[] = [
   { name: 'undo', label: 'Undo the last pen or highlighter stroke' },
   { name: 'redo', label: 'Redo a stroke' },
   { name: 'clear', label: 'Clear all strokes on this slide' },
-  { name: 'draw', label: 'Drawing on or off: while on, a plain drag draws and the pointer shows the pen in its color' },
+  { name: 'draw', label: 'Drawing on or off: while on, a plain drag draws, the pointer is a pencil in the pen\'s color and links are inert' },
   { name: 'color1', label: 'Pen color 1: Default (the deck\'s text color); also turns drawing on' },
   { name: 'color2', label: 'Pen color 2: Black' },
   { name: 'color3', label: 'Pen color 3: White' },
