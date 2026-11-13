@@ -7,3 +7,6 @@ build/
 .DS_Store
 docs/html/guide.html
 examples/*/recordings/
+
+# Recorded talks the player writes next to the example decks: never published.
+examples/**/recordings/
