@@ -14,29 +14,29 @@ Zoomdeck makes zooming presentations: a tree of slides written in Markdown, with
 
 [Source on GitHub ↗]{#github-link x=17.35 y=8.2 anchor=right-baseline font_size=26 color=BLUE_E href=https://github.com/puppis/zoomdeck}
 
-[1 · Slides and content]{#root-cap-sec-content x=-12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-content}
-[[include: #sec-content x=-12 y=2.9 width=10 skip_return=true preview=true]]
-[[rectangle: #root-hit-sec-content x=-12 y=2.9 width=10 height=5.625 opacity=0 href=#slide=sec-content]]
+[1 · Slides and content]{#root-cap-sec-content x=-12 y=5.5 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-content}
+[[include: #sec-content x=-12 y=2.2 width=10 skip_return=true preview=true]]
+[[rectangle: #root-hit-sec-content x=-12 y=2.2 width=10 height=5.625 opacity=0 href=#slide=sec-content]]
 
-[2 · Presenting]{#root-cap-sec-presenting x=0 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-presenting}
-[[include: #sec-presenting x=0 y=2.9 width=10 skip_return=true preview=true]]
-[[rectangle: #root-hit-sec-presenting x=0 y=2.9 width=10 height=5.625 opacity=0 href=#slide=sec-presenting]]
+[2 · Presenting]{#root-cap-sec-presenting x=0 y=5.5 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-presenting}
+[[include: #sec-presenting x=0 y=2.2 width=10 skip_return=true preview=true]]
+[[rectangle: #root-hit-sec-presenting x=0 y=2.2 width=10 height=5.625 opacity=0 href=#slide=sec-presenting]]
 
-[3 · Diagrams]{#root-cap-sec-diagrams x=12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-diagrams}
-[[include: #sec-diagrams x=12 y=2.9 width=10 skip_return=true preview=true]]
-[[rectangle: #root-hit-sec-diagrams x=12 y=2.9 width=10 height=5.625 opacity=0 href=#slide=sec-diagrams]]
+[3 · Diagrams]{#root-cap-sec-diagrams x=12 y=5.5 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-diagrams}
+[[include: #sec-diagrams x=12 y=2.2 width=10 skip_return=true preview=true]]
+[[rectangle: #root-hit-sec-diagrams x=12 y=2.2 width=10 height=5.625 opacity=0 href=#slide=sec-diagrams]]
 
-[4 · Layout and style]{#root-cap-sec-layout x=-12 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-layout}
-[[include: #sec-layout x=-12 y=-4.6 width=10 skip_return=true preview=true]]
-[[rectangle: #root-hit-sec-layout x=-12 y=-4.6 width=10 height=5.625 opacity=0 href=#slide=sec-layout]]
+[4 · Layout and style]{#root-cap-sec-layout x=-12 y=-2.1 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-layout}
+[[include: #sec-layout x=-12 y=-5.4 width=10 skip_return=true preview=true]]
+[[rectangle: #root-hit-sec-layout x=-12 y=-5.4 width=10 height=5.625 opacity=0 href=#slide=sec-layout]]
 
-[5 · Motion and interaction]{#root-cap-sec-motion x=0 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-motion}
-[[include: #sec-motion x=0 y=-4.6 width=10 skip_return=true preview=true]]
-[[rectangle: #root-hit-sec-motion x=0 y=-4.6 width=10 height=5.625 opacity=0 href=#slide=sec-motion]]
+[5 · Motion and interaction]{#root-cap-sec-motion x=0 y=-2.1 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-motion}
+[[include: #sec-motion x=0 y=-5.4 width=10 skip_return=true preview=true]]
+[[rectangle: #root-hit-sec-motion x=0 y=-5.4 width=10 height=5.625 opacity=0 href=#slide=sec-motion]]
 
-[6 · Trees, files and code]{#root-cap-sec-structure x=12 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-structure}
-[[include: #sec-structure x=12 y=-4.6 width=10 preview=true]]
-[[rectangle: #root-hit-sec-structure x=12 y=-4.6 width=10 height=5.625 opacity=0 href=#slide=sec-structure]]
+[6 · Trees, files and code]{#root-cap-sec-structure x=12 y=-2.1 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-structure}
+[[include: #sec-structure x=12 y=-5.4 width=10 preview=true]]
+[[rectangle: #root-hit-sec-structure x=12 y=-5.4 width=10 height=5.625 opacity=0 href=#slide=sec-structure]]
 :::
 
 ::: slide {#sec-content width=36}
