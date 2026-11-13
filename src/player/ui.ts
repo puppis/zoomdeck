@@ -264,22 +264,26 @@ export class PlayerUI {
     const footer = el(
       'footer',
       {},
-      el('div', { class: 'buttons' }, this._previous, this._next),
+      el('div', { class: 'group buttons', role: 'group', 'aria-label': 'Navigation' }, this._previous, this._next, this._counter),
       el(
         'div',
-        { class: 'pen-controls', role: 'group', 'aria-label': 'Pen settings' },
+        { class: 'group pen-controls', role: 'group', 'aria-label': 'Drawing' },
         el('label', {}, 'Pen ', this._penColor.element),
         el('label', {}, 'Tip ', this._penSize),
         this._boardButton,
       ),
-      el('div', { class: 'record-controls', role: 'group', 'aria-label': 'Recording' }, this._cameraButton, this._recordButton, this._pauseButton, this._recordingsButton),
-      el('label', { class: 'speed' }, 'Speed ', this._speed),
-      this._counter,
-      this._printButton,
-      settingsButton,
-      fullscreen,
+      el('div', { class: 'group record-controls', role: 'group', 'aria-label': 'Camera and recording' }, this._cameraButton, this._recordButton, this._pauseButton, this._recordingsButton),
+      el('div', { class: 'group page-controls', role: 'group', 'aria-label': 'Page' }, this._printButton, fullscreen, settingsButton),
       this._progress,
     );
+    // A button clicked with the pointer gives the focus back to the page, so that the next key
+    // goes to the deck without drawing a focus ring around the button; keyboard users keep theirs.
+    for (const bar of [header, footer]) {
+      bar.addEventListener('click', (event) => {
+        const button = (event.target as HTMLElement).closest('button');
+        if (button && event.detail > 0) button.blur();
+      });
+    }
     const main = el('main', {}, header, this.stageHost, footer);
     this.root = el('div', { class: 'zd-app outline-hidden' }, aside, main, this._dialog);
     host.replaceChildren(this.root);
@@ -292,7 +296,10 @@ export class PlayerUI {
     this._speed.addEventListener('change', () => {
       if (this._player) this._player.speed = Number(this._speed.value);
     });
-    this._penSize.addEventListener('change', () => this._finishStroke());
+    this._penSize.addEventListener('change', () => {
+      this._finishStroke();
+      this._penSize.blur();
+    });
     this._installPointerTools();
     document.addEventListener('keydown', (event) => this._onKeyDown(event));
     if (deck.showOutline) this.toggleOutline();
@@ -1424,8 +1431,8 @@ export class PlayerUI {
       ),
       el('section', {},
         el('h3', { text: 'Advanced' }),
+        el('div', { class: 'bindings' }, el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Playback speed of the animations' }), this._speed)),
         el('label', { class: 'row' }, this._reverseToggle, ' Going to the previous stop plays the current stop backwards (off: jump straight to it)'),
-        el('p', { class: 'note', text: 'The playback speed is in the bar at the bottom.' }),
       ),
       el('div', { class: 'actions' }, done),
     );

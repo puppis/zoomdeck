@@ -142,6 +142,19 @@ preview to the stop of a source line. The deck argument is a `deck.json`, a Mark
 a JS/TS module exporting a deck definition. The single-file export opens by double-click and needs
 no server; [Exporting a deck](exporting.html) has the details.
 
+## Present it
+
+The preview and the exports play a deck with the same player, so what you try here is what the
+audience will see. `→` or Space advances, `←` goes back (playing the stop backwards), `O` opens
+the outline and `F` the fullscreen view. The pointer tools work with a mouse, a pen or a paired
+tablet: drag to draw, with pressure on a pencil or stylus; hold Shift for a spotlight or a laser
+(`L` switches between them), Shift + drag to highlight; `W` opens a whiteboard without edges.
+`C` turns the camera on in a corner of the slides, then full frame, then off. `Shift+R` records
+the talk (your voice, the camera while it is on, and every move on the deck) and **▶ Talk** plays
+it back on the deck itself or exports it as a video; `Shift+P` prints the deck to a PDF, a page
+per stage. Every key and gesture can be changed in the settings (`,`). [The player](player.html)
+describes each tool in full, and the guide's section 2, Presenting, shows them live.
+
 ## Set up your editor
 
 Editing is most comfortable when the browser follows your typing: start the preview once, and
@@ -170,6 +183,8 @@ Paths in `slides.md` resolve relative to the Markdown file.
 ## Next steps
 
 - [Concepts](concepts.html) explains slides, coordinates and how playback is recorded.
+- [The player](player.html) covers presenting in full: keys, pen and spotlight, whiteboard,
+  tablet, camera, recording a talk and printing the deck.
 - [Slides and the tree](slides.html) starts the topic-by-topic tour of the dialect; the sidebar
   follows the same order, from the content of a slide to the reference.
 - The [guide deck](guide.html) shows each topic live; its front page lists the sections, and

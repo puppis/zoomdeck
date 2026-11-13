@@ -29,10 +29,12 @@ folder or to a single HTML file that plays from disk.
    its stop and back from a stop or an element to its line, and a shortcut exports the deck.
 3. **[Concepts](concepts.html)**: what a slide, a viewport and a stop are, and how a deck is
    recorded and replayed.
+4. **[The player](player.html)**: presenting a deck: keys, the pen and the spotlight, the
+   whiteboard and a companion tablet, the camera, recording a talk and printing the deck to a PDF.
 
-The rest of the documentation follows the map below, from the content of a slide to the
-reference, and every topic page opens the matching chapter of the guide deck with its
-"Open in the guide" badge.
+The rest of the documentation follows the map below, from presenting a deck and the content of
+a slide to the reference, and every topic page opens the matching chapter of the guide deck with
+its "Open in the guide" badge.
 
 ## The guide deck
 

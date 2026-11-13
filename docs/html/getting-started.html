@@ -18,7 +18,11 @@
   <nav class="sidebar" aria-label="Documentation">
       <section>
         <h4>Getting started</h4>
-        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html" aria-current="page">Getting started</a><ul class="subsections"><li><a href="#install">Install</a></li><li><a href="#the-zoomdeck-command">The zoomdeck command</a></li><li><a href="#a-first-deck">A first deck</a></li><li><a href="#preview-and-export">Preview and export</a></li><li><a href="#set-up-your-editor">Set up your editor</a></li><li><a href="#what-a-deck-folder-contains">What a deck folder contains</a></li><li><a href="#next-steps">Next steps</a></li></ul></li><li><a href="editors.html">Editors</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html" aria-current="page">Getting started</a><ul class="subsections"><li><a href="#install">Install</a></li><li><a href="#the-zoomdeck-command">The zoomdeck command</a></li><li><a href="#a-first-deck">A first deck</a></li><li><a href="#preview-and-export">Preview and export</a></li><li><a href="#present-it">Present it</a></li><li><a href="#set-up-your-editor">Set up your editor</a></li><li><a href="#what-a-deck-folder-contains">What a deck folder contains</a></li><li><a href="#next-steps">Next steps</a></li></ul></li><li><a href="editors.html">Editors</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Presenting</h4>
+        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
       </section>
       <section>
         <h4>Writing slides</h4>
@@ -30,19 +34,15 @@
       </section>
       <section>
         <h4>Layout and style</h4>
-        <ul><li><a href="positioning.html">Positioning</a></li><li><a href="groups.html">Groups</a></li><li><a href="styles.html">Styles</a></li></ul>
+        <ul><li><a href="positioning.html">Positioning</a></li><li><a href="groups.html">Groups</a></li><li><a href="styles.html">Styles</a></li><li><a href="configuration.html">Configuration</a></li></ul>
       </section>
       <section>
         <h4>Motion and interaction</h4>
         <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
       </section>
       <section>
-        <h4>Presenting</h4>
-        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
-      </section>
-      <section>
         <h4>Advanced</h4>
-        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="configuration.html">Configuration</a></li><li><a href="reference.html">Reference</a></li></ul>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="reference.html">Reference</a></li></ul>
       </section>
   </nav>
   <main id="content">
@@ -183,6 +183,16 @@ accepts <code>--show-outline</code> and <code>--scene Name</code>. <code>zoomdec
 preview to the stop of a source line. The deck argument is a <code>deck.json</code>, a Markdown file or
 a JS/TS module exporting a deck definition. The single-file export opens by double-click and needs
 no server; <a href="exporting.html">Exporting a deck</a> has the details.</p>
+<h2 id="present-it">Present it<a class="anchor" href="#present-it" aria-label="Link to this section">#</a></h2><p>The preview and the exports play a deck with the same player, so what you try here is what the
+audience will see. <code>→</code> or Space advances, <code>←</code> goes back (playing the stop backwards), <code>O</code> opens
+the outline and <code>F</code> the fullscreen view. The pointer tools work with a mouse, a pen or a paired
+tablet: drag to draw, with pressure on a pencil or stylus; hold Shift for a spotlight or a laser
+(<code>L</code> switches between them), Shift + drag to highlight; <code>W</code> opens a whiteboard without edges.
+<code>C</code> turns the camera on in a corner of the slides, then full frame, then off. <code>Shift+R</code> records
+the talk (your voice, the camera while it is on, and every move on the deck) and <strong>▶ Talk</strong> plays
+it back on the deck itself or exports it as a video; <code>Shift+P</code> prints the deck to a PDF, a page
+per stage. Every key and gesture can be changed in the settings (<code>,</code>). <a href="player.html">The player</a>
+describes each tool in full, and the guide's section 2, Presenting, shows them live.</p>
 <h2 id="set-up-your-editor">Set up your editor<a class="anchor" href="#set-up-your-editor" aria-label="Link to this section">#</a></h2><p>Editing is most comfortable when the browser follows your typing: start the preview once, and
 every save reloads the page at the stop you were looking at. The <code>editors/</code> folder of the
 repository holds ready-made setups for <strong>VS Code, Sublime Text, Emacs, Vim/Neovim and JetBrains
@@ -201,6 +211,8 @@ explains each one and what to do when an editor cannot find the command.</p>
 <p>Paths in <code>slides.md</code> resolve relative to the Markdown file.</p>
 <h2 id="next-steps">Next steps<a class="anchor" href="#next-steps" aria-label="Link to this section">#</a></h2><ul>
 <li><a href="concepts.html">Concepts</a> explains slides, coordinates and how playback is recorded.</li>
+<li><a href="player.html">The player</a> covers presenting in full: keys, pen and spotlight, whiteboard,
+tablet, camera, recording a talk and printing the deck.</li>
 <li><a href="slides.html">Slides and the tree</a> starts the topic-by-topic tour of the dialect; the sidebar
 follows the same order, from the content of a slide to the reference.</li>
 <li>The <a href="guide.html">guide deck</a> shows each topic live; its front page lists the sections, and
@@ -213,7 +225,7 @@ every documentation page opens its chapter with the &quot;Open in the guide&quot
       <a class="next" href="editors.html">Editors →</a>
     </footer>
   </main>
-  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#install">Install</a></li><li><a href="#the-zoomdeck-command">The zoomdeck command</a></li><li><a href="#a-first-deck">A first deck</a></li><li><a href="#preview-and-export">Preview and export</a></li><li><a href="#set-up-your-editor">Set up your editor</a></li><li><a href="#what-a-deck-folder-contains">What a deck folder contains</a></li><li><a href="#next-steps">Next steps</a></li></ul></nav>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#install">Install</a></li><li><a href="#the-zoomdeck-command">The zoomdeck command</a></li><li><a href="#a-first-deck">A first deck</a></li><li><a href="#preview-and-export">Preview and export</a></li><li><a href="#present-it">Present it</a></li><li><a href="#set-up-your-editor">Set up your editor</a></li><li><a href="#what-a-deck-folder-contains">What a deck folder contains</a></li><li><a href="#next-steps">Next steps</a></li></ul></nav>
 </div>
 </body>
 </html>

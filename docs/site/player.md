@@ -27,9 +27,10 @@ description: Keyboard and pointer controls, the pen and its pressure styles, the
 | O | toggle the slide outline |
 | , | open the settings |
 
-The footer has previous/next buttons, a progress bar, the pen settings, the camera and recording buttons,
-the speed control (0.5× to 2×), the Print button, the settings gear and the fullscreen button. The header shows the breadcrumb of the
-current slide and the player state.
+The footer has four groups: the previous/next buttons with the stop counter; the pen color and
+tip and the Whiteboard button; the Camera, Record, Pause and Talk buttons; and, at the right,
+Print, Fullscreen and the settings gear. A progress bar runs along its top edge. The header shows
+the breadcrumb of the current slide and the player state.
 
 ## Settings
 
@@ -47,7 +48,8 @@ The gear button (or the `,` key) opens the settings dialog, in six parts:
 - **Keyboard**: every action with its keys. Click a key to remove it, or choose "Add key" and press
   the new combination, which may include modifiers; a combination already used elsewhere moves to
   the new action.
-- **Advanced**: the reverse-playback switch, on by default.
+- **Advanced**: the playback speed of the animations (0.5× to 2×) and the reverse-playback switch,
+  on by default.
 
 Close at the bottom (or the × in the header, or Esc) closes the dialog; the settings are saved as
 they are changed.
