@@ -4,6 +4,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { appendPart, eventsBetween, formatTime, inkUpTo, isTimeline, mediaAt, recordingName, stateAt, stopIndex, stopRef, structureHash, type Timeline, type TimelineEvent } from '../src/player/timeline';
 import { Recorder, initialEvents } from '../src/player/recorder';
+import { Playback } from '../src/player/playback';
+import type { Player } from '../src/player/player';
 import { sanitizeRecording, DEFAULT_RECORDING } from '../src/player/settings';
 import { buildIndex, deckFolderFor, isRecordingFile, recordingFiles, NAME } from '../bin/recordings.mjs';
 import type { NavigationData } from '../src/runtime';
@@ -145,6 +147,42 @@ describe('timelines', () => {
     expect(fixed.size).toBe(DEFAULT_RECORDING.size);
     expect(fixed.mirror).toBe(false);
     expect(fixed.microphone).toBeNull();
+  });
+});
+
+describe('playing a talk back', () => {
+  class FakeMedia extends EventTarget {
+    currentTime = 0;
+    src = '';
+    load(): void {}
+    pause(): void {}
+    play(): Promise<void> { return Promise.resolve(); }
+  }
+  const player = { goTo: async () => undefined, rewindTo: async () => undefined, speed: 1, runner: { cancel: () => undefined } } as unknown as Player;
+
+  it('stands at the end when the last media file stops a little short of the timeline', async () => {
+    const media = new FakeMedia();
+    const timeline: Timeline = {
+      version: 1, deck: { title: 't', hash: 'x' }, recorded: '2026-11-13T09:00:00.000Z', duration: 1000,
+      media: [{ file: 'a.webm', type: 'audio/webm', video: false, start: 0, duration: 1000 }], pip: { corner: 'bottom-right', size: 0.18 },
+      events: [{ t: 0, type: 'board', on: false }],
+    };
+    let ends = 0;
+    const playback = new Playback(timeline, { navigation, player, media: media as unknown as HTMLMediaElement, apply: () => undefined, resetInk: () => undefined, onEnd: () => { ends += 1; } });
+    await playback.play();
+    expect(playback.playing).toBe(true);
+    // The file ran out 50 ms before the stretch it covers: the browser says ended, the clock must agree.
+    media.currentTime = 0.95;
+    media.dispatchEvent(new Event('ended'));
+    expect(playback.playing).toBe(false);
+    expect(playback.ended).toBe(true);
+    expect(playback.time).toBe(1000);
+    expect(ends).toBe(1);
+    // A seek leaves the end behind.
+    playback.seek(200);
+    expect(playback.ended).toBe(false);
+    expect(playback.time).toBe(200);
+    playback.dispose();
   });
 });
 

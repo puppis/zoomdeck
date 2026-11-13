@@ -930,6 +930,8 @@ export class PlayerUI {
       this.notice('No recorded talk yet: Record starts one');
       return;
     }
+    // One list at a time: a list left behind (its close event is delivered later) would stack under the new one.
+    for (const stale of this.root.querySelectorAll('dialog.recordings')) stale.remove();
     const dialog = el('dialog', { class: 'settings recordings' });
     const close = el('button', { class: 'close', 'aria-label': 'Close', text: '×' });
     close.addEventListener('click', () => dialog.close());

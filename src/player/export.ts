@@ -221,7 +221,7 @@ export function exportVideo(playback: Playback, source: ExportSource, options: E
     const draw = () => {
       drawFrame(context, width, height, source, playback.state);
       options.onProgress?.(playback.duration ? playback.time / playback.duration : 1);
-      if (!playback.playing && playback.time >= playback.duration) finish();
+      if (!playback.playing && (playback.ended || playback.time >= playback.duration)) finish();
     };
     playback.seek(0);
     recorder.start(1000);

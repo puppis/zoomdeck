@@ -29,6 +29,8 @@ export class Playback {
   /** The settled state at the playback's clock, for the export and the controls. */
   state: TimelineState;
   private _playing = false;
+  /** Set when the talk ran to its end; the clock then reads the duration whatever the media reports. */
+  private _ended = false;
   private _last = 0;
   /** The dispatch timer: a plain interval, which keeps running (slowly) in a background tab, unlike animation frames. */
   private _timer: number | null = null;
@@ -54,8 +56,16 @@ export class Playback {
     return this._playing;
   }
 
+  /** Whether the talk ran to its end (and was not seeked or played since). */
+  get ended(): boolean {
+    return this._ended;
+  }
+
   /** Milliseconds into the recording. */
   get time(): number {
+    // A media file may be a little shorter than the stretch it covers on the timeline: once the
+    // talk is over, the clock stands at the end rather than where the last file stopped.
+    if (this._ended) return this.duration;
     const media = this.host.media;
     // A part's clock stops at the part's end: the element may report a little past it before it ends.
     if (media && this._part) return Math.min(this.duration, this._part.start + Math.min(this._part.duration, media.currentTime * 1000));
@@ -80,6 +90,7 @@ export class Playback {
   async play(): Promise<void> {
     if (this._playing) return;
     if (this.time >= this.duration) this.seek(0);
+    this._ended = false;
     this._playing = true;
     const media = this.host.media;
     if (media) {
@@ -125,6 +136,7 @@ export class Playback {
     const target = Math.max(0, Math.min(this.duration, time));
     const wasPlaying = this._playing;
     if (wasPlaying) this.pause();
+    this._ended = false;
     if (this.host.media) this._loadPart(target);
     else this._runFrom = target;
     const events = this.timeline.events;
@@ -235,6 +247,7 @@ export class Playback {
     if (!this._playing) return;
     this._advance(this.duration);
     this._playing = false;
+    this._ended = true;
     this._runStart = null;
     this._runFrom = this.duration;
     this._stopTimer();
