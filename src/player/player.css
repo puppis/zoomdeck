@@ -144,6 +144,8 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
 .zd-app dialog.export .row .note { margin: 0; }
 .zd-app .record-button[aria-pressed=true] { background: #d22; color: #fff; border-color: #d22; }
 .zd-app .camera-button[aria-pressed=true], .zd-app .screen-button[aria-pressed=true] { background: var(--hover); font-weight: 600; }
+/* A share held for Alt+S, not filmed at the moment: a dot after the label. */
+.zd-app .screen-button.held::after { content: ''; display: inline-block; width: 6px; height: 6px; margin-left: 6px; border-radius: 50%; background: var(--foreground); vertical-align: middle; }
 .zd-app .record-label { font-size: 12px; color: #d22; font-variant-numeric: tabular-nums; font-weight: 600; }
 .zd-app .record-label.paused { color: var(--muted); }
 .zd-app .record-label[hidden] { display: none; }

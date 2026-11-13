@@ -700,13 +700,19 @@ export class PlayerUI {
   async toggleScreen(on = !this._screenFilming, reuse = false): Promise<void> {
     if (this._playback || on === this._screenFilming) return;
     if (on) {
-      if ((!reuse || !this._screenStream) && !(await this._acquireScreen())) return;
+      if (reuse && !this._screenHeld()) this.notice('No screen is shared yet, or the browser ended the share: choose one');
+      if ((!reuse || !this._screenHeld()) && !(await this._acquireScreen())) return;
       await this._setScreenFilming(true);
       this.notice(this._recorder ? 'Filming the screen; Screen again (or S) when you are back' : 'The screen will be filmed once a recording runs; Screen again (or S) stops');
     } else {
       await this._setScreenFilming(false);
       this.notice(this._screenStream ? 'Screen off; the share stays for Alt+S (the browser\'s bar stops it)' : 'Screen off');
     }
+  }
+
+  /** Whether a share from before is still live, so that it can be filmed again without the picker. */
+  private _screenHeld(): boolean {
+    return Boolean(this._screenStream?.getVideoTracks().some((track) => track.readyState === 'live'));
   }
 
   /** Ask the browser for a screen, replacing any share held; false (with a notice) when it cannot, or the picker was dismissed. */
@@ -730,6 +736,7 @@ export class PlayerUI {
       for (const track of stream.getVideoTracks()) {
         track.addEventListener('ended', () => {
           if (this._screenStream !== stream) return;
+          this.notice('The browser ended the screen share; S chooses another');
           void this._setScreenFilming(false).then(() => this._releaseScreen());
         });
       }
@@ -748,7 +755,9 @@ export class PlayerUI {
   }
 
   private _updateScreenButton(): void {
-    this._screenButton.title = this._screenStream && !this._screenFilming
+    const held = this._screenHeld() && !this._screenFilming;
+    this._screenButton.classList.toggle('held', held);
+    this._screenButton.title = held
       ? 'Film the screen shared before (Alt+S), or pick another (S)'
       : 'Film the screen instead of the camera, for the time spent in another application, or stop (S)';
   }

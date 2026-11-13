@@ -218,8 +218,9 @@ screen or window to share and films it, in place of the camera, until you press 
 the entire screen to follow yourself across applications. The browser's picker is its own: a page
 can neither skip it nor choose for you, but it opens on the kind of surface you chose last time,
 the entire screen at first. Stopping the filming keeps the share, so that `Alt+S` films the same
-screen again without the picker (it asks only when nothing is shared); the share ends when you stop
-it from the browser's own bar, or when `S` picks another. With "Film the screen while this page is hidden" in the settings, a recording asks
+screen again without the picker; a dot on the **Screen** button shows that a share is held. The
+share ends when you stop it from the browser's own bar, or when `S` picks another, and the player
+says so; `Alt+S` then says that nothing is shared and opens the picker. With "Film the screen while this page is hidden" in the settings, a recording asks
 for the screen when it starts and films it by itself whenever the page is hidden, as when you
 switch to another application, and goes back to the deck when you return; the switch still works
 at any time. A filmed stretch is a further media file of the talk; in playback and in the exported
