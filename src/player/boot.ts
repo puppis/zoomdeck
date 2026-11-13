@@ -46,6 +46,14 @@ function clipForHash(hash: string, navigation: NavigationData, player: Player): 
   return first >= 0 ? first : null;
 }
 
+/** The share of the loading done, for the bar: the slides are prepared, then the presentation is recorded. */
+function progressShare(event: ProgressEvent): { index: number; total: number } | null {
+  const total = event.total ?? 0;
+  if (event.phase === 'build' || event.phase === 'visit') return { index: event.index ?? 0, total };
+  if (event.phase === 'prepared') return { index: total, total };
+  return null;
+}
+
 function progressMessage(event: ProgressEvent): string | null {
   if (event.phase === 'build') {
     const label = event.id !== undefined ? ` ${typeof event.id === 'string' ? `id="${event.id}"` : `#${event.id}`} "${event.name}"` : '';
@@ -94,11 +102,10 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
     viewportAspect: deck.viewport.width / deck.viewport.height,
     foreground: deck.foreground,
     progress: (event) => {
+      const share = progressShare(event);
+      if (share) ui.setLoading(share);
       const message = progressMessage(event);
-      if (message) {
-        ui.setLoading(message);
-        if (log) console.info(`[zoomdeck] [+${((performance.now() - started) / 1000).toFixed(1)}s] ${message}`);
-      }
+      if (message && log) console.info(`[zoomdeck] [+${((performance.now() - started) / 1000).toFixed(1)}s] ${message}`);
     },
   });
   stage.attach(presenter);

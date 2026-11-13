@@ -121,8 +121,9 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
   padding: 18px; border-radius: 8px; max-width: 80%; color: var(--foreground);
 }
 .zd-stage .error[hidden], .zd-stage .loading[hidden] { display: none; }
-.zd-stage .loading { display: flex; gap: 12px; align-items: center; font-size: 13px; color: var(--muted); }
-.zd-stage .loading .spinner { width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--foreground); border-radius: 50%; animation: zd-spin .8s linear infinite; }
+.zd-stage .loading { display: flex; gap: 14px; align-items: center; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.zd-stage .loading progress { position: static; width: 220px; height: 6px; border-radius: 3px; overflow: hidden; }
+.zd-stage .loading .count { min-width: 56px; text-align: right; }
 @keyframes zd-spin { to { transform: rotate(360deg); } }
 .zd-app footer { flex-shrink: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 10px 0; padding: 12px 18px; position: relative; background: var(--background); }
 /* Four groups, separated by hairlines: navigation, drawing, camera and recording, and the page's buttons at the right. */

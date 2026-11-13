@@ -83,6 +83,7 @@ export class PlayerUI {
   private readonly _next: HTMLButtonElement;
   private readonly _error: HTMLElement;
   private readonly _loading: HTMLElement;
+  private readonly _loadingBar: HTMLProgressElement;
   private readonly _loadingText: HTMLElement;
   private readonly _outlineToggle: HTMLButtonElement;
   private readonly _penColor: Swatches;
@@ -229,8 +230,10 @@ export class PlayerUI {
     this._camera.addEventListener('loadedmetadata', () => this._layoutCamera());
     this._camera.addEventListener('emptied', () => this._layoutCamera());
     this._error = el('p', { class: 'error', role: 'alert', hidden: '' });
-    this._loadingText = el('span', { text: 'Preparing slides…' });
-    this._loading = el('div', { class: 'loading', role: 'status' }, el('span', { class: 'spinner' }), this._loadingText);
+    // While the deck loads: a bar and the slide count, nothing more.
+    this._loadingBar = el('progress', { max: '1', value: '0', 'aria-label': 'Loading the deck' });
+    this._loadingText = el('span', { class: 'count' });
+    this._loading = el('div', { class: 'loading', role: 'status' }, this._loadingBar, this._loadingText);
     // Playback of a recorded talk: play or pause, a scrubber, the time, the export, and the way out.
     this._playToggle = el('button', { class: 'play-toggle', 'aria-label': 'Play or pause the recording', text: '▶' });
     this._playRange = el('input', { type: 'range', min: '0', max: '1000', value: '0', 'aria-label': 'Position in the recording' });
@@ -376,14 +379,15 @@ export class PlayerUI {
     return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722 > 0.179;
   }
 
-  /** Report preparation progress while the deck runs its dry pass. */
-  setLoading(message: string | null): void {
-    if (message === null) {
+  /** Show how far the deck's preparation is: the slide reached out of the total. */
+  setLoading(progress: { index: number; total: number } | null): void {
+    if (progress === null) {
       this._loading.hidden = true;
       return;
     }
     this._loading.hidden = false;
-    this._loadingText.textContent = message;
+    this._loadingBar.value = progress.total ? progress.index / progress.total : 0;
+    this._loadingText.textContent = `${progress.index} / ${progress.total}`;
     this._state.textContent = 'Loading…';
   }
 
