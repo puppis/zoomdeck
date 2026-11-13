@@ -170,6 +170,7 @@ export class PlayerUI {
     this._deck = deck;
     this._useLocation = options.useLocation ?? true;
     this._settings = loadSettings();
+    this._renderingAtLoad = JSON.stringify(this._settings.rendering);
     if (!document.getElementById('zd-player-style')) {
       document.head.append(el('style', { id: 'zd-player-style', text: playerCss }));
     }
@@ -1460,6 +1461,11 @@ export class PlayerUI {
   private _pairingStatus!: HTMLElement;
   private _pairingPanel!: HTMLElement;
 
+  /** The settings as saved in this browser; the stage is created from their rendering part. */
+  get settings(): PlayerSettings {
+    return this._settings;
+  }
+
   openSettings(): void {
     this._syncSettingsForm();
     this._renderBindings();
@@ -1514,6 +1520,26 @@ export class PlayerUI {
       this._renderBindings();
     });
 
+    // Rendering: the WebGL context is made once, so these apply when the page loads again.
+    this._antialiasToggle = el('input', { type: 'checkbox' });
+    this._antialiasToggle.addEventListener('change', () => {
+      this._settings.rendering.antialias = this._antialiasToggle.checked;
+      saveSettings(this._settings);
+      this._renderingChanged();
+    });
+    this._resolutionSelect = el('select', { 'aria-label': 'Render resolution' });
+    for (const [value, label] of [['auto', 'The screen\'s (up to 2×)'], ['1', '1×: fewer pixels, faster'], ['2', '2×: sharper on a low-resolution screen, heavier']]) {
+      this._resolutionSelect.append(el('option', { value, text: label }));
+    }
+    this._resolutionSelect.addEventListener('change', () => {
+      const value = this._resolutionSelect.value;
+      this._settings.rendering.resolution = value === 'auto' ? 'auto' : (Number(value) as 1 | 2);
+      saveSettings(this._settings);
+      this._renderingChanged();
+    });
+    const reload = el('button', { class: 'add', text: 'Reload now' });
+    reload.addEventListener('click', () => location.reload());
+    this._renderingNote = el('p', { class: 'note', hidden: '' }, 'The rendering options take effect when the page is loaded again. ', reload);
     this._reverseToggle = el('input', { type: 'checkbox' });
     this._reverseToggle.addEventListener('change', () => {
       this._settings.reversePlayback = this._reverseToggle.checked;
@@ -1684,7 +1710,12 @@ export class PlayerUI {
       ),
       el('section', {},
         el('h3', { text: 'Advanced' }),
-        el('div', { class: 'bindings' }, el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Playback speed of the animations' }), this._speed)),
+        el('div', { class: 'bindings' },
+          el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Playback speed of the animations' }), this._speed),
+          el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Antialiasing: smoother edges on shapes and lines (the costliest option on Firefox)' }), this._antialiasToggle),
+          el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Render resolution' }), this._resolutionSelect),
+        ),
+        this._renderingNote,
         el('label', { class: 'row' }, this._reverseToggle, ' Going to the previous stop plays the current stop backwards (off: jump straight to it)'),
       ),
       el('div', { class: 'actions' }, done),
@@ -1700,6 +1731,15 @@ export class PlayerUI {
   private _cameraSelect!: HTMLSelectElement;
   private _mirrorToggle!: HTMLInputElement;
   private _screenAutoToggle!: HTMLInputElement;
+  private _antialiasToggle!: HTMLInputElement;
+  private _resolutionSelect!: HTMLSelectElement;
+  private _renderingNote!: HTMLElement;
+  /** The rendering settings the page was loaded with; a difference shows the reload note. */
+  private _renderingAtLoad = '';
+
+  private _renderingChanged(): void {
+    this._renderingNote.hidden = JSON.stringify(this._settings.rendering) === this._renderingAtLoad;
+  }
   private _cornerSelect!: HTMLSelectElement;
   private _pipSizeSelect!: HTMLSelectElement;
   private _recordingStatus!: HTMLElement;
@@ -1928,6 +1968,9 @@ export class PlayerUI {
     this._cameraSelect.value = recording.camera ?? '';
     this._mirrorToggle.checked = recording.mirror;
     this._screenAutoToggle.checked = recording.screenWhenHidden;
+    this._antialiasToggle.checked = this._settings.rendering.antialias;
+    this._resolutionSelect.value = String(this._settings.rendering.resolution);
+    this._renderingChanged();
     this._cornerSelect.value = recording.corner;
     this._pipSizeSelect.value = String(recording.size);
     this._recordingStatus.textContent = this._deck.base && recordingStoreAvailable()

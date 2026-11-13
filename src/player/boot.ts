@@ -6,6 +6,7 @@ import { defineDeck, type DeckDefinition, type ResolvedDeck } from '../deck';
 import { Presenter, type NavigationData, type ProgressEvent } from '../runtime';
 import { Player } from './player';
 import { PlayerUI } from './ui';
+import { renderPixelRatio } from './settings';
 import { Stage } from './stage';
 import { LinkLayer } from './links';
 import { IframeLayer } from './iframes';
@@ -80,9 +81,12 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
   const log = options.log ?? true;
   const ui = new PlayerUI(host, deck, { useLocation });
   const started = performance.now();
+  const rendering = ui.settings.rendering;
   const stage = new Stage(ui.stageHost, {
     background: deck.background,
     viewportAspect: deck.viewport.width / deck.viewport.height,
+    antialias: rendering.antialias,
+    pixelRatio: renderPixelRatio(rendering),
   });
   await loadDefaultFonts();
   const presenter = new Presenter({

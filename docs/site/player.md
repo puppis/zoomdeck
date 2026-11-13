@@ -50,8 +50,9 @@ The gear button (or the `,` key) opens the settings dialog, in six parts:
 - **Keyboard**: every action with its keys. Click a key to remove it, or choose "Add key" and press
   the new combination, which may include modifiers; a combination already used elsewhere moves to
   the new action.
-- **Advanced**: the playback speed of the animations (0.5× to 2×) and the reverse-playback switch,
-  on by default.
+- **Advanced**: the playback speed of the animations (0.5× to 2×), the rendering options
+  (antialiasing and the render resolution, applied when the page loads again) and the
+  reverse-playback switch, on by default.
 
 Close at the bottom (or the × in the header, or Esc) closes the dialog; the settings are saved as
 they are changed.
@@ -304,6 +305,18 @@ renderer (a page takes a fraction of a second; a long deck at 4K, a minute or tw
 dialog cancels, and the deck comes back to the stop you were at either way. The file is
 downloaded by the browser, named after the deck's title. Printing is not available while a talk
 is recorded or played back.
+
+## Rendering options
+
+The stage draws on a WebGL canvas whose context is created once, so the two rendering options
+in the settings (Advanced) take effect when the page is loaded again; the dialog offers a reload.
+**Antialiasing** smooths the edges of shapes and lines with multisampling; it is on by default and
+is the costliest option on Firefox, whose WebGL on macOS runs on an older graphics stack than
+Chrome's. **Render resolution** is the number of device pixels per CSS pixel: the screen's own
+(up to 2×) by default, 1× for fewer pixels and faster frames, or 2× to supersample a
+low-resolution screen, which sharpens text and lines there at the price of four times the pixels.
+The drawing buffer is not preserved between frames, which spares a copy per frame; printing and
+the video export read the canvas right after a render, so they are unaffected.
 
 ## Reverse playback
 

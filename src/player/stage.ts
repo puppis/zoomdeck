@@ -12,6 +12,10 @@ export interface StageOptions {
   background: string;
   /** Width over height of the presentation viewport. */
   viewportAspect: number;
+  /** Multisampled edges (default on). */
+  antialias?: boolean;
+  /** Device pixels per CSS pixel of the canvas (default: the screen's, up to 2). */
+  pixelRatio?: number;
 }
 
 export class Stage {
@@ -40,6 +44,11 @@ export class Stage {
       autoResize: false,
       frustumCulling: false,
       pauseRenderingWhenHidden: false,
+      antialias: options.antialias ?? true,
+      pixelRatio: options.pixelRatio ?? (typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1),
+      // Captures (printing, the video export) read the canvas right after a render, in the same
+      // task, so the buffer need not survive compositing: keeping it costs a copy every frame.
+      preserveDrawingBuffer: false,
     });
     const canvas = this.scene.getCanvas();
     canvas.style.display = 'block';
@@ -167,10 +176,10 @@ export class Stage {
     if (!presenter || !TEXT_LINES.size) return;
     const view = this._view();
     const center = presenter.camera.center;
-    const pixelRatio = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
-    const pxPerWorld = (this._width * pixelRatio) / view.width;
+    // The canvas's own ratio: the screen's, or the one the settings force.
     const canvas = this.container.querySelector('canvas');
-    const deviceRatio = canvas && this._width ? canvas.width / this._width : pixelRatio;
+    const deviceRatio = canvas && this._width ? canvas.width / this._width : (typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1);
+    const pxPerWorld = (this._width * deviceRatio) / view.width;
     const toDevicePixel = (x: number, y: number) => {
       const pixel = this.worldToPixel(x, y);
       return { x: pixel.x * deviceRatio, y: pixel.y * deviceRatio };

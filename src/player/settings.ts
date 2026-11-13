@@ -124,6 +124,31 @@ const FORMER_BINDINGS: Array<Partial<Record<ActionName, string[]>>> = [
   { print: ['Shift+p', 'Meta+p', 'Control+p'] },
 ];
 
+/** How the stage renders; read when the page loads, since the WebGL context is created once. */
+export interface RenderingSettings {
+  /** Multisampled edges on shapes and lines; the costliest option on Firefox. */
+  antialias: boolean;
+  /** Device pixels per CSS pixel: 'auto' follows the screen (up to 2), 1 and 2 force it (2 supersamples a low-resolution screen). */
+  resolution: 'auto' | 1 | 2;
+}
+
+export const DEFAULT_RENDERING: RenderingSettings = { antialias: true, resolution: 'auto' };
+
+export function sanitizeRendering(value: unknown): RenderingSettings {
+  const result = { ...DEFAULT_RENDERING };
+  if (!value || typeof value !== 'object') return result;
+  const saved = value as Partial<Record<keyof RenderingSettings, unknown>>;
+  if (typeof saved.antialias === 'boolean') result.antialias = saved.antialias;
+  if (saved.resolution === 'auto' || saved.resolution === 1 || saved.resolution === 2) result.resolution = saved.resolution;
+  return result;
+}
+
+/** The pixel ratio the stage should render at for a rendering setting, on this screen. */
+export function renderPixelRatio(rendering: RenderingSettings): number {
+  if (rendering.resolution !== 'auto') return rendering.resolution;
+  return typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+}
+
 export const MODIFIER_COMBOS = ['', 'Shift', 'Control', 'Alt', 'Meta', 'Shift+Control', 'Shift+Alt', 'Control+Alt'];
 
 /** Modifier combination of each pointer action; null leaves the action without a gesture. */
@@ -143,6 +168,8 @@ export interface PlayerSettings {
   reversePlayback: boolean | null;
   /** How pressure and motion shape pen strokes. */
   pen: PenStyle;
+  /** Antialiasing and pixel ratio of the stage. */
+  rendering: RenderingSettings;
   /** Devices and camera layout of a recording. */
   recording: RecordingSettings;
 }
@@ -204,6 +231,7 @@ export function pointerActionFor(settings: PlayerSettings, combo: string): Point
 export function defaultSettings(): PlayerSettings {
   return {
     bindings: Object.fromEntries(Object.entries(DEFAULT_BINDINGS).map(([k, v]) => [k, [...v]])) as PlayerSettings['bindings'],
+    rendering: { ...DEFAULT_RENDERING },
     pointer: { ...DEFAULT_POINTER_BINDINGS },
     pointerMode: 'spotlight',
     reversePlayback: null,
@@ -236,6 +264,7 @@ export function loadSettings(): PlayerSettings {
     if (typeof saved?.reversePlayback === 'boolean') settings.reversePlayback = saved.reversePlayback;
     if (saved?.pen) settings.pen = sanitizePenStyle(saved.pen);
     if (saved?.recording) settings.recording = sanitizeRecording(saved.recording);
+    if (saved?.rendering) settings.rendering = sanitizeRendering(saved.rendering);
   } catch {
     /* no storage or corrupt data: defaults */
   }

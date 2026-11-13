@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  DEFAULT_POINTER_BINDINGS, defaultSettings, describeModifiers, keyCombo, loadSettings, modifierCombo, pointerActionFor, saveSettings,
+  DEFAULT_POINTER_BINDINGS, DEFAULT_RENDERING, defaultSettings, describeModifiers, keyCombo, loadSettings, modifierCombo, pointerActionFor, renderPixelRatio, sanitizeRendering, saveSettings,
 } from '../src/player/settings';
 
 describe('player settings', () => {
@@ -75,5 +75,16 @@ describe('key defaults that changed', () => {
     const moved = loadSettings();
     expect(moved.bindings.record).toEqual(['r']);
     expect(moved.bindings.replay).toEqual(['a']);
+  });
+});
+
+describe('rendering settings', () => {
+  it('keeps valid rendering choices and drops the rest', () => {
+    expect(sanitizeRendering(null)).toEqual(DEFAULT_RENDERING);
+    expect(sanitizeRendering({ antialias: false, resolution: 2 })).toEqual({ antialias: false, resolution: 2 });
+    expect(sanitizeRendering({ antialias: 'no', resolution: 3 })).toEqual(DEFAULT_RENDERING);
+    expect(renderPixelRatio({ antialias: true, resolution: 1 })).toBe(1);
+    expect(renderPixelRatio({ antialias: true, resolution: 2 })).toBe(2);
+    expect(renderPixelRatio({ antialias: true, resolution: 'auto' })).toBe(Math.min(window.devicePixelRatio || 1, 2));
   });
 });
