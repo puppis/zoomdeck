@@ -36,7 +36,7 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
 .zd-app nav button[aria-current=true] { background: var(--hover); font-weight: 600; }
 .zd-app aside details { margin-top: 28px; color: var(--muted); font-size: 12px; }
 .zd-app summary { cursor: pointer; }
-.zd-app main { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+.zd-app main { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; position: relative; }
 .zd-app header { flex-shrink: 0; min-height: 52px; display: flex; align-items: center; gap: 14px; padding: 8px 18px; }
 .zd-app .outline-toggle { border-color: transparent; }
 .zd-app .breadcrumb { flex: 1; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
@@ -101,17 +101,26 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
 .zd-stage .camera.full { inset: 0; width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; box-shadow: none; z-index: 4; }
 .zd-stage .camera.screen { object-fit: contain; }
 .zd-stage.camera-on .highlights, .zd-stage.camera-on .whiteboard, .zd-stage.camera-on .links, .zd-stage.camera-on .iframes { visibility: hidden; }
-.zd-stage .playback-bar {
-  position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 6;
-  display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 999px;
+/* A dot in a corner of the stage stands in for the buttons and the header in fullscreen: green while the camera is on, red while the screen is filmed, nothing otherwise. */
+.zd-stage .live-dot { display: none; position: absolute; top: 12px; right: 12px; z-index: 6; width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 0 2px rgba(0, 0, 0, .35); pointer-events: none; }
+.zd-app:fullscreen .live-dot[data-live=camera] { display: block; background: #2c2; }
+.zd-app:fullscreen .live-dot[data-live=screen] { display: block; background: #d22; }
+/* During a playback the bar takes the whole footer in place of the controls: nothing else can be used meanwhile. */
+.zd-app footer .playback-bar { display: flex; align-items: center; gap: 10px; width: 100%; font-size: 12px; color: var(--foreground); }
+.zd-app footer .playback-bar[hidden] { display: none; }
+.zd-app.playing-back footer .group { display: none; }
+.zd-app footer .playback-bar input[type=range] { flex: 1; min-width: 80px; }
+.zd-app footer .playback-bar .play-time { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.zd-app footer .playback-bar button { padding: 5px 10px; font-size: 12px; }
+/* In fullscreen the footer is gone, so the bar floats over the slides instead. */
+.zd-app:fullscreen.playing-back footer { display: flex; justify-content: center; position: absolute; left: 0; right: 0; bottom: 0; padding: 14px; background: transparent; pointer-events: none; }
+.zd-app:fullscreen.playing-back footer progress { display: none; }
+.zd-app:fullscreen.playing-back footer .playback-bar {
+  width: auto; max-width: 92%; padding: 8px 12px; border-radius: 999px; pointer-events: auto;
   background: color-mix(in srgb, var(--background) 86%, var(--foreground)); border: 1px solid var(--border); box-shadow: 0 4px 18px rgba(0, 0, 0, .25);
-  font-size: 12px; color: var(--foreground); max-width: 92%;
 }
-.zd-stage .playback-bar[hidden] { display: none; }
-.zd-stage .playback-bar input[type=range] { width: min(360px, 40vw); }
-.zd-stage .playback-bar .play-time { font-variant-numeric: tabular-nums; white-space: nowrap; }
-.zd-stage .playback-bar button { padding: 4px 10px; font-size: 12px; }
-.zd-app.playing-back .buttons button, .zd-app.playing-back .record-button, .zd-app.playing-back .screen-pick, .zd-app.playing-back .pen-controls, .zd-app.playing-back .slides button { opacity: .35; pointer-events: none; }
+.zd-app:fullscreen.playing-back footer .playback-bar input[type=range] { flex: none; width: min(360px, 40vw); }
+.zd-app.playing-back .slides button { opacity: .35; pointer-events: none; }
 .zd-stage.sketch-active { cursor: crosshair; }
 /* Over a link the hand wins over the pen's crosshair; the spotlight and laser keep their own cursor. */
 .zd-stage.over-link:not(.spotlight-active), .zd-stage.sketch-active.over-link:not(.spotlight-active) { cursor: pointer; }
@@ -142,13 +151,12 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
 .zd-app dialog.print select { max-width: 100%; }
 .zd-app dialog.settings input[type=text] { font: inherit; padding: 5px 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--background); color: var(--foreground); min-width: 260px; }
 .zd-app dialog.export .row .note { margin: 0; }
-.zd-app .record-button[aria-pressed=true] { background: #d22; color: #fff; border-color: #d22; }
-.zd-app .camera-button[aria-pressed=true], .zd-app .screen-button[aria-pressed=true] { background: var(--hover); font-weight: 600; }
+/* Camera, Screen and Record turn red while they are at work (the camera on, the screen filmed, a recording running). */
+.zd-app .record-button[aria-pressed=true], .zd-app .camera-button[aria-pressed=true], .zd-app .screen-button[aria-pressed=true] { background: #d22; color: #fff; border-color: #d22; }
+.zd-app .record-button[aria-pressed=true]:hover, .zd-app .camera-button[aria-pressed=true]:hover, .zd-app .screen-button[aria-pressed=true]:hover { background: #b11; }
 /* The arrow beside Screen, shown while a share is held, opens the picker for another screen. */
 .zd-app footer .group .screen-pick { padding: 5px 7px; margin-left: -4px; }
 .zd-app .screen-pick[hidden] { display: none; }
-/* A share held for the next S, not filmed at the moment: a dot after the label. */
-.zd-app .screen-button.held::after { content: ''; display: inline-block; width: 6px; height: 6px; margin-left: 6px; border-radius: 50%; background: #d22; vertical-align: middle; }
 .zd-app .record-label { font-size: 12px; color: #d22; font-variant-numeric: tabular-nums; font-weight: 600; }
 .zd-app .record-label.paused { color: var(--muted); }
 .zd-app .record-label[hidden] { display: none; }

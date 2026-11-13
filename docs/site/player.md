@@ -28,9 +28,13 @@ description: Keyboard and pointer controls, the pen and its pressure styles, the
 | , | open the settings |
 
 The footer has four groups: the previous/next buttons with the stop counter; the pen color and
-tip and the Whiteboard button; the Camera, Record, Pause and Talk buttons; and, at the right,
-Print, Fullscreen and the settings gear. A progress bar runs along its top edge. The header shows
-the breadcrumb of the current slide and the player state.
+tip and the Whiteboard button; the Camera, Screen, Record, Pause and Talk buttons; and, at the
+right, Print, Fullscreen and the settings gear. A progress bar runs along its top edge. Camera,
+Screen and Record turn red while they are at work. The header shows the breadcrumb of the current
+slide and the state: the player's (Playing, Paused, Rewinding), then whatever is on, as in
+"Paused | Whiteboard | Camera | Recording". In fullscreen, where header and footer are hidden, a
+dot in the top right corner of the slides stands in: green while the camera is on, red while the
+screen is filmed.
 
 ## Settings
 
@@ -186,7 +190,9 @@ deck), and off. The first step asks the browser for the camera chosen in the set
 the corner, the size and the mirroring are settings. The pen never draws on the camera: strokes
 belong to slides and to the whiteboard. A recording keeps the camera exactly while it is on, so
 you can record a talk without it even with a camera attached, or bring it in for some moments
-only.
+only. The camera and the screen (see [Filming the screen](#recording-a-talk)) are one picture at
+a time: turning the camera on stops the filming of the screen, and filming the screen sets the
+camera aside, to come back when the filming stops.
 
 ## Recording a talk
 
@@ -213,13 +219,14 @@ duration and can be seeked in any player. The recording is named after the date 
 
 **Filming the screen.** A talk may leave the deck for a while: a demonstration in another
 application, a terminal, a web page. **Screen** in the footer, or `S`, films the screen in place
-of the camera until you press it again. The first time, the browser asks which screen or window to
-share: its picker is the browser's own, which a page can neither skip, fill in nor confirm, though
-it opens on the kind of surface you chose last time (the entire screen at first; choose that to
-follow yourself across applications). Stopping the filming keeps the share, shown by a red dot on
-the **Screen** button, so that the next `S` films the same screen again without asking. To share
-something else, the small arrow beside **Screen**, shown while a share is held, opens the picker
-again, with the filming going on with the new choice; ending the share from the browser's own bar
+of the camera until you press it again; the button is red, and the header says Screen, exactly
+while the screen is filmed, and the camera, if it was on, is set aside meanwhile and comes back
+after. The first time, the browser asks which screen or window to share: its picker is the
+browser's own, which a page can neither skip, fill in nor confirm, though it opens on the kind of
+surface you chose last time (the entire screen at first; choose that to follow yourself across
+applications). Stopping the filming keeps the share, so that the next `S` films the same screen
+again without asking; the small arrow beside **Screen**, shown while a share is held, opens the
+picker again to film something else instead. Ending the share from the browser's own bar
 (Chrome's "Stop sharing", Firefox's and Safari's sharing indicators) works too, and the next `S`
 then asks again. With "Film the screen while this page is hidden" in the settings, a recording asks
 for the screen when it starts and films it by itself whenever the page is hidden, as when you
@@ -255,10 +262,10 @@ their number when there are several); it opens the recording, or a list to choos
 Delete button where the server can remove files. The same list opens from **Talks…** in the
 playback bar, so one recording can be continued or deleted as well. During playback the deck follows the recording:
 stops play as they did, strokes appear as they were drawn, the whiteboard and the camera switch
-when they did, and the laser or spotlight moves where the presenter pointed. A bar over the
-slides has play and pause (also Space), a scrubber (also `←` and `→`, five seconds at a time),
-the time, **Export video** and a way out (also Esc); seeking anywhere rebuilds the state at that
-moment. The recording's own sound plays, and its camera picture sits in the corner it was
+when they did, and the laser or spotlight moves where the presenter pointed. The footer gives way
+to a playback bar with play and pause (also Space), a scrubber (also `←` and `→`, five seconds
+at a time), the time, **Export video** and a way out (also Esc); seeking anywhere rebuilds the
+state at that moment. The recording's own sound plays, and its camera picture sits in the corner it was
 recorded with, or full frame where the presenter switched to it. Your keys, taps and clicks on the
 deck, the pen, the whiteboard, the spotlight, links and the outline are off until you leave the
 recording, so that nothing of yours gets mixed with what the timeline replays.

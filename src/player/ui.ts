@@ -125,6 +125,9 @@ export class PlayerUI {
   private _screenStream: MediaStream | null = null;
   /** Whether the screen is what the recording films now (the Screen button pressed). */
   private _screenFilming = false;
+  /** The camera's mode before the screen took its place, to come back to when the filming stops. */
+  private _cameraSuspended: CameraMode | null = null;
+  private readonly _liveDot: HTMLElement;
   private readonly _screenButton: HTMLButtonElement;
   /** Beside Screen while a share is held: opens the browser's picker again, for another screen or window. */
   private readonly _screenPickButton: HTMLButtonElement;
@@ -253,7 +256,8 @@ export class PlayerUI {
     });
     this._exportButton.addEventListener('click', () => void this.exportRecording());
     closePlayback.addEventListener('click', () => this.closeRecording());
-    this.stageHost.append(this._boardLayer, this._highlights, this._camera, this._spotlight, this._remoteCursor, this._error, this._loading, this._playbackBar);
+    this._liveDot = el('span', { class: 'live-dot', role: 'status', 'aria-live': 'off' });
+    this.stageHost.append(this._boardLayer, this._highlights, this._camera, this._spotlight, this._remoteCursor, this._error, this._loading, this._liveDot);
 
     this._previous = el('button', { class: 'previous', 'aria-label': 'Previous stop', title: 'Previous stop (←)', text: '←' });
     this._next = el('button', { class: 'next', 'aria-label': 'Next stop', title: 'Next stop (→)', text: '→' });
@@ -304,6 +308,8 @@ export class PlayerUI {
       ),
       el('div', { class: 'group record-controls', role: 'group', 'aria-label': 'Camera and recording' }, this._cameraButton, this._screenButton, this._screenPickButton, this._recordButton, this._pauseButton, this._recordingsButton),
       el('div', { class: 'group page-controls', role: 'group', 'aria-label': 'Page' }, this._printButton, fullscreen, settingsButton),
+      // During a playback the bar takes the whole footer: nothing else can be used meanwhile.
+      this._playbackBar,
       this._progress,
     );
     // A button clicked with the pointer gives the focus back to the page, so that the next key
@@ -361,7 +367,7 @@ export class PlayerUI {
       ...gestures,
       `${keys('undo')}: undo stroke`, `${keys('redo')}: redo stroke`, `${keys('clear')}: clear strokes`,
       `${keys('whiteboard')}: whiteboard (arrows, scrolling or two fingers move it)`,
-      `${keys('camera')}: camera in a corner, then full frame, then off`, `${keys('screen')}: film the screen (asked which the first time), or stop`, `${keys('record')}: record the talk, or continue a saved one`,
+      `${keys('camera')}: camera in a corner, then full frame, then off`, `${keys('screen')}: film the screen in place of the camera (asked which the first time), or stop`, `${keys('record')}: record the talk, or continue a saved one`,
       ...(this._editSource ? [`${keys('edit')}: open this stop's source in the editor`] : []),
       `${keys('settings')}: settings`,
     ];
@@ -399,6 +405,7 @@ export class PlayerUI {
     this._loading.hidden = true;
     this._error.hidden = false;
     this._error.textContent = message;
+    this._stateMessage = 'Error';
     this._state.textContent = 'Error';
   }
 
@@ -465,7 +472,7 @@ export class PlayerUI {
     void this._refreshRecordings();
     player.on('state', ({ state, message }) => {
       this._stateMessage = message;
-      if (this._noticeTimer === null) this._state.textContent = message;
+      this._renderState();
       // Once a stop settles (text sharpened by then), the tablet gets a fresh picture.
       if (state !== 'playing' && state !== 'looping') this._requestFrame(250);
     });
@@ -601,8 +608,37 @@ export class PlayerUI {
     this._state.textContent = message;
     this._noticeTimer = window.setTimeout(() => {
       this._noticeTimer = null;
-      this._state.textContent = this._stateMessage;
+      this._renderState();
     }, 3000);
+  }
+
+  /**
+   * The header's state: the player's, then what is on, as in "Paused | Whiteboard | Camera | Recording".
+   * One picture at a time, so Camera and Screen never show together.
+   */
+  private _composeState(): string {
+    const parts = [this._stateMessage];
+    if (this._boardOn) parts.push('Whiteboard');
+    const picture = this._livePicture();
+    if (picture) parts.push(picture === 'screen' ? 'Screen' : 'Camera');
+    const recorder = this._recorder;
+    if (recorder) parts.push(recorder.state === 'paused' ? 'Recording paused' : 'Recording');
+    return parts.join(' | ');
+  }
+
+  /** Which picture is on: the screen while filmed, else the camera while on; during playback, what the recording shows full frame. */
+  private _livePicture(): 'camera' | 'screen' | null {
+    if (this._playback) return this._camera.hidden ? null : this._playback.part?.source === 'screen' ? 'screen' : this._cameraFull ? 'camera' : null;
+    return this._screenFilming ? 'screen' : this._cameraMode !== 'off' ? 'camera' : null;
+  }
+
+  /** Show the state in the header, unless a notice is up; and the dot that stands in for it in fullscreen. */
+  private _renderState(): void {
+    if (this._noticeTimer === null) this._state.textContent = this._composeState();
+    const picture = this._playback ? null : this._livePicture();
+    if (picture) this._liveDot.dataset.live = picture;
+    else delete this._liveDot.dataset.live;
+    this._liveDot.title = picture === 'screen' ? 'The screen is being filmed' : picture === 'camera' ? 'The camera is on' : '';
   }
 
   /** Remove the most recent stroke of the surface in front (the whiteboard when shown, else the slide). */
@@ -648,7 +684,8 @@ export class PlayerUI {
   /**
    * Step the camera (off → in a corner → full frame → off), or go straight to `mode`. The first
    * step asks the browser for the camera chosen in the settings. A recording in progress keeps
-   * the camera while it is on; during a playback only full frame or not can be chosen.
+   * the camera while it is on; during a playback only full frame or not can be chosen. One
+   * picture at a time: the camera coming on takes the screen out of the filming (the share stays held).
    */
   async toggleCamera(mode?: CameraMode): Promise<void> {
     if (this._playback) {
@@ -659,14 +696,18 @@ export class PlayerUI {
     if (next === this._cameraMode) return;
     if (next !== 'off' && !this._cameraStream && !(await this._acquireCamera())) return;
     const wasOn = this._cameraMode !== 'off';
+    if (next !== 'off' && this._screenFilming) {
+      this._cameraSuspended = null;
+      await this._setScreenFilming(false, false);
+    }
     this._cameraMode = next;
     this._cameraButton.setAttribute('aria-pressed', String(next !== 'off'));
     this._setCameraFull(next === 'full');
     if (next === 'off') {
       // The recording closes the file with the picture before the camera goes.
-      if (wasOn && !this._screenFilming) await this._recordPicture();
+      if (wasOn) await this._recordPicture();
       this._setCameraStream(null);
-    } else if (!wasOn && !this._screenFilming) {
+    } else if (!wasOn) {
       await this._recordPicture();
     }
     this._layoutCamera();
@@ -699,30 +740,22 @@ export class PlayerUI {
    * browser which screen or window to share (its picker, which a page can neither skip nor fill
    * in, opens on the kind of surface chosen last time). Stopping keeps the share held for the
    * next time, until it is ended from the browser's own bar; the next start then asks again.
+   * The red Screen button and the header say what is filmed; there is no notice.
    */
   async toggleScreen(on = !this._screenFilming): Promise<void> {
     if (this._playback || on === this._screenFilming) return;
-    if (on) {
-      if (!this._screenHeld() && !(await this._acquireScreen())) return;
-      await this._setScreenFilming(true);
-      const what = this._screenLabel();
-      this.notice(this._recorder ? `Filming ${what}; Screen again (or S) when you are back` : `${what[0].toUpperCase()}${what.slice(1)} will be filmed once a recording runs; Screen again (or S) stops`);
-    } else {
-      await this._setScreenFilming(false);
-      this.notice(this._screenHeld() ? `Screen off; ${this._screenLabel()} stays shared, S films it again (the browser's bar ends the share)` : 'Screen off; the browser has ended the share, S asks again');
-    }
+    if (on && !this._screenHeld() && !(await this._acquireScreen())) return;
+    await this._setScreenFilming(on);
   }
 
-  /** Ask the browser for another screen or window in place of the share held; the filming, if on, goes on with it. */
+  /** Ask the browser for another screen or window in place of the share held, and film it. */
   async pickScreen(): Promise<void> {
-    if (this._playback) return;
-    if (!(await this._acquireScreen())) return;
+    if (this._playback || !(await this._acquireScreen())) return;
     if (this._screenFilming) await this._recordPicture();
-    const what = this._screenLabel();
-    this.notice(this._screenFilming ? `Filming ${what} from now on` : `${what[0].toUpperCase()}${what.slice(1)} is shared; S films it`);
+    else await this._setScreenFilming(true);
   }
 
-  /** What is shared, for the notices: "the entire screen", "a window", "a tab", or "the screen" when the browser does not say. */
+  /** What is shared, for the button's title: "the entire screen", "a window", "a tab", or "the screen" when the browser does not say. */
   private _screenLabel(): string {
     const surface = (this._screenStream?.getVideoTracks()[0]?.getSettings() as { displaySurface?: string } | undefined)?.displaySurface;
     return surface === 'monitor' ? 'the entire screen' : surface === 'window' ? 'a window' : surface === 'browser' ? 'a tab' : 'the screen';
@@ -775,20 +808,38 @@ export class PlayerUI {
   private _updateScreenButton(): void {
     const held = this._screenHeld();
     this._screenPickButton.hidden = !held;
-    this._screenButton.classList.toggle('held', held && !this._screenFilming);
     this._screenButton.title = held && !this._screenFilming
-      ? 'Film the screen shared before again (S); the arrow beside chooses another'
+      ? `Film ${this._screenLabel()} again (S); the arrow beside picks another`
       : 'Film the screen instead of the camera, for the time spent in another application, or stop (S)';
   }
 
-  /** Put the screen into the recording in place of the camera picture, or take it out again. */
-  private async _setScreenFilming(on: boolean): Promise<void> {
+  /**
+   * Put the screen into the recording in place of the camera picture, or take it out again. One
+   * picture at a time: the camera, if on, is set aside while the screen is filmed and comes back
+   * when the filming stops, unless it is turned on by hand meanwhile, which stops the filming
+   * instead (`picture` false then leaves the recording's switch to the caller).
+   */
+  private async _setScreenFilming(on: boolean, picture = true): Promise<void> {
     if (on === this._screenFilming) return;
     this._screenFilming = on;
     this._screenButton.setAttribute('aria-pressed', String(on));
     this.root.classList.toggle('screen-filming', on);
     this._updateScreenButton();
-    await this._recordPicture();
+    if (on && this._cameraMode !== 'off') {
+      this._cameraSuspended = this._cameraMode;
+      this._setCameraStream(null);
+    } else if (!on && this._cameraSuspended) {
+      const mode = this._cameraSuspended;
+      this._cameraSuspended = null;
+      if (picture && (await this._acquireCamera())) {
+        this._cameraMode = mode;
+        this._cameraButton.setAttribute('aria-pressed', 'true');
+        this._setCameraFull(mode === 'full');
+        this._layoutCamera();
+      }
+    }
+    this._renderState();
+    if (picture) await this._recordPicture();
   }
 
   /** The hidden-page mode: with the screen held for a recording, it is filmed whenever this page is hidden. */
@@ -804,7 +855,7 @@ export class PlayerUI {
     this._note({ type: 'camera', on });
     this._layoutCamera();
     this._updateSpotlight();
-    this._state.textContent = on ? 'Camera' : this._boardOn ? 'Whiteboard' : 'Slides';
+    this._renderState();
   }
 
   /** Start the camera chosen in the settings for a live picture; false (with a notice) when there is none. */
@@ -864,6 +915,7 @@ export class PlayerUI {
     camera.classList.toggle('screen', screen);
     camera.classList.toggle('full', this._cameraFull || screen);
     this.stageHost.classList.toggle('camera-on', (this._cameraFull || screen) && hasPicture);
+    this._renderState();
   }
 
   // ---------------------------------------------------------------------
@@ -1036,6 +1088,7 @@ export class PlayerUI {
     const offset = this._appendTo?.timeline.duration ?? 0;
     this._recordLabel.textContent = `${recorder.state === 'paused' ? '❚❚' : '●'} ${formatTime(offset + recorder.elapsed)}`;
     this._recordLabel.classList.toggle('paused', recorder.state === 'paused');
+    this._renderState();
   }
 
   /** Pause the recording, or resume it; the gap is left out of the talk. */
@@ -1069,6 +1122,7 @@ export class PlayerUI {
     this._recordButton.textContent = '● Record';
     this._recordButton.setAttribute('aria-pressed', 'false');
     this._pauseButton.hidden = true;
+    this._renderState();
     const result = await recorder.stop();
     // The microphone is released; the camera stays as the presenter left it, and a screen share
     // stays held for the next time (S), until the browser's bar ends it.
@@ -2193,7 +2247,7 @@ export class PlayerUI {
     saveSettings(this._settings);
     this._syncSettingsForm();
     this._updateSpotlight();
-    this._state.textContent = this._settings.pointerMode === 'laser' ? 'Laser pointer' : 'Spotlight';
+    this.notice(this._settings.pointerMode === 'laser' ? 'Laser pointer' : 'Spotlight');
   }
 
   private _sample(event: { clientX: number; clientY: number; pressure?: number; pointerType?: string }, surface: InkSurfaceName): InkSample {
@@ -2355,7 +2409,7 @@ export class PlayerUI {
     this._boardLayer.hidden = !on;
     this.stageHost.classList.toggle('board-on', on);
     this._boardButton.setAttribute('aria-pressed', String(on));
-    this._state.textContent = on ? 'Whiteboard' : 'Slides';
+    this._renderState();
     this._updateSpotlight();
   }
 
@@ -2587,7 +2641,7 @@ export class PlayerUI {
       case 'hello':
         if (message.role !== 'pad') break;
         this._padsSeen.add(from);
-        this._state.textContent = 'Tablet connected';
+        this.notice('Tablet connected');
         this._syncSettingsForm();
         this._sendState();
         this._pad?.send({ type: 'ink', surface: 'slide', op: 'replace', strokes: this._slideInk.strokes });
