@@ -68,7 +68,6 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
 .zd-stage .links { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 /* Hit areas only: the stage follows a link on a tap, so a drag over one still draws. */
 .zd-stage .links a { position: absolute; display: block; pointer-events: none; }
-.zd-stage.over-link { cursor: pointer; }
 .zd-stage { touch-action: none; }
 .zd-stage .highlights {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
@@ -114,6 +113,8 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
 .zd-stage .playback-bar button { padding: 4px 10px; font-size: 12px; }
 .zd-app.playing-back .buttons button, .zd-app.playing-back .record-button { opacity: .35; pointer-events: none; }
 .zd-stage.sketch-active { cursor: crosshair; }
+/* Over a link the hand wins over the pen's crosshair; the spotlight and laser keep their own cursor. */
+.zd-stage.over-link:not(.spotlight-active), .zd-stage.sketch-active.over-link:not(.spotlight-active) { cursor: pointer; }
 .zd-stage.spotlight-active, .zd-stage.sketch-active, .zd-stage.stroking { user-select: none; }
 .zd-stage .error, .zd-stage .loading {
   position: absolute; z-index: 3; background: var(--background); border: 1px solid var(--border);
