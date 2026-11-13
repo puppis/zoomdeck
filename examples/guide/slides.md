@@ -8,7 +8,7 @@ heading: color=BLUE_E
 ::: slide {#guide width=36}
 # Zoomdeck {x=-17.35 y=9.2}
 
-A tour of the Markdown dialect and the player in six sections; each chapter pairs a listing with its result. Press → to follow the tree in pre-order, pick a slide from the outline (O), or double-click a section or chapter to jump to it. {x=-17.35 y=8.1 width=25 font_size=26}
+Zoomdeck makes zooming presentations: a tree of slides written in Markdown, with formulas, images, diagrams and animations, that the browser plays by zooming into each slide and back out. This guide tours the dialect and the player in six sections; each chapter shows the markup next to what it produces. Press → to follow the tree in order, pick a slide from the outline (O), or click a section or chapter to jump to it. {x=-17.35 y=8.1 width=27 font_size=26}
 
 [Documentation ↗]{#doc-link x=17.35 y=9.2 anchor=right-baseline font_size=26 color=BLUE_E href=https://puppis.github.io/zoomdeck/}
 
