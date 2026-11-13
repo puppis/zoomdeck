@@ -102,7 +102,7 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
 .zd-stage .camera.screen { object-fit: contain; }
 .zd-stage.camera-on .highlights, .zd-stage.camera-on .whiteboard, .zd-stage.camera-on .links, .zd-stage.camera-on .iframes { visibility: hidden; }
 /* A dot in the top right corner of the stage stands in for the buttons and the header in fullscreen: green while the camera is on, red while the screen is filmed, nothing otherwise. It sits where the system puts its own camera light, so that the two overlap rather than stand side by side. */
-.zd-stage .live-dot { display: none; position: absolute; top: 4px; right: 4px; z-index: 6; width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 0 2px rgba(0, 0, 0, .35); pointer-events: none; }
+.zd-stage .live-dot { display: none; position: absolute; top: 2px; right: 2px; z-index: 6; width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 0 2px rgba(0, 0, 0, .35); pointer-events: none; }
 .zd-app:fullscreen .live-dot[data-live=camera] { display: block; background: #2c2; }
 .zd-app:fullscreen .live-dot[data-live=screen] { display: block; background: #d22; }
 /* During a playback the bar takes the whole footer in place of the controls: nothing else can be used meanwhile. */
