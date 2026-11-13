@@ -12,6 +12,7 @@ import { LinkLayer } from './links';
 import { IframeLayer } from './iframes';
 import { VideoClip } from '../video';
 import { loadDefaultFonts } from '../fonts';
+import { RASTER_STATS } from '../markup/text';
 import type { Bookmark } from '../position';
 import { RasterImage } from '../raster';
 import { PadLink, padLinkAvailable, padRoom } from './pad';
@@ -159,7 +160,7 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
       });
     };
   }
-  if (log) console.info(`[zoomdeck] [+${((performance.now() - started) / 1000).toFixed(1)}s] Ready: ${navigation.clips.length} clips`);
+  if (log) console.info(`[zoomdeck] [+${((performance.now() - started) / 1000).toFixed(1)}s] Ready: ${navigation.clips.length} clips; ${RASTER_STATS.count} text rasters in ${Math.round(RASTER_STATS.ms)} ms`);
 
   // The same-origin editing shell transfers a logical bookmark across reloads.
   const windowWithPosition = window as Window & { zoomdeckPosition?: () => Bookmark | null };

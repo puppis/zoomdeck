@@ -6,6 +6,8 @@ import { MarkupError, normalizeStyles } from './ast';
 import { describeOrigin, expandImports } from './imports';
 import { LayoutConfig, type LayoutConfigOptions } from './renderer';
 import { SlideBuilder, type SlideNamespace } from './slide';
+import { loadDefaultFonts } from '../fonts';
+import { preloadMathJax } from 'manim-web';
 import type { SourceLocation } from '../slides';
 
 export interface MarkupDeckOptions {
@@ -77,6 +79,10 @@ export function markupDeck(options: MarkupDeckOptions): ResolvedDeck {
         source = await response.text();
         basePath = basePath ?? url;
       }
+      // The fonts, and MathJax when the markup has formulas, load while the markup is parsed and
+      // the slides are built, instead of stalling the first line of text or the first formula.
+      void loadDefaultFonts();
+      if (/\$/.test(source as string)) void preloadMathJax().catch(() => undefined);
       const files = options.files ?? {};
       const expanded = await expandImports(source as string, {
         load: async (path) => {

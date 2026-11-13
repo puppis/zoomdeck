@@ -305,9 +305,12 @@ runDeck(markupDeck({
       // An export carries the whole engine and the formula renderer, in one chunk when it is one
       // file: Vite's advice to split chunks above 500 kB does not apply, so it is not printed.
       chunkSizeWarningLimit: Number.MAX_SAFE_INTEGER,
+      // Dynamic imports stay separate chunks in the one-file export too: the HTML embeds each
+      // as inert text and makes it a module when it is first imported, so the formula renderer
+      // (11 MB) is compiled when a formula needs it rather than before the page can start.
+      modulePreload: options.oneFile ? false : undefined,
       rollupOptions: {
         input: htmlFile,
-        output: options.oneFile ? { inlineDynamicImports: true } : {},
       },
     },
   });
@@ -323,13 +326,55 @@ runDeck(markupDeck({
   await fs.rm(stageDir, { recursive: true, force: true });
 }
 
+/**
+ * The page's script and every chunk it may import, embedded as inert text, with a loader that
+ * turns a chunk into a module (a blob URL) the first time it is needed: static imports between
+ * chunks are rewritten to the blob URLs as the chunks are made, dynamic ones look theirs up when
+ * they run. The browser thus parses the text at load but compiles each chunk only on import.
+ */
+const CHUNK_LOADER = `(() => {
+  const texts = new Map();
+  for (const el of document.querySelectorAll('script[type="text/plain"][data-zd-chunk]')) texts.set(el.dataset.zdChunk, el.textContent.replace(/<\\\\\\/script/g, '</script'));
+  const urls = new Map();
+  const chunk = (name) => {
+    let url = urls.get(name);
+    if (url) return url;
+    let code = texts.get(name);
+    if (code === undefined) throw new Error('No such chunk: ' + name);
+    for (const dep of texts.keys()) {
+      if (dep === name) continue;
+      code = code.split('import("./' + dep + '")').join('import(self.__zdChunk("' + dep + '"))').split("import('./" + dep + "')").join('import(self.__zdChunk("' + dep + '"))');
+    }
+    for (const dep of texts.keys()) {
+      if (dep === name || !code.includes('./' + dep)) continue;
+      const depUrl = chunk(dep);
+      code = code.split('"./' + dep + '"').join('"' + depUrl + '"').split("'./" + dep + "'").join("'" + depUrl + "'");
+    }
+    url = URL.createObjectURL(new Blob([code], { type: 'text/javascript' }));
+    urls.set(name, url);
+    return url;
+  };
+  self.__zdChunk = chunk;
+  const entry = document.querySelector('script[type="text/plain"][data-zd-entry]').dataset.zdChunk;
+  import(chunk(entry));
+})();`;
+
 async function inlineHtml(html, outDir) {
   let result = html;
+  const escape = (code) => code.replace(/<\/script/g, '<\\/script');
   for (const match of [...html.matchAll(/<script type="module"[^>]*src="([^"]+)"[^>]*><\/script>/g)]) {
-    const code = await fs.readFile(join(outDir, match[1]), 'utf8');
+    const entry = match[1].replace(/^\.?\//, '');
+    const folder = dirname(join(outDir, entry));
+    const names = (await fs.readdir(folder)).filter((name) => name.endsWith('.js'));
+    const scripts = [];
+    for (const name of names) {
+      const code = await fs.readFile(join(folder, name), 'utf8');
+      const isEntry = name === basename(entry);
+      scripts.push(`<script type="text/plain" data-zd-chunk="${name}"${isEntry ? ' data-zd-entry' : ''}>${escape(code)}</script>`);
+    }
+    scripts.push(`<script type="module">${CHUNK_LOADER}</script>`);
     // A replacer function keeps `$&`-style sequences inside the code literal.
-    const inline = `<script type="module">${code.replace(/<\/script/g, '<\\/script')}</script>`;
-    result = result.replace(match[0], () => inline);
+    result = result.replace(match[0], () => scripts.join('\n'));
   }
   for (const match of [...html.matchAll(/<link rel="stylesheet"[^>]*href="([^"]+)"[^>]*>/g)]) {
     const css = await fs.readFile(join(outDir, match[1]), 'utf8');

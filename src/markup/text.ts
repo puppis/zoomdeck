@@ -27,6 +27,9 @@ export function textResolutionScale(): number {
 }
 
 /** Canvas pixels per world unit of a line at rest. */
+/** How many times text lines were drawn to their canvases, and the time it took, since the page loaded. */
+export const RASTER_STATS = { count: 0, ms: 0 };
+
 export function textBasePxPerWorld(): number {
   return PX_PER_WORLD_BASE * textResolutionScale();
 }
@@ -272,6 +275,7 @@ export class StyledLine extends Text {
 
   /** Draw the laid-out runs onto the canvas at the current density. */
   private _draw(layout: LineLayout): void {
+    const drawStarted = performance.now();
     const canvas = this._canvas as HTMLCanvasElement;
     const ctx = this._ctx as CanvasRenderingContext2D;
     const runs = this._runs as TextRun[];
@@ -296,6 +300,8 @@ export class StyledLine extends Text {
     });
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     if (this._texture) this._texture.needsUpdate = true;
+    RASTER_STATS.count += 1;
+    RASTER_STATS.ms += performance.now() - drawStarted;
   }
 
   protected override _renderToCanvas(): void {

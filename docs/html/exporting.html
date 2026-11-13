@@ -62,7 +62,8 @@ documentation is exactly such a file.</p>
 <p>Two things to know:</p>
 <ul>
 <li>Size. The player with the engine weighs about 15 MB before your assets, most of it the formula
-renderer; assets are embedded as data URIs and add their own size, so long videos belong in the
+renderer, which the file carries as inert text and compiles only when a formula needs it, so
+the page starts long before it would if everything were parsed up front; assets are embedded as data URIs and add their own size, so long videos belong in the
 folder export instead.</li>
 <li>Code-authored decks (<code>.ts</code> modules) embed their code too, but images they load themselves at
 run time are not collected; put such images next to the exported file or use the Markdown
