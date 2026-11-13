@@ -16,6 +16,8 @@ description: Keyboard and pointer controls, the pen and its pressure styles, the
 | ⌘Z / Ctrl+Z | undo the last pen or highlighter stroke |
 | ⌘⇧Z / Ctrl+Shift+Z / Ctrl+Y | redo a stroke |
 | Delete, Backspace | clear all strokes on this slide |
+| D | drawing on or off: while on, a plain drag draws and the pointer shows the pen in its color |
+| 1 … 7 | pen color (Default, Black, White, Red, Yellow, Green, Blue); drawing turns on with it |
 | L | switch the pointer tool between spotlight and laser |
 | W | show or hide the whiteboard; while it is shown the arrows scroll it |
 | C | camera: in a corner, then full frame, then off |
@@ -67,8 +69,13 @@ of their section. Settings are stored in the browser and apply to every deck you
 
 With the default gestures:
 
-- **Drag** draws with the pen; a click leaves a dot. Color and tip size are in the footer, where
-  "Default" is the deck's text color.
+- **Drag** draws with the pen while drawing is on; a click leaves a dot. `D` turns drawing on or
+  off: while on, the pointer over the slides is a dot in the pen's color, and the header says Pen;
+  while off, the mouse only clicks and follows links, so that nothing is drawn by accident. The
+  keys `1` to `7` pick the color (Default, Black, White, Red, Yellow, Green, Blue) and turn drawing
+  on, as does a click on a swatch, which is how the color is changed in fullscreen. Color and tip
+  size are in the footer, where "Default" is the deck's text color. A stylus always draws, and so
+  does a drag on the whiteboard, whatever the drawing switch says.
 - Hold **Shift** for a spotlight that follows the pointer, or a red laser dot: the `L` key (or the
   Pointer setting) switches between the two. Shift + scroll resizes either; **Shift + drag** draws a
   highlighter stroke.

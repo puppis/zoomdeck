@@ -47,7 +47,8 @@ export function sanitizeRecording(value: unknown): RecordingSettings {
 
 export type ActionName =
   | 'next' | 'previous' | 'home' | 'replay' | 'fullscreen' | 'outline' | 'undo' | 'redo' | 'clear' | 'settings' | 'exit' | 'pointer' | 'whiteboard'
-  | 'edit' | 'camera' | 'screen' | 'record' | 'print';
+  | 'edit' | 'camera' | 'screen' | 'record' | 'print' | 'draw'
+  | 'color1' | 'color2' | 'color3' | 'color4' | 'color5' | 'color6' | 'color7';
 
 export interface ActionInfo {
   name: ActionName;
@@ -63,6 +64,14 @@ export const ACTIONS: ActionInfo[] = [
   { name: 'undo', label: 'Undo the last pen or highlighter stroke' },
   { name: 'redo', label: 'Redo a stroke' },
   { name: 'clear', label: 'Clear all strokes on this slide' },
+  { name: 'draw', label: 'Drawing on or off: while on, a plain drag draws and the pointer shows the pen in its color' },
+  { name: 'color1', label: 'Pen color 1: Default (the deck\'s text color); also turns drawing on' },
+  { name: 'color2', label: 'Pen color 2: Black' },
+  { name: 'color3', label: 'Pen color 3: White' },
+  { name: 'color4', label: 'Pen color 4: Red' },
+  { name: 'color5', label: 'Pen color 5: Yellow' },
+  { name: 'color6', label: 'Pen color 6: Green' },
+  { name: 'color7', label: 'Pen color 7: Blue' },
   { name: 'pointer', label: 'Switch between spotlight and laser' },
   { name: 'whiteboard', label: 'Show or hide the whiteboard' },
   { name: 'camera', label: 'Camera: in a corner, then full frame, then off' },
@@ -84,6 +93,14 @@ export const DEFAULT_BINDINGS: Record<ActionName, string[]> = {
   undo: ['Meta+z', 'Control+z'],
   redo: ['Meta+Shift+z', 'Control+Shift+z', 'Control+y'],
   clear: ['Delete', 'Backspace'],
+  draw: ['d'],
+  color1: ['1'],
+  color2: ['2'],
+  color3: ['3'],
+  color4: ['4'],
+  color5: ['5'],
+  color6: ['6'],
+  color7: ['7'],
   pointer: ['l'],
   whiteboard: ['w'],
   camera: ['c'],

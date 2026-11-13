@@ -121,7 +121,8 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
 }
 .zd-app:fullscreen.playing-back footer .playback-bar input[type=range] { flex: none; width: min(360px, 40vw); }
 .zd-app.playing-back .slides button { opacity: .35; pointer-events: none; }
-.zd-stage.sketch-active { cursor: crosshair; }
+/* Drawing on: the pointer is the pen's tip in its color (set by the player); the crosshair stands in where custom cursors fail. */
+.zd-stage.sketch-active { cursor: var(--pen-cursor, crosshair); }
 /* Over a link the hand wins over the pen's crosshair; the spotlight and laser keep their own cursor. */
 .zd-stage.over-link:not(.spotlight-active), .zd-stage.sketch-active.over-link:not(.spotlight-active) { cursor: pointer; }
 .zd-stage.spotlight-active, .zd-stage.sketch-active, .zd-stage.stroking { user-select: none; }

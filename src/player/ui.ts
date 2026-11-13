@@ -17,7 +17,7 @@ import {
   DEFAULT_PEN_STYLE, InkSurface, PEN_PRESETS, PEN_PRESET_LABELS, newStrokeId, type InkSample, type InkStroke, type InkTool, type PenPreset,
 } from './ink';
 import { PadLink, fetchPairingInfo, padLinkAvailable, padUrl, type InkOp, type InkSurfaceName, type PadMessage } from './pad';
-import { Swatches } from './swatches';
+import { PEN_COLORS, Swatches } from './swatches';
 import { Recorder, initialEvents, type CapturedMedia } from './recorder';
 import { Playback } from './playback';
 import { exportMimeType, exportVideo, type ExportSource } from './export';
@@ -87,6 +87,8 @@ export class PlayerUI {
   private readonly _loadingText: HTMLElement;
   private readonly _outlineToggle: HTMLButtonElement;
   private readonly _penColor: Swatches;
+  /** Drawing mode: a plain drag of the mouse draws, and the pointer shows the pen in its color. */
+  private _drawingOn = false;
   private readonly _penSize: HTMLSelectElement;
   private readonly _speed: HTMLSelectElement;
   private readonly _spotlight: HTMLElement;
@@ -261,7 +263,13 @@ export class PlayerUI {
 
     this._previous = el('button', { class: 'previous', 'aria-label': 'Previous stop', title: 'Previous stop (←)', text: '←' });
     this._next = el('button', { class: 'next', 'aria-label': 'Next stop', title: 'Next stop (→)', text: '→' });
-    this._penColor = new Swatches(deck.foreground, () => this._finishStroke());
+    this._penColor = new Swatches(deck.foreground, () => {
+      this._finishStroke();
+      this._updatePenCursor();
+      // Choosing a color means meaning to draw.
+      if (!this._drawingOn) this.toggleDrawing(true);
+    });
+    this._updatePenCursor();
     this._penSize = el('select', { 'aria-label': 'Pen tip size', title: 'Pen tip size' });
     for (const size of ['1', '3', '6', '10']) {
       const option = el('option', { value: size, text: `${size} px` });
@@ -355,7 +363,7 @@ export class PlayerUI {
     const advance = held('advance');
     const edit = this._editSource ? held('edit') : null;
     const gestures = [
-      pen === null ? null : `${pen || 'Plain '}drag: draw with the pen`,
+      pen === null ? null : `${pen || 'Plain '}drag: draw with the pen while drawing is on (${keys('draw')} toggles; ${keys('color1')}–${keys('color7')} pick the color and turn it on; a stylus and the whiteboard always draw)`,
       pointer === null ? null : `${pointer ? `Hold ${pointer.slice(0, -3)}` : 'Hover'}: spotlight or laser (${keys('pointer')} switches)`,
       pointer === null ? null : `${pointer || 'Plain '}drag: highlight · ${pointer || ''}scroll: resize`,
       advance === null ? null : `${advance || 'Plain '}click: next stop`,
@@ -552,6 +560,10 @@ export class PlayerUI {
       case 'undo': this.undoStroke(); break;
       case 'redo': this.redoStroke(); break;
       case 'clear': this.clearStrokes(); break;
+      case 'draw': this.toggleDrawing(); break;
+      case 'color1': case 'color2': case 'color3': case 'color4': case 'color5': case 'color6': case 'color7':
+        this.pickPenColor(Number(action.slice(5)));
+        break;
       case 'settings': this.openSettings(); break;
       case 'pointer': this.togglePointerMode(); break;
       case 'whiteboard': this.toggleWhiteboard(); break;
@@ -619,6 +631,7 @@ export class PlayerUI {
   private _composeState(): string {
     const parts = [this._stateMessage];
     if (this._boardOn) parts.push('Whiteboard');
+    if (this._drawingOn) parts.push('Pen');
     const picture = this._livePicture();
     if (picture) parts.push(picture === 'screen' ? 'Screen' : 'Camera');
     const recorder = this._recorder;
@@ -2236,9 +2249,41 @@ export class PlayerUI {
     return pointerActionFor(this._settings, this._modifiers);
   }
 
-  private _drawingTool(): InkTool | null {
+  private _drawingTool(pointerType?: string): InkTool | null {
     const tool = this._activeTool();
-    return tool === 'pen' ? 'pen' : tool === 'pointer' ? 'highlighter' : null;
+    return tool === 'pen' ? (this._penReady(pointerType) ? 'pen' : null) : tool === 'pointer' ? 'highlighter' : null;
+  }
+
+  /**
+   * Whether the pen gesture draws: while drawing is on (D), on the whiteboard, which is there to
+   * be drawn on, and always for a stylus, which is held to draw. The mouse otherwise only clicks.
+   */
+  private _penReady(pointerType?: string): boolean {
+    return this._drawingOn || this._boardOn || pointerType === 'pen';
+  }
+
+  /** Turn drawing on or off: the pointer shows the pen in its color while a plain drag draws. */
+  toggleDrawing(on = !this._drawingOn): void {
+    if (this._playback || on === this._drawingOn) return;
+    this._drawingOn = on;
+    if (!on) this._finishStroke();
+    this._updatePenCursor();
+    this._updateSpotlight();
+    this._renderState();
+  }
+
+  /** Choose the pen color by its place in the footer's swatches (1 is the deck's own color); drawing turns on with it. */
+  pickPenColor(index: number): void {
+    const entry = PEN_COLORS[index - 1];
+    if (!entry || this._playback) return;
+    this._penColor.select(entry[0]);
+  }
+
+  /** The pointer over the stage while drawing is on: a dot of the pen's color, ringed so that it shows on any ground. */
+  private _updatePenCursor(): void {
+    const color = this._penColor.value === 'foreground' ? this._deck.foreground : this._penColor.value;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22"><circle cx="11" cy="11" r="7.5" fill="${color}" stroke="#000" stroke-opacity=".6" stroke-width="3"/><circle cx="11" cy="11" r="7.5" fill="none" stroke="#fff" stroke-width="1.5"/></svg>`;
+    this.stageHost.style.setProperty('--pen-cursor', `url("data:image/svg+xml,${encodeURIComponent(svg)}") 11 11, crosshair`);
   }
 
   /** Switch the tool shown by the pointer gesture between the spotlight and the laser. */
@@ -2482,7 +2527,7 @@ export class PlayerUI {
     const shown = tool === 'pointer' && this._pointer !== null;
     stage.classList.toggle('spotlight-active', shown);
     this._markPointer(shown);
-    stage.classList.toggle('sketch-active', tool === 'pen' && this._pointer !== null);
+    stage.classList.toggle('sketch-active', tool === 'pen' && this._pointer !== null && this._penReady());
     // Links and live pages give way to a tool selected with a held key, never to a plain gesture.
     stage.classList.toggle('tool-held', tool !== null && this._modifiers !== '' && this._pointer !== null);
   }
@@ -2548,7 +2593,7 @@ export class PlayerUI {
         else this.notice('Open the deck with zoomdeck serve to jump to the editor');
         return;
       }
-      const drawing = this._drawingTool();
+      const drawing = this._drawingTool(event.pointerType);
       if (drawing) {
         event.preventDefault();
         this._beginStroke(event, drawing);
