@@ -2275,6 +2275,11 @@ export class PlayerUI {
    */
   toggleDrawing(on = !this._drawingOn): void {
     if (this._playback || on === this._drawingOn) return;
+    // The whiteboard is there to be drawn on: drawing stays on for as long as it is shown.
+    if (!on && this._boardOn) {
+      this.notice('Drawing stays on with the whiteboard; W hides it');
+      return;
+    }
     this._drawingOn = on;
     if (!on) this._finishStroke();
     this.stageHost.classList.toggle('drawing-on', on);
@@ -2291,17 +2296,22 @@ export class PlayerUI {
     this._penColor.select(entry[0]);
   }
 
-  /** The pointer over the stage while drawing is on: a pencil in the pen's color, its tip the hot spot, edged in white and dark so that it shows on any ground. */
+  /**
+   * The pointer over the stage while drawing is on: a pencil in the pen's color, its tip at the
+   * top left as the hot spot and its body running to the south east, edged in white and dark so
+   * that it shows on any ground.
+   */
   private _updatePenCursor(): void {
     const color = this._penColor.value === 'foreground' ? this._deck.foreground : this._penColor.value;
     const body = 'M4.4 15.3 16.9 2.9l4.2 4.2L8.7 19.6Z';
     const tip = 'M3 21l1.4-5.7 4.3 4.3Z';
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g stroke-linejoin="round">`
+    // Drawn with the tip at the bottom left, then flipped so that it points down.
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g stroke-linejoin="round" transform="matrix(1 0 0 -1 0 24)">`
       + `<path d="${body}" fill="${color}" stroke="#fff" stroke-width="3" paint-order="stroke"/>`
       + `<path d="${tip}" fill="#f3e3c3" stroke="#fff" stroke-width="3" paint-order="stroke"/>`
       + `<path d="${body}" fill="none" stroke="#000" stroke-opacity=".7"/><path d="${tip}" fill="none" stroke="#000" stroke-opacity=".7"/>`
       + `<path d="M13.4 6.4l4.2 4.2" fill="none" stroke="#000" stroke-opacity=".35"/><path d="M3 21l.5-2 1.5 1.5Z" fill="#333"/></g></svg>`;
-    this.stageHost.style.setProperty('--pen-cursor', `url("data:image/svg+xml,${encodeURIComponent(svg)}") 3 21, crosshair`);
+    this.stageHost.style.setProperty('--pen-cursor', `url("data:image/svg+xml,${encodeURIComponent(svg)}") 3 3, crosshair`);
   }
 
   /** Switch the tool shown by the pointer gesture between the spotlight and the laser. */

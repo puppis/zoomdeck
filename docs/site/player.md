@@ -73,7 +73,7 @@ With the default gestures:
   off: while on, the pointer over the slides is a pencil in the pen's color, the header says Pen,
   and links and live pages under the pointer are inert, so that a stroke can cross them; while
   off, the mouse only clicks and follows links, so that nothing is drawn by accident. Showing the
-  whiteboard turns drawing on, and hiding it brings back what was before. The keys `1` to `7`
+  whiteboard turns drawing on for as long as it is shown, and hiding it brings back what was before. The keys `1` to `7`
   pick the color (Default, Black, White, Red, Yellow, Green, Blue) and turn drawing on, as does a
   click on a swatch, which is how the color is changed in fullscreen. Color and tip size are in
   the footer, where "Default" is the deck's text color. A stylus always draws, whatever the
