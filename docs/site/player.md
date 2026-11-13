@@ -257,8 +257,9 @@ when they did, and the laser or spotlight moves where the presenter pointed. A b
 slides has play and pause (also Space), a scrubber (also `←` and `→`, five seconds at a time),
 the time, **Export video** and a way out (also Esc); seeking anywhere rebuilds the state at that
 moment. The recording's own sound plays, and its camera picture sits in the corner it was
-recorded with, or full frame where the presenter switched to it. Your keys and clicks on the deck
-are off until you leave the recording.
+recorded with, or full frame where the presenter switched to it. Your keys, taps and clicks on the
+deck, the pen, the whiteboard, the spotlight, links and the outline are off until you leave the
+recording, so that nothing of yours gets mixed with what the timeline replays.
 
 **Exporting a video.** Export video renders the open recording as a video file: the slides or the
 whiteboard with their ink, the camera in its corner or full frame, the pointer, and the recorded

@@ -424,7 +424,9 @@ export class PlayerUI {
       button.style.paddingLeft = `${12 + 15 * (ancestors(slide.id).length - 1)}px`;
       const first = player.firstEntry(slide.id);
       button.disabled = first < 0;
-      button.addEventListener('click', () => void player.goTo(first, false));
+      button.addEventListener('click', () => {
+        if (!this._playback) void player.goTo(first, false);
+      });
       this._slides.append(button);
       this._buttons.set(slide.id, button);
     }
@@ -631,6 +633,7 @@ export class PlayerUI {
 
   /** Show or hide the whiteboard: a blank page with its own strokes and history, kept while slides change. */
   toggleWhiteboard(on = !this._boardOn): void {
+    if (this._playback) return;
     this._setBoardShown(on);
     this._broadcast({ type: 'board', on, pan: { ...this._boardTarget } });
   }
@@ -1199,6 +1202,11 @@ export class PlayerUI {
     this._layoutCamera();
     this._playback.seek(0);
     void this._playback.play();
+  }
+
+  /** Whether a recording is being played: the deck then follows it and takes no navigation, drawing or links from the viewer. */
+  get playingBack(): boolean {
+    return this._playback !== null;
   }
 
   /** Leave the recording: the deck is the viewer's again, where the recording left it. */
@@ -2141,6 +2149,8 @@ export class PlayerUI {
 
   /** The pointer action selected by the modifier keys currently held. */
   private _activeTool(): PointerAction | null {
+    // While a recording plays, the pointer has no tool: no tap advances, nothing draws, no spotlight but the recorded one.
+    if (this._playback) return null;
     return pointerActionFor(this._settings, this._modifiers);
   }
 
@@ -2344,6 +2354,7 @@ export class PlayerUI {
     const previous = this._touches.get(event.pointerId);
     if (!previous) return;
     this._touches.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (this._playback) return;
     if (this._touches.size === 1) {
       this._fingerErase(event);
       return;
@@ -2435,7 +2446,7 @@ export class PlayerUI {
     stage.addEventListener('pointerdown', (event) => {
       if (event.pointerType === 'touch') {
         this._touches.set(event.pointerId, { x: event.clientX, y: event.clientY });
-        if (!interactive(event)) this._fingerErase(event);
+        if (!interactive(event) && !this._playback) this._fingerErase(event);
         return;
       }
       if (event.pointerType === 'pen') this._penSeen = performance.now();
@@ -2495,6 +2506,7 @@ export class PlayerUI {
       this._updateSpotlight();
     });
     stage.addEventListener('wheel', (event) => {
+      if (this._playback) return;
       const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? stage.clientHeight : 1;
       if (this._boardOn && this._activeTool() !== 'pointer') {
         event.preventDefault();
@@ -2554,11 +2566,12 @@ export class PlayerUI {
         this._pad?.send({ type: 'ink', surface: 'board', op: 'replace', strokes: this._boardInk.strokes });
         this._sendFrame();
         break;
+      // The tablet's strokes and board stay out of a recording being played, like the viewer's own.
       case 'board':
-        this._applyBoard(message.on, message.pan);
+        if (!this._playback) this._applyBoard(message.on, message.pan);
         break;
       case 'ink':
-        this._applyInk(message.surface, message);
+        if (!this._playback) this._applyInk(message.surface, message);
         break;
       case 'hover':
         this._showRemoteCursor(message);

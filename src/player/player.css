@@ -111,7 +111,7 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
 .zd-stage .playback-bar input[type=range] { width: min(360px, 40vw); }
 .zd-stage .playback-bar .play-time { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .zd-stage .playback-bar button { padding: 4px 10px; font-size: 12px; }
-.zd-app.playing-back .buttons button, .zd-app.playing-back .record-button { opacity: .35; pointer-events: none; }
+.zd-app.playing-back .buttons button, .zd-app.playing-back .record-button, .zd-app.playing-back .pen-controls, .zd-app.playing-back .slides button { opacity: .35; pointer-events: none; }
 .zd-stage.sketch-active { cursor: crosshair; }
 /* Over a link the hand wins over the pen's crosshair; the spotlight and laser keep their own cursor. */
 .zd-stage.over-link:not(.spotlight-active), .zd-stage.sketch-active.over-link:not(.spotlight-active) { cursor: pointer; }

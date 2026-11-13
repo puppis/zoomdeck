@@ -212,6 +212,8 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
     hashStep = clipForHash(location.hash, navigation, player);
     // A hash typed or pasted into the address bar of the open page moves the deck as a fresh load would.
     window.addEventListener('hashchange', () => {
+      // A recording being played moves the deck itself; a hash changed meanwhile waits for the viewer to leave it.
+      if (ui.playingBack) return;
       const index = clipForHash(location.hash, navigation, player);
       if (index !== null && index !== player.index) void player.goTo(index, false);
     });
@@ -234,7 +236,7 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
   let tap: { x: number; y: number; at: number; href: string } | null = null;
   ui.stageHost.addEventListener('pointerdown', (event) => {
     tap = null;
-    if (event.button !== 0 || (event.target as Element | null)?.closest?.('iframe, button, select, input')) return;
+    if (ui.playingBack || event.button !== 0 || (event.target as Element | null)?.closest?.('iframe, button, select, input')) return;
     const href = links.linkAt(event.clientX, event.clientY);
     if (href) tap = { x: event.clientX, y: event.clientY, at: performance.now(), href };
   });
@@ -247,10 +249,10 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
   });
   ui.stageHost.addEventListener('pointermove', (event) => {
     if (event.pointerType === 'touch') return;
-    ui.stageHost.classList.toggle('over-link', !(event.buttons & 1) && links.linkAt(event.clientX, event.clientY) !== null);
+    ui.stageHost.classList.toggle('over-link', !ui.playingBack && !(event.buttons & 1) && links.linkAt(event.clientX, event.clientY) !== null);
   });
   ui.stageHost.addEventListener('dblclick', (event) => {
-    if (event.button !== 0) return;
+    if (ui.playingBack || event.button !== 0) return;
     const hash = links.deckLinkAt(event.clientX, event.clientY);
     if (hash && links.navigate?.(hash)) {
       event.preventDefault();
