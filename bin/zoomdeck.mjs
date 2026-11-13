@@ -299,6 +299,9 @@ runDeck(markupDeck({
       emptyOutDir: false,
       assetsInlineLimit: options.oneFile ? Number.MAX_SAFE_INTEGER : 4096,
       cssCodeSplit: false,
+      // An export carries the whole engine and the formula renderer, in one chunk when it is one
+      // file: Vite's advice to split chunks above 500 kB does not apply, so it is not printed.
+      chunkSizeWarningLimit: Number.MAX_SAFE_INTEGER,
       rollupOptions: {
         input: htmlFile,
         output: options.oneFile ? { inlineDynamicImports: true } : {},
