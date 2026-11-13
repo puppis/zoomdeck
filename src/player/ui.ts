@@ -703,11 +703,18 @@ export class PlayerUI {
       if (reuse && !this._screenHeld()) this.notice('No screen is shared yet, or the browser ended the share: choose one');
       if ((!reuse || !this._screenHeld()) && !(await this._acquireScreen())) return;
       await this._setScreenFilming(true);
-      this.notice(this._recorder ? 'Filming the screen; Screen again (or S) when you are back' : 'The screen will be filmed once a recording runs; Screen again (or S) stops');
+      const what = this._screenLabel();
+      this.notice(this._recorder ? `Filming ${what}; Screen again (or S) when you are back` : `${what[0].toUpperCase()}${what.slice(1)} will be filmed once a recording runs; Screen again (or S) stops`);
     } else {
       await this._setScreenFilming(false);
-      this.notice(this._screenStream ? 'Screen off; the share stays for Alt+S (the browser\'s bar stops it)' : 'Screen off');
+      this.notice(this._screenHeld() ? `Screen off; ${this._screenLabel()} stays shared for Alt+S (the browser's bar stops it)` : 'Screen off; the browser has ended the share, S chooses another');
     }
+  }
+
+  /** What is shared, for the notices: "the entire screen", "a window", "a tab", or "the screen" when the browser does not say. */
+  private _screenLabel(): string {
+    const surface = (this._screenStream?.getVideoTracks()[0]?.getSettings() as { displaySurface?: string } | undefined)?.displaySurface;
+    return surface === 'monitor' ? 'the entire screen' : surface === 'window' ? 'a window' : surface === 'browser' ? 'a tab' : 'the screen';
   }
 
   /** Whether a share from before is still live, so that it can be filmed again without the picker. */
