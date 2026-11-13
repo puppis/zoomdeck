@@ -4,6 +4,9 @@
  * command's flags all work as in the browser), opens the deck in a Chromium window, and adds
  * what a desktop program is expected to have: menus, Open and Open Recent, the system's
  * permission prompts for the camera and the microphone, and a screen picker for filming.
+ * Started with a deck (from the command line, or from the system by double-click or drop) it
+ * opens that deck; started bare it asks for one in the folder used last, and the first time it
+ * offers to copy the guide deck to a folder of the user's, out of the app.
  *
  *   Zoomdeck [deck.json | slides.md] [--host] [--port N] [--editor NAME] [--watch PATH] [--scene Name]
  */
@@ -13,10 +16,12 @@ import { dirname, join, resolve, basename } from 'node:path';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { startPreview, parseArgs, resolveDeckPath, deckKind } from '../bin/zoomdeck.mjs';
+import { copyGuide, GUIDE_FOLDER } from './guide.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(here, '..');
-const GUIDE = join(packageRoot, 'examples', 'guide', 'deck.json');
+/** The guide deck inside the app: the source of the copies, never opened in place. */
+const GUIDE_SOURCE = join(packageRoot, 'examples', 'guide');
 const DOCS = 'https://puppis.github.io/zoomdeck/';
 const REPOSITORY = 'https://github.com/puppis/zoomdeck';
 const FLAGS = new Set(['--host', '--port', '--editor', '--watch', '--scene']);
@@ -58,20 +63,31 @@ function freePort() {
   });
 }
 
+/** The decks opened lately, and the folder of the last one, where the next Open dialog starts. */
 const recentFile = () => join(app.getPath('userData'), 'recent.json');
-function readRecent() {
+function readStore() {
   try {
-    const list = JSON.parse(readFileSync(recentFile(), 'utf8'));
-    return Array.isArray(list) ? list.filter((item) => typeof item === 'string' && existsSync(item)) : [];
+    const saved = JSON.parse(readFileSync(recentFile(), 'utf8'));
+    // Earlier versions kept the list alone.
+    const decks = Array.isArray(saved) ? saved : Array.isArray(saved?.decks) ? saved.decks : [];
+    const folder = !Array.isArray(saved) && typeof saved?.folder === 'string' ? saved.folder : null;
+    return {
+      // Decks that are gone drop out; so does the guide inside the app, which earlier versions opened in place.
+      decks: decks.filter((item) => typeof item === 'string' && existsSync(item) && !(app.isPackaged && item.startsWith(packageRoot))),
+      folder: folder && existsSync(folder) ? folder : null,
+    };
   } catch {
-    return [];
+    return { decks: [], folder: null };
   }
 }
+function readRecent() {
+  return readStore().decks;
+}
 function remember(deckPath) {
-  const list = [deckPath, ...readRecent().filter((item) => item !== deckPath)].slice(0, 10);
+  const decks = [deckPath, ...readRecent().filter((item) => item !== deckPath)].slice(0, 10);
   try {
     mkdirSync(app.getPath('userData'), { recursive: true });
-    writeFileSync(recentFile(), JSON.stringify(list));
+    writeFileSync(recentFile(), JSON.stringify({ decks, folder: dirname(deckPath) }));
   } catch {
     /* the list is a convenience */
   }
@@ -162,16 +178,81 @@ function createWindow() {
   }
 }
 
-async function chooseDeck() {
+/** Ask for a deck, starting in `folder` (the last one used, by default); whether one was opened. */
+async function chooseDeck(folder = readStore().folder) {
   const result = await dialog.showOpenDialog(win ?? undefined, {
     title: 'Open a deck',
+    ...(folder ? { defaultPath: folder } : {}),
     properties: ['openFile'],
     filters: [
       { name: 'Decks', extensions: ['json', 'md', 'markdown', 'ts', 'js', 'mjs', 'tsx'] },
       { name: 'All files', extensions: ['*'] },
     ],
   });
-  if (!result.canceled && result.filePaths[0]) await openDeck(result.filePaths[0]);
+  if (result.canceled || !result.filePaths[0]) return false;
+  await openDeck(result.filePaths[0]);
+  return Boolean(current);
+}
+
+/**
+ * Copy the guide deck, with its examples, into a folder the user chooses, and open the copy;
+ * whether one was opened. A copy already there is opened as it is, or its deck files written
+ * afresh (talks recorded in it stay).
+ */
+async function offerGuide() {
+  const chosen = await dialog.showOpenDialog(win ?? undefined, {
+    title: 'Choose a folder for the guide deck',
+    message: `The guide and its examples are copied to a "${GUIDE_FOLDER}" folder inside the one you choose, where you can read and edit them and record talks.`,
+    defaultPath: app.getPath('documents'),
+    properties: ['openDirectory', 'createDirectory'],
+    buttonLabel: 'Copy Here',
+  });
+  if (chosen.canceled || !chosen.filePaths[0]) return false;
+  let deck;
+  try {
+    deck = copyGuide(GUIDE_SOURCE, chosen.filePaths[0]);
+  } catch (error) {
+    if (error.code !== 'EEXIST') {
+      dialog.showErrorBox('Zoomdeck', `The guide could not be copied:\n${error.message}`);
+      return false;
+    }
+    const { response } = await dialog.showMessageBox(win ?? undefined, {
+      type: 'question',
+      message: 'A copy of the guide is there already',
+      detail: `${error.target}\n\nOpen it as it is, or write the deck's files afresh over it? Talks recorded in it stay either way.`,
+      buttons: ['Open It', 'Write Afresh', 'Cancel'],
+      defaultId: 0,
+      cancelId: 2,
+    });
+    if (response === 2) return false;
+    deck = response === 1 ? copyGuide(GUIDE_SOURCE, chosen.filePaths[0], { replace: true }) : join(error.target, 'deck.json');
+  }
+  await openDeck(deck);
+  return Boolean(current);
+}
+
+/**
+ * Started without a deck: ask for one, in the folder used last. The first time, with no deck
+ * ever opened, offer the guide as a starting point instead. Giving up with no window open ends the app.
+ */
+async function start() {
+  const store = readStore();
+  if (!store.decks.length && !store.folder) {
+    const { response } = await dialog.showMessageBox({
+      type: 'none',
+      message: 'Welcome to Zoomdeck',
+      detail: 'Open a deck of yours (a deck.json, a Markdown file or a slide module), or copy the guide deck with its examples to a folder of yours and start from there.',
+      buttons: ['Open a Deck…', 'Copy the Guide…', 'Quit'],
+      defaultId: 1,
+      cancelId: 2,
+    });
+    if (response === 2) return app.quit();
+    const opened = response === 0 ? await chooseDeck(app.getPath('documents')) : await offerGuide();
+    if (!opened && !win) return start();
+    return;
+  }
+  const opened = await chooseDeck(store.folder);
+  if (!opened && !win) app.quit();
 }
 
 function buildMenu() {
@@ -189,7 +270,8 @@ function buildMenu() {
             ? recent.map((item) => ({ label: `${basename(dirname(item))}/${basename(item)}`, toolTip: item, click: () => void openDeck(item) }))
             : [{ label: 'No recent decks', enabled: false }],
         },
-        { label: 'Open the Guide', click: () => void openDeck(GUIDE) },
+        { type: 'separator' },
+        { label: 'Copy the Guide Deck…', click: () => void offerGuide() },
         { type: 'separator' },
         { label: 'Reload Deck', accelerator: 'CmdOrCtrl+Shift+R', click: () => win?.webContents.reload() },
         { label: 'Reveal Deck Folder', enabled: Boolean(current), click: () => { if (current) shell.showItemInFolder(current); } },
@@ -279,10 +361,13 @@ if (!lock) {
   app.whenReady().then(async () => {
     allowMedia();
     buildMenu();
-    const deck = pendingFile ?? options.positional[0] ?? (readRecent()[0] ?? GUIDE);
-    await openDeck(deck);
+    const deck = pendingFile ?? options.positional[0];
+    if (deck) await openDeck(deck);
+    if (!current) await start();
     app.on('activate', () => {
-      if (!win && current) void openDeck(current);
+      if (win) return;
+      if (current) void openDeck(current);
+      else void start();
     });
   });
   app.on('window-all-closed', () => {

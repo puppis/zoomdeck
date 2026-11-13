@@ -30,15 +30,18 @@ The builds are not signed by a registered developer, so the systems warn once:
 
 ## Using it
 
-Open a deck with **File ▸ Open Deck…** (`deck.json`, a Markdown file or a slide module), from
-**Open Recent**, or by passing it on the command line; without a deck the app opens the last
-one, or the guide. The window shows the deck as the browser would, and the menus add Reload
-Deck, Reveal Deck Folder, full screen, zoom and the developer tools. Links to other pages open
-in your browser. Recordings and exported videos go to a `recordings/` folder next to the deck,
-as with `zoomdeck serve`; for the built-in guide that folder lies inside the app itself (on macOS,
-`Zoomdeck.app/Contents/Resources/app/examples/guide/recordings/`), and **Reveal Deck Folder**
-opens the folder that holds it, which is also where the timeline (`.json`) and media files of a
-talk can be picked up.
+Started from a deck (double-clicked or dropped on the app, or passed on the command line) the
+app presents it at once. Started bare, it asks for a deck (`deck.json`, a Markdown file or a slide
+module), in the folder you used last; the very first time it offers instead to copy the guide
+deck, with its examples, to a folder of yours, and opens the copy. **File ▸ Copy the Guide Deck…**
+does the same later, into a `zoomdeck-guide` folder inside the one you choose; a copy already
+there is opened as it is, or its files written afresh while the talks recorded in it stay. The
+guide inside the app is only the source of these copies. The window shows the deck as the browser
+would, and the menus add Open Deck, Open Recent, Reload Deck, Reveal Deck Folder, full screen, zoom
+and the developer tools. Links to other pages open in your browser. Recordings and exported videos
+go to a `recordings/` folder next to the deck, as with `zoomdeck serve`; **Reveal Deck Folder**
+opens the folder that holds it, which is where the timeline (`.json`) and media files of a talk
+can be picked up.
 
 The command line takes the preview's flags:
 
