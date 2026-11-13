@@ -730,27 +730,16 @@ export class PlayerUI {
   async startRecording(append: { name: string; timeline: Timeline } | null = null): Promise<void> {
     if (this._recorder || !this._player || !this._navigation) return;
     if (this._playback) this.closeRecording();
-    const choice = this._settings.recording;
+    this._stopDeviceTest();
     let stream: MediaStream | null = null;
-    if (navigator.mediaDevices?.getUserMedia) {
-      const video = choice.camera === 'none' ? false : { ...(choice.camera ? { deviceId: { exact: choice.camera } } : {}), width: { ideal: 1280 }, height: { ideal: 720 } };
-      const audio = choice.microphone ? { deviceId: { exact: choice.microphone } } : true;
+    if (typeof navigator.mediaDevices?.getUserMedia === 'function') {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ audio, video });
+        const opened = await this._openDevices();
+        stream = opened.stream;
+        if (opened.cameraError) this.notice(`No camera (${opened.cameraError}); recording the sound only`);
       } catch (error) {
-        if (video) {
-          // Without a camera, the sound alone is still worth recording.
-          try {
-            stream = await navigator.mediaDevices.getUserMedia({ audio });
-            this.notice(`No camera (${(error as Error).message}); recording the sound only`);
-          } catch {
-            stream = null;
-          }
-        }
-        if (!stream) {
-          this.notice(`Cannot record: ${(error as Error).message}`);
-          return;
-        }
+        this.notice(`Cannot record: ${(error as Error).message}`);
+        return;
       }
     } else {
       this.notice('This browser gives no access to a microphone here; recording the timeline only');
@@ -910,7 +899,9 @@ export class PlayerUI {
       list.append(el('div', { class: 'binding recording' },
         el('span', { class: 'action', text: `${when} · ${formatTime(entry.duration)}${entry.video ? ' · camera' : entry.media ? ' · sound' : ''}` }), play, more, remove));
     }
-    dialog.append(el('header', {}, el('h2', { text: 'Recorded talks' }), close), el('section', {}, list));
+    const done = el('button', { class: 'done', text: 'Close' });
+    done.addEventListener('click', () => dialog.close());
+    dialog.append(el('header', {}, el('h2', { text: 'Recorded talks' }), close), el('section', {}, list), el('div', { class: 'actions' }, done));
     dialog.addEventListener('close', () => dialog.remove());
     this.root.append(dialog);
     dialog.showModal();
@@ -1088,9 +1079,12 @@ export class PlayerUI {
     }
     const run = el('button', { class: 'add', text: 'Print to PDF' });
     const status = el('p', { class: 'note', text: 'Each page is a stage of the deck, drawn as the screen shows it, without ink or pointer; the slides become the bookmarks of the file. The deck leafs through its stops while the pages are made, then comes back here.' });
+    const done = el('button', { text: 'Close' });
+    done.addEventListener('click', () => dialog.close());
     run.addEventListener('click', () => {
       this._printChoice = { pages: pagesSelect.value as PrintPages, width: Number(widthSelect.value) };
       pagesSelect.disabled = widthSelect.disabled = run.disabled = true;
+      done.textContent = 'Cancel';
       void this._print(dialog, status).finally(() => dialog.close());
     });
     dialog.append(
@@ -1099,7 +1093,7 @@ export class PlayerUI {
         el('div', { class: 'row' }, el('label', {}, 'Pages ', pagesSelect)),
         el('div', { class: 'row' }, el('label', {}, 'Resolution ', widthSelect)),
         status,
-        el('div', { class: 'row' }, run)),
+        el('div', { class: 'row' }, run, done)),
     );
     dialog.addEventListener('close', () => dialog.remove());
     this.root.append(dialog);
@@ -1175,6 +1169,8 @@ export class PlayerUI {
     const dialog = el('dialog', { class: 'settings' });
     const close = el('button', { class: 'close', 'aria-label': 'Close settings', text: '×' });
     close.addEventListener('click', () => dialog.close());
+    const done = el('button', { class: 'done', text: 'Close' });
+    done.addEventListener('click', () => dialog.close());
 
     // Pointer: the tool shown while its gesture is held, and the modifier keys of each gesture.
     this._pointerModeSelect = el('select', { 'aria-label': 'Pointer tool' });
@@ -1277,19 +1273,36 @@ export class PlayerUI {
     this._micSelect.addEventListener('change', () => {
       this._settings.recording.microphone = this._micSelect.value || null;
       saveSettings(this._settings);
+      if (this._testStream) void this._startDeviceTest();
     });
     this._cameraSelect.addEventListener('change', () => {
       this._settings.recording.camera = this._cameraSelect.value || null;
       saveSettings(this._settings);
       if (this._cameraStream && !this._recorder) this._setCameraStream(null);
+      if (this._testStream) void this._startDeviceTest();
     });
     const detect = el('button', { text: 'Detect devices' });
     detect.addEventListener('click', () => void this._detectDevices());
+    // The test: the chosen devices opened as a recording would, with the picture, a sound level and a sample to hear.
+    this._testButton = el('button', { text: 'Test the devices', title: 'Show the camera picture and the sound level of the chosen devices' });
+    this._testButton.addEventListener('click', () => void this._toggleDeviceTest());
+    this._testVideo = el('video', { class: 'preview', hidden: '', playsinline: '', autoplay: '', 'aria-label': 'Camera test picture' });
+    this._testVideo.muted = true;
+    this._testLevel = el('span');
+    this._listenButton = el('button', { class: 'add', text: 'Hear a 3-second sample', title: 'Record three seconds from the microphone and play them back' });
+    this._listenButton.disabled = true;
+    this._listenButton.addEventListener('click', () => void this._listenToSample());
+    this._testStatus = el('p', { class: 'note' });
+    this._testPanel = el('div', { class: 'device-test', hidden: '' },
+      this._testVideo,
+      el('div', { class: 'sound' }, el('div', { class: 'meter', role: 'meter', 'aria-label': 'Sound level' }, this._testLevel), this._listenButton),
+      this._testStatus);
     this._mirrorToggle = el('input', { type: 'checkbox' });
     this._mirrorToggle.addEventListener('change', () => {
       this._settings.recording.mirror = this._mirrorToggle.checked;
       saveSettings(this._settings);
       this._layoutCamera();
+      this._testVideo.classList.toggle('mirror', this._mirrorToggle.checked);
     });
     this._cornerSelect = el('select', { 'aria-label': 'Corner of the camera picture' });
     for (const corner of CORNERS) this._cornerSelect.append(el('option', { value: corner, text: corner.replace('-', ' ') }));
@@ -1346,7 +1359,8 @@ export class PlayerUI {
         el('p', { class: 'note', text: 'Record (Shift+R, or the button in the bar) keeps your voice, the camera when one is chosen, and everything you do on the deck: stops, ink, the whiteboard, the pointer and the camera switch (C shows the camera full frame). The slides are not filmed; a recording replays on the deck itself and exports as a video. Pause leaves a gap out.' }),
         this._recordingStatus,
         recordingRows,
-        el('div', { class: 'row' }, detect, resetRecording),
+        el('div', { class: 'row' }, detect, this._testButton, resetRecording),
+        this._testPanel,
       ),
       el('section', { class: 'tablet' },
         el('h3', { text: 'Tablet' }),
@@ -1366,8 +1380,12 @@ export class PlayerUI {
         el('label', { class: 'row' }, this._reverseToggle, ' Going to the previous stop plays the current stop backwards (off: jump straight to it)'),
         el('p', { class: 'note', text: 'The playback speed is in the bar at the bottom.' }),
       ),
+      el('div', { class: 'actions' }, done),
     );
-    dialog.addEventListener('close', () => { this._capturing = null; });
+    dialog.addEventListener('close', () => {
+      this._capturing = null;
+      this._stopDeviceTest();
+    });
     return dialog;
   }
 
@@ -1414,6 +1432,185 @@ export class PlayerUI {
     const mics = devices.filter((device) => device.kind === 'audioinput').length;
     const cameras = devices.filter((device) => device.kind === 'videoinput').length;
     this._recordingStatus.textContent = `${mics} microphone${mics === 1 ? '' : 's'}, ${cameras} camera${cameras === 1 ? '' : 's'}.`;
+  }
+
+  // Testing the devices: the chosen camera's picture, the microphone's level, and a short sample to hear.
+  private _testButton!: HTMLButtonElement;
+  private _testPanel!: HTMLElement;
+  private _testVideo!: HTMLVideoElement;
+  private _testLevel!: HTMLElement;
+  private _testStatus!: HTMLElement;
+  private _listenButton!: HTMLButtonElement;
+  private _testStream: MediaStream | null = null;
+  private _meter: { context: AudioContext; frame: number } | null = null;
+  private _sampleAudio: HTMLAudioElement | null = null;
+
+  /** The microphone and camera the settings choose, as capture constraints. */
+  private _captureConstraints(): { audio: MediaTrackConstraints | true; video: MediaTrackConstraints | false } {
+    const choice = this._settings.recording;
+    const video = choice.camera === 'none' ? false : { ...(choice.camera ? { deviceId: { exact: choice.camera } } : {}), width: { ideal: 1280 }, height: { ideal: 720 } };
+    const audio = choice.microphone ? { deviceId: { exact: choice.microphone } } : true;
+    return { audio, video };
+  }
+
+  /** Open the chosen devices as a recording does; when the camera fails, the sound alone, with the camera's error. */
+  private async _openDevices(): Promise<{ stream: MediaStream; cameraError: string | null }> {
+    const { audio, video } = this._captureConstraints();
+    try {
+      return { stream: await navigator.mediaDevices.getUserMedia({ audio, video }), cameraError: null };
+    } catch (error) {
+      if (!video) throw error;
+      return { stream: await navigator.mediaDevices.getUserMedia({ audio }), cameraError: (error as Error).message };
+    }
+  }
+
+  private async _toggleDeviceTest(): Promise<void> {
+    if (this._testStream) this._stopDeviceTest();
+    else await this._startDeviceTest();
+  }
+
+  /** Open the chosen devices and show what they capture: the camera picture and a bar following the sound level. */
+  private async _startDeviceTest(): Promise<void> {
+    this._stopDeviceTest();
+    if (typeof navigator.mediaDevices?.getUserMedia !== 'function') {
+      this._recordingStatus.textContent = 'This browser gives no access to microphones or cameras here (a secure context is needed).';
+      return;
+    }
+    this._testButton.disabled = true;
+    this._testPanel.hidden = false;
+    this._testStatus.textContent = 'Opening the devices…';
+    let opened: { stream: MediaStream; cameraError: string | null };
+    try {
+      opened = await this._openDevices();
+    } catch (error) {
+      this._testStatus.textContent = `No device: ${(error as Error).message}`;
+      this._testButton.disabled = false;
+      return;
+    }
+    const stream = opened.stream;
+    this._testStream = stream;
+    this._testButton.disabled = false;
+    this._testButton.textContent = 'Stop the test';
+    const video = stream.getVideoTracks()[0] ?? null;
+    const audio = stream.getAudioTracks()[0] ?? null;
+    this._testVideo.hidden = !video;
+    this._testVideo.classList.toggle('mirror', this._settings.recording.mirror);
+    if (video) {
+      this._testVideo.srcObject = new MediaStream([video]);
+      void this._testVideo.play().catch(() => undefined);
+    }
+    if (audio) this._startMeter(new MediaStream([audio]));
+    this._listenButton.disabled = !audio || typeof MediaRecorder === 'undefined';
+    const parts = [
+      video ? `Camera: ${video.label || 'unnamed'}.` : opened.cameraError ? `No camera (${opened.cameraError}).` : 'No camera.',
+      audio ? `Microphone: ${audio.label || 'unnamed'}. Speak: the bar follows the sound level.` : 'No microphone.',
+    ];
+    this._testStatus.textContent = parts.join(' ');
+    // A device that is unplugged, or taken by another application, ends its track.
+    for (const track of stream.getTracks()) {
+      track.addEventListener('ended', () => {
+        if (this._testStream === stream) this._stopDeviceTest('A device stopped; test again to see the others.');
+      });
+    }
+  }
+
+  /** Release the devices under test; `status` is left in the panel, which otherwise folds away. */
+  private _stopDeviceTest(status = ''): void {
+    const stream = this._testStream;
+    this._testStream = null;
+    for (const track of stream?.getTracks() ?? []) track.stop();
+    this._stopMeter();
+    this._sampleAudio?.pause();
+    this._sampleAudio = null;
+    this._testVideo.srcObject = null;
+    this._testVideo.hidden = true;
+    this._testButton.textContent = 'Test the devices';
+    this._testButton.disabled = false;
+    this._listenButton.disabled = true;
+    this._testStatus.textContent = status;
+    this._testPanel.hidden = !status;
+  }
+
+  /** Drive the level bar from the sound: full at −6 dBFS, empty at −60 dBFS. */
+  private _startMeter(stream: MediaStream): void {
+    const AudioContextClass = window.AudioContext ?? (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const context = new AudioContextClass();
+    const analyser = context.createAnalyser();
+    analyser.fftSize = 1024;
+    context.createMediaStreamSource(stream).connect(analyser);
+    const samples = new Float32Array(analyser.fftSize);
+    const meter = { context, frame: 0 };
+    const tick = () => {
+      analyser.getFloatTimeDomainData(samples);
+      let sum = 0;
+      for (const value of samples) sum += value * value;
+      const rms = Math.sqrt(sum / samples.length);
+      const level = Math.min(1, Math.max(0, (20 * Math.log10(rms || 1e-6) + 60) / 54));
+      this._testLevel.style.width = `${(level * 100).toFixed(1)}%`;
+      this._testLevel.classList.toggle('loud', level > 0.92);
+      meter.frame = requestAnimationFrame(tick);
+    };
+    meter.frame = requestAnimationFrame(tick);
+    this._meter = meter;
+    void context.resume();
+  }
+
+  private _stopMeter(): void {
+    const meter = this._meter;
+    this._meter = null;
+    if (!meter) return;
+    cancelAnimationFrame(meter.frame);
+    void meter.context.close().catch(() => undefined);
+    this._testLevel.style.width = '0';
+    this._testLevel.classList.remove('loud');
+  }
+
+  /** Record three seconds from the microphone under test and play them back, to hear what a recording would keep. */
+  private async _listenToSample(): Promise<void> {
+    const stream = this._testStream;
+    const audio = stream?.getAudioTracks()[0];
+    if (!stream || !audio || typeof MediaRecorder === 'undefined') return;
+    const type = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'].find((candidate) => MediaRecorder.isTypeSupported(candidate));
+    this._listenButton.disabled = true;
+    const chunks: Blob[] = [];
+    let recorder: MediaRecorder;
+    try {
+      recorder = new MediaRecorder(new MediaStream([audio]), type ? { mimeType: type } : undefined);
+    } catch (error) {
+      this._testStatus.textContent = `The sample could not be recorded: ${(error as Error).message}`;
+      return;
+    }
+    recorder.addEventListener('dataavailable', (event) => {
+      if (event.data.size) chunks.push(event.data);
+    });
+    const stopped = new Promise<void>((resolve) => recorder.addEventListener('stop', () => resolve(), { once: true }));
+    recorder.start();
+    for (let left = 3; left > 0; left -= 1) {
+      this._testStatus.textContent = `Recording a sample, speak… ${left}`;
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (this._testStream !== stream) break;
+    }
+    if (recorder.state !== 'inactive') recorder.stop();
+    await stopped;
+    if (this._testStream !== stream) return;
+    const sample = new Audio(URL.createObjectURL(new Blob(chunks, { type: recorder.mimeType || type || 'audio/webm' })));
+    this._sampleAudio = sample;
+    this._testStatus.textContent = 'Playing the sample back…';
+    const finish = (text: string) => {
+      URL.revokeObjectURL(sample.src);
+      if (this._sampleAudio !== sample) return;
+      this._sampleAudio = null;
+      this._testStatus.textContent = text;
+      this._listenButton.disabled = false;
+    };
+    sample.addEventListener('ended', () => finish('The sample played; the bar follows the sound level again.'), { once: true });
+    sample.addEventListener('error', () => finish('The sample could not be played back.'), { once: true });
+    try {
+      await sample.play();
+    } catch (error) {
+      finish(`The sample could not be played back: ${(error as Error).message}`);
+    }
   }
 
   private _syncSettingsForm(): void {

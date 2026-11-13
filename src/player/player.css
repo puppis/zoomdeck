@@ -168,7 +168,19 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
 .zd-app dialog.settings h2 { margin: 0; font-size: 18px; }
 .zd-app dialog.settings h3 { margin: 0 0 8px; font-size: 14px; letter-spacing: .05em; text-transform: uppercase; opacity: .7; }
 .zd-app dialog.settings section { padding: 14px 18px; border-bottom: 1px solid var(--border); }
-.zd-app dialog.settings section:last-child { border-bottom: 0; }
+.zd-app dialog.settings section:last-of-type { border-bottom: 0; }
+.zd-app dialog.settings header { position: sticky; top: 0; z-index: 1; background: var(--background); }
+.zd-app dialog.settings .actions { position: sticky; bottom: 0; display: flex; justify-content: flex-end; padding: 10px 18px; border-top: 1px solid var(--border); background: var(--background); }
+.zd-app dialog.settings .device-test { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 14px; margin-top: 12px; }
+.zd-app dialog.settings .device-test[hidden] { display: none; }
+.zd-app dialog.settings .device-test .preview { width: 240px; aspect-ratio: 16 / 9; object-fit: cover; background: #000; border-radius: 8px; }
+.zd-app dialog.settings .device-test .preview.mirror { transform: scaleX(-1); }
+.zd-app dialog.settings .device-test .preview[hidden] { display: none; }
+.zd-app dialog.settings .device-test .sound { display: flex; flex-direction: column; gap: 10px; }
+.zd-app dialog.settings .device-test .meter { width: 240px; height: 10px; border-radius: 999px; background: rgba(127, 127, 127, 0.25); overflow: hidden; }
+.zd-app dialog.settings .device-test .meter > span { display: block; height: 100%; width: 0; border-radius: inherit; background: #3cb371; transition: width 50ms linear; }
+.zd-app dialog.settings .device-test .meter > span.loud { background: #e0a030; }
+.zd-app dialog.settings .device-test .note { flex-basis: 100%; margin: 0; }
 .zd-app dialog.settings .close { font-size: 20px; line-height: 1; padding: 2px 8px; }
 .zd-app dialog.settings .row { display: flex; align-items: center; gap: 8px; }
 .zd-app dialog.settings .note { font-size: 13px; opacity: .75; margin: 6px 0 10px; }

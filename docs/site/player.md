@@ -49,6 +49,9 @@ The gear button (or the `,` key) opens the settings dialog, in six parts:
   the new action.
 - **Advanced**: the reverse-playback switch, on by default.
 
+Close at the bottom (or the × in the header, or Esc) closes the dialog; the settings are saved as
+they are changed.
+
 "Restore default gestures", "Restore the default pen" and "Restore default keys" undo the changes
 of their section. Settings are stored in the browser and apply to every deck you open there.
 
@@ -207,10 +210,14 @@ also serve as a pause that outlives the page, and the deck may be edited in betw
 the slides already visited stay.
 
 Choose the devices first, in the settings under **Recording**: "Detect devices" asks the browser
-once for the microphone and camera, after which both lists show the devices by name. The same
-section sets the corner (bottom right by default) and the size of the camera picture, which is
-where it appears while you present and in the exported video, and whether your own picture is
-mirrored while presenting (the recording is never mirrored).
+once for the microphone and camera, after which both lists show the devices by name. "Test the
+devices" opens the chosen ones as a recording would and shows what they capture: the camera
+picture, and a bar that follows the sound level as you speak; "Hear a 3-second sample" records
+three seconds from the microphone and plays them back, so you hear what the recording will keep.
+Changing a device while the test runs switches to it, and the test ends when the dialog closes.
+The same section sets the corner (bottom right by default) and the size of the camera picture,
+which is where it appears while you present and in the exported video, and whether your own
+picture is mirrored while presenting (the recording is never mirrored).
 
 **Playing a recording.** When the deck's folder holds recordings, the footer shows **Talk** (with
 their number when there are several); it opens the recording, or a list to choose from, with a
