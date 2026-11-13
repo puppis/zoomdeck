@@ -255,8 +255,11 @@ export class InkSurface {
   /** Start a stroke; a new stroke discards the redo history. */
   begin(stroke: InkStroke): void {
     if (this._entries.has(stroke.id)) return;
-    this._insert(stroke, this._order.length, false);
-    this._done.push({ kind: 'add', stroke });
+    // The surface's own copy: extending it must not touch the caller's stroke, which a recording
+    // being replayed hands over again at every seek (and an export at every frame).
+    const own = { ...stroke, samples: [...stroke.samples] };
+    this._insert(own, this._order.length, false);
+    this._done.push({ kind: 'add', stroke: own });
     this._undone = [];
   }
 

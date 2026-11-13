@@ -34,7 +34,11 @@ Open a deck with **File ▸ Open Deck…** (`deck.json`, a Markdown file or a sl
 **Open Recent**, or by passing it on the command line; without a deck the app opens the last
 one, or the guide. The window shows the deck as the browser would, and the menus add Reload
 Deck, Reveal Deck Folder, full screen, zoom and the developer tools. Links to other pages open
-in your browser.
+in your browser. Recordings and exported videos go to a `recordings/` folder next to the deck,
+as with `zoomdeck serve`; for the built-in guide that folder lies inside the app itself (on macOS,
+`Zoomdeck.app/Contents/Resources/app/examples/guide/recordings/`), and **Reveal Deck Folder**
+opens the folder that holds it, which is also where the timeline (`.json`) and media files of a
+talk can be picked up.
 
 The command line takes the preview's flags:
 

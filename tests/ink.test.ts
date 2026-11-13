@@ -65,6 +65,21 @@ describe('ink surfaces', () => {
   const style = () => DEFAULT_PEN_STYLE;
   const svg = () => document.createElementNS(SVG_NS, 'svg');
 
+  it('keeps its own copy of a stroke, so that a replayed timeline is not changed by extending it', () => {
+    // A recording hands the same stroke object to the surface at every seek; the samples pushed
+    // while it is extended must not pile up on it, or the path doubles back on itself.
+    const recorded = stroke('r', [[0, 0]]);
+    const extension = [{ x: 10, y: 0, p: 0.5 }, { x: 20, y: 5, p: 0.5 }];
+    for (let replay = 0; replay < 3; replay++) {
+      const surface = new InkSurface(svg(), style);
+      surface.begin(recorded);
+      surface.extend('r', extension);
+      surface.end('r');
+      expect(surface.strokes[0].samples).toHaveLength(3);
+    }
+    expect(recorded.samples).toHaveLength(1);
+  });
+
   it('keeps separate histories for the slide and the whiteboard', () => {
     const slide = new InkSurface(svg(), style);
     const board = new InkSurface(svg(), style);
