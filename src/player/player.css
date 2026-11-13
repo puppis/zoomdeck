@@ -162,7 +162,8 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
   .zd-app footer .page-controls { margin-left: 0; }
 }
 .zd-app:fullscreen aside, .zd-app:fullscreen header, .zd-app:fullscreen footer { display: none; }
-.zd-app footer .settings-button { font-size: 18px; line-height: 1; padding: 3px 9px; }
+/* The gear is a glyph: larger type than the labels, at the same button height. */
+.zd-app footer .group .settings-button { font-size: 20px; line-height: 1; padding: 4px 9px; }
 .zd-app dialog.settings { border: 1px solid var(--border); border-radius: 12px; padding: 0; width: min(640px, 92vw); max-height: 86vh; color: var(--foreground); background: var(--background); }
 .zd-app dialog.settings::backdrop { background: rgba(0, 0, 0, 0.45); }
 .zd-app dialog.settings header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); }
