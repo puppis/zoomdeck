@@ -379,12 +379,10 @@ export class MarkupRenderer {
       inside?.moveTo([0, 0, 0]);
       obj = new IframeHost(this.resolveUrl(element.source), box, inside, caption);
     } else if (element.kind === 'image' && VIDEO_EXTENSIONS.test(element.source)) {
+      // A clip that cannot load (a missing file, a codec the browser lacks) leaves its place blank
+      // and a warning in the console, rather than stopping the deck.
       const video = new VideoClip(this.resolveUrl(element.source), { width, muted: attrs.muted !== 'false' });
-      try {
-        await video.waitForLoad();
-      } catch (error) {
-        throw new MarkupError(`Video not found: ${element.source} (${(error as Error).message})`, element.line);
-      }
+      await video.waitForLoad();
       obj = video;
     } else if (element.kind === 'image') {
       if (/\.svg(?:[?#].*)?$/i.test(element.source)) {

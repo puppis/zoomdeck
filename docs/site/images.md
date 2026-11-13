@@ -48,5 +48,8 @@ browser's decoder:
   turns the sound on (the first click of the deck counts as the gesture browsers require).
 - Playback follows the clip's clock: the speed control resyncs rather than slows the video, and
   backward navigation jumps over a video instead of rewinding it.
+- A clip the browser cannot play, because the file is missing or the codec is not built in
+  (Chromium builds without H.264 are common on Linux), is left blank and named in the console;
+  the deck loads all the same. WebM clips play in every browser.
 - `--one-file` exports embed videos as data URIs, which grows the file quickly; prefer the folder
   export for decks with long videos.

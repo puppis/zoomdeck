@@ -59,9 +59,31 @@ export class VideoClip extends VideoMobject implements SnapshotExtra {
     return this._video;
   }
 
+  /** Why the clip could not load, when it could not; the deck goes on with a blank clip. */
+  loadFailure: string | null = null;
+
+  /**
+   * Wait for the first frame, but never for ever: a browser that cannot decode the file (a
+   * Chromium without H.264, say) may report an error or simply never deliver a frame, and
+   * neither may hold up the whole deck. After a failure or 8 seconds the clip is left blank,
+   * the reason is logged, and a frame that arrives later still shows.
+   */
   override async waitForLoad(): Promise<void> {
-    await super.waitForLoad();
     const video = this._video;
+    if (video) video.preload = 'auto';
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const timeout = new Promise<'timeout'>((resolveTimeout) => {
+      timer = setTimeout(() => resolveTimeout('timeout'), 8000);
+    });
+    try {
+      const outcome = await Promise.race([super.waitForLoad().then(() => 'loaded' as const), timeout]);
+      if (outcome === 'timeout') this.loadFailure = 'no frame within 8 s (unsupported codec, or the file is still loading)';
+    } catch (error) {
+      this.loadFailure = (error as Error).message;
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+    if (this.loadFailure) console.warn(`[zoomdeck] video ${video?.currentSrc || video?.src || ''}: ${this.loadFailure}`);
     if (video && !this._listening) {
       this._listening = true;
       for (const event of ['seeked', 'loadeddata']) {
