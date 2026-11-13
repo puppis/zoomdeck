@@ -79,9 +79,11 @@ export type TimelineEvent =
 export type UntimedEvent = TimelineEvent extends infer E ? (E extends TimelineEvent ? Omit<E, 't'> : never) : never;
 
 /**
- * One media file of a recording. A talk recorded in one go has one; a talk continued after a
- * stop has one per part, since a browser cannot append to a finished file. `start` is where
- * the part begins on the timeline's clock.
+ * One media file of a recording. A talk recorded in one go with the camera left alone has one;
+ * a talk continued after a stop has one per part, since a browser cannot append to a finished
+ * file, and turning the camera on or off while recording also begins a new file, since a
+ * picture cannot join a file being written. `start` is where the file begins on the timeline's
+ * clock; the files cover the talk from its start, one after the other.
  */
 export interface TimelineMedia {
   /** File name next to the timeline, in the deck's recordings folder. */
@@ -175,24 +177,23 @@ export function recordingName(date = new Date()): string {
   return `talk-${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}`;
 }
 
-/** A stretch of talk recorded in one go: its events on its own clock, and what the devices captured. */
+/** A stretch of talk recorded in one go: its events on its own clock, and what the devices captured, with `start` on that clock. */
 export interface RecordedPart {
   events: TimelineEvent[];
   duration: number;
-  media: TimelineMedia | null;
+  media: TimelineMedia[];
 }
 
 /**
  * Add a part recorded after a stop to a timeline: its events are shifted to the end of the
- * talk, a cut marks the seam, and its media file becomes a further part.
+ * talk, a cut marks the seam, and its media files become further files of the talk.
  */
 export function appendPart(timeline: Timeline, part: RecordedPart): Timeline {
   const offset = timeline.duration;
   const events: TimelineEvent[] = [...timeline.events];
   if (offset > 0) events.push({ t: offset, type: 'cut' });
   for (const event of part.events) events.push({ ...event, t: event.t + offset });
-  const media = [...timeline.media];
-  if (part.media) media.push({ ...part.media, start: offset, duration: part.duration });
+  const media = [...timeline.media, ...part.media.map((file) => ({ ...file, start: offset + file.start }))];
   return { ...timeline, duration: offset + part.duration, media, events };
 }
 

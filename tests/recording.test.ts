@@ -85,10 +85,10 @@ describe('timelines', () => {
 
   it('appends a part recorded later, shifting its events and keeping its media as a further file', () => {
     const first: Timeline = { version: 1, deck: { title: 't', hash: 'x' }, recorded: '2026-11-13T09:00:00.000Z', duration: 0, media: [], pip: { corner: 'bottom-right', size: 0.25 }, events: [] };
-    const one = appendPart(first, { events: [{ t: 0, type: 'board', on: true }, { t: 900, type: 'board', on: false }], duration: 1000, media: { file: 'a.webm', type: 'video/webm', video: true, start: 0, duration: 1000 } });
+    const one = appendPart(first, { events: [{ t: 0, type: 'board', on: true }, { t: 900, type: 'board', on: false }], duration: 1000, media: [{ file: 'a.webm', type: 'video/webm', video: true, start: 0, duration: 1000 }] });
     expect(one.duration).toBe(1000);
     expect(one.events.map((event) => event.t)).toEqual([0, 900]);
-    const two = appendPart(one, { events: [{ t: 0, type: 'camera', on: true }, { t: 400, type: 'camera', on: false }], duration: 500, media: { file: 'a.part2.webm', type: 'video/webm', video: true, start: 0, duration: 500 } });
+    const two = appendPart(one, { events: [{ t: 0, type: 'camera', on: true }, { t: 400, type: 'camera', on: false }], duration: 500, media: [{ file: 'a.part2.webm', type: 'video/webm', video: true, start: 0, duration: 500 }] });
     expect(two.duration).toBe(1500);
     expect(two.events.map((event) => [event.t, event.type])).toEqual([[0, 'board'], [900, 'board'], [1000, 'cut'], [1000, 'camera'], [1400, 'camera']]);
     expect(two.media.map((part) => [part.file, part.start, part.duration])).toEqual([['a.webm', 0, 1000], ['a.part2.webm', 1000, 500]]);
@@ -98,6 +98,19 @@ describe('timelines', () => {
     expect(mediaAt([], 3)).toBeNull();
     // The original is untouched.
     expect(first.events.length).toBe(0);
+  });
+
+  it('keeps the files of a part in a row when the camera was turned on or off while recording', () => {
+    const first: Timeline = { version: 1, deck: { title: 't', hash: 'x' }, recorded: '2026-11-13T09:00:00.000Z', duration: 0, media: [], pip: { corner: 'bottom-right', size: 0.18 }, events: [] };
+    const sound = { file: 'a.webm', type: 'audio/webm', video: false, start: 0, duration: 800 };
+    const picture = { file: 'a.part2.webm', type: 'video/webm', video: true, start: 800, duration: 1200 };
+    const one = appendPart(first, { events: [{ t: 800, type: 'camera', on: false }], duration: 2000, media: [sound, picture] });
+    expect(one.media.map((part) => [part.file, part.start, part.duration, part.video])).toEqual([['a.webm', 0, 800, false], ['a.part2.webm', 800, 1200, true]]);
+    expect(mediaAt(one.media, 799)?.file).toBe('a.webm');
+    expect(mediaAt(one.media, 800)?.file).toBe('a.part2.webm');
+    // A later part's files shift after the talk so far, as its events do.
+    const two = appendPart(one, { events: [], duration: 500, media: [{ ...sound, file: 'a.part3.webm', start: 0, duration: 500 }] });
+    expect(two.media.map((part) => [part.file, part.start])).toEqual([['a.webm', 0], ['a.part2.webm', 800], ['a.part3.webm', 2000]]);
   });
 
   it('stamps events on a clock that skips pauses, without any media', async () => {
@@ -118,7 +131,8 @@ describe('timelines', () => {
     expect(types).toEqual(['go', 'board', 'pan', 'cut', 'camera']);
     expect(result.part.duration).toBeGreaterThanOrEqual(30);
     expect(result.part.duration).toBeLessThan(80);
-    expect(result.media).toBeNull();
+    expect(result.media).toEqual([]);
+    expect(recorder.capturing).toBe(false);
     const camera = result.part.events[4];
     expect(camera.t).toBeGreaterThanOrEqual(result.part.events[3].t);
   });

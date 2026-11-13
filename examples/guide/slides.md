@@ -984,7 +984,7 @@ Without a tablet the same checks work with a mouse, whose strokes take their wid
 
 [Documentation ↗]{#recording-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/player.html#recording-a-talk}
 
-A recording keeps your voice, the camera when you choose one, and every move on the deck on one clock: stops, strokes, the whiteboard, the pointer and the camera switch. The slides are never filmed, so the talk plays back on the deck itself and exports as a video. {x=-9.35 y=3.9 width=11.2 font_size=19}
+A recording keeps your voice, the camera while you have it on, and every move on the deck on one clock: stops, strokes, the whiteboard, the pointer and the camera switch. The slides are never filmed, so the talk plays back on the deck itself and exports as a video. {x=-9.35 y=3.9 width=11.2 font_size=19}
 
 [[icon: user #recording-you x=-7.6 y=-0.6 size=2 color=GRAY]]
 [[icon: desktop #recording-deck x=-3.6 y=-0.6 size=2 color=GRAY]]
@@ -998,11 +998,11 @@ A recording keeps your voice, the camera when you choose one, and every move on 
 
 [media + timeline]{#recording-cap-file at=left:#recording-file.right dx=0.25 font_size=15 color=GRAY}
 
-1. **Set up** once: ⚙ settings ▸ Recording ▸ Detect devices; choose the microphone, the camera or None, and the corner and size of your picture. {x=2.3 width=7.4 font_size=17}
-2. **Record** with Shift+R or the ● Record button; the header counts the time. Present as usual: keys, pen, W for the whiteboard, C to show the camera full frame and back. Pause leaves a gap out. {x=2.3 width=7.4 font_size=17}
+1. **Set up** once: ⚙ settings ▸ Recording ▸ Detect devices; choose the microphone and the camera, test them, and pick the corner and size of your picture. {x=2.3 width=7.4 font_size=17}
+2. **Record** with Shift+R or the ● Record button; the header counts the time. Present as usual: keys, pen, W for the whiteboard, the Camera button or C for the camera (in a corner, full frame, off), recorded while it is on. Pause leaves a gap out. {x=2.3 width=7.4 font_size=17}
 3. **Stop** saves the talk in `recordings/` next to the deck when the deck is served by `zoomdeck serve` (downloads otherwise). Shift+A later continues it where it stopped. {x=2.3 width=7.4 font_size=17}
 4. **Play** it with ▶ Talk in the footer: the deck follows the recording; Space pauses, ← and → seek, Esc leaves. {x=2.3 width=7.4 font_size=17}
 5. **Export video** in the playback bar renders it in real time: slides or whiteboard with ink, camera in a corner or full frame, and the sound. {x=2.3 width=7.4 font_size=17}
 
-Try it on this very slide: record a few seconds, draw, press C, stop, then play. {x=-9.35 y=-4.5 width=19 font_size=18 color=GRAY}
+Try it on this very slide: record a few seconds, draw, turn the camera on with C, stop, then play. {x=-9.35 y=-4.5 width=19 font_size=18 color=GRAY}
 :::

@@ -96,7 +96,7 @@
 </tr>
 <tr>
 <td>C</td>
-<td>show the camera full frame, or the slides again</td>
+<td>camera: in a corner, then full frame, then off</td>
 </tr>
 <tr>
 <td>Shift+R</td>
@@ -128,7 +128,7 @@
 </tr>
 </tbody>
 </table>
-<p>The footer has previous/next buttons, a progress bar, the pen settings, the recording buttons,
+<p>The footer has previous/next buttons, a progress bar, the pen settings, the camera and recording buttons,
 the speed control (0.5× to 2×), the Print button, the settings gear and the fullscreen button. The header shows the breadcrumb of the
 current slide and the player state.</p>
 <h2 id="settings">Settings<a class="anchor" href="#settings" aria-label="Link to this section">#</a></h2><p>The gear button (or the <code>,</code> key) opens the settings dialog, in six parts:</p>
@@ -287,20 +287,24 @@ and the checklist to go through once the tablet is paired.</p>
 deck itself on a tablet, as a viewer, is also possible when it is small enough: Safari closes a page
 that uses too much memory (&quot;A problem repeatedly occurred&quot;), so text is rasterized at the same
 base density on every screen and only the lines in view are sharpened to the screen's density.</p>
-<h2 id="the-camera">The camera<a class="anchor" href="#the-camera" aria-label="Link to this section">#</a></h2><p><code>C</code> shows the camera full frame in place of the slides or the whiteboard, and <code>C</code> again brings
-them back: a way to show a real blackboard, an object or yourself without leaving the deck. The
-first press asks the browser for the camera chosen in the settings (Recording), and while the
-camera is on, its picture also sits in a corner of the slides, mirrored like a mirror so that
-you can see yourself; the corner, the size and the mirroring are settings. The pen never draws
-on the camera: strokes belong to slides and to the whiteboard.</p>
+<h2 id="the-camera">The camera<a class="anchor" href="#the-camera" aria-label="Link to this section">#</a></h2><p>The camera is yours to turn on. <strong>Camera</strong> in the footer turns it on in a corner of the slides,
+or off again; <code>C</code> steps through the three states: in a corner, full frame in place of the slides
+or the whiteboard (a way to show a real blackboard, an object or yourself without leaving the
+deck), and off. The first step asks the browser for the camera chosen in the settings
+(Recording). In the corner the picture is mirrored like a mirror, so that you can see yourself;
+the corner, the size and the mirroring are settings. The pen never draws on the camera: strokes
+belong to slides and to the whiteboard. A recording keeps the camera exactly while it is on, so
+you can record a talk without it even with a camera attached, or bring it in for some moments
+only.</p>
 <h2 id="recording-a-talk">Recording a talk<a class="anchor" href="#recording-a-talk" aria-label="Link to this section">#</a></h2><p><strong>Record</strong> in the footer, or <code>Shift+R</code>, records the talk: your voice through the microphone, the
-camera when one is chosen (choose &quot;None&quot; to record the sound alone), and everything you do on the
-deck, each on the same clock: the stops you move through and how (played forwards, backwards or
-jumped to), every pen and highlighter stroke as it is drawn, undo and clear, the whiteboard with
-its scrolling, the laser or spotlight while it is shown, the playback speed and the camera switch.
-The slides themselves are not filmed. A recording is therefore a few files: the sound or video
-from the microphone and camera (WebM, or MP4 in Safari; one file per part when the talk was
-continued after a stop), and a small <em>timeline</em> of what happened,
+camera while it is on (see <a href="#the-camera">The camera</a>; recording never turns it on by itself),
+and everything you do on the deck, each on the same clock: the stops you move through and how
+(played forwards, backwards or jumped to), every pen and highlighter stroke as it is drawn, undo
+and clear, the whiteboard with its scrolling, the laser or spotlight while it is shown, the
+playback speed and the camera switches. The slides themselves are not filmed. A recording is
+therefore a few files: the sound or video from the microphone and camera (WebM, or MP4 in Safari;
+a further file each time the camera is turned on or off, since a picture cannot join a file
+being written, and when the talk is continued after a stop), and a small <em>timeline</em> of what happened,
 naming each stop by its slide and step. It plays back on the deck itself, as sharp as the live
 deck at any window size, and survives edits to the deck that leave its slides in place; the
 player warns when the deck changed since the talk was recorded.</p>
@@ -320,7 +324,8 @@ parts as one talk. The header counts from where the talk stood. Stop and Continu
 also serve as a pause that outlives the page, and the deck may be edited in between, as long as
 the slides already visited stay.</p>
 <p>Choose the devices first, in the settings under <strong>Recording</strong>: &quot;Detect devices&quot; asks the browser
-once for the microphone and camera, after which both lists show the devices by name. &quot;Test the
+once for the microphone and camera, after which both lists show the devices by name (&quot;None&quot; for
+the camera leaves it out altogether). &quot;Test the
 devices&quot; opens the chosen ones as a recording would and shows what they capture: the camera
 picture, and a bar that follows the sound level as you speak; &quot;Hear a 3-second sample&quot; records
 three seconds from the microphone and plays them back, so you hear what the recording will keep.

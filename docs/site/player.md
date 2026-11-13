@@ -18,7 +18,7 @@ description: Keyboard and pointer controls, the pen and its pressure styles, the
 | Delete, Backspace | clear all strokes on this slide |
 | L | switch the pointer tool between spotlight and laser |
 | W | show or hide the whiteboard; while it is shown the arrows scroll it |
-| C | show the camera full frame, or the slides again |
+| C | camera: in a corner, then full frame, then off |
 | Shift+R | start or stop recording the talk |
 | Shift+A | continue the latest recording where it stopped |
 | E | open the source line of this stop in the editor (preview server with `--editor`; see [Editors](editors.html#forward-and-inverse-search)) |
@@ -27,7 +27,7 @@ description: Keyboard and pointer controls, the pen and its pressure styles, the
 | O | toggle the slide outline |
 | , | open the settings |
 
-The footer has previous/next buttons, a progress bar, the pen settings, the recording buttons,
+The footer has previous/next buttons, a progress bar, the pen settings, the camera and recording buttons,
 the speed control (0.5× to 2×), the Print button, the settings gear and the fullscreen button. The header shows the breadcrumb of the
 current slide and the player state.
 
@@ -171,23 +171,27 @@ base density on every screen and only the lines in view are sharpened to the scr
 
 ## The camera
 
-`C` shows the camera full frame in place of the slides or the whiteboard, and `C` again brings
-them back: a way to show a real blackboard, an object or yourself without leaving the deck. The
-first press asks the browser for the camera chosen in the settings (Recording), and while the
-camera is on, its picture also sits in a corner of the slides, mirrored like a mirror so that
-you can see yourself; the corner, the size and the mirroring are settings. The pen never draws
-on the camera: strokes belong to slides and to the whiteboard.
+The camera is yours to turn on. **Camera** in the footer turns it on in a corner of the slides,
+or off again; `C` steps through the three states: in a corner, full frame in place of the slides
+or the whiteboard (a way to show a real blackboard, an object or yourself without leaving the
+deck), and off. The first step asks the browser for the camera chosen in the settings
+(Recording). In the corner the picture is mirrored like a mirror, so that you can see yourself;
+the corner, the size and the mirroring are settings. The pen never draws on the camera: strokes
+belong to slides and to the whiteboard. A recording keeps the camera exactly while it is on, so
+you can record a talk without it even with a camera attached, or bring it in for some moments
+only.
 
 ## Recording a talk
 
 **Record** in the footer, or `Shift+R`, records the talk: your voice through the microphone, the
-camera when one is chosen (choose "None" to record the sound alone), and everything you do on the
-deck, each on the same clock: the stops you move through and how (played forwards, backwards or
-jumped to), every pen and highlighter stroke as it is drawn, undo and clear, the whiteboard with
-its scrolling, the laser or spotlight while it is shown, the playback speed and the camera switch.
-The slides themselves are not filmed. A recording is therefore a few files: the sound or video
-from the microphone and camera (WebM, or MP4 in Safari; one file per part when the talk was
-continued after a stop), and a small *timeline* of what happened,
+camera while it is on (see [The camera](#the-camera); recording never turns it on by itself),
+and everything you do on the deck, each on the same clock: the stops you move through and how
+(played forwards, backwards or jumped to), every pen and highlighter stroke as it is drawn, undo
+and clear, the whiteboard with its scrolling, the laser or spotlight while it is shown, the
+playback speed and the camera switches. The slides themselves are not filmed. A recording is
+therefore a few files: the sound or video from the microphone and camera (WebM, or MP4 in Safari;
+a further file each time the camera is turned on or off, since a picture cannot join a file
+being written, and when the talk is continued after a stop), and a small *timeline* of what happened,
 naming each stop by its slide and step. It plays back on the deck itself, as sharp as the live
 deck at any window size, and survives edits to the deck that leave its slides in place; the
 player warns when the deck changed since the talk was recorded.
@@ -210,7 +214,8 @@ also serve as a pause that outlives the page, and the deck may be edited in betw
 the slides already visited stay.
 
 Choose the devices first, in the settings under **Recording**: "Detect devices" asks the browser
-once for the microphone and camera, after which both lists show the devices by name. "Test the
+once for the microphone and camera, after which both lists show the devices by name ("None" for
+the camera leaves it out altogether). "Test the
 devices" opens the chosen ones as a recording would and shows what they capture: the camera
 picture, and a bar that follows the sound level as you speak; "Hear a 3-second sample" records
 three seconds from the microphone and plays them back, so you hear what the recording will keep.

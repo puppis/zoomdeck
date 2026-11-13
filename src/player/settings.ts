@@ -10,7 +10,7 @@ import type { Corner } from './timeline';
 export interface RecordingSettings {
   /** Microphone device id; null for the browser's default. */
   microphone: string | null;
-  /** Camera device id; null for the default camera, 'none' to record the sound only. */
+  /** Camera device id; null for the default camera, 'none' for no camera at all. */
   camera: string | null;
   /** Flip the camera picture as a mirror does (for the presenter's own view and the recording). */
   mirror: boolean;
@@ -21,9 +21,9 @@ export interface RecordingSettings {
 }
 
 export const CORNERS: Corner[] = ['bottom-right', 'bottom-left', 'top-right', 'top-left'];
-export const PIP_SIZES: Array<[number, string]> = [[0.18, 'Small'], [0.25, 'Medium'], [0.33, 'Large']];
+export const PIP_SIZES: Array<[number, string]> = [[0.12, 'Small'], [0.18, 'Medium'], [0.25, 'Large']];
 
-export const DEFAULT_RECORDING: RecordingSettings = { microphone: null, camera: null, mirror: true, corner: 'bottom-right', size: 0.25 };
+export const DEFAULT_RECORDING: RecordingSettings = { microphone: null, camera: null, mirror: true, corner: 'bottom-right', size: 0.18 };
 
 export function sanitizeRecording(value: unknown): RecordingSettings {
   const result = { ...DEFAULT_RECORDING };
@@ -57,7 +57,7 @@ export const ACTIONS: ActionInfo[] = [
   { name: 'clear', label: 'Clear all strokes on this slide' },
   { name: 'pointer', label: 'Switch between spotlight and laser' },
   { name: 'whiteboard', label: 'Show or hide the whiteboard' },
-  { name: 'camera', label: 'Show the camera full frame, or the slides again' },
+  { name: 'camera', label: 'Camera: in a corner, then full frame, then off' },
   { name: 'record', label: 'Start or stop recording the talk' },
   { name: 'resume', label: 'Continue the latest recording where it stopped (append)' },
   { name: 'edit', label: 'Open the source of this stop in the editor (preview server)' },

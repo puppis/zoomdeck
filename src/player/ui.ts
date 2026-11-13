@@ -18,7 +18,7 @@ import {
 } from './ink';
 import { PadLink, fetchPairingInfo, padLinkAvailable, padUrl, type InkOp, type InkSurfaceName, type PadMessage } from './pad';
 import { Swatches } from './swatches';
-import { Recorder, initialEvents } from './recorder';
+import { Recorder, initialEvents, type CapturedMedia } from './recorder';
 import { Playback } from './playback';
 import { exportMimeType, exportVideo, type ExportSource } from './export';
 import { PRINT_WIDTHS, printDeck, printPages, type PrintPages } from './print';
@@ -33,6 +33,9 @@ const HIGHLIGHTER_COLOR = '#ffdf00';
 const BOARD_STEP = 0.25;
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** The live camera as the presenter sets it: off, in a corner of the slides, or full frame. */
+export type CameraMode = 'off' | 'corner' | 'full';
 
 function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -103,7 +106,10 @@ export class PlayerUI {
   // The camera: a live picture while presenting (full frame on C, else in a corner), or the recording's picture during playback.
   private readonly _camera: HTMLVideoElement;
   private _cameraStream: MediaStream | null = null;
-  private _cameraOn = false;
+  private _cameraMode: CameraMode = 'off';
+  /** Whether the camera picture (live, or the recording's during playback) is shown full frame. */
+  private _cameraFull = false;
+  private readonly _cameraButton: HTMLButtonElement;
   // Recording a talk.
   private _recorder: Recorder | null = null;
   private _printButton: HTMLButtonElement;
@@ -202,6 +208,7 @@ export class PlayerUI {
     this._camera = el('video', { class: 'camera', hidden: '', playsinline: '', autoplay: '', 'aria-label': 'Camera' });
     this._camera.muted = true;
     this._camera.addEventListener('loadedmetadata', () => this._layoutCamera());
+    this._camera.addEventListener('emptied', () => this._layoutCamera());
     this._error = el('p', { class: 'error', role: 'alert', hidden: '' });
     this._loadingText = el('span', { text: 'Preparing slides…' });
     this._loading = el('div', { class: 'loading', role: 'status' }, el('span', { class: 'spinner' }), this._loadingText);
@@ -240,6 +247,8 @@ export class PlayerUI {
     this._counter = el('span', { class: 'counter' });
     this._boardButton = el('button', { class: 'board-button', text: 'Whiteboard', title: 'Show or hide the whiteboard (W)', 'aria-pressed': 'false' });
     this._boardButton.addEventListener('click', () => this.toggleWhiteboard());
+    this._cameraButton = el('button', { class: 'camera-button', text: 'Camera', title: 'Turn the camera on in a corner of the slides, or off (C steps through corner, full frame and off)', 'aria-pressed': 'false' });
+    this._cameraButton.addEventListener('click', () => void this.toggleCamera(this._cameraMode === 'off' ? 'corner' : 'off'));
     this._recordButton = el('button', { class: 'record-button', text: '● Record', title: 'Start or stop recording the talk (Shift+R)', 'aria-pressed': 'false' });
     this._recordButton.addEventListener('click', () => void this.toggleRecording());
     this._pauseButton = el('button', { class: 'pause-button', text: 'Pause', title: 'Pause or resume the recording', hidden: '' });
@@ -263,7 +272,7 @@ export class PlayerUI {
         el('label', {}, 'Tip ', this._penSize),
         this._boardButton,
       ),
-      el('div', { class: 'record-controls', role: 'group', 'aria-label': 'Recording' }, this._recordButton, this._pauseButton, this._recordingsButton),
+      el('div', { class: 'record-controls', role: 'group', 'aria-label': 'Recording' }, this._cameraButton, this._recordButton, this._pauseButton, this._recordingsButton),
       el('label', { class: 'speed' }, 'Speed ', this._speed),
       this._counter,
       this._printButton,
@@ -314,7 +323,7 @@ export class PlayerUI {
       ...gestures,
       `${keys('undo')}: undo stroke`, `${keys('redo')}: redo stroke`, `${keys('clear')}: clear strokes`,
       `${keys('whiteboard')}: whiteboard (arrows, scrolling or two fingers move it)`,
-      `${keys('camera')}: camera full frame, or the slides again`, `${keys('record')}: record the talk`, `${keys('resume')}: continue the latest recording`,
+      `${keys('camera')}: camera in a corner, then full frame, then off`, `${keys('record')}: record the talk`, `${keys('resume')}: continue the latest recording`,
       ...(this._editSource ? [`${keys('edit')}: open this stop's source in the editor`] : []),
       `${keys('settings')}: settings`,
     ];
@@ -591,19 +600,53 @@ export class PlayerUI {
   }
 
   // ---------------------------------------------------------------------
-  // Camera: full frame on C, in a corner otherwise; the picture of a recording during playback
+  // Camera: off, in a corner or full frame as the presenter sets it; the recording's picture during playback
   // ---------------------------------------------------------------------
 
-  /** Show the camera full frame instead of the slides, or the slides again. Starts the camera when needed. */
-  async toggleCamera(on = !this._cameraOn): Promise<void> {
-    if (on && !this._playback && !this._cameraStream && !(await this._acquireCamera())) return;
-    this._setCameraFull(on);
+  /**
+   * Step the camera (off → in a corner → full frame → off), or go straight to `mode`. The first
+   * step asks the browser for the camera chosen in the settings. A recording in progress keeps
+   * the camera while it is on; during a playback only full frame or not can be chosen.
+   */
+  async toggleCamera(mode?: CameraMode): Promise<void> {
+    if (this._playback) {
+      this._setCameraFull(mode ? mode === 'full' : !this._cameraFull);
+      return;
+    }
+    const next = mode ?? (this._cameraMode === 'off' ? 'corner' : this._cameraMode === 'corner' ? 'full' : 'off');
+    if (next === this._cameraMode) return;
+    if (next !== 'off' && !this._cameraStream && !(await this._acquireCamera())) return;
+    const wasOn = this._cameraMode !== 'off';
+    this._cameraMode = next;
+    this._cameraButton.setAttribute('aria-pressed', String(next !== 'off'));
+    this._setCameraFull(next === 'full');
+    if (next === 'off') {
+      // The recording closes the file with the picture before the camera goes.
+      if (wasOn) await this._recordCamera(false);
+      this._setCameraStream(null);
+    } else if (!wasOn) {
+      await this._recordCamera(true);
+    }
+    this._layoutCamera();
+  }
+
+  /** Let the recording in progress, if any, capture the camera from now on, or the sound alone again. */
+  private async _recordCamera(on: boolean): Promise<void> {
+    const recorder = this._recorder;
+    if (!recorder || !recorder.capturing) return;
+    const audio = this._recordStream?.getAudioTracks() ?? [];
+    const video = on ? this._cameraStream?.getVideoTracks() ?? [] : [];
+    try {
+      await recorder.switchStream(new MediaStream([...audio, ...video]));
+    } catch (error) {
+      this.notice(`The camera could not be recorded: ${(error as Error).message}`);
+    }
   }
 
   private _setCameraFull(on: boolean): void {
-    if (on === this._cameraOn) return;
+    if (on === this._cameraFull) return;
     this._finishStroke();
-    this._cameraOn = on;
+    this._cameraFull = on;
     this._note({ type: 'camera', on });
     this._layoutCamera();
     this._updateSpotlight();
@@ -622,7 +665,7 @@ export class PlayerUI {
       return false;
     }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: choice ? { deviceId: { exact: choice } } : true });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: this._captureConstraints().video || true });
       this._setCameraStream(stream);
       return true;
     } catch (error) {
@@ -642,7 +685,11 @@ export class PlayerUI {
       void this._camera.play().catch(() => undefined);
     } else if (!this._playback) {
       this._camera.srcObject = null;
-      if (this._cameraOn) this._setCameraFull(false);
+      if (this._cameraFull) this._setCameraFull(false);
+    }
+    if (!stream) {
+      this._cameraMode = 'off';
+      this._cameraButton.setAttribute('aria-pressed', 'false');
     }
     this._layoutCamera();
   }
@@ -650,16 +697,16 @@ export class PlayerUI {
   /** Place the camera picture: hidden without a source, full frame when switched to, else in the chosen corner. */
   private _layoutCamera(): void {
     const camera = this._camera;
-    const playbackVideo = Boolean(this._playback?.timeline.media.some((part) => part.video));
-    const hasPicture = Boolean(this._cameraStream) || playbackVideo;
+    // Live: the camera while it is on. Playback: the file playing, when it carries a picture.
+    const hasPicture = this._playback ? camera.videoWidth > 0 : Boolean(this._cameraStream);
     camera.hidden = !hasPicture;
     const { corner, size, mirror } = this._settings.recording;
     camera.dataset.corner = corner;
     camera.style.setProperty('--pip-size', `${size * 100}%`);
     // The presenter's own picture mirrors like a mirror does; a recording is shown as recorded.
     camera.classList.toggle('mirror', mirror && !this._playback);
-    camera.classList.toggle('full', this._cameraOn);
-    this.stageHost.classList.toggle('camera-on', this._cameraOn && hasPicture);
+    camera.classList.toggle('full', this._cameraFull);
+    this.stageHost.classList.toggle('camera-on', this._cameraFull && hasPicture);
   }
 
   // ---------------------------------------------------------------------
@@ -731,12 +778,11 @@ export class PlayerUI {
     if (this._recorder || !this._player || !this._navigation) return;
     if (this._playback) this.closeRecording();
     this._stopDeviceTest();
+    // The microphone is opened here; the camera is the presenter's to turn on, and is recorded while it is.
     let stream: MediaStream | null = null;
     if (typeof navigator.mediaDevices?.getUserMedia === 'function') {
       try {
-        const opened = await this._openDevices();
-        stream = opened.stream;
-        if (opened.cameraError) this.notice(`No camera (${opened.cameraError}); recording the sound only`);
+        stream = await navigator.mediaDevices.getUserMedia({ audio: this._captureConstraints().audio });
       } catch (error) {
         this.notice(`Cannot record: ${(error as Error).message}`);
         return;
@@ -744,9 +790,8 @@ export class PlayerUI {
     } else {
       this.notice('This browser gives no access to a microphone here; recording the timeline only');
     }
-    const videoTracks = stream?.getVideoTracks() ?? [];
-    if (videoTracks.length) this._setCameraStream(new MediaStream(videoTracks));
-    const recorder = new Recorder({ stream });
+    const videoTracks = this._cameraStream?.getVideoTracks() ?? [];
+    const recorder = new Recorder({ stream: stream && videoTracks.length ? new MediaStream([...stream.getAudioTracks(), ...videoTracks]) : stream });
     try {
       await recorder.start();
     } catch (error) {
@@ -758,7 +803,7 @@ export class PlayerUI {
     this._recordStream = stream;
     this._appendTo = append;
     this._pointerMarked = false;
-    for (const event of initialEvents(stopRef(this._navigation, this._player.index), this._boardOn, this._boardTarget, this._cameraOn, this._player.speed)) recorder.mark(event);
+    for (const event of initialEvents(stopRef(this._navigation, this._player.index), this._boardOn, this._boardTarget, this._cameraFull, this._player.speed)) recorder.mark(event);
     this._recordButton.textContent = '■ Stop';
     this._recordButton.setAttribute('aria-pressed', 'true');
     this._pauseButton.hidden = false;
@@ -766,7 +811,7 @@ export class PlayerUI {
     this._recordLabel.hidden = false;
     this._recordTimer = window.setInterval(() => this._updateRecordLabel(), 500);
     this._updateRecordLabel();
-    const what = stream ? (videoTracks.length ? 'with the camera' : 'the sound') : 'the timeline only';
+    const what = stream ? (videoTracks.length ? 'with the camera' : 'the sound (the camera joins while it is on)') : 'the timeline only';
     this.notice(append ? `Continuing ${append.name} at ${formatTime(append.timeline.duration)}, recording ${what}` : `Recording ${what}`);
   }
 
@@ -810,10 +855,9 @@ export class PlayerUI {
     this._recordButton.setAttribute('aria-pressed', 'false');
     this._pauseButton.hidden = true;
     const result = await recorder.stop();
-    // The microphone is released; the camera stays on only while its picture is shown full frame.
+    // The microphone is released; the camera stays as the presenter left it.
     for (const track of this._recordStream?.getAudioTracks() ?? []) track.stop();
     this._recordStream = null;
-    if (!this._cameraOn) this._setCameraStream(null);
     // A new talk, or the one being continued: the part is appended either way.
     const append = this._appendTo;
     this._appendTo = null;
@@ -827,28 +871,29 @@ export class PlayerUI {
       pip: { corner: this._settings.recording.corner, size: this._settings.recording.size },
       events: [],
     };
-    const partNumber = previous.media.length + 1;
-    const media = result.media && result.type ? describeMedia(name, result.type, partNumber, result.part.duration) : null;
-    const timeline = appendPart(previous, { ...result.part, media });
+    // Each file captured is numbered after the talk's existing ones (name.webm, name.part2.webm, …).
+    const first = previous.media.length + 1;
+    const files = result.media.map((captured, index) => ({ captured, number: first + index, media: { ...describeMedia(name, captured.type, first + index, captured.duration), start: captured.start } }));
+    const timeline = appendPart(previous, { ...result.part, media: files.map((file) => file.media) });
     const base = this._deck.base;
     if (base && recordingStoreAvailable()) {
       this.notice('Saving the recording…');
       try {
-        if (result.media && result.type) await saveMedia(base, name, partNumber, result.media, result.type);
+        for (const file of files) await saveMedia(base, name, file.number, file.captured.blob, file.captured.type);
         await saveTimeline(base, name, timeline);
         await this._refreshRecordings();
         this.notice(append ? `Continued recordings/${name}, now ${formatTime(timeline.duration)}` : `Saved as recordings/${name}`);
       } catch (error) {
         this.notice(`Could not save: ${(error as Error).message}`);
-        this._offerDownload(name, timeline, partNumber, result.media, result.type);
+        this._offerDownload(name, timeline, files);
       }
     } else {
-      this._offerDownload(name, timeline, partNumber, result.media, result.type);
+      this._offerDownload(name, timeline, files);
     }
   }
 
-  private _offerDownload(name: string, timeline: Timeline, partNumber: number, media: Blob | null, type: string | null): void {
-    if (media && type) download(media, mediaFileName(name, type, partNumber));
+  private _offerDownload(name: string, timeline: Timeline, files: Array<{ captured: CapturedMedia; number: number }>): void {
+    for (const file of files) download(file.captured.blob, mediaFileName(name, file.captured.type, file.number));
     download(new Blob([JSON.stringify(timeline)], { type: 'application/json' }), `${name}.json`);
     this.notice('Recording downloaded: put the files in a recordings/ folder next to the deck');
   }
@@ -925,6 +970,7 @@ export class PlayerUI {
     if (timeline.deck.hash !== structureHash(navigation)) this.notice('The deck changed since this talk was recorded; stops that moved may not match');
     this._finishStroke();
     this._setCameraStream(null);
+    this._cameraButton.disabled = true;
     const camera = this._camera;
     if (timeline.media.length) {
       camera.srcObject = null;
@@ -973,7 +1019,8 @@ export class PlayerUI {
     camera.removeAttribute('src');
     camera.load();
     camera.muted = true;
-    if (this._cameraOn) this._setCameraFull(false);
+    if (this._cameraFull) this._setCameraFull(false);
+    this._cameraButton.disabled = false;
     this._playbackBar.hidden = true;
     this.root.classList.remove('playing-back');
     this._layoutCamera();
@@ -1320,7 +1367,7 @@ export class PlayerUI {
     });
     const recordingRows = el('div', { class: 'bindings' },
       el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Microphone' }), this._micSelect),
-      el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Camera (none records the sound only)' }), this._cameraSelect),
+      el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Camera (None: no camera at all)' }), this._cameraSelect),
       el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Corner of the camera picture' }), this._cornerSelect),
       el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Size of the camera picture' }), this._pipSizeSelect),
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Mirror my own picture while presenting' }), this._mirrorToggle),
