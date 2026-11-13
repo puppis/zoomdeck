@@ -55,7 +55,8 @@ export default defineConfig({
     editorSync({ editor: process.env.ZOOMDECK_EDITOR ?? null, roots: [resolve(__dirname, 'examples')] }),
     recordingStore({ roots: [resolve(__dirname, 'examples')] }),
   ],
-  resolve: { alias: optionalStubs },
+  // A deck's own modules import the package by name, as they do under the command and the app.
+  resolve: { alias: { ...optionalStubs, zoomdeck: resolve(__dirname, 'src/index.ts') } },
   optimizeDeps: { entries: ['index.html'] },
   server: { fs: { allow: [resolve(__dirname), resolve(__dirname, '..')] } },
   build: {

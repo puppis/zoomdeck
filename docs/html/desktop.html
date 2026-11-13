@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The desktop app · Zoomdeck</title>
+<meta name="description" content="Zoomdeck as a program of its own for macOS, Linux and Windows: the same player and preview server in a window, with menus, native dialogs and the command's flags.">
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+</header>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Getting started</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Presenting</h4>
+        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li><li><a href="desktop.html" aria-current="page">The desktop app</a><ul class="subsections"><li><a href="#installing">Installing</a></li><li><a href="#using-it">Using it</a></li><li><a href="#building-it-yourself">Building it yourself</a></li></ul></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+      </section>
+      <section>
+        <h4>Diagrams</h4>
+        <ul><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li></ul>
+      </section>
+      <section>
+        <h4>Layout and style</h4>
+        <ul><li><a href="positioning.html">Positioning</a></li><li><a href="groups.html">Groups</a></li><li><a href="styles.html">Styles</a></li><li><a href="configuration.html">Configuration</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion and interaction</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Advanced</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>The desktop app</h1>
+      <p class="lead">Zoomdeck as a program of its own for macOS, Linux and Windows: the same player and preview server in a window, with menus, native dialogs and the command's flags.</p>
+      <p>Zoomdeck also comes as a desktop program. It is the same player and the same preview server as
+<code>zoomdeck serve</code>, started inside the app and shown in a window of its own, so a deck behaves
+exactly as it does in the browser: the outline, the pen, the whiteboard, the tablet pairing,
+recording a talk, the screen, printing and the exports all work, and so do the command's flags.
+The app brings what a program is expected to have: a double-clickable icon with no Node.js to
+install, decks opened from a menu or from the system, recent decks, and the system's own
+permission prompts for the camera and the microphone. It renders through the same engine as
+Chrome, so it is as fast as Chrome and the same on every system, not faster.</p>
+<h2 id="installing">Installing<a class="anchor" href="#installing" aria-label="Link to this section">#</a></h2><p>Download the installer for your system from the
+<a href="https://github.com/puppis/zoomdeck/releases">releases</a> of the repository: a <code>.dmg</code> (or <code>.zip</code>)
+for macOS, an <code>.AppImage</code> or <code>.deb</code> for Linux, an installer or a portable <code>.exe</code> for Windows.
+The builds are not signed, so the systems warn once:</p>
+<ul>
+<li><strong>macOS</strong>: the first time, right-click the app and choose Open, then confirm; afterwards it
+opens normally. The first recording asks for the microphone and the camera; filming the screen
+asks for Screen Recording in System Settings, and the app must be started again after granting it.</li>
+<li><strong>Windows</strong>: SmartScreen shows &quot;Windows protected your PC&quot;; choose More info, then Run anyway.</li>
+<li><strong>Linux</strong>: make the AppImage executable (<code>chmod +x</code>) and run it, or install the <code>.deb</code>.</li>
+</ul>
+<h2 id="using-it">Using it<a class="anchor" href="#using-it" aria-label="Link to this section">#</a></h2><p>Open a deck with <strong>File ▸ Open Deck…</strong> (<code>deck.json</code>, a Markdown file or a slide module), from
+<strong>Open Recent</strong>, or by passing it on the command line; without a deck the app opens the last
+one, or the guide. The window shows the deck as the browser would, and the menus add Reload
+Deck, Reveal Deck Folder, full screen, zoom and the developer tools. Links to other pages open
+in your browser.</p>
+<p>The command line takes the preview's flags:</p>
+<pre><code class="language-bash"><span class="tk-comment"># macOS</span>
+/Applications/Zoomdeck.app/Contents/MacOS/Zoomdeck path/to/deck.json <span class="tk-attribute">--host</span> <span class="tk-attribute">--editor</span> code
+<span class="tk-comment"># Linux</span>
+./Zoomdeck.AppImage path/to/deck.json <span class="tk-attribute">--port</span> <span class="tk-number">8000</span>
+<span class="tk-comment"># Windows</span>
+Zoomdeck.exe path\to\deck.json <span class="tk-attribute">--watch</span> path\to\parts</code></pre>
+<p><code>--host</code> also listens on the network, so a tablet can pair from the player's settings; <code>--port</code>
+insists on a port (otherwise the app takes a free one, so it never collides with a preview started
+from a terminal); <code>--editor</code> names the editor that <code>E</code> and Alt + click open source lines with;
+<code>--watch</code> adds folders whose changes reload the deck; <code>--scene</code> picks a named export of a module.
+The server's address is in the Help menu and on the terminal, and <code>zoomdeck jump</code> from an editor
+reaches it like any preview.</p>
+<p><strong>Filming the screen</strong> uses the system's own picker on macOS 15 and later; elsewhere the app films
+the screen the window is on, whole.</p>
+<h2 id="building-it-yourself">Building it yourself<a class="anchor" href="#building-it-yourself" aria-label="Link to this section">#</a></h2><p>The app lives in <code>desktop/</code> of the repository and is packaged with electron-builder:</p>
+<pre><code class="language-bash"><span class="tk-keyword">npm</span> install
+<span class="tk-keyword">npm</span> run desktop                 <span class="tk-comment"># run the app from the checkout (pass a deck after --)</span>
+<span class="tk-keyword">npm</span> run desktop:dir             <span class="tk-comment"># an unpacked build in release/, for a quick check</span>
+<span class="tk-keyword">npm</span> run desktop:build           <span class="tk-comment"># the installers for this system, in release/</span></code></pre>
+<p>Each system builds its own installers: run <code>npm run desktop:build</code> on a Mac for the macOS ones,
+on Linux for the AppImage and the <code>.deb</code>, on Windows for the installer and the portable program.
+The repository's <strong>Desktop app</strong> workflow does the three at once: it runs when a version tag
+(<code>v1.2.3</code>) is pushed, builds on macOS, Linux and Windows runners and attaches the installers to
+the GitHub release of that tag; a manual run of the workflow keeps them as artifacts instead.</p>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="exporting.html">← Exporting a deck</a>
+      <a class="next" href="slides.html">Slides and the tree →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#installing">Installing</a></li><li><a href="#using-it">Using it</a></li><li><a href="#building-it-yourself">Building it yourself</a></li></ul></nav>
+</div>
+</body>
+</html>

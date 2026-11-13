@@ -52,6 +52,9 @@ the configuration and a one-page reference. `docs/markup.md` is the compact dial
   the slides are never filmed. A stopped recording can be continued later from the same dialog. A recording plays back on the deck itself and exports as a video
   (slides or whiteboard with ink, camera in a corner or full frame, sound); recordings live in a
   `recordings/` folder next to the deck and travel with the folder export.
+- **A desktop app** for macOS, Linux and Windows (`desktop/`, built with electron-builder; installers
+  under the repository's releases): the same player and preview server in a window, with menus,
+  native dialogs and the command's flags.
 - **A PDF printout** (`P`): every stage of the deck, or the last stage of each slide,
   drawn by the deck's own renderer at up to 4K and stored losslessly, one per page, with the
   slides as bookmarks.

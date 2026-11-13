@@ -11,7 +11,7 @@
  * deck definition (optionally `--scene Name` for a named export).
  */
 import { promises as fs } from 'node:fs';
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, resolve, relative, basename, extname, join, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -40,7 +40,7 @@ function usage(message) {
   process.exit(message ? 2 : 0);
 }
 
-function parseArgs(argv) {
+export function parseArgs(argv) {
   const options = { watch: [], open: true, oneFile: false, showOutline: false, port: null, host: false, output: null, scene: null, editor: process.env.ZOOMDECK_EDITOR || null, positional: [] };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -83,7 +83,7 @@ const dropEngineMuxers = {
  * served or built through it, so its title, styles, macros and slide classes
  * apply exactly as when the configuration is given directly.
  */
-function resolveDeckPath(path) {
+export function resolveDeckPath(path) {
   const deckPath = resolve(path);
   if (!['.md', '.markdown'].includes(extname(deckPath).toLowerCase())) return deckPath;
   const configPath = join(dirname(deckPath), 'deck.json');
@@ -97,13 +97,13 @@ function resolveDeckPath(path) {
   return deckPath;
 }
 
-function deckKind(deckPath) {
+/** The kind of deck a file holds, by its extension; null for a file the command cannot serve. */
+export function deckKind(deckPath) {
   const ext = extname(deckPath).toLowerCase();
   if (ext === '.json') return 'json';
   if (ext === '.md' || ext === '.markdown') return 'markdown';
   if (['.ts', '.js', '.mjs', '.tsx'].includes(ext)) return 'module';
-  usage(`unsupported deck file ${deckPath}`);
-  return 'json';
+  return null;
 }
 
 function openBrowser(url) {
@@ -113,10 +113,17 @@ function openBrowser(url) {
   });
 }
 
-async function serve(options) {
-  const deckPath = resolveDeckPath(options.positional[0] ?? usage('serve needs a deck path'));
-  if (!existsSync(deckPath)) usage(`deck not found: ${deckPath}`);
+/**
+ * Start the preview server for a deck and resolve with it, its URL and the deck it serves;
+ * errors are thrown, not printed. `options` are those of `parseArgs`, plus `cacheDir` for
+ * Vite's dependency cache when the package folder is not writable (an installed app).
+ */
+export async function startPreview(options) {
+  if (!options.positional[0]) throw new Error('serve needs a deck path');
+  const deckPath = resolveDeckPath(options.positional[0]);
+  if (!existsSync(deckPath)) throw new Error(`deck not found: ${deckPath}`);
   const kind = deckKind(deckPath);
+  if (!kind) throw new Error(`unsupported deck file ${deckPath}`);
   const deckDir = dirname(deckPath);
   const watchRoots = [deckDir, ...options.watch];
   const reloadPlugin = {
@@ -139,6 +146,7 @@ async function serve(options) {
   const server = await createServer({
     configFile: false,
     root: packageRoot,
+    ...(options.cacheDir ? { cacheDir: options.cacheDir } : {}),
     resolve: { alias: optionalStubs },
     optimizeDeps: { entries: ['index.html'] },
     plugins: [resolveDeps, dropEngineMuxers, reloadPlugin, padRelay(), editorSync({ editor: options.editor, roots: watchRoots, deck: deckPath }), recordingStore({ roots: watchRoots })],
@@ -160,6 +168,17 @@ async function serve(options) {
   const query = new URLSearchParams({ deck: deckParam });
   if (options.scene) query.set('scene', options.scene);
   const url = `http://127.0.0.1:${port}/?${query.toString()}`;
+  return { server, url, port, deckPath, kind, watchRoots };
+}
+
+async function serve(options) {
+  let preview;
+  try {
+    preview = await startPreview(options);
+  } catch (error) {
+    usage(error.message);
+  }
+  const { server, url, port, kind, watchRoots } = preview;
   console.log(`Zoomdeck preview (${kind}) at ${url}`);
   if (options.host) {
     const lan = lanAddresses();
@@ -208,6 +227,7 @@ async function build(options) {
   if (!existsSync(deckPath)) usage(`deck not found: ${deckPath}`);
   if (!options.output) usage('build needs -o <folder>');
   const kind = deckKind(deckPath);
+  if (!kind) usage(`unsupported deck file ${deckPath}`);
   const deckDir = dirname(deckPath);
   const outDir = options.output;
   await fs.mkdir(outDir, { recursive: true });
@@ -413,11 +433,18 @@ async function jump(options) {
   if (!sent) process.exit(1);
 }
 
-const [command, ...rest] = process.argv.slice(2);
-if (command === undefined || command === '-h' || command === '--help' || command === 'help') usage();
-const options = parseArgs(rest);
-if (command === 'serve') serve(options).catch((error) => { console.error(error); process.exit(1); });
-else if (command === 'build') build(options).catch((error) => { console.error(error); process.exit(1); });
-else if (command === 'jump') jump(options).catch((error) => { console.error(error); process.exit(1); });
-else if (command === 'editors') console.log(Object.keys(EDITOR_PRESETS).join('\n'));
-else usage(`unknown command ${command}`);
+export { EDITOR_PRESETS };
+
+// The command line runs only when this file is the program (also through the `zoomdeck` link
+// npm makes); imported by the desktop app, it only lends its functions.
+const invoked = process.argv[1] ? (() => { try { return realpathSync(process.argv[1]); } catch { return process.argv[1]; } })() : '';
+if (invoked && pathToFileURL(invoked).href === import.meta.url) {
+  const [command, ...rest] = process.argv.slice(2);
+  if (command === undefined || command === '-h' || command === '--help' || command === 'help') usage();
+  const options = parseArgs(rest);
+  if (command === 'serve') serve(options).catch((error) => { console.error(error); process.exit(1); });
+  else if (command === 'build') build(options).catch((error) => { console.error(error); process.exit(1); });
+  else if (command === 'jump') jump(options).catch((error) => { console.error(error); process.exit(1); });
+  else if (command === 'editors') console.log(Object.keys(EDITOR_PRESETS).join('\n'));
+  else usage(`unknown command ${command}`);
+}
