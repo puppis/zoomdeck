@@ -357,7 +357,7 @@ export class PlayerUI {
       ...gestures,
       `${keys('undo')}: undo stroke`, `${keys('redo')}: redo stroke`, `${keys('clear')}: clear strokes`,
       `${keys('whiteboard')}: whiteboard (arrows, scrolling or two fingers move it)`,
-      `${keys('camera')}: camera in a corner, then full frame, then off`, `${keys('screen')}: film the screen, or stop`, `${keys('screenAgain')}: film the screen shared before, without asking`, `${keys('record')}: record the talk, or continue a saved one`,
+      `${keys('camera')}: camera in a corner, then full frame, then off`, `${keys('screen')}: film the screen (asked which the first time), or stop`, `${keys('record')}: record the talk, or continue a saved one`,
       ...(this._editSource ? [`${keys('edit')}: open this stop's source in the editor`] : []),
       `${keys('settings')}: settings`,
     ];
@@ -550,7 +550,6 @@ export class PlayerUI {
         break;
       case 'camera': void this.toggleCamera(); break;
       case 'screen': void this.toggleScreen(); break;
-      case 'screenAgain': void this.toggleScreen(undefined, true); break;
       case 'record': void this.toggleRecording(); break;
       case 'print': this.openPrint(); break;
     }
@@ -692,22 +691,21 @@ export class PlayerUI {
 
   /**
    * Film the screen from now on, or stop; a recording in progress takes it in place of the camera.
-   * Starting asks the browser which screen or window to share (its picker, which a page can
-   * neither skip nor fill in, opens on the kind of surface chosen last time); with `reuse`, a
-   * share still held from before is filmed again without asking. Stopping keeps the share held
-   * for that, until it is stopped from the browser's own bar or replaced by a new choice.
+   * Starting films the share still held from before without asking; with none, it asks the
+   * browser which screen or window to share (its picker, which a page can neither skip nor fill
+   * in, opens on the kind of surface chosen last time). Stopping keeps the share held for the
+   * next time, until it is ended from the browser's own bar; the next start then asks again.
    */
-  async toggleScreen(on = !this._screenFilming, reuse = false): Promise<void> {
+  async toggleScreen(on = !this._screenFilming): Promise<void> {
     if (this._playback || on === this._screenFilming) return;
     if (on) {
-      if (reuse && !this._screenHeld()) this.notice('No screen is shared yet, or the browser ended the share: choose one');
-      if ((!reuse || !this._screenHeld()) && !(await this._acquireScreen())) return;
+      if (!this._screenHeld() && !(await this._acquireScreen())) return;
       await this._setScreenFilming(true);
       const what = this._screenLabel();
       this.notice(this._recorder ? `Filming ${what}; Screen again (or S) when you are back` : `${what[0].toUpperCase()}${what.slice(1)} will be filmed once a recording runs; Screen again (or S) stops`);
     } else {
       await this._setScreenFilming(false);
-      this.notice(this._screenHeld() ? `Screen off; ${this._screenLabel()} stays shared for Alt+S (the browser's bar stops it)` : 'Screen off; the browser has ended the share, S chooses another');
+      this.notice(this._screenHeld() ? `Screen off; ${this._screenLabel()} stays shared, S films it again (the browser's bar ends the share)` : 'Screen off; the browser has ended the share, S asks again');
     }
   }
 
@@ -743,7 +741,7 @@ export class PlayerUI {
       for (const track of stream.getVideoTracks()) {
         track.addEventListener('ended', () => {
           if (this._screenStream !== stream) return;
-          this.notice('The browser ended the screen share; S chooses another');
+          this.notice('The browser ended the screen share; S asks again');
           void this._setScreenFilming(false).then(() => this._releaseScreen());
         });
       }
@@ -765,7 +763,7 @@ export class PlayerUI {
     const held = this._screenHeld() && !this._screenFilming;
     this._screenButton.classList.toggle('held', held);
     this._screenButton.title = held
-      ? 'Film the screen shared before (Alt+S), or pick another (S)'
+      ? 'Film the screen shared before again (S); the browser\'s own bar ends the share, to choose another'
       : 'Film the screen instead of the camera, for the time spent in another application, or stop (S)';
   }
 
@@ -1059,7 +1057,7 @@ export class PlayerUI {
     this._pauseButton.hidden = true;
     const result = await recorder.stop();
     // The microphone is released; the camera stays as the presenter left it, and a screen share
-    // stays held for the next time (Alt+S), until the browser's bar stops it.
+    // stays held for the next time (S), until the browser's bar ends it.
     for (const track of this._recordStream?.getAudioTracks() ?? []) track.stop();
     this._recordStream = null;
     await this._setScreenFilming(false);

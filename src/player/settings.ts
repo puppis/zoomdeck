@@ -47,7 +47,7 @@ export function sanitizeRecording(value: unknown): RecordingSettings {
 
 export type ActionName =
   | 'next' | 'previous' | 'home' | 'replay' | 'fullscreen' | 'outline' | 'undo' | 'redo' | 'clear' | 'settings' | 'exit' | 'pointer' | 'whiteboard'
-  | 'edit' | 'camera' | 'screen' | 'screenAgain' | 'record' | 'print';
+  | 'edit' | 'camera' | 'screen' | 'record' | 'print';
 
 export interface ActionInfo {
   name: ActionName;
@@ -66,8 +66,7 @@ export const ACTIONS: ActionInfo[] = [
   { name: 'pointer', label: 'Switch between spotlight and laser' },
   { name: 'whiteboard', label: 'Show or hide the whiteboard' },
   { name: 'camera', label: 'Camera: in a corner, then full frame, then off' },
-  { name: 'screen', label: 'Film the screen (the browser asks which), for the time spent in another application, or stop' },
-  { name: 'screenAgain', label: 'Film the screen shared before, without asking again (asks when none is shared), or stop' },
+  { name: 'screen', label: 'Film the screen for the time spent in another application, or stop; the browser asks which screen the first time' },
   { name: 'record', label: 'Record the talk (a new one, or continuing a saved one), or stop recording' },
   { name: 'edit', label: 'Open the source of this stop in the editor (preview server)' },
   { name: 'print', label: 'Print the deck to a PDF' },
@@ -89,7 +88,6 @@ export const DEFAULT_BINDINGS: Record<ActionName, string[]> = {
   whiteboard: ['w'],
   camera: ['c'],
   screen: ['s'],
-  screenAgain: ['Alt+s'],
   record: ['r'],
   edit: ['e'],
   print: ['p', 'Meta+p', 'Control+p'],
@@ -181,7 +179,7 @@ const MODIFIERS = ['Control', 'Alt', 'Meta', 'Shift'];
 export function keyCombo(event: KeyboardEvent): string | null {
   if (MODIFIERS.includes(event.key)) return null;
   let key = event.key === ' ' ? 'Space' : event.key;
-  // With Alt held, macOS types another character (Alt+S gives ß): the physical key names the letter or digit.
+  // With Alt held, macOS types another character (Alt with S gives ß): the physical key names the letter or digit.
   if (event.altKey && /^(?:Key[A-Z]|Digit[0-9])$/.test(event.code)) key = event.code.replace(/^Key|^Digit/, '');
   if (key.length === 1) key = key.toLowerCase();
   const parts: string[] = [];
