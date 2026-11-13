@@ -367,7 +367,7 @@ Raster files may be PNG, JPEG, GIF or WebP. A multi-frame APNG or GIF animates w
 
 **Pointer.** Drag draws with the pen, with pressure on a pencil or stylus; Shift + drag highlights. A click never changes the stop unless the settings bind a key to it. {#player-pointer below:#player-tools left-aligned:#player-tools buff=0.5 width=9 font_size=20}
 
-**Links.** `#step=N` or `#slide=id` opens a stop directly, also as `href=` on any element (the front page is built that way); the outline lists every slide; the preview server restores your position after a reload. {#player-links x=0.6 y=3.9 width=9 font_size=20}
+**Links.** `#step=N` or `#slide=id` opens a stop directly, also as `href=` on any element, followed with a click (the front page is built that way; a drag over it still draws); the outline lists every slide. {#player-links x=0.6 y=3.9 width=9 font_size=20}
 
 **Tablet.** A tablet on the same network pairs from the settings and draws on the deck. {#player-tablet below:#player-links left-aligned:#player-links buff=0.5 width=9 font_size=20}
 

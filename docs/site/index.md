@@ -20,6 +20,10 @@ links, a pressure-sensitive pen, a highlighter, a whiteboard, a companion tablet
 gestures, and it records a talk (voice, camera and every move on the deck) that plays back on the deck itself or exports as a video, and prints every stage to a PDF. The same deck previews while you edit it and [exports](exporting.html) to a static
 folder or to a single HTML file that plays from disk.
 
+**See it:** the **[guide deck](guide.html)** is itself a Zoomdeck presentation, a tour of every
+feature with the markup that produces it next to the result. **Source:**
+[github.com/puppis/zoomdeck](https://github.com/puppis/zoomdeck).
+
 ## Start here
 
 1. **[Getting started](getting-started.html)**: install with Node.js and npm, write a first deck,

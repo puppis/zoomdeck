@@ -215,7 +215,32 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
     void player.goTo(index, false);
     return true;
   };
-  // A double-click follows them (a click draws, even over a tile); the two dots it left go away.
+  // A tap (a press and release without movement) on an element with an href follows the link:
+  // inside the deck by moving to the stop, elsewhere in a new tab. A drag over it still draws,
+  // and the dot a tap would leave is taken back. A double-click still works as it did.
+  const follow = (href: string): boolean => {
+    if (href.startsWith('#')) return Boolean(links.navigate?.(href));
+    window.open(href, '_blank', 'noopener,noreferrer');
+    return true;
+  };
+  let tap: { x: number; y: number; at: number; href: string } | null = null;
+  ui.stageHost.addEventListener('pointerdown', (event) => {
+    tap = null;
+    if (event.button !== 0 || (event.target as Element | null)?.closest?.('iframe, button, select, input')) return;
+    const href = links.linkAt(event.clientX, event.clientY);
+    if (href) tap = { x: event.clientX, y: event.clientY, at: performance.now(), href };
+  });
+  document.addEventListener('pointerup', (event) => {
+    const started = tap;
+    tap = null;
+    if (!started || event.button !== 0) return;
+    if (performance.now() - started.at > 500 || Math.hypot(event.clientX - started.x, event.clientY - started.y) > 6) return;
+    if (follow(started.href)) ui.dropTaps(1);
+  });
+  ui.stageHost.addEventListener('pointermove', (event) => {
+    if (event.pointerType === 'touch') return;
+    ui.stageHost.classList.toggle('over-link', !(event.buttons & 1) && links.linkAt(event.clientX, event.clientY) !== null);
+  });
   ui.stageHost.addEventListener('dblclick', (event) => {
     if (event.button !== 0) return;
     const hash = links.deckLinkAt(event.clientX, event.clientY);

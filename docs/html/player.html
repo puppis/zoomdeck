@@ -182,9 +182,12 @@ before the tile); the <code>E</code> key opens the line of the current stop. See
 <a href="editors.html#forward-and-inverse-search">Editors</a>.</p>
 </li>
 <li>
-<p><strong>Double-click</strong> a link that points inside the deck (<code>#slide=</code>, <code>#step=</code>) to follow it; a single
-click over such a link draws, since it often covers a whole tile. Links to pages outside the deck
-open on a single click.</p>
+<p><strong>Click</strong> a link to follow it, that is a press and release without movement: a Markdown link, or
+any element with <code>href=</code>, which is how the guide's front page and its &quot;Back to the overview&quot;
+lines work. Targets inside the deck (<code>#slide=</code>, <code>#step=</code>) move to that stop; others open in a
+new tab. A drag over a link still draws, and the pointer turns into a hand over one. A
+double-click also follows a link inside the deck. An include is not a link by itself: the
+guide's front page lays an invisible rectangle with <code>href=</code> over each tile.</p>
 </li>
 </ul>
 <p>Strokes belong to the current slide and clear when the slide changes; undo, redo and clear act on

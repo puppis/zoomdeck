@@ -152,9 +152,9 @@ export class LinkLayer {
     if (anchor.getAttribute('href') !== href) {
       anchor.href = href;
       anchor.title = href;
-      // Targets inside the deck stay on this page and, often covering whole tiles, take no
-      // clicks (the pen keeps them); `deckLinkAt` follows them on a double-click. Everything
-      // else opens a new tab on a click.
+      // The anchors are hit areas only: the stage follows a link on a tap (a press without
+      // movement) through `linkAt`, so that a drag over a tile still draws. Targets inside the
+      // deck stay on this page; everything else opens a new tab.
       const deck = href.startsWith('#');
       anchor.target = deck ? '_self' : '_blank';
       anchor.classList.toggle('deck', deck);
@@ -203,16 +203,21 @@ export class LinkLayer {
     return best?.source ?? null;
   }
 
-  /** The in-deck target (`#…`) of the topmost link area under a point of the page, if any. */
-  deckLinkAt(clientX: number, clientY: number): string | null {
+  /** The target of the topmost link area under a point of the page, if any; `deck` keeps to in-deck targets (`#…`). */
+  linkAt(clientX: number, clientY: number, deck = false): string | null {
     let found: string | null = null;
     for (const anchor of this._anchors.values()) {
       const href = anchor.getAttribute('href') ?? '';
-      if (!href.startsWith('#')) continue;
+      if (deck && !href.startsWith('#')) continue;
       const r = anchor.getBoundingClientRect();
       if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) found = href;
     }
     return found;
+  }
+
+  /** The in-deck target (`#…`) of the topmost link area under a point of the page, if any. */
+  deckLinkAt(clientX: number, clientY: number): string | null {
+    return this.linkAt(clientX, clientY, true);
   }
 
   dispose(): void {

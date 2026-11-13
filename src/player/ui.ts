@@ -2238,11 +2238,11 @@ export class PlayerUI {
     this.stageHost.classList.remove('stroking');
   }
 
-  /** Remove the dots left by the clicks of a double-click. */
-  dropTaps(): void {
+  /** Remove the dots left by the taps of a click or double-click that followed a link. */
+  dropTaps(count = 2): void {
     this._finishStroke();
     const surface = this._activeSurface();
-    const dropped = this._surface(surface).dropRecentTaps(2, 1500);
+    const dropped = this._surface(surface).dropRecentTaps(count, 1500);
     for (let n = 0; n < dropped; n++) {
       this._broadcast({ type: 'ink', surface, op: 'undo' });
       this._note({ type: 'ink', surface, op: { op: 'undo' } });

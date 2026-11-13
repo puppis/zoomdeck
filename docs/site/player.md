@@ -77,9 +77,12 @@ With the default gestures:
   `zoomdeck serve --editor …` (the element nearest to the pointer counts, a text inside a tile
   before the tile); the `E` key opens the line of the current stop. See
   [Editors](editors.html#forward-and-inverse-search).
-- **Double-click** a link that points inside the deck (`#slide=`, `#step=`) to follow it; a single
-  click over such a link draws, since it often covers a whole tile. Links to pages outside the deck
-  open on a single click.
+- **Click** a link to follow it, that is a press and release without movement: a Markdown link, or
+  any element with `href=`, which is how the guide's front page and its "Back to the overview"
+  lines work. Targets inside the deck (`#slide=`, `#step=`) move to that stop; others open in a
+  new tab. A drag over a link still draws, and the pointer turns into a hand over one. A
+  double-click also follows a link inside the deck. An include is not a link by itself: the
+  guide's front page lays an invisible rectangle with `href=` over each tile.
 
 Strokes belong to the current slide and clear when the slide changes; undo, redo and clear act on
 the current slide's strokes (or on the whiteboard's while it is shown). Links and live pages keep
