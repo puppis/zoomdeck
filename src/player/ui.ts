@@ -126,6 +126,8 @@ export class PlayerUI {
   /** Whether the screen is what the recording films now (the Screen button pressed). */
   private _screenFilming = false;
   private readonly _screenButton: HTMLButtonElement;
+  /** Beside Screen while a share is held: opens the browser's picker again, for another screen or window. */
+  private readonly _screenPickButton: HTMLButtonElement;
   /** Whether the camera picture (live, or the recording's during playback) is shown full frame. */
   private _cameraFull = false;
   private readonly _cameraButton: HTMLButtonElement;
@@ -275,6 +277,8 @@ export class PlayerUI {
     this._cameraButton.addEventListener('click', () => void this.toggleCamera(this._cameraMode === 'off' ? 'corner' : 'off'));
     this._screenButton = el('button', { class: 'screen-button', text: 'Screen', title: 'Film the screen instead of the camera, for the time spent in another application, or stop (S)', 'aria-pressed': 'false' });
     this._screenButton.addEventListener('click', () => void this.toggleScreen());
+    this._screenPickButton = el('button', { class: 'screen-pick', text: '⌄', title: 'Choose another screen or window to film', 'aria-label': 'Choose another screen or window', hidden: '' });
+    this._screenPickButton.addEventListener('click', () => void this.pickScreen());
     this._recordButton = el('button', { class: 'record-button', text: '● Record', title: 'Start or stop recording the talk (R)', 'aria-pressed': 'false' });
     this._recordButton.addEventListener('click', () => void this.toggleRecording());
     this._pauseButton = el('button', { class: 'pause-button', text: 'Pause', title: 'Pause or resume the recording', hidden: '' });
@@ -298,7 +302,7 @@ export class PlayerUI {
         el('label', {}, 'Tip ', this._penSize),
         this._boardButton,
       ),
-      el('div', { class: 'group record-controls', role: 'group', 'aria-label': 'Camera and recording' }, this._cameraButton, this._screenButton, this._recordButton, this._pauseButton, this._recordingsButton),
+      el('div', { class: 'group record-controls', role: 'group', 'aria-label': 'Camera and recording' }, this._cameraButton, this._screenButton, this._screenPickButton, this._recordButton, this._pauseButton, this._recordingsButton),
       el('div', { class: 'group page-controls', role: 'group', 'aria-label': 'Page' }, this._printButton, fullscreen, settingsButton),
       this._progress,
     );
@@ -709,6 +713,15 @@ export class PlayerUI {
     }
   }
 
+  /** Ask the browser for another screen or window in place of the share held; the filming, if on, goes on with it. */
+  async pickScreen(): Promise<void> {
+    if (this._playback) return;
+    if (!(await this._acquireScreen())) return;
+    if (this._screenFilming) await this._recordPicture();
+    const what = this._screenLabel();
+    this.notice(this._screenFilming ? `Filming ${what} from now on` : `${what[0].toUpperCase()}${what.slice(1)} is shared; S films it`);
+  }
+
   /** What is shared, for the notices: "the entire screen", "a window", "a tab", or "the screen" when the browser does not say. */
   private _screenLabel(): string {
     const surface = (this._screenStream?.getVideoTracks()[0]?.getSettings() as { displaySurface?: string } | undefined)?.displaySurface;
@@ -760,10 +773,11 @@ export class PlayerUI {
   }
 
   private _updateScreenButton(): void {
-    const held = this._screenHeld() && !this._screenFilming;
-    this._screenButton.classList.toggle('held', held);
-    this._screenButton.title = held
-      ? 'Film the screen shared before again (S); the browser\'s own bar ends the share, to choose another'
+    const held = this._screenHeld();
+    this._screenPickButton.hidden = !held;
+    this._screenButton.classList.toggle('held', held && !this._screenFilming);
+    this._screenButton.title = held && !this._screenFilming
+      ? 'Film the screen shared before again (S); the arrow beside chooses another'
       : 'Film the screen instead of the camera, for the time spent in another application, or stop (S)';
   }
 

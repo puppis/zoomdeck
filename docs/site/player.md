@@ -218,8 +218,10 @@ share: its picker is the browser's own, which a page can neither skip, fill in n
 it opens on the kind of surface you chose last time (the entire screen at first; choose that to
 follow yourself across applications). Stopping the filming keeps the share, shown by a red dot on
 the **Screen** button, so that the next `S` films the same screen again without asking. To share
-something else, end the share from the browser's own bar (Chrome's "Stop sharing", Firefox's and
-Safari's sharing indicators); the player says so, and the next `S` asks again. With "Film the screen while this page is hidden" in the settings, a recording asks
+something else, the small arrow beside **Screen**, shown while a share is held, opens the picker
+again, with the filming going on with the new choice; ending the share from the browser's own bar
+(Chrome's "Stop sharing", Firefox's and Safari's sharing indicators) works too, and the next `S`
+then asks again. With "Film the screen while this page is hidden" in the settings, a recording asks
 for the screen when it starts and films it by itself whenever the page is hidden, as when you
 switch to another application, and goes back to the deck when you return; the switch still works
 at any time. A filmed stretch is a further media file of the talk; in playback and in the exported

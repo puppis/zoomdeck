@@ -111,7 +111,7 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
 .zd-stage .playback-bar input[type=range] { width: min(360px, 40vw); }
 .zd-stage .playback-bar .play-time { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .zd-stage .playback-bar button { padding: 4px 10px; font-size: 12px; }
-.zd-app.playing-back .buttons button, .zd-app.playing-back .record-button, .zd-app.playing-back .pen-controls, .zd-app.playing-back .slides button { opacity: .35; pointer-events: none; }
+.zd-app.playing-back .buttons button, .zd-app.playing-back .record-button, .zd-app.playing-back .screen-pick, .zd-app.playing-back .pen-controls, .zd-app.playing-back .slides button { opacity: .35; pointer-events: none; }
 .zd-stage.sketch-active { cursor: crosshair; }
 /* Over a link the hand wins over the pen's crosshair; the spotlight and laser keep their own cursor. */
 .zd-stage.over-link:not(.spotlight-active), .zd-stage.sketch-active.over-link:not(.spotlight-active) { cursor: pointer; }
@@ -144,6 +144,9 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
 .zd-app dialog.export .row .note { margin: 0; }
 .zd-app .record-button[aria-pressed=true] { background: #d22; color: #fff; border-color: #d22; }
 .zd-app .camera-button[aria-pressed=true], .zd-app .screen-button[aria-pressed=true] { background: var(--hover); font-weight: 600; }
+/* The arrow beside Screen, shown while a share is held, opens the picker for another screen. */
+.zd-app footer .group .screen-pick { padding: 5px 7px; margin-left: -4px; }
+.zd-app .screen-pick[hidden] { display: none; }
 /* A share held for the next S, not filmed at the moment: a dot after the label. */
 .zd-app .screen-button.held::after { content: ''; display: inline-block; width: 6px; height: 6px; margin-left: 6px; border-radius: 50%; background: #d22; vertical-align: middle; }
 .zd-app .record-label { font-size: 12px; color: #d22; font-variant-numeric: tabular-nums; font-weight: 600; }
