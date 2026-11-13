@@ -179,7 +179,9 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
     } catch {
       resume = null;
     }
-    // An editing-preview reload restores the slide and step saved before unloading.
+    // A reload the preview server asks for after an edit restores the slide and step the page
+    // stood at, saved just before it; a URL opened or reloaded by hand starts where its hash
+    // says, or at the first stop.
     try {
       const saved = sessionStorage.getItem(storageKey);
       if (resume === null && saved) resume = JSON.parse(saved) as Bookmark;
@@ -187,7 +189,7 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
     } catch {
       /* storage unavailable */
     }
-    window.addEventListener('beforeunload', () => {
+    import.meta.hot?.on('vite:beforeFullReload', () => {
       try {
         const position = windowWithPosition.zoomdeckPosition?.();
         if (position) sessionStorage.setItem(storageKey, JSON.stringify(position));
@@ -196,6 +198,11 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
       }
     });
     hashStep = clipForHash(location.hash, navigation, player);
+    // A hash typed or pasted into the address bar of the open page moves the deck as a fresh load would.
+    window.addEventListener('hashchange', () => {
+      const index = clipForHash(location.hash, navigation, player);
+      if (index !== null && index !== player.index) void player.goTo(index, false);
+    });
   }
   // `href=#slide=id` and `href=#step=N` on elements move within the deck instead of opening a page.
   links.navigate = (hash) => {

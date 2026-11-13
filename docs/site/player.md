@@ -324,7 +324,9 @@ play. `transition=cut` on a slide, include or subslide does the same for that sl
 
 The outline lists every slide; clicking one jumps to its first stop. The address bar follows the
 current stop as `#step=N`, which can be shared or bookmarked; `#slide=id` opens the first stop of a
-slide by its markup ID (or a slide by name).
+slide by its markup ID (or a slide by name). A URL without a hash opens at the first stop, and a
+hash typed into the address bar of an open deck moves it there; only the preview server's own
+reload after an edit returns to the stop you were looking at.
 
 ## Loops and automatic advancement
 

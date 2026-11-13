@@ -1,1 +1,1 @@
-[Imported from parts/footer.md]{#footer x=-9.35 y=-4.6 color=GRAY}
+[Imported from parts/footer.md]{#footer x=-9.35 y=-5.15 color=GRAY}

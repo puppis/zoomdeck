@@ -418,7 +418,9 @@ play. <code>transition=cut</code> on a slide, include or subslide does the same 
 <code>transition=zoom</code> brings the zoom back for one slide of a <code>cut</code> deck.</p>
 <h2 id="outline-and-deep-links">Outline and deep links<a class="anchor" href="#outline-and-deep-links" aria-label="Link to this section">#</a></h2><p>The outline lists every slide; clicking one jumps to its first stop. The address bar follows the
 current stop as <code>#step=N</code>, which can be shared or bookmarked; <code>#slide=id</code> opens the first stop of a
-slide by its markup ID (or a slide by name).</p>
+slide by its markup ID (or a slide by name). A URL without a hash opens at the first stop, and a
+hash typed into the address bar of an open deck moves it there; only the preview server's own
+reload after an edit returns to the stop you were looking at.</p>
 <h2 id="loops-and-automatic-advancement">Loops and automatic advancement<a class="anchor" href="#loops-and-automatic-advancement" aria-label="Link to this section">#</a></h2><p>Looping stops (<code>play=loop</code>, <code>stop({ loop: true })</code>) repeat until the next click. Stops marked with
 <code>next</code> or <code>autoNext</code> advance by themselves once played; backward moves never trigger them.</p>
 <h2 id="editing-preview">Editing preview<a class="anchor" href="#editing-preview" aria-label="Link to this section">#</a></h2><p><code>zoomdeck serve</code> and the dev page reload when the deck's files change and return to the
