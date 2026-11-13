@@ -17,11 +17,14 @@ Chrome, so it is as fast as Chrome and the same on every system, not faster.
 Download the installer for your system from the
 [releases](https://github.com/puppis/zoomdeck/releases) of the repository: a `.dmg` (or `.zip`)
 for macOS, an `.AppImage` or `.deb` for Linux, an installer or a portable `.exe` for Windows.
-The builds are not signed, so the systems warn once:
+The builds are not signed by a registered developer, so the systems warn once:
 
-- **macOS**: the first time, right-click the app and choose Open, then confirm; afterwards it
-  opens normally. The first recording asks for the microphone and the camera; filming the screen
-  asks for Screen Recording in System Settings, and the app must be started again after granting it.
+- **macOS**: the first time, the system says that it cannot verify the developer. Up to Sonoma,
+  right-click the app and choose Open, then confirm; on Sequoia and later, open System Settings
+  ▸ Privacy & Security and choose Open Anyway under the message, then confirm. Afterwards it opens
+  normally. (The same from a terminal: `xattr -d com.apple.quarantine /Applications/Zoomdeck.app`.)
+  The first recording asks for the microphone and the camera; filming the screen asks for Screen
+  Recording in System Settings, and the app must be started again after granting it.
 - **Windows**: SmartScreen shows "Windows protected your PC"; choose More info, then Run anyway.
 - **Linux**: make the AppImage executable (`chmod +x`) and run it, or install the `.deb`.
 
