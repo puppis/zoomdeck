@@ -16,8 +16,8 @@ code listings, live web pages, fragments that appear on clicks, and animations s
 morphs and effects. When the dialect is not enough, a slide can be a small TypeScript class with
 the full animation engine at hand. Everything runs live on a WebGL canvas in the browser: a deck
 loads, records itself once, and then plays forwards and backwards instantly, with an outline, deep
-links, a pressure-sensitive pen, a highlighter, a whiteboard, a companion tablet, a spotlight or laser, links on any element and configurable keys and
-gestures. The same deck previews while you edit it and [exports](exporting.html) to a static
+links, a pressure-sensitive pen, a highlighter, a whiteboard, a companion tablet, a camera view, a spotlight or laser, links on any element and configurable keys and
+gestures, and it records a talk (voice, camera and every move on the deck) that plays back on the deck itself or exports as a video. The same deck previews while you edit it and [exports](exporting.html) to a static
 folder or to a single HTML file that plays from disk.
 
 ## Start here

@@ -1,6 +1,6 @@
 ---
 title: The player
-description: Keyboard and pointer controls, the pen and its pressure styles, the whiteboard, a companion tablet, spotlight and laser, reverse playback, deep links, speed and fullscreen.
+description: Keyboard and pointer controls, the pen and its pressure styles, the whiteboard, a companion tablet, the camera, recording a talk and exporting it as a video, spotlight and laser, reverse playback, deep links, speed and fullscreen.
 ---
 
 <a class="try" href="guide.html#slide=player">Open in the guide ↗</a>
@@ -18,6 +18,9 @@ description: Keyboard and pointer controls, the pen and its pressure styles, the
 | Delete, Backspace | clear all strokes on this slide |
 | L | switch the pointer tool between spotlight and laser |
 | W | show or hide the whiteboard; while it is shown the arrows scroll it |
+| C | show the camera full frame, or the slides again |
+| Shift+R | start or stop recording the talk |
+| Shift+A | continue the latest recording where it stopped |
 | E | open the source line of this stop in the editor (preview server with `--editor`; see [Editors](editors.html#forward-and-inverse-search)) |
 | F | toggle fullscreen; Esc leaves it |
 | O | toggle the slide outline |
@@ -29,7 +32,7 @@ current slide and the player state.
 
 ## Settings
 
-The gear button (or the `,` key) opens the settings dialog, in five parts:
+The gear button (or the `,` key) opens the settings dialog, in six parts:
 
 - **Pointer**: the tool shown by the pointer gesture (spotlight or laser) and the modifier keys
   of each gesture: the pen, the spotlight/highlighter, click-to-advance and the click that opens
@@ -37,6 +40,8 @@ The gear button (or the `,` key) opens the settings dialog, in five parts:
   (no key), one of Shift, Control, Alt, ⌘/Win or a pair of them, or "Off"; choosing keys already
   used by another gesture frees them from it.
 - **Pen**: how pressure and motion shape a stroke; see [The pen](#the-pen).
+- **Recording**: the microphone and camera, and where the camera picture sits; see
+  [Recording a talk](#recording-a-talk).
 - **Tablet**: pairing a companion tablet; see [A tablet as a drawing pad](#a-tablet-as-a-drawing-pad).
 - **Keyboard**: every action with its keys. Click a key to remove it, or choose "Add key" and press
   the new combination, which may include modifiers; a combination already used elsewhere moves to
@@ -159,6 +164,79 @@ The pad page needs almost no memory, since the deck itself stays on the computer
 deck itself on a tablet, as a viewer, is also possible when it is small enough: Safari closes a page
 that uses too much memory ("A problem repeatedly occurred"), so text is rasterized at the same
 base density on every screen and only the lines in view are sharpened to the screen's density.
+
+## The camera
+
+`C` shows the camera full frame in place of the slides or the whiteboard, and `C` again brings
+them back: a way to show a real blackboard, an object or yourself without leaving the deck. The
+first press asks the browser for the camera chosen in the settings (Recording), and while the
+camera is on, its picture also sits in a corner of the slides, mirrored like a mirror so that
+you can see yourself; the corner, the size and the mirroring are settings. The pen never draws
+on the camera: strokes belong to slides and to the whiteboard.
+
+## Recording a talk
+
+**Record** in the footer, or `Shift+R`, records the talk: your voice through the microphone, the
+camera when one is chosen (choose "None" to record the sound alone), and everything you do on the
+deck, each on the same clock: the stops you move through and how (played forwards, backwards or
+jumped to), every pen and highlighter stroke as it is drawn, undo and clear, the whiteboard with
+its scrolling, the laser or spotlight while it is shown, the playback speed and the camera switch.
+The slides themselves are not filmed. A recording is therefore a few files: the sound or video
+from the microphone and camera (WebM, or MP4 in Safari; one file per part when the talk was
+continued after a stop), and a small *timeline* of what happened,
+naming each stop by its slide and step. It plays back on the deck itself, as sharp as the live
+deck at any window size, and survives edits to the deck that leave its slides in place; the
+player warns when the deck changed since the talk was recorded.
+
+The header shows the running time while recording. **Pause** stops both the microphone and the
+clock, and resuming leaves the gap out of the talk. **Stop** saves the recording in a
+`recordings/` folder next to the deck when the deck is served by `zoomdeck serve` or the
+development page; otherwise the two files are offered as downloads, to put in such a folder by
+hand. When `ffmpeg` is installed, the server also rewrites the media file so that it carries its
+duration and can be seeked in any player. The recording is named after the date and time,
+`talk-2026-11-13-1030`.
+
+**Continuing a talk.** A stopped recording can be taken up again later, even after closing the
+browser: `Shift+A` continues the latest one, and the **Continue** button in the list of talks
+continues any of them. What follows is stamped after the end of the earlier part, with a cut
+marking the seam, and is kept as a further media file of the same recording (`talk.part2.webm`,
+since a browser cannot append to a finished file); playback and the export run through the
+parts as one talk. The header counts from where the talk stood. Stop and Continue therefore
+also serve as a pause that outlives the page, and the deck may be edited in between, as long as
+the slides already visited stay.
+
+Choose the devices first, in the settings under **Recording**: "Detect devices" asks the browser
+once for the microphone and camera, after which both lists show the devices by name. The same
+section sets the corner (bottom right by default) and the size of the camera picture, which is
+where it appears while you present and in the exported video, and whether your own picture is
+mirrored while presenting (the recording is never mirrored).
+
+**Playing a recording.** When the deck's folder holds recordings, the footer shows **Talk** (with
+their number when there are several); it opens the recording, or a list to choose from, with a
+Delete button where the server can remove files. During playback the deck follows the recording:
+stops play as they did, strokes appear as they were drawn, the whiteboard and the camera switch
+when they did, and the laser or spotlight moves where the presenter pointed. A bar over the
+slides has play and pause (also Space), a scrubber (also `←` and `→`, five seconds at a time),
+the time, **Export video** and a way out (also Esc); seeking anywhere rebuilds the state at that
+moment. The recording's own sound plays, and its camera picture sits in the corner it was
+recorded with, or full frame where the presenter switched to it. Your keys and clicks on the deck
+are off until you leave the recording.
+
+**Exporting a video.** Export video renders the open recording as a video file: the slides or the
+whiteboard with their ink, the camera in its corner or full frame, the pointer, and the recorded
+sound, at 1920 pixels wide in the deck's proportions. The recording plays from the start while
+the frames are captured, so the export takes exactly as long as the talk, and the window must
+stay visible meanwhile (a hidden tab draws nothing). The result is a WebM file (VP9 and Opus),
+saved as `recordings/<name>.video.webm` next to the recording or downloaded; `ffmpeg -i
+talk.video.webm -c:v libx264 -c:a aac talk.mp4` turns it into an MP4 when a tool or a site wants
+one. The timeline is independent of the clock that produced it, so a later version can render the
+same recording off line, faster than real time.
+
+**What travels where.** The folder export (`zoomdeck build … -o folder`) copies the `recordings/`
+folder, so a deck published that way shows its Talk button to viewers; the single-file export
+leaves recordings out, since a talk's media would not fit in a page. Playback needs a browser that
+can play the recorded file: a WebM from Chrome or Firefox plays in those two, an MP4 from Safari
+plays everywhere.
 
 ## Reverse playback
 

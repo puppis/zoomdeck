@@ -45,8 +45,13 @@ the configuration and a one-page reference. `docs/markup.md` is the compact dial
   fullscreen, deep links (`#step=N`), a pressure-sensitive pen (drag) with color, tip and
   configurable ink styles, a spotlight or laser (hold Shift, `L` switches) and a highlighter
   (Shift + drag) with configurable gestures, an unbounded whiteboard (`W`) with its own history,
-  a companion tablet that mirrors strokes both ways over the preview server, `href=` links on any
-  element, loops and automatic advancement.
+  a companion tablet that mirrors strokes both ways over the preview server, a camera view (`C`),
+  `href=` links on any element, loops and automatic advancement.
+- **Recording a talk** (`Shift+R`): the microphone and camera go into a media file while every
+  move on the deck (stops, strokes, whiteboard, pointer, camera switch) is stamped on a timeline;
+  the slides are never filmed. A stopped recording can be continued later (`Shift+A`). A recording plays back on the deck itself and exports as a video
+  (slides or whiteboard with ink, camera in a corner or full frame, sound); recordings live in a
+  `recordings/` folder next to the deck and travel with the folder export.
 - **An editing preview** (`zoomdeck serve`) that reloads on save and restores the current
   slide and step, and **static exports** (`zoomdeck build`, `--one-file`).
 

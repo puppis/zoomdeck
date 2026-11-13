@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The player · Zoomdeck</title>
-<meta name="description" content="Keyboard and pointer controls, the pen and its pressure styles, the whiteboard, a companion tablet, spotlight and laser, reverse playback, deep links, speed and fullscreen.">
+<meta name="description" content="Keyboard and pointer controls, the pen and its pressure styles, the whiteboard, a companion tablet, the camera, recording a talk and exporting it as a video, spotlight and laser, reverse playback, deep links, speed and fullscreen.">
 <link rel="stylesheet" href="docs.css">
 </head>
 <body>
@@ -38,7 +38,7 @@
       </section>
       <section>
         <h4>Presenting</h4>
-        <ul><li><a href="player.html" aria-current="page">The player</a><ul class="subsections"><li><a href="#controls">Controls</a></li><li><a href="#settings">Settings</a></li><li><a href="#pointer-tools">Pointer tools</a></li><li><a href="#the-pen">The pen</a></li><li><a href="#the-whiteboard">The whiteboard</a></li><li><a href="#a-tablet-as-a-drawing-pad">A tablet as a drawing pad</a></li><li><a href="#reverse-playback">Reverse playback</a></li><li><a href="#cuts">Cuts</a></li><li><a href="#outline-and-deep-links">Outline and deep links</a></li><li><a href="#loops-and-automatic-advancement">Loops and automatic advancement</a></li><li><a href="#editing-preview">Editing preview</a></li><li><a href="#static-exports">Static exports</a></li></ul></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
+        <ul><li><a href="player.html" aria-current="page">The player</a><ul class="subsections"><li><a href="#controls">Controls</a></li><li><a href="#settings">Settings</a></li><li><a href="#pointer-tools">Pointer tools</a></li><li><a href="#the-pen">The pen</a></li><li><a href="#the-whiteboard">The whiteboard</a></li><li><a href="#a-tablet-as-a-drawing-pad">A tablet as a drawing pad</a></li><li><a href="#the-camera">The camera</a></li><li><a href="#recording-a-talk">Recording a talk</a></li><li><a href="#reverse-playback">Reverse playback</a></li><li><a href="#cuts">Cuts</a></li><li><a href="#outline-and-deep-links">Outline and deep links</a></li><li><a href="#loops-and-automatic-advancement">Loops and automatic advancement</a></li><li><a href="#editing-preview">Editing preview</a></li><li><a href="#static-exports">Static exports</a></li></ul></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
       </section>
       <section>
         <h4>Advanced</h4>
@@ -48,7 +48,7 @@
   <main id="content">
     <article>
       <h1>The player</h1>
-      <p class="lead">Keyboard and pointer controls, the pen and its pressure styles, the whiteboard, a companion tablet, spotlight and laser, reverse playback, deep links, speed and fullscreen.</p>
+      <p class="lead">Keyboard and pointer controls, the pen and its pressure styles, the whiteboard, a companion tablet, the camera, recording a talk and exporting it as a video, spotlight and laser, reverse playback, deep links, speed and fullscreen.</p>
       <p><a class="try" href="guide.html#slide=player">Open in the guide ↗</a></p>
 <h2 id="controls">Controls<a class="anchor" href="#controls" aria-label="Link to this section">#</a></h2><table>
 <thead>
@@ -95,6 +95,18 @@
 <td>show or hide the whiteboard; while it is shown the arrows scroll it</td>
 </tr>
 <tr>
+<td>C</td>
+<td>show the camera full frame, or the slides again</td>
+</tr>
+<tr>
+<td>Shift+R</td>
+<td>start or stop recording the talk</td>
+</tr>
+<tr>
+<td>Shift+A</td>
+<td>continue the latest recording where it stopped</td>
+</tr>
+<tr>
 <td>E</td>
 <td>open the source line of this stop in the editor (preview server with <code>--editor</code>; see <a href="editors.html#forward-and-inverse-search">Editors</a>)</td>
 </tr>
@@ -115,7 +127,7 @@
 <p>The footer has previous/next buttons, a progress bar, the pen settings, the speed control
 (0.5× to 2×), the settings gear and the fullscreen button. The header shows the breadcrumb of the
 current slide and the player state.</p>
-<h2 id="settings">Settings<a class="anchor" href="#settings" aria-label="Link to this section">#</a></h2><p>The gear button (or the <code>,</code> key) opens the settings dialog, in five parts:</p>
+<h2 id="settings">Settings<a class="anchor" href="#settings" aria-label="Link to this section">#</a></h2><p>The gear button (or the <code>,</code> key) opens the settings dialog, in six parts:</p>
 <ul>
 <li><strong>Pointer</strong>: the tool shown by the pointer gesture (spotlight or laser) and the modifier keys
 of each gesture: the pen, the spotlight/highlighter, click-to-advance and the click that opens
@@ -123,6 +135,8 @@ an element's source in the editor (Alt by default). Each can be &quot;Plain&quot
 (no key), one of Shift, Control, Alt, ⌘/Win or a pair of them, or &quot;Off&quot;; choosing keys already
 used by another gesture frees them from it.</li>
 <li><strong>Pen</strong>: how pressure and motion shape a stroke; see <a href="#the-pen">The pen</a>.</li>
+<li><strong>Recording</strong>: the microphone and camera, and where the camera picture sits; see
+<a href="#recording-a-talk">Recording a talk</a>.</li>
 <li><strong>Tablet</strong>: pairing a companion tablet; see <a href="#a-tablet-as-a-drawing-pad">A tablet as a drawing pad</a>.</li>
 <li><strong>Keyboard</strong>: every action with its keys. Click a key to remove it, or choose &quot;Add key&quot; and press
 the new combination, which may include modifiers; a combination already used elsewhere moves to
@@ -267,6 +281,66 @@ and the checklist to go through once the tablet is paired.</p>
 deck itself on a tablet, as a viewer, is also possible when it is small enough: Safari closes a page
 that uses too much memory (&quot;A problem repeatedly occurred&quot;), so text is rasterized at the same
 base density on every screen and only the lines in view are sharpened to the screen's density.</p>
+<h2 id="the-camera">The camera<a class="anchor" href="#the-camera" aria-label="Link to this section">#</a></h2><p><code>C</code> shows the camera full frame in place of the slides or the whiteboard, and <code>C</code> again brings
+them back: a way to show a real blackboard, an object or yourself without leaving the deck. The
+first press asks the browser for the camera chosen in the settings (Recording), and while the
+camera is on, its picture also sits in a corner of the slides, mirrored like a mirror so that
+you can see yourself; the corner, the size and the mirroring are settings. The pen never draws
+on the camera: strokes belong to slides and to the whiteboard.</p>
+<h2 id="recording-a-talk">Recording a talk<a class="anchor" href="#recording-a-talk" aria-label="Link to this section">#</a></h2><p><strong>Record</strong> in the footer, or <code>Shift+R</code>, records the talk: your voice through the microphone, the
+camera when one is chosen (choose &quot;None&quot; to record the sound alone), and everything you do on the
+deck, each on the same clock: the stops you move through and how (played forwards, backwards or
+jumped to), every pen and highlighter stroke as it is drawn, undo and clear, the whiteboard with
+its scrolling, the laser or spotlight while it is shown, the playback speed and the camera switch.
+The slides themselves are not filmed. A recording is therefore a few files: the sound or video
+from the microphone and camera (WebM, or MP4 in Safari; one file per part when the talk was
+continued after a stop), and a small <em>timeline</em> of what happened,
+naming each stop by its slide and step. It plays back on the deck itself, as sharp as the live
+deck at any window size, and survives edits to the deck that leave its slides in place; the
+player warns when the deck changed since the talk was recorded.</p>
+<p>The header shows the running time while recording. <strong>Pause</strong> stops both the microphone and the
+clock, and resuming leaves the gap out of the talk. <strong>Stop</strong> saves the recording in a
+<code>recordings/</code> folder next to the deck when the deck is served by <code>zoomdeck serve</code> or the
+development page; otherwise the two files are offered as downloads, to put in such a folder by
+hand. When <code>ffmpeg</code> is installed, the server also rewrites the media file so that it carries its
+duration and can be seeked in any player. The recording is named after the date and time,
+<code>talk-2026-11-13-1030</code>.</p>
+<p><strong>Continuing a talk.</strong> A stopped recording can be taken up again later, even after closing the
+browser: <code>Shift+A</code> continues the latest one, and the <strong>Continue</strong> button in the list of talks
+continues any of them. What follows is stamped after the end of the earlier part, with a cut
+marking the seam, and is kept as a further media file of the same recording (<code>talk.part2.webm</code>,
+since a browser cannot append to a finished file); playback and the export run through the
+parts as one talk. The header counts from where the talk stood. Stop and Continue therefore
+also serve as a pause that outlives the page, and the deck may be edited in between, as long as
+the slides already visited stay.</p>
+<p>Choose the devices first, in the settings under <strong>Recording</strong>: &quot;Detect devices&quot; asks the browser
+once for the microphone and camera, after which both lists show the devices by name. The same
+section sets the corner (bottom right by default) and the size of the camera picture, which is
+where it appears while you present and in the exported video, and whether your own picture is
+mirrored while presenting (the recording is never mirrored).</p>
+<p><strong>Playing a recording.</strong> When the deck's folder holds recordings, the footer shows <strong>Talk</strong> (with
+their number when there are several); it opens the recording, or a list to choose from, with a
+Delete button where the server can remove files. During playback the deck follows the recording:
+stops play as they did, strokes appear as they were drawn, the whiteboard and the camera switch
+when they did, and the laser or spotlight moves where the presenter pointed. A bar over the
+slides has play and pause (also Space), a scrubber (also <code>←</code> and <code>→</code>, five seconds at a time),
+the time, <strong>Export video</strong> and a way out (also Esc); seeking anywhere rebuilds the state at that
+moment. The recording's own sound plays, and its camera picture sits in the corner it was
+recorded with, or full frame where the presenter switched to it. Your keys and clicks on the deck
+are off until you leave the recording.</p>
+<p><strong>Exporting a video.</strong> Export video renders the open recording as a video file: the slides or the
+whiteboard with their ink, the camera in its corner or full frame, the pointer, and the recorded
+sound, at 1920 pixels wide in the deck's proportions. The recording plays from the start while
+the frames are captured, so the export takes exactly as long as the talk, and the window must
+stay visible meanwhile (a hidden tab draws nothing). The result is a WebM file (VP9 and Opus),
+saved as <code>recordings/&lt;name&gt;.video.webm</code> next to the recording or downloaded; <code>ffmpeg -i talk.video.webm -c:v libx264 -c:a aac talk.mp4</code> turns it into an MP4 when a tool or a site wants
+one. The timeline is independent of the clock that produced it, so a later version can render the
+same recording off line, faster than real time.</p>
+<p><strong>What travels where.</strong> The folder export (<code>zoomdeck build … -o folder</code>) copies the <code>recordings/</code>
+folder, so a deck published that way shows its Talk button to viewers; the single-file export
+leaves recordings out, since a talk's media would not fit in a page. Playback needs a browser that
+can play the recorded file: a WebM from Chrome or Firefox plays in those two, an MP4 from Safari
+plays everywhere.</p>
 <h2 id="reverse-playback">Reverse playback<a class="anchor" href="#reverse-playback" aria-label="Link to this section">#</a></h2><p>Going back plays the stop's animations in reverse: fades, property animations, effects, morphs and
 camera moves retrace their path, including zooming back into a child you just left. Videos, loops
 and updater-driven waits cannot run backwards and are passed over. Pressing <code>←</code> again during a
@@ -297,7 +371,7 @@ disk; both keep the complete player, including settings and deep links. See
       <a class="next" href="exporting.html">Exporting a deck →</a>
     </footer>
   </main>
-  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#controls">Controls</a></li><li><a href="#settings">Settings</a></li><li><a href="#pointer-tools">Pointer tools</a></li><li><a href="#the-pen">The pen</a></li><li><a href="#the-whiteboard">The whiteboard</a></li><li><a href="#a-tablet-as-a-drawing-pad">A tablet as a drawing pad</a></li><li><a href="#reverse-playback">Reverse playback</a></li><li><a href="#cuts">Cuts</a></li><li><a href="#outline-and-deep-links">Outline and deep links</a></li><li><a href="#loops-and-automatic-advancement">Loops and automatic advancement</a></li><li><a href="#editing-preview">Editing preview</a></li><li><a href="#static-exports">Static exports</a></li></ul></nav>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#controls">Controls</a></li><li><a href="#settings">Settings</a></li><li><a href="#pointer-tools">Pointer tools</a></li><li><a href="#the-pen">The pen</a></li><li><a href="#the-whiteboard">The whiteboard</a></li><li><a href="#a-tablet-as-a-drawing-pad">A tablet as a drawing pad</a></li><li><a href="#the-camera">The camera</a></li><li><a href="#recording-a-talk">Recording a talk</a></li><li><a href="#reverse-playback">Reverse playback</a></li><li><a href="#cuts">Cuts</a></li><li><a href="#outline-and-deep-links">Outline and deep links</a></li><li><a href="#loops-and-automatic-advancement">Loops and automatic advancement</a></li><li><a href="#editing-preview">Editing preview</a></li><li><a href="#static-exports">Static exports</a></li></ul></nav>
 </div>
 </body>
 </html>

@@ -180,23 +180,27 @@ Larger decks: the order in which children are visited, splitting the markup into
 ::: slide {#sec-presenting width=36}
 ## 6 · Presenting {x=-17.35 y=9.2}
 
-Playing a deck: keys, pointer tools and links in the player, the configuration file and command line that preview and export it, and a page to try a pen or a tablet. {x=-17.35 y=8.1 width=25 font_size=26}
+Playing a deck: keys, pointer tools and links in the player, the configuration file and command line that preview and export it, a page to try a pen or a tablet, and recording a talk. {x=-17.35 y=8.1 width=25 font_size=26}
 
 [Documentation: Presenting ↗]{#sec-presenting-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/player.html}
 
 [Back to the overview]{#sec-presenting-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=guide}
 
-[The player]{#sec-presenting-cap-player x=-12 y=2.6999999999999997 anchor=bottom font_size=24 color=BLUE_E href=#slide=player}
-[[include: #player x=-12 y=-0.6 width=10 skip_return=true preview=true]]
-[[rectangle: #sec-presenting-hit-player x=-12 y=-0.6 width=10 height=5.625 opacity=0 href=#slide=player]]
+[The player]{#sec-presenting-cap-player x=-6 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=player}
+[[include: #player x=-6 y=2.9 width=10 skip_return=true preview=true]]
+[[rectangle: #sec-presenting-hit-player x=-6 y=2.9 width=10 height=5.625 opacity=0 href=#slide=player]]
 
-[deck.json and the command line]{#sec-presenting-cap-config x=0 y=2.6999999999999997 anchor=bottom font_size=24 color=BLUE_E href=#slide=config}
-[[include: #config x=0 y=-0.6 width=10 skip_return=true preview=true]]
-[[rectangle: #sec-presenting-hit-config x=0 y=-0.6 width=10 height=5.625 opacity=0 href=#slide=config]]
+[deck.json and the command line]{#sec-presenting-cap-config x=6 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=config}
+[[include: #config x=6 y=2.9 width=10 skip_return=true preview=true]]
+[[rectangle: #sec-presenting-hit-config x=6 y=2.9 width=10 height=5.625 opacity=0 href=#slide=config]]
 
-[Pen, whiteboard and tablet]{#sec-presenting-cap-tablet x=12 y=2.6999999999999997 anchor=bottom font_size=24 color=BLUE_E href=#slide=tablet}
-[[include: #tablet x=12 y=-0.6 width=10 preview=true]]
-[[rectangle: #sec-presenting-hit-tablet x=12 y=-0.6 width=10 height=5.625 opacity=0 href=#slide=tablet]]
+[Pen, whiteboard and tablet]{#sec-presenting-cap-tablet x=-6 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=tablet}
+[[include: #tablet x=-6 y=-4.6 width=10 skip_return=true preview=true]]
+[[rectangle: #sec-presenting-hit-tablet x=-6 y=-4.6 width=10 height=5.625 opacity=0 href=#slide=tablet]]
+
+[Recording a talk]{#sec-presenting-cap-recording x=6 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=recording}
+[[include: #recording x=6 y=-4.6 width=10 preview=true]]
+[[rectangle: #sec-presenting-hit-recording x=6 y=-4.6 width=10 height=5.625 opacity=0 href=#slide=recording]]
 :::
 
 ::: slide {#tree width=20}
@@ -906,7 +910,7 @@ Videos use the image syntax with a video file (MP4, WebM, Ogg): `play=once` play
 
 [Documentation ↗]{#player-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/player.html}
 
-**Keys:** → or Space next · ← previous (plays the stop backwards) · Home first stop · R replay · L spotlight or laser · F fullscreen · O outline · , settings, where every key and gesture can be changed. {x=-9.35 width=19 font_size=21}
+**Keys:** → or Space next · ← previous (plays the stop backwards) · Home first stop · R replay · L spotlight or laser · C camera · Shift+R record · F fullscreen · O outline · , settings, where every key and gesture can be changed. {x=-9.35 width=19 font_size=21}
 
 **Pointer:** drag to draw with the pen, which follows the pressure of a pencil or stylus (the settings tune the look); hold Shift for a spotlight or laser, Shift + drag to highlight. A click never changes the stop unless the settings bind a key to it. W opens a whiteboard without edges, scrolled with the arrows or the wheel, with its own undo. A tablet on the network can pair from the settings and draw on the deck. {x=-9.35 width=19 font_size=21}
 
@@ -973,4 +977,32 @@ zoomdeck build examples/guide/deck.json \
 7. **Erase** a stroke by rubbing it with a fingertip; undo brings it back. {x=0.6 width=9 font_size=18}
 
 Without a tablet the same checks work with a mouse, whose strokes take their width from the speed of the hand, or with a graphics tablet plugged into the computer, which draws with pressure directly. {x=-9.35 y=-4.5 width=19 font_size=18 color=GRAY}
+:::
+
+::: slide {#recording width=20}
+## Recording a talk
+
+[Documentation ↗]{#recording-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/player.html#recording-a-talk}
+
+A recording keeps your voice, the camera when you choose one, and every move on the deck on one clock: stops, strokes, the whiteboard, the pointer and the camera switch. The slides are never filmed, so the talk plays back on the deck itself and exports as a video. {x=-9.35 y=3.9 width=11.2 font_size=19}
+
+[[icon: user #recording-you x=-7.6 y=-0.6 size=2 color=GRAY]]
+[[icon: desktop #recording-deck x=-3.6 y=-0.6 size=2 color=GRAY]]
+[[icon: document #recording-file x=-5.6 y=-3.4 size=1.8 color=GRAY]]
+[[arrow: #recording-you -> #recording-file, #recording-flow-a, color=GRAY, stroke_width=1]]
+[[arrow: #recording-deck -> #recording-file, #recording-flow-b, color=GRAY, stroke_width=1]]
+
+[voice, camera]{#recording-cap-you at=bottom:#recording-you.top dy=0.15 font_size=15 color=GRAY}
+
+[moves on the deck]{#recording-cap-deck at=bottom:#recording-deck.top dy=0.15 font_size=15 color=GRAY}
+
+[media + timeline]{#recording-cap-file at=left:#recording-file.right dx=0.25 font_size=15 color=GRAY}
+
+1. **Set up** once: ⚙ settings ▸ Recording ▸ Detect devices; choose the microphone, the camera or None, and the corner and size of your picture. {x=2.3 width=7.4 font_size=17}
+2. **Record** with Shift+R or the ● Record button; the header counts the time. Present as usual: keys, pen, W for the whiteboard, C to show the camera full frame and back. Pause leaves a gap out. {x=2.3 width=7.4 font_size=17}
+3. **Stop** saves the talk in `recordings/` next to the deck when the deck is served by `zoomdeck serve` (downloads otherwise). Shift+A later continues it where it stopped. {x=2.3 width=7.4 font_size=17}
+4. **Play** it with ▶ Talk in the footer: the deck follows the recording; Space pauses, ← and → seek, Esc leaves. {x=2.3 width=7.4 font_size=17}
+5. **Export video** in the playback bar renders it in real time: slides or whiteboard with ink, camera in a corner or full frame, and the sound. {x=2.3 width=7.4 font_size=17}
+
+Try it on this very slide: record a few seconds, draw, press C, stop, then play. {x=-9.35 y=-4.5 width=19 font_size=18 color=GRAY}
 :::

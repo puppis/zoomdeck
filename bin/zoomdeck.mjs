@@ -19,6 +19,7 @@ import { exec } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { lanAddresses, padRelay } from './relay.mjs';
 import { EDITOR_PRESETS, editorSync, previewsFor, requestJump } from './sync.mjs';
+import { FOLDER as RECORDINGS, isRecordingFile, recordingStore } from './recordings.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(here, '..');
@@ -121,7 +122,8 @@ async function serve(options) {
       for (const root of watchRoots) server.watcher.add(root);
       const onChange = (file) => {
         const inside = watchRoots.some((root) => file === root || file.startsWith(root + sep));
-        if (!inside || /node_modules|\.git\b|\bbuild\b|\bdist\b/.test(file)) return;
+        // Recordings are written by the player itself; a reload would interrupt the talk being saved.
+        if (!inside || /node_modules|\.git\b|\bbuild\b|\bdist\b/.test(file) || isRecordingFile(file)) return;
         console.log(`[${new Date().toLocaleTimeString()}] ${relative(deckDir, file) || file} changed; reloading`);
         server.ws.send({ type: 'full-reload' });
       };
@@ -136,7 +138,7 @@ async function serve(options) {
     root: packageRoot,
     resolve: { alias: optionalStubs },
     optimizeDeps: { entries: ['index.html'] },
-    plugins: [dropEngineMuxers, reloadPlugin, padRelay(), editorSync({ editor: options.editor, roots: watchRoots, deck: deckPath })],
+    plugins: [dropEngineMuxers, reloadPlugin, padRelay(), editorSync({ editor: options.editor, roots: watchRoots, deck: deckPath }), recordingStore({ roots: watchRoots })],
     // Bind the IPv4 loopback explicitly: "localhost" may resolve to ::1 only, which would leave
     // the printed 127.0.0.1 address refusing connections. Without --port, a busy 8000 falls
     // through to the next free port instead of failing, so a second preview can always start.
@@ -238,7 +240,8 @@ runDeck({ ...definition, showOutline: definition.showOutline || ${options.showOu
     } else {
       for (const file of await collectAssets(deckDir)) {
         const rel = relative(deckDir, file);
-        if (['.json', '.ts', '.js', '.mjs', '.md', '.markdown'].includes(extname(file).toLowerCase())) continue;
+        const recording = rel.split(sep).includes(RECORDINGS);
+        if (!recording && ['.json', '.ts', '.js', '.mjs', '.md', '.markdown'].includes(extname(file).toLowerCase())) continue;
         const target = join(outDir, 'deck', rel);
         await fs.mkdir(dirname(target), { recursive: true });
         await fs.copyFile(file, target);

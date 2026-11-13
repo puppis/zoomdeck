@@ -4,10 +4,42 @@
  */
 
 import { DEFAULT_PEN_STYLE, sanitizePenStyle, type PenStyle } from './ink';
+import type { Corner } from './timeline';
+
+/** How a talk is recorded: which devices, and where the camera picture sits. */
+export interface RecordingSettings {
+  /** Microphone device id; null for the browser's default. */
+  microphone: string | null;
+  /** Camera device id; null for the default camera, 'none' to record the sound only. */
+  camera: string | null;
+  /** Flip the camera picture as a mirror does (for the presenter's own view and the recording). */
+  mirror: boolean;
+  /** Corner of the camera picture when the slides are shown. */
+  corner: Corner;
+  /** Width of the camera picture as a share of the frame width. */
+  size: number;
+}
+
+export const CORNERS: Corner[] = ['bottom-right', 'bottom-left', 'top-right', 'top-left'];
+export const PIP_SIZES: Array<[number, string]> = [[0.18, 'Small'], [0.25, 'Medium'], [0.33, 'Large']];
+
+export const DEFAULT_RECORDING: RecordingSettings = { microphone: null, camera: null, mirror: true, corner: 'bottom-right', size: 0.25 };
+
+export function sanitizeRecording(value: unknown): RecordingSettings {
+  const result = { ...DEFAULT_RECORDING };
+  if (!value || typeof value !== 'object') return result;
+  const saved = value as Partial<Record<keyof RecordingSettings, unknown>>;
+  if (typeof saved.microphone === 'string' || saved.microphone === null) result.microphone = saved.microphone as string | null;
+  if (typeof saved.camera === 'string' || saved.camera === null) result.camera = saved.camera as string | null;
+  if (typeof saved.mirror === 'boolean') result.mirror = saved.mirror;
+  if (typeof saved.corner === 'string' && CORNERS.includes(saved.corner as Corner)) result.corner = saved.corner as Corner;
+  if (typeof saved.size === 'number' && PIP_SIZES.some(([size]) => size === saved.size)) result.size = saved.size;
+  return result;
+}
 
 export type ActionName =
   | 'next' | 'previous' | 'home' | 'replay' | 'fullscreen' | 'outline' | 'undo' | 'redo' | 'clear' | 'settings' | 'exit' | 'pointer' | 'whiteboard'
-  | 'edit';
+  | 'edit' | 'camera' | 'record' | 'resume';
 
 export interface ActionInfo {
   name: ActionName;
@@ -25,6 +57,9 @@ export const ACTIONS: ActionInfo[] = [
   { name: 'clear', label: 'Clear all strokes on this slide' },
   { name: 'pointer', label: 'Switch between spotlight and laser' },
   { name: 'whiteboard', label: 'Show or hide the whiteboard' },
+  { name: 'camera', label: 'Show the camera full frame, or the slides again' },
+  { name: 'record', label: 'Start or stop recording the talk' },
+  { name: 'resume', label: 'Continue the latest recording where it stopped (append)' },
   { name: 'edit', label: 'Open the source of this stop in the editor (preview server)' },
   { name: 'fullscreen', label: 'Toggle fullscreen' },
   { name: 'exit', label: 'Leave fullscreen' },
@@ -42,6 +77,9 @@ export const DEFAULT_BINDINGS: Record<ActionName, string[]> = {
   clear: ['Delete', 'Backspace'],
   pointer: ['l'],
   whiteboard: ['w'],
+  camera: ['c'],
+  record: ['Shift+r'],
+  resume: ['Shift+a'],
   edit: ['e'],
   fullscreen: ['f'],
   exit: ['Escape'],
@@ -84,6 +122,8 @@ export interface PlayerSettings {
   reversePlayback: boolean | null;
   /** How pressure and motion shape pen strokes. */
   pen: PenStyle;
+  /** Devices and camera layout of a recording. */
+  recording: RecordingSettings;
 }
 
 const STORAGE_KEY = 'zoomdeck:settings';
@@ -145,6 +185,7 @@ export function defaultSettings(): PlayerSettings {
     pointerMode: 'spotlight',
     reversePlayback: null,
     pen: { ...DEFAULT_PEN_STYLE },
+    recording: { ...DEFAULT_RECORDING },
   };
 }
 
@@ -167,6 +208,7 @@ export function loadSettings(): PlayerSettings {
     if (saved?.pointerMode === 'spotlight' || saved?.pointerMode === 'laser') settings.pointerMode = saved.pointerMode;
     if (typeof saved?.reversePlayback === 'boolean') settings.reversePlayback = saved.reversePlayback;
     if (saved?.pen) settings.pen = sanitizePenStyle(saved.pen);
+    if (saved?.recording) settings.recording = sanitizeRecording(saved.recording);
   } catch {
     /* no storage or corrupt data: defaults */
   }

@@ -40,6 +40,20 @@ export interface MarkupDeckOptions {
   styles?: Record<string, string | Record<string, unknown>>;
 }
 
+/** The folder of a document URL, as an absolute URL with a trailing slash; undefined without one. */
+function deckFolder(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  try {
+    const absolute = new URL(url, typeof location !== 'undefined' ? location.href : undefined);
+    absolute.search = '';
+    absolute.hash = '';
+    absolute.pathname = absolute.pathname.replace(/[^/]*$/, '');
+    return absolute.href;
+  } catch {
+    return undefined;
+  }
+}
+
 /** Build a deck definition from a markup document. */
 export function markupDeck(options: MarkupDeckOptions): ResolvedDeck {
   const layout = options.layout instanceof LayoutConfig ? options.layout : new LayoutConfig(options.layout ?? {});
@@ -52,6 +66,7 @@ export function markupDeck(options: MarkupDeckOptions): ResolvedDeck {
     background: options.background,
     viewport: options.viewport,
     showOutline: options.showOutline,
+    base: deckFolder(options.url ?? options.basePath),
     deck: async () => {
       let source = options.source;
       let basePath = options.basePath;

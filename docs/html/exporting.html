@@ -66,6 +66,8 @@ folder export instead.</li>
 <li>Code-authored decks (<code>.ts</code> modules) embed their code too, but images they load themselves at
 run time are not collected; put such images next to the exported file or use the Markdown
 image syntax.</li>
+<li>Recorded talks are left out: their sound and video would not fit in a page. The folder export
+below ships them.</li>
 </ul>
 <h2 id="a-static-folder">A static folder<a class="anchor" href="#a-static-folder" aria-label="Link to this section">#</a></h2><pre><code class="language-bash"><span class="tk-keyword">node</span> bin/zoomdeck.mjs build path/to/deck.json <span class="tk-attribute">-o</span> out</code></pre>
 <p>This writes <code>out/index.html</code>, <code>out/assets/</code> (the player, split in chunks loaded on demand) and
@@ -95,6 +97,9 @@ any static server works, for example:</p>
 </tr>
 </tbody>
 </table>
+<p>The folder export also copies the deck's <code>recordings/</code> folder, so a published deck shows its
+Talk button and plays its <a href="player.html#recording-a-talk">recorded talks</a>; a static host serves
+them like any other file.</p>
 <p>The deck argument is a <code>deck.json</code>, a Markdown file (default settings) or a JS/TS module exporting
 a deck definition. The export records nothing in advance: like the dev page, the exported player
 runs the deck's program once when it loads, so changes to the Markdown require a new export while

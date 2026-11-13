@@ -2,6 +2,7 @@ import { defineConfig, type Plugin } from 'vite';
 import { resolve, sep } from 'node:path';
 import { padRelay } from './bin/relay.mjs';
 import { editorSync } from './bin/sync.mjs';
+import { isRecordingFile, recordingStore } from './bin/recordings.mjs';
 
 // Development server: serves the player page and the example decks from this checkout.
 const optionalStubs = Object.fromEntries(
@@ -38,7 +39,7 @@ function deckReload(): Plugin {
     configureServer(server) {
       server.watcher.add(dir);
       const onChange = (file: string) => {
-        if (!file.startsWith(dir + sep) || /\.(ts|js|mjs|tsx)$/.test(file)) return;
+        if (!file.startsWith(dir + sep) || /\.(ts|js|mjs|tsx)$/.test(file) || isRecordingFile(file)) return;
         server.ws.send({ type: 'full-reload' });
       };
       for (const event of ['change', 'add', 'unlink'] as const) server.watcher.on(event, onChange);
@@ -52,6 +53,7 @@ export default defineConfig({
     dropEngineMuxers(resolve(__dirname, 'src/stubs/empty.ts')), deckReload(), padRelay(),
     // Editor jumps for the example decks; ZOOMDECK_EDITOR names the editor the player opens.
     editorSync({ editor: process.env.ZOOMDECK_EDITOR ?? null, roots: [resolve(__dirname, 'examples')] }),
+    recordingStore({ roots: [resolve(__dirname, 'examples')] }),
   ],
   resolve: { alias: optionalStubs },
   optimizeDeps: { entries: ['index.html'] },

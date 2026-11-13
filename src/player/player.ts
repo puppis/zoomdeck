@@ -11,6 +11,9 @@ export type PlayerState = 'loading' | 'paused' | 'playing' | 'looping' | 'finish
 export interface PlayerEvents {
   clipchange: { index: number };
   state: { state: PlayerState; message: string };
+  /** A navigation was requested: a stop shown or played, or the current stop rewound to `index`. */
+  navigate: { index: number; autoplay: boolean; rewind: boolean };
+  speedchange: { value: number };
 }
 
 type Listener<K extends keyof PlayerEvents> = (event: PlayerEvents[K]) => void;
@@ -29,6 +32,8 @@ export class Player {
   private readonly _listeners: { [K in keyof PlayerEvents]: Set<Listener<K>> } = {
     clipchange: new Set(),
     state: new Set(),
+    navigate: new Set(),
+    speedchange: new Set(),
   };
 
   constructor(
@@ -59,7 +64,9 @@ export class Player {
   }
 
   set speed(value: number) {
+    if (this.runner.speed === value) return;
     this.runner.speed = value;
+    this._emit('speedchange', { value });
   }
 
   get speed(): number {
@@ -82,6 +89,7 @@ export class Player {
     this._reversing = null;
     this.index = next;
     this.atEnd = !autoplay;
+    this._emit('navigate', { index: next, autoplay, rewind: false });
     this._emit('clipchange', { index: next });
     const history = this.presenter.history;
     if (!autoplay) {
@@ -128,6 +136,14 @@ export class Player {
     const canReverse = this.reversePlayback && (this.atEnd || this._reversing !== null)
       && clip && clip.ops.some((op) => op.reversible && op.duration > 0);
     if (!canReverse) return this.goTo(target, false);
+    return this.rewindTo(target);
+  }
+
+  /** Play the current stop backwards and settle at `target`, the stop before it. */
+  async rewindTo(target: number): Promise<void> {
+    const current = this.settledIndex;
+    const clip = this.presenter.history.clips[current];
+    if (target !== current - 1 || !clip) return this.goTo(target, false);
     const token = ++this._request;
     this.runner.cancel();
     this._reversing = target;
@@ -135,6 +151,7 @@ export class Player {
     this.atEnd = true;
     const history = this.presenter.history;
     history.restore(current);
+    this._emit('navigate', { index: target, autoplay: false, rewind: true });
     this._emit('clipchange', { index: target });
     this._setState('playing', 'Rewinding');
     const result = await this.runner.replayReverse(clip, clip.playbackRate, () => history.restore(target));

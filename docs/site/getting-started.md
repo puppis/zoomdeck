@@ -161,7 +161,8 @@ my-deck/
 ├── deck.json        title, colors, typography, presenter options, styles, macros
 ├── code-slides.ts   optional: Slide classes used by [[subslide: Name]]
 ├── parts/           optional: Markdown files spliced in with [[import: path.md]]
-└── assets/          images, videos, pages referenced from slides.md
+├── assets/          images, videos, pages referenced from slides.md
+└── recordings/      optional: recorded talks, written by the player (see The player)
 ```
 
 Paths in `slides.md` resolve relative to the Markdown file.

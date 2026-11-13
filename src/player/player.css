@@ -87,6 +87,29 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
   background: radial-gradient(circle, #fff 0%, #ffb5b5 12%, #ff2020 30%, rgba(255, 32, 32, .55) 52%, rgba(255, 32, 32, .2) 65%, transparent 75%);
 }
 .zd-stage .remote-cursor[hidden] { display: none; }
+.zd-stage .camera {
+  position: absolute; z-index: 3; pointer-events: none; object-fit: cover; background: #000;
+  width: var(--pip-size, 25%); aspect-ratio: 16 / 9; height: auto; border-radius: 6px; box-shadow: 0 2px 12px rgba(0, 0, 0, .35);
+}
+.zd-stage .camera[hidden] { display: none; }
+.zd-stage .camera.mirror { transform: scaleX(-1); }
+.zd-stage .camera[data-corner=bottom-right] { right: 1.5%; bottom: 1.5%; }
+.zd-stage .camera[data-corner=bottom-left] { left: 1.5%; bottom: 1.5%; }
+.zd-stage .camera[data-corner=top-right] { right: 1.5%; top: 1.5%; }
+.zd-stage .camera[data-corner=top-left] { left: 1.5%; top: 1.5%; }
+.zd-stage .camera.full { inset: 0; width: 100%; height: 100%; aspect-ratio: auto; border-radius: 0; box-shadow: none; z-index: 4; }
+.zd-stage.camera-on .highlights, .zd-stage.camera-on .whiteboard, .zd-stage.camera-on .links, .zd-stage.camera-on .iframes { visibility: hidden; }
+.zd-stage .playback-bar {
+  position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 6;
+  display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 999px;
+  background: color-mix(in srgb, var(--background) 86%, var(--foreground)); border: 1px solid var(--border); box-shadow: 0 4px 18px rgba(0, 0, 0, .25);
+  font-size: 12px; color: var(--foreground); max-width: 92%;
+}
+.zd-stage .playback-bar[hidden] { display: none; }
+.zd-stage .playback-bar input[type=range] { width: min(360px, 40vw); }
+.zd-stage .playback-bar .play-time { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.zd-stage .playback-bar button { padding: 4px 10px; font-size: 12px; }
+.zd-app.playing-back .buttons button, .zd-app.playing-back .record-button { opacity: .35; pointer-events: none; }
 .zd-stage.sketch-active { cursor: crosshair; }
 .zd-stage.spotlight-active, .zd-stage.sketch-active, .zd-stage.stroking { user-select: none; }
 .zd-stage .error, .zd-stage .loading {
@@ -108,6 +131,13 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
 .zd-app .swatch[aria-checked=true] { outline: 2px solid var(--foreground); outline-offset: 2px; }
 .zd-app .swatch[data-value=foreground] { box-shadow: inset 0 0 0 2px var(--background), inset 0 0 0 3px var(--border); }
 .zd-app .board-button[aria-pressed=true] { background: var(--hover); font-weight: 600; }
+.zd-app .record-controls { display: flex; gap: 6px; align-items: center; }
+.zd-app .record-controls button { padding: 5px 10px; font-size: 12px; }
+.zd-app .record-button[aria-pressed=true] { background: #d22; color: #fff; border-color: #d22; }
+.zd-app .record-label { font-size: 12px; color: #d22; font-variant-numeric: tabular-nums; font-weight: 600; }
+.zd-app .record-label.paused { color: var(--muted); }
+.zd-app .record-label[hidden] { display: none; }
+.zd-app dialog.recordings .binding.recording { grid-template-columns: 1fr auto auto auto; }
 .zd-app .pen-controls label, .zd-app .speed { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
 .zd-app select { padding: 5px 6px; }
 .zd-app .counter { margin-left: auto; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }

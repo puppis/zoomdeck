@@ -22,6 +22,8 @@ export interface DeckDefinition {
   viewport?: ViewportSize;
   /** Open the slide outline when the player starts. */
   showOutline?: boolean;
+  /** URL of the folder the deck's files are loaded from, where recordings of talks are kept. */
+  base?: string | null;
 }
 
 export interface ResolvedDeck {
@@ -32,6 +34,7 @@ export interface ResolvedDeck {
   background: string;
   viewport: ViewportSize;
   showOutline: boolean;
+  base: string | null;
 }
 
 /** Normalize a deck definition, applying defaults. */
@@ -49,5 +52,6 @@ export function defineDeck(definition: DeckDefinition): ResolvedDeck {
     background: definition.background ?? '#FFFFFF',
     viewport: { width: viewport.width, height: viewport.height },
     showOutline: Boolean(definition.showOutline),
+    base: definition.base ?? null,
   };
 }

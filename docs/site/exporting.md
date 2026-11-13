@@ -28,6 +28,8 @@ Two things to know:
 - Code-authored decks (`.ts` modules) embed their code too, but images they load themselves at
   run time are not collected; put such images next to the exported file or use the Markdown
   image syntax.
+- Recorded talks are left out: their sound and video would not fit in a page. The folder export
+  below ships them.
 
 ## A static folder
 
@@ -51,6 +53,10 @@ cd out && python3 -m http.server 8000
 | `--show-outline` | open the slide outline when the deck starts |
 | `--scene Name` | for code-authored decks, export a named export instead of the default one |
 | `-o <folder>` | output folder (required); it is created and existing files are kept |
+
+The folder export also copies the deck's `recordings/` folder, so a published deck shows its
+Talk button and plays its [recorded talks](player.html#recording-a-talk); a static host serves
+them like any other file.
 
 The deck argument is a `deck.json`, a Markdown file (default settings) or a JS/TS module exporting
 a deck definition. The export records nothing in advance: like the dev page, the exported player

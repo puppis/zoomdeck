@@ -6,3 +6,4 @@ build/
 *.log
 .DS_Store
 docs/html/guide.html
+examples/*/recordings/

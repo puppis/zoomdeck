@@ -9,7 +9,8 @@ import type { Player } from './player';
 import type { Stage } from './stage';
 import playerCss from './player.css?inline';
 import {
-  ACTIONS, DEFAULT_POINTER_BINDINGS, MODIFIER_COMBOS, POINTER_ACTIONS, type ActionName, type PlayerSettings, type PointerAction, type PointerMode,
+  ACTIONS, CORNERS, DEFAULT_POINTER_BINDINGS, DEFAULT_RECORDING, MODIFIER_COMBOS, PIP_SIZES, POINTER_ACTIONS,
+  type ActionName, type PlayerSettings, type PointerAction, type PointerMode,
   actionFor, defaultSettings, describeCombo, describeModifiers, keyCombo, loadSettings, modifierCombo, pointerActionFor, saveSettings,
 } from './settings';
 import {
@@ -17,6 +18,11 @@ import {
 } from './ink';
 import { PadLink, fetchPairingInfo, padLinkAvailable, padUrl, type InkOp, type InkSurfaceName, type PadMessage } from './pad';
 import { Swatches } from './swatches';
+import { Recorder, initialEvents } from './recorder';
+import { Playback } from './playback';
+import { exportMimeType, exportVideo, type ExportSource } from './export';
+import { deleteRecording, describeMedia, download, listRecordings, loadTimeline, mediaFileName, recordingStoreAvailable, recordingUrl, saveFile, saveMedia, saveTimeline, type RecordingEntry } from './store';
+import { appendPart, formatTime, recordingName, stopRef, structureHash, type Corner, type PointerKind, type Timeline, type TimelineEvent, type UntimedEvent } from './timeline';
 
 /** How far from a stroke's path, in screen pixels, a fingertip still erases it. */
 const ERASE_REACH_PX = 12;
@@ -93,6 +99,33 @@ export class PlayerUI {
   /** When a pen was last seen: fingers near a working pen are palms, not erasers. */
   private _penSeen = 0;
   private _pad: PadLink | null = null;
+  // The camera: a live picture while presenting (full frame on C, else in a corner), or the recording's picture during playback.
+  private readonly _camera: HTMLVideoElement;
+  private _cameraStream: MediaStream | null = null;
+  private _cameraOn = false;
+  // Recording a talk.
+  private _recorder: Recorder | null = null;
+  private _recordStream: MediaStream | null = null;
+  /** The recording being continued, when the current one appends to an earlier talk. */
+  private _appendTo: { name: string; timeline: Timeline } | null = null;
+  private readonly _recordButton: HTMLButtonElement;
+  private readonly _pauseButton: HTMLButtonElement;
+  private readonly _recordLabel: HTMLElement;
+  private _recordTimer: number | null = null;
+  private _pointerMarked = false;
+  private _lastPointerMark = 0;
+  // Playing a recording back.
+  private _playback: Playback | null = null;
+  private _playbackName: string | null = null;
+  private _playbackPointer: { mode: PointerKind; x: number; y: number; r: number } | null = null;
+  private readonly _playbackBar: HTMLElement;
+  private readonly _playToggle: HTMLButtonElement;
+  private readonly _playTime: HTMLElement;
+  private readonly _playRange: HTMLInputElement;
+  private readonly _exportButton: HTMLButtonElement;
+  private readonly _recordingsButton: HTMLButtonElement;
+  private _recordings: RecordingEntry[] = [];
+  private _exporting = false;
   private _editSource: ((at?: { x: number; y: number }) => void) | null = null;
   private _stateMessage = 'Loading…';
   private _noticeTimer: number | null = null;
@@ -143,7 +176,8 @@ export class PlayerUI {
     });
     this._breadcrumb = el('span', { class: 'breadcrumb' });
     this._state = el('span', { class: 'state', role: 'status', 'aria-live': 'polite', text: 'Loading…' });
-    const header = el('header', {}, this._outlineToggle, this._breadcrumb, this._state);
+    this._recordLabel = el('span', { class: 'record-label', hidden: '', role: 'status' });
+    const header = el('header', {}, this._outlineToggle, this._breadcrumb, this._recordLabel, this._state);
 
     this.stageHost = el('div', { class: 'zd-stage', tabindex: '0', 'aria-label': 'Presentation' });
     const penStyle = () => this._settings.pen;
@@ -160,10 +194,28 @@ export class PlayerUI {
     this._boardLayer.append(this._board);
     this._spotlight = el('div', { class: 'spotlight', 'aria-hidden': 'true' });
     this._remoteCursor = el('div', { class: 'remote-cursor', hidden: '', 'aria-hidden': 'true' });
+    this._camera = el('video', { class: 'camera', hidden: '', playsinline: '', autoplay: '', 'aria-label': 'Camera' });
+    this._camera.muted = true;
+    this._camera.addEventListener('loadedmetadata', () => this._layoutCamera());
     this._error = el('p', { class: 'error', role: 'alert', hidden: '' });
     this._loadingText = el('span', { text: 'Preparing slides…' });
     this._loading = el('div', { class: 'loading', role: 'status' }, el('span', { class: 'spinner' }), this._loadingText);
-    this.stageHost.append(this._boardLayer, this._highlights, this._spotlight, this._remoteCursor, this._error, this._loading);
+    // Playback of a recorded talk: play or pause, a scrubber, the time, the export, and the way out.
+    this._playToggle = el('button', { class: 'play-toggle', 'aria-label': 'Play or pause the recording', text: '▶' });
+    this._playRange = el('input', { type: 'range', min: '0', max: '1000', value: '0', 'aria-label': 'Position in the recording' });
+    this._playTime = el('span', { class: 'play-time', text: '0:00 / 0:00' });
+    this._exportButton = el('button', { class: 'export-button', text: 'Export video', title: 'Render this recording as a video file, in real time' });
+    const closePlayback = el('button', { class: 'close-playback', 'aria-label': 'Leave the recording', title: 'Leave the recording (Esc)', text: '×' });
+    this._playbackBar = el('div', { class: 'playback-bar', hidden: '', role: 'group', 'aria-label': 'Recording playback' },
+      this._playToggle, this._playRange, this._playTime, this._exportButton, closePlayback);
+    this._playToggle.addEventListener('click', () => this._playback?.toggle());
+    this._playRange.addEventListener('input', () => {
+      const playback = this._playback;
+      if (playback) playback.seek((Number(this._playRange.value) / 1000) * playback.duration);
+    });
+    this._exportButton.addEventListener('click', () => void this.exportRecording());
+    closePlayback.addEventListener('click', () => this.closeRecording());
+    this.stageHost.append(this._boardLayer, this._highlights, this._camera, this._spotlight, this._remoteCursor, this._error, this._loading, this._playbackBar);
 
     this._previous = el('button', { class: 'previous', 'aria-label': 'Previous stop', title: 'Previous stop (←)', text: '←' });
     this._next = el('button', { class: 'next', 'aria-label': 'Next stop', title: 'Next stop (→)', text: '→' });
@@ -183,6 +235,12 @@ export class PlayerUI {
     this._counter = el('span', { class: 'counter' });
     this._boardButton = el('button', { class: 'board-button', text: 'Whiteboard', title: 'Show or hide the whiteboard (W)', 'aria-pressed': 'false' });
     this._boardButton.addEventListener('click', () => this.toggleWhiteboard());
+    this._recordButton = el('button', { class: 'record-button', text: '● Record', title: 'Start or stop recording the talk (Shift+R)', 'aria-pressed': 'false' });
+    this._recordButton.addEventListener('click', () => void this.toggleRecording());
+    this._pauseButton = el('button', { class: 'pause-button', text: 'Pause', title: 'Pause or resume the recording', hidden: '' });
+    this._pauseButton.addEventListener('click', () => this.pauseRecording());
+    this._recordingsButton = el('button', { class: 'recordings-button', text: '▶ Talk', title: 'Play a recorded talk', hidden: '' });
+    this._recordingsButton.addEventListener('click', () => this.openRecordings());
     const fullscreen = el('button', { class: 'fullscreen', text: 'Fullscreen' });
     const settingsButton = el('button', { class: 'settings-button', 'aria-label': 'Settings', title: 'Settings', text: '⚙' });
     this._dialog = this._buildSettingsDialog();
@@ -198,6 +256,7 @@ export class PlayerUI {
         el('label', {}, 'Tip ', this._penSize),
         this._boardButton,
       ),
+      el('div', { class: 'record-controls', role: 'group', 'aria-label': 'Recording' }, this._recordButton, this._pauseButton, this._recordingsButton),
       el('label', { class: 'speed' }, 'Speed ', this._speed),
       this._counter,
       settingsButton,
@@ -220,6 +279,7 @@ export class PlayerUI {
     this._installPointerTools();
     document.addEventListener('keydown', (event) => this._onKeyDown(event));
     if (deck.showOutline) this.toggleOutline();
+    this._layoutCamera();
     this._updateSpotlight();
   }
 
@@ -246,6 +306,7 @@ export class PlayerUI {
       ...gestures,
       `${keys('undo')}: undo stroke`, `${keys('redo')}: redo stroke`, `${keys('clear')}: clear strokes`,
       `${keys('whiteboard')}: whiteboard (arrows, scrolling or two fingers move it)`,
+      `${keys('camera')}: camera full frame, or the slides again`, `${keys('record')}: record the talk`, `${keys('resume')}: continue the latest recording`,
       ...(this._editSource ? [`${keys('edit')}: open this stop's source in the editor`] : []),
       `${keys('settings')}: settings`,
     ];
@@ -334,6 +395,16 @@ export class PlayerUI {
       if (this._useLocation) history.replaceState(null, '', `#step=${index + 1}`);
       this._layoutHighlights();
     });
+    player.on('navigate', ({ index, autoplay, rewind }) => {
+      const stop = stopRef(navigation, index);
+      if (!stop) return;
+      this._note(rewind ? { type: 'rewind', stop } : { type: 'go', stop, autoplay });
+    });
+    player.on('speedchange', ({ value }) => {
+      this._note({ type: 'speed', value });
+      this._speed.value = String(value);
+    });
+    void this._refreshRecordings();
     player.on('state', ({ state, message }) => {
       this._stateMessage = message;
       if (this._noticeTimer === null) this._state.textContent = message;
@@ -378,6 +449,18 @@ export class PlayerUI {
     }
     if (this._dialog.open) return;
     if (combo === 'Space' && /^(BUTTON|SUMMARY)$/.test(target.tagName)) return;
+    // While a recording plays, the keys serve the playback: the deck follows the recording, not the viewer.
+    if (this._playback) {
+      const playback = this._playback;
+      if (combo === 'Space' || combo === 'k') playback.toggle();
+      else if (combo === 'Escape') this.closeRecording();
+      else if (combo === 'ArrowLeft' || combo === 'ArrowRight') playback.seek(playback.time + (combo === 'ArrowLeft' ? -5000 : 5000));
+      else if (combo === 'Home') playback.seek(0);
+      else if (actionFor(this._settings, combo) === 'fullscreen') void this.fullscreen();
+      else return;
+      event.preventDefault();
+      return;
+    }
     const arrow = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] }[combo];
     if (this._boardOn && arrow) {
       event.preventDefault();
@@ -410,6 +493,9 @@ export class PlayerUI {
         if (this._editSource) this._editSource();
         else this.notice('Open the deck with zoomdeck serve to jump to the editor');
         break;
+      case 'camera': void this.toggleCamera(); break;
+      case 'record': void this.toggleRecording(); break;
+      case 'resume': void this.appendLatest(); break;
     }
   }
 
@@ -463,26 +549,510 @@ export class PlayerUI {
   undoStroke(): void {
     this._finishStroke();
     const surface = this._activeSurface();
-    if (this._surface(surface).undo()) this._broadcast({ type: 'ink', surface, op: 'undo' });
+    if (this._surface(surface).undo()) {
+      this._broadcast({ type: 'ink', surface, op: 'undo' });
+      this._note({ type: 'ink', surface, op: { op: 'undo' } });
+    }
   }
 
   /** Put back the last undone stroke. */
   redoStroke(): void {
     const surface = this._activeSurface();
-    if (this._surface(surface).redo()) this._broadcast({ type: 'ink', surface, op: 'redo' });
+    if (this._surface(surface).redo()) {
+      this._broadcast({ type: 'ink', surface, op: 'redo' });
+      this._note({ type: 'ink', surface, op: { op: 'redo' } });
+    }
   }
 
   /** Erase every stroke of the surface in front; undo brings them back one by one. */
   clearStrokes(): void {
     this._finishStroke();
     const surface = this._activeSurface();
-    if (this._surface(surface).clear().length) this._broadcast({ type: 'ink', surface, op: 'clear' });
+    if (this._surface(surface).clear().length) {
+      this._broadcast({ type: 'ink', surface, op: 'clear' });
+      this._note({ type: 'ink', surface, op: { op: 'clear' } });
+    }
   }
 
   /** Show or hide the whiteboard: a blank page with its own strokes and history, kept while slides change. */
   toggleWhiteboard(on = !this._boardOn): void {
     this._setBoardShown(on);
     this._broadcast({ type: 'board', on, pan: { ...this._boardTarget } });
+  }
+
+  // ---------------------------------------------------------------------
+  // Camera: full frame on C, in a corner otherwise; the picture of a recording during playback
+  // ---------------------------------------------------------------------
+
+  /** Show the camera full frame instead of the slides, or the slides again. Starts the camera when needed. */
+  async toggleCamera(on = !this._cameraOn): Promise<void> {
+    if (on && !this._playback && !this._cameraStream && !(await this._acquireCamera())) return;
+    this._setCameraFull(on);
+  }
+
+  private _setCameraFull(on: boolean): void {
+    if (on === this._cameraOn) return;
+    this._finishStroke();
+    this._cameraOn = on;
+    this._note({ type: 'camera', on });
+    this._layoutCamera();
+    this._updateSpotlight();
+    this._state.textContent = on ? 'Camera' : this._boardOn ? 'Whiteboard' : 'Slides';
+  }
+
+  /** Start the camera chosen in the settings for a live picture; false (with a notice) when there is none. */
+  private async _acquireCamera(): Promise<boolean> {
+    const choice = this._settings.recording.camera;
+    if (choice === 'none') {
+      this.notice('Choose a camera in the settings (Recording) first');
+      return false;
+    }
+    if (!navigator.mediaDevices?.getUserMedia) {
+      this.notice('This browser gives no access to a camera here');
+      return false;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: choice ? { deviceId: { exact: choice } } : true });
+      this._setCameraStream(stream);
+      return true;
+    } catch (error) {
+      this.notice(`No camera: ${(error as Error).message}`);
+      return false;
+    }
+  }
+
+  /** Show a live stream in the camera element (null releases it). */
+  private _setCameraStream(stream: MediaStream | null): void {
+    for (const track of this._cameraStream?.getTracks() ?? []) track.stop();
+    this._cameraStream = stream;
+    if (stream) {
+      this._camera.removeAttribute('src');
+      this._camera.srcObject = stream;
+      this._camera.muted = true;
+      void this._camera.play().catch(() => undefined);
+    } else if (!this._playback) {
+      this._camera.srcObject = null;
+      if (this._cameraOn) this._setCameraFull(false);
+    }
+    this._layoutCamera();
+  }
+
+  /** Place the camera picture: hidden without a source, full frame when switched to, else in the chosen corner. */
+  private _layoutCamera(): void {
+    const camera = this._camera;
+    const playbackVideo = Boolean(this._playback?.timeline.media.some((part) => part.video));
+    const hasPicture = Boolean(this._cameraStream) || playbackVideo;
+    camera.hidden = !hasPicture;
+    const { corner, size, mirror } = this._settings.recording;
+    camera.dataset.corner = corner;
+    camera.style.setProperty('--pip-size', `${size * 100}%`);
+    // The presenter's own picture mirrors like a mirror does; a recording is shown as recorded.
+    camera.classList.toggle('mirror', mirror && !this._playback);
+    camera.classList.toggle('full', this._cameraOn);
+    this.stageHost.classList.toggle('camera-on', this._cameraOn && hasPicture);
+  }
+
+  // ---------------------------------------------------------------------
+  // Recording a talk
+  // ---------------------------------------------------------------------
+
+  /** Stamp an event on the recording's clock, when one is running. */
+  private _note(event: UntimedEvent): void {
+    this._recorder?.mark(event);
+  }
+
+  /** Record the laser or spotlight while it is shown, a few times a second, and when it goes. */
+  private _markPointer(shown: boolean): void {
+    if (!this._recorder) return;
+    if (!shown) {
+      if (this._pointerMarked) this._note({ type: 'pointer-off' });
+      this._pointerMarked = false;
+      return;
+    }
+    const now = performance.now();
+    if (this._pointerMarked && now - this._lastPointerMark < 33) return;
+    this._lastPointerMark = now;
+    this._pointerMarked = true;
+    const pointer = this._pointer as { x: number; y: number };
+    const { scale } = this._highlightGeometry();
+    const point = this._surfacePoint(pointer.x, pointer.y, 'slide');
+    this._note({ type: 'pointer', mode: this._settings.pointerMode, x: Math.round(point.x), y: Math.round(point.y), r: Math.round(this._radius / scale) });
+  }
+
+  get recording(): boolean {
+    return this._recorder !== null;
+  }
+
+  async toggleRecording(): Promise<void> {
+    if (this._recorder) await this.stopRecording();
+    else await this.startRecording();
+  }
+
+  /** Continue the most recent recording where it stopped: what follows is appended to it. */
+  async appendLatest(): Promise<void> {
+    if (this._recorder) {
+      await this.stopRecording();
+      return;
+    }
+    const latest = this._recordings[0];
+    if (!latest) {
+      this.notice('No recording to continue: Record starts one');
+      return;
+    }
+    await this.continueRecording(latest);
+  }
+
+  /** Continue a recording: the new part is stamped after its end and kept as a further media file. */
+  async continueRecording(entry: RecordingEntry): Promise<void> {
+    const base = this._deck.base;
+    if (!base || this._recorder) return;
+    let timeline: Timeline;
+    try {
+      timeline = await loadTimeline(base, entry.name);
+    } catch (error) {
+      this.notice((error as Error).message);
+      return;
+    }
+    await this.startRecording({ name: entry.name, timeline });
+  }
+
+  /** Start recording the talk with the devices chosen in the settings; `append` continues an earlier recording. */
+  async startRecording(append: { name: string; timeline: Timeline } | null = null): Promise<void> {
+    if (this._recorder || !this._player || !this._navigation) return;
+    if (this._playback) this.closeRecording();
+    const choice = this._settings.recording;
+    let stream: MediaStream | null = null;
+    if (navigator.mediaDevices?.getUserMedia) {
+      const video = choice.camera === 'none' ? false : { ...(choice.camera ? { deviceId: { exact: choice.camera } } : {}), width: { ideal: 1280 }, height: { ideal: 720 } };
+      const audio = choice.microphone ? { deviceId: { exact: choice.microphone } } : true;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio, video });
+      } catch (error) {
+        if (video) {
+          // Without a camera, the sound alone is still worth recording.
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({ audio });
+            this.notice(`No camera (${(error as Error).message}); recording the sound only`);
+          } catch {
+            stream = null;
+          }
+        }
+        if (!stream) {
+          this.notice(`Cannot record: ${(error as Error).message}`);
+          return;
+        }
+      }
+    } else {
+      this.notice('This browser gives no access to a microphone here; recording the timeline only');
+    }
+    const videoTracks = stream?.getVideoTracks() ?? [];
+    if (videoTracks.length) this._setCameraStream(new MediaStream(videoTracks));
+    const recorder = new Recorder({ stream });
+    try {
+      await recorder.start();
+    } catch (error) {
+      this.notice((error as Error).message);
+      for (const track of stream?.getTracks() ?? []) track.stop();
+      return;
+    }
+    this._recorder = recorder;
+    this._recordStream = stream;
+    this._appendTo = append;
+    this._pointerMarked = false;
+    for (const event of initialEvents(stopRef(this._navigation, this._player.index), this._boardOn, this._boardTarget, this._cameraOn, this._player.speed)) recorder.mark(event);
+    this._recordButton.textContent = '■ Stop';
+    this._recordButton.setAttribute('aria-pressed', 'true');
+    this._pauseButton.hidden = false;
+    this._pauseButton.textContent = 'Pause';
+    this._recordLabel.hidden = false;
+    this._recordTimer = window.setInterval(() => this._updateRecordLabel(), 500);
+    this._updateRecordLabel();
+    const what = stream ? (videoTracks.length ? 'with the camera' : 'the sound') : 'the timeline only';
+    this.notice(append ? `Continuing ${append.name} at ${formatTime(append.timeline.duration)}, recording ${what}` : `Recording ${what}`);
+  }
+
+  private _updateRecordLabel(): void {
+    const recorder = this._recorder;
+    if (!recorder) return;
+    const offset = this._appendTo?.timeline.duration ?? 0;
+    this._recordLabel.textContent = `${recorder.state === 'paused' ? '❚❚' : '●'} ${formatTime(offset + recorder.elapsed)}`;
+    this._recordLabel.classList.toggle('paused', recorder.state === 'paused');
+  }
+
+  /** Pause the recording, or resume it; the gap is left out of the talk. */
+  pauseRecording(): void {
+    const recorder = this._recorder;
+    if (!recorder) return;
+    if (recorder.state === 'recording') {
+      this._finishStroke();
+      recorder.pause();
+      this._pauseButton.textContent = 'Resume';
+    } else if (recorder.state === 'paused') {
+      recorder.resume();
+      this._pauseButton.textContent = 'Pause';
+    }
+    this._updateRecordLabel();
+  }
+
+  /** Stop recording and keep the talk next to the deck, or offer it as downloads. */
+  async stopRecording(): Promise<void> {
+    const recorder = this._recorder;
+    if (!recorder) return;
+    this._finishStroke();
+    if (this._pointerMarked) {
+      this._note({ type: 'pointer-off' });
+      this._pointerMarked = false;
+    }
+    this._recorder = null;
+    if (this._recordTimer !== null) clearInterval(this._recordTimer);
+    this._recordTimer = null;
+    this._recordLabel.hidden = true;
+    this._recordButton.textContent = '● Record';
+    this._recordButton.setAttribute('aria-pressed', 'false');
+    this._pauseButton.hidden = true;
+    const result = await recorder.stop();
+    // The microphone is released; the camera stays on only while its picture is shown full frame.
+    for (const track of this._recordStream?.getAudioTracks() ?? []) track.stop();
+    this._recordStream = null;
+    if (!this._cameraOn) this._setCameraStream(null);
+    // A new talk, or the one being continued: the part is appended either way.
+    const append = this._appendTo;
+    this._appendTo = null;
+    const name = append?.name ?? recordingName(result.started);
+    const previous: Timeline = append?.timeline ?? {
+      version: 1,
+      deck: { title: this._deck.title, hash: structureHash(this._navigation as NavigationData) },
+      recorded: result.started.toISOString(),
+      duration: 0,
+      media: [],
+      pip: { corner: this._settings.recording.corner, size: this._settings.recording.size },
+      events: [],
+    };
+    const partNumber = previous.media.length + 1;
+    const media = result.media && result.type ? describeMedia(name, result.type, partNumber, result.part.duration) : null;
+    const timeline = appendPart(previous, { ...result.part, media });
+    const base = this._deck.base;
+    if (base && recordingStoreAvailable()) {
+      this.notice('Saving the recording…');
+      try {
+        if (result.media && result.type) await saveMedia(base, name, partNumber, result.media, result.type);
+        await saveTimeline(base, name, timeline);
+        await this._refreshRecordings();
+        this.notice(append ? `Continued recordings/${name}, now ${formatTime(timeline.duration)}` : `Saved as recordings/${name}`);
+      } catch (error) {
+        this.notice(`Could not save: ${(error as Error).message}`);
+        this._offerDownload(name, timeline, partNumber, result.media, result.type);
+      }
+    } else {
+      this._offerDownload(name, timeline, partNumber, result.media, result.type);
+    }
+  }
+
+  private _offerDownload(name: string, timeline: Timeline, partNumber: number, media: Blob | null, type: string | null): void {
+    if (media && type) download(media, mediaFileName(name, type, partNumber));
+    download(new Blob([JSON.stringify(timeline)], { type: 'application/json' }), `${name}.json`);
+    this.notice('Recording downloaded: put the files in a recordings/ folder next to the deck');
+  }
+
+  // ---------------------------------------------------------------------
+  // Playing a recorded talk
+  // ---------------------------------------------------------------------
+
+  private async _refreshRecordings(): Promise<void> {
+    const base = this._deck.base;
+    this._recordings = base ? await listRecordings(base) : [];
+    this._recordingsButton.hidden = this._recordings.length === 0;
+    this._recordingsButton.textContent = this._recordings.length > 1 ? `▶ Talks (${this._recordings.length})` : '▶ Talk';
+  }
+
+  /** The list of recordings: one opens at once, several are offered in a dialog. */
+  openRecordings(): void {
+    if (this._recordings.length === 1) {
+      void this.openRecording(this._recordings[0]);
+      return;
+    }
+    const dialog = el('dialog', { class: 'settings recordings' });
+    const close = el('button', { class: 'close', 'aria-label': 'Close', text: '×' });
+    close.addEventListener('click', () => dialog.close());
+    const list = el('div', { class: 'bindings' });
+    for (const entry of this._recordings) {
+      const when = entry.recorded ? new Date(entry.recorded).toLocaleString() : entry.name;
+      const play = el('button', { text: 'Play' });
+      play.addEventListener('click', () => {
+        dialog.close();
+        void this.openRecording(entry);
+      });
+      const more = el('button', { text: 'Continue', title: 'Record on from where this talk stopped' });
+      more.hidden = !(this._deck.base && recordingStoreAvailable());
+      more.addEventListener('click', () => {
+        dialog.close();
+        void this.continueRecording(entry);
+      });
+      const remove = el('button', { class: 'add', text: 'Delete' });
+      remove.hidden = !(this._deck.base && recordingStoreAvailable());
+      remove.addEventListener('click', () => {
+        if (!confirm(`Delete the recording of ${when}?`)) return;
+        void deleteRecording(this._deck.base as string, entry.name).then(() => this._refreshRecordings()).then(() => {
+          dialog.close();
+          if (this._recordings.length > 1) this.openRecordings();
+        }).catch((error: Error) => this.notice(error.message));
+      });
+      list.append(el('div', { class: 'binding recording' },
+        el('span', { class: 'action', text: `${when} · ${formatTime(entry.duration)}${entry.video ? ' · camera' : entry.media ? ' · sound' : ''}` }), play, more, remove));
+    }
+    dialog.append(el('header', {}, el('h2', { text: 'Recorded talks' }), close), el('section', {}, list));
+    dialog.addEventListener('close', () => dialog.remove());
+    this.root.append(dialog);
+    dialog.showModal();
+  }
+
+  /** Load a recording and show the playback bar; the deck now follows the recording. */
+  async openRecording(entry: RecordingEntry): Promise<void> {
+    const base = this._deck.base;
+    const player = this._player;
+    const navigation = this._navigation;
+    if (!base || !player || !navigation) return;
+    if (this._recorder) await this.stopRecording();
+    this.closeRecording();
+    let timeline;
+    try {
+      timeline = await loadTimeline(base, entry.name);
+    } catch (error) {
+      this.notice((error as Error).message);
+      return;
+    }
+    if (timeline.deck.hash !== structureHash(navigation)) this.notice('The deck changed since this talk was recorded; stops that moved may not match');
+    this._finishStroke();
+    this._setCameraStream(null);
+    const camera = this._camera;
+    if (timeline.media.length) {
+      camera.srcObject = null;
+      camera.muted = false;
+    }
+    this._playbackName = entry.name;
+    this._playback = new Playback(timeline, {
+      navigation,
+      player,
+      media: timeline.media.length ? camera : null,
+      mediaUrl: (part) => recordingUrl(base, part.file),
+      apply: (event, instant) => this._applyTimelineEvent(event, instant),
+      resetInk: () => {
+        this._slideInk.reset();
+        this._boardInk.reset();
+      },
+      onTime: (time) => {
+        this._playRange.value = String(Math.round((time / Math.max(1, timeline.duration)) * 1000));
+        this._playTime.textContent = `${formatTime(time)} / ${formatTime(timeline.duration)}`;
+        this._playToggle.textContent = this._playback?.playing ? '❚❚' : '▶';
+      },
+      onEnd: () => {
+        this._playToggle.textContent = '▶';
+      },
+      onMissingStop: (key) => this.notice(`The slide ${key.replace(/^markup:/, '')} is no longer in the deck`),
+    });
+    this.root.classList.add('playing-back');
+    this._playbackBar.hidden = false;
+    this._exportButton.hidden = !exportMimeType();
+    this._layoutCamera();
+    this._playback.seek(0);
+    void this._playback.play();
+  }
+
+  /** Leave the recording: the deck is the viewer's again, where the recording left it. */
+  closeRecording(): void {
+    const playback = this._playback;
+    if (!playback) return;
+    if (this._exporting) return;
+    playback.dispose();
+    this._playback = null;
+    this._playbackName = null;
+    this._playbackPointer = null;
+    const camera = this._camera;
+    camera.pause();
+    camera.removeAttribute('src');
+    camera.load();
+    camera.muted = true;
+    if (this._cameraOn) this._setCameraFull(false);
+    this._playbackBar.hidden = true;
+    this.root.classList.remove('playing-back');
+    this._layoutCamera();
+    this._updateSpotlight();
+  }
+
+  /** Apply a recorded event (other than a navigation) to this page. */
+  private _applyTimelineEvent(event: TimelineEvent, instant: boolean): void {
+    switch (event.type) {
+      case 'ink': this._applyInk(event.surface, event.op); break;
+      case 'board': if (event.on !== this._boardOn) this._setBoardShown(event.on); break;
+      case 'pan': this._setBoardPan(event.x, event.y, !instant); break;
+      case 'camera': this._setCameraFull(event.on); break;
+      case 'pointer':
+        this._playbackPointer = { mode: event.mode, x: event.x, y: event.y, r: event.r };
+        this._updateSpotlight();
+        break;
+      case 'pointer-off':
+        this._playbackPointer = null;
+        this.stageHost.classList.remove('spotlight-active');
+        this._updateSpotlight();
+        break;
+      case 'go': case 'rewind': case 'speed': case 'cut': break;
+    }
+  }
+
+  /** Render the open recording as a video file, in real time, and keep it next to the deck or download it. */
+  async exportRecording(): Promise<void> {
+    const playback = this._playback;
+    const name = this._playbackName;
+    if (!playback || !name || this._exporting) return;
+    if (!confirm('The recording will play from the start while the video is written, which takes as long as the talk. Keep this window visible until it ends. Continue?')) return;
+    this._exporting = true;
+    this._exportButton.disabled = true;
+    this._playRange.disabled = true;
+    const source: ExportSource = {
+      aspect: this._deck.viewport.width / this._deck.viewport.height,
+      background: this._deck.background,
+      foreground: this._deck.foreground,
+      penStyle: () => this._settings.pen,
+      strokes: (surface) => this._surface(surface).strokes,
+      stage: () => this._stageCrop(),
+      camera: playback.timeline.media.length ? this._camera : null,
+      mirror: false,
+      pip: playback.timeline.pip,
+    };
+    try {
+      const blob = await exportVideo(playback, source, {
+        onProgress: (fraction) => {
+          this._exportButton.textContent = `Exporting… ${Math.round(fraction * 100)}%`;
+        },
+      });
+      const base = this._deck.base;
+      if (base && recordingStoreAvailable()) {
+        await saveFile(base, `${name}.video`, 'webm', blob);
+        this.notice(`Video saved as recordings/${name}.video.webm`);
+      } else {
+        download(blob, `${name}.webm`);
+      }
+    } catch (error) {
+      this.notice(`Export failed: ${(error as Error).message}`);
+    } finally {
+      this._exporting = false;
+      this._exportButton.disabled = false;
+      this._exportButton.textContent = 'Export video';
+      this._playRange.disabled = false;
+    }
+  }
+
+  /** The WebGL canvas and the device-pixel rectangle of the deck's viewport in it, after a fresh render. */
+  private _stageCrop(): { canvas: HTMLCanvasElement; sx: number; sy: number; sw: number; sh: number } | null {
+    const stage = this._stage;
+    const canvas = this.stageHost.querySelector('canvas');
+    if (!stage || !canvas || canvas.width === 0) return null;
+    stage.render();
+    const { width, height, scale } = this._highlightGeometry();
+    const ratio = canvas.width / Math.max(1, this.stageHost.clientWidth);
+    const sw = Math.max(1, Math.round(width * scale * ratio));
+    const sh = Math.max(1, Math.round(height * scale * ratio));
+    return { canvas, sx: Math.round((canvas.width - sw) / 2), sy: Math.round((canvas.height - sh) / 2), sw, sh };
   }
 
   // ---------------------------------------------------------------------
@@ -604,6 +1174,57 @@ export class PlayerUI {
       this._penChanged();
     });
 
+    // Recording: the devices and the camera picture's place.
+    this._micSelect = el('select', { 'aria-label': 'Microphone' });
+    this._cameraSelect = el('select', { 'aria-label': 'Camera' });
+    this._fillDeviceSelects([]);
+    this._micSelect.addEventListener('change', () => {
+      this._settings.recording.microphone = this._micSelect.value || null;
+      saveSettings(this._settings);
+    });
+    this._cameraSelect.addEventListener('change', () => {
+      this._settings.recording.camera = this._cameraSelect.value || null;
+      saveSettings(this._settings);
+      if (this._cameraStream && !this._recorder) this._setCameraStream(null);
+    });
+    const detect = el('button', { text: 'Detect devices' });
+    detect.addEventListener('click', () => void this._detectDevices());
+    this._mirrorToggle = el('input', { type: 'checkbox' });
+    this._mirrorToggle.addEventListener('change', () => {
+      this._settings.recording.mirror = this._mirrorToggle.checked;
+      saveSettings(this._settings);
+      this._layoutCamera();
+    });
+    this._cornerSelect = el('select', { 'aria-label': 'Corner of the camera picture' });
+    for (const corner of CORNERS) this._cornerSelect.append(el('option', { value: corner, text: corner.replace('-', ' ') }));
+    this._cornerSelect.addEventListener('change', () => {
+      this._settings.recording.corner = this._cornerSelect.value as Corner;
+      saveSettings(this._settings);
+      this._layoutCamera();
+    });
+    this._pipSizeSelect = el('select', { 'aria-label': 'Size of the camera picture' });
+    for (const [size, label] of PIP_SIZES) this._pipSizeSelect.append(el('option', { value: String(size), text: label }));
+    this._pipSizeSelect.addEventListener('change', () => {
+      this._settings.recording.size = Number(this._pipSizeSelect.value);
+      saveSettings(this._settings);
+      this._layoutCamera();
+    });
+    const recordingRows = el('div', { class: 'bindings' },
+      el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Microphone' }), this._micSelect),
+      el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Camera (none records the sound only)' }), this._cameraSelect),
+      el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Corner of the camera picture' }), this._cornerSelect),
+      el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Size of the camera picture' }), this._pipSizeSelect),
+      el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Mirror my own picture while presenting' }), this._mirrorToggle),
+    );
+    const resetRecording = el('button', { text: 'Restore the default recording settings' });
+    resetRecording.addEventListener('click', () => {
+      this._settings.recording = { ...DEFAULT_RECORDING };
+      saveSettings(this._settings);
+      this._syncSettingsForm();
+      this._layoutCamera();
+    });
+    this._recordingStatus = el('p', { class: 'note' });
+
     // Tablet: pairing through the preview server.
     this._pairingStatus = el('p', { class: 'note' });
     this._pairingPanel = el('div', { class: 'pairing' });
@@ -623,6 +1244,13 @@ export class PlayerUI {
         el('p', { class: 'note', text: 'A pen or stylus with a pressure sensor (Apple Pencil, Wacom) shapes the line as you press; the sliders tune how. Changes also redraw the strokes already on screen.' }),
         penRows,
         resetPen,
+      ),
+      el('section', { class: 'recording' },
+        el('h3', { text: 'Recording' }),
+        el('p', { class: 'note', text: 'Record (Shift+R, or the button in the bar) keeps your voice, the camera when one is chosen, and everything you do on the deck: stops, ink, the whiteboard, the pointer and the camera switch (C shows the camera full frame). The slides are not filmed; a recording replays on the deck itself and exports as a video. Pause leaves a gap out.' }),
+        this._recordingStatus,
+        recordingRows,
+        el('div', { class: 'row' }, detect, resetRecording),
       ),
       el('section', { class: 'tablet' },
         el('h3', { text: 'Tablet' }),
@@ -647,8 +1275,62 @@ export class PlayerUI {
     return dialog;
   }
 
+  private _micSelect!: HTMLSelectElement;
+  private _cameraSelect!: HTMLSelectElement;
+  private _mirrorToggle!: HTMLInputElement;
+  private _cornerSelect!: HTMLSelectElement;
+  private _pipSizeSelect!: HTMLSelectElement;
+  private _recordingStatus!: HTMLElement;
+
+  /** Fill the device lists from what the browser reports (labels appear once a device was used or detected). */
+  private _fillDeviceSelects(devices: MediaDeviceInfo[]): void {
+    const { microphone, camera } = this._settings.recording;
+    const fill = (select: HTMLSelectElement, kind: MediaDeviceKind, chosen: string | null, none: string | null) => {
+      select.replaceChildren(el('option', { value: '', text: 'Default' }));
+      if (none) select.append(el('option', { value: 'none', text: none }));
+      let index = 0;
+      for (const device of devices) {
+        if (device.kind !== kind || !device.deviceId) continue;
+        index += 1;
+        select.append(el('option', { value: device.deviceId, text: device.label || `${kind === 'videoinput' ? 'Camera' : 'Microphone'} ${index}` }));
+      }
+      if (chosen && ![...select.options].some((option) => option.value === chosen)) select.append(el('option', { value: chosen, text: 'Chosen earlier (not found now)' }));
+      select.value = chosen ?? '';
+    };
+    fill(this._micSelect, 'audioinput', microphone, null);
+    fill(this._cameraSelect, 'videoinput', camera, 'None');
+  }
+
+  /** Ask for the devices once (the browser prompts), then list them by name. */
+  private async _detectDevices(): Promise<void> {
+    if (!navigator.mediaDevices?.enumerateDevices) {
+      this._recordingStatus.textContent = 'This browser gives no access to microphones or cameras here (a secure context is needed).';
+      return;
+    }
+    try {
+      const probe = await navigator.mediaDevices.getUserMedia({ audio: true, video: true }).catch(() => navigator.mediaDevices.getUserMedia({ audio: true }));
+      for (const track of probe.getTracks()) track.stop();
+    } catch (error) {
+      this._recordingStatus.textContent = `No device: ${(error as Error).message}`;
+    }
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    this._fillDeviceSelects(devices);
+    const mics = devices.filter((device) => device.kind === 'audioinput').length;
+    const cameras = devices.filter((device) => device.kind === 'videoinput').length;
+    this._recordingStatus.textContent = `${mics} microphone${mics === 1 ? '' : 's'}, ${cameras} camera${cameras === 1 ? '' : 's'}.`;
+  }
+
   private _syncSettingsForm(): void {
     this._reverseToggle.checked = this._settings.reversePlayback ?? this._player?.reversePlayback ?? this._deck.presenter.reversePlayback;
+    const recording = this._settings.recording;
+    this._micSelect.value = recording.microphone ?? '';
+    this._cameraSelect.value = recording.camera ?? '';
+    this._mirrorToggle.checked = recording.mirror;
+    this._cornerSelect.value = recording.corner;
+    this._pipSizeSelect.value = String(recording.size);
+    this._recordingStatus.textContent = this._deck.base && recordingStoreAvailable()
+      ? 'Recordings are saved in a recordings/ folder next to the deck.'
+      : 'Without the preview server a recording is offered as downloads (a media file and a timeline) to put in a recordings/ folder next to the deck.';
     this._pointerModeSelect.value = this._settings.pointerMode;
     for (const [action, select] of this._pointerSelects) select.value = this._settings.pointer[action] ?? 'off';
     const pen = this._settings.pen;
@@ -855,6 +1537,7 @@ export class PlayerUI {
     }
     this.stageHost.classList.add('stroking');
     this._broadcast({ type: 'ink', surface, op: 'begin', stroke });
+    this._note({ type: 'ink', surface, op: { op: 'begin', stroke: { ...stroke, samples: [...stroke.samples] } } });
   }
 
   /** Add the samples of a move event (every coalesced one) to the live stroke. */
@@ -871,6 +1554,7 @@ export class PlayerUI {
       live.announce = true;
       surface.setPressure(live.id, true);
     }
+    if (this._recorder) this._note({ type: 'ink', surface: live.surface, op: { op: 'extend', id: live.id, samples, ...(live.pressure ? { pressure: true as const } : {}) } });
     // Draw at once rather than at the next frame, with the browser's prediction of where the pen goes.
     const predicted = (event.getPredictedEvents?.() ?? []).slice(0, 4).map((sample) => this._sample(sample, live.surface));
     surface.drawLive(live.id, predicted);
@@ -900,6 +1584,7 @@ export class PlayerUI {
     this._flushPending(live);
     this._surface(live.surface).end(live.id);
     this._broadcast({ type: 'ink', surface: live.surface, op: 'end', id: live.id });
+    this._note({ type: 'ink', surface: live.surface, op: { op: 'end', id: live.id } });
     try {
       this.stageHost.releasePointerCapture(live.pointerId);
     } catch {
@@ -913,7 +1598,10 @@ export class PlayerUI {
     this._finishStroke();
     const surface = this._activeSurface();
     const dropped = this._surface(surface).dropRecentTaps(2, 1500);
-    for (let n = 0; n < dropped; n++) this._broadcast({ type: 'ink', surface, op: 'undo' });
+    for (let n = 0; n < dropped; n++) {
+      this._broadcast({ type: 'ink', surface, op: 'undo' });
+      this._note({ type: 'ink', surface, op: { op: 'undo' } });
+    }
   }
 
   // ---------------------------------------------------------------------
@@ -929,6 +1617,7 @@ export class PlayerUI {
 
   /** Move the whiteboard viewport to (x, y), at once or gliding there. */
   private _setBoardPan(x: number, y: number, animate: boolean): void {
+    if (x !== this._boardTarget.x || y !== this._boardTarget.y) this._note({ type: 'pan', x, y });
     this._boardTarget = { x, y };
     const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     // A hidden page gets no animation frames, so a paired device in the background jumps instead.
@@ -974,6 +1663,7 @@ export class PlayerUI {
 
   private _setBoardShown(on: boolean): void {
     this._finishStroke();
+    if (on !== this._boardOn) this._note({ type: 'board', on });
     this._boardOn = on;
     this._boardLayer.hidden = !on;
     this.stageHost.classList.toggle('board-on', on);
@@ -997,6 +1687,7 @@ export class PlayerUI {
     if (!id) return;
     this._surface(surface).erase(id);
     this._broadcast({ type: 'ink', surface, op: 'erase', id });
+    this._note({ type: 'ink', surface, op: { op: 'erase', id } });
   }
 
   /** Two fingers on a touch screen scroll the whiteboard; a single finger never draws, it erases. */
@@ -1026,6 +1717,18 @@ export class PlayerUI {
   private _updateSpotlight(): void {
     const stage = this.stageHost;
     const tool = this._activeTool();
+    // A recording being played shows its own pointer, where the presenter had it.
+    const replayed = this._playbackPointer;
+    if (replayed) {
+      const { bounds, scale } = this._highlightGeometry();
+      this._spotlight.style.setProperty('--spot-x', `${bounds.width / 2 + replayed.x * scale}px`);
+      this._spotlight.style.setProperty('--spot-y', `${bounds.height / 2 + replayed.y * scale}px`);
+      this._spotlight.style.setProperty('--spot-radius', `${Math.max(8, replayed.r * scale)}px`);
+      stage.classList.toggle('laser-mode', replayed.mode === 'laser');
+      stage.classList.add('spotlight-active');
+      stage.classList.remove('sketch-active', 'tool-held');
+      return;
+    }
     if (this._pointer) {
       const bounds = stage.getBoundingClientRect();
       this._spotlight.style.setProperty('--spot-x', `${this._pointer.x - bounds.left}px`);
@@ -1034,7 +1737,9 @@ export class PlayerUI {
     this._radius = Math.max(24, Math.min(this._radius, Math.max(stage.clientWidth, stage.clientHeight, 24)));
     this._spotlight.style.setProperty('--spot-radius', `${this._radius}px`);
     stage.classList.toggle('laser-mode', this._settings.pointerMode === 'laser');
-    stage.classList.toggle('spotlight-active', tool === 'pointer' && this._pointer !== null);
+    const shown = tool === 'pointer' && this._pointer !== null;
+    stage.classList.toggle('spotlight-active', shown);
+    this._markPointer(shown);
     stage.classList.toggle('sketch-active', tool === 'pen' && this._pointer !== null);
     // Links and live pages give way to a tool selected with a held key, never to a plain gesture.
     stage.classList.toggle('tool-held', tool !== null && this._modifiers !== '' && this._pointer !== null);
@@ -1222,6 +1927,7 @@ export class PlayerUI {
 
   private _applyInk(surface: InkSurfaceName, op: InkOp): void {
     const target = this._surface(surface);
+    if (this._recorder) this._note({ type: 'ink', surface, op: op.op === 'begin' ? { ...op, stroke: { ...op.stroke, samples: [...op.stroke.samples] } } : op });
     switch (op.op) {
       case 'begin': target.begin(op.stroke); break;
       case 'extend':
