@@ -182,6 +182,59 @@ export class StyledLine extends Text {
     return this._runs ?? [];
   }
 
+  /** The mesh carries a reference to its line, so the player's text batches can find it in a slide's tree. */
+  protected override _createThreeObject(): THREE.Object3D {
+    const object = super._createThreeObject();
+    const mesh = this.getTextureMesh();
+    if (mesh) mesh.userData.styledLine = this;
+    return object;
+  }
+
+  // What a text batch needs of a line: its raster, where the quad samples it, and whether it rests.
+  get canvasElement(): HTMLCanvasElement | null {
+    return this._canvas;
+  }
+
+  get lineTexture(): THREE.Texture | null {
+    return this._texture;
+  }
+
+  private _rasterVersion = 0;
+
+  /** Grows whenever the raster is redrawn; a batch compares it with the version it copied. */
+  get rasterVersion(): number {
+    return this._rasterVersion;
+  }
+
+  get resting(): boolean {
+    return this._resting;
+  }
+
+  /** The part of the canvas the quad shows, with the resting shift, in the line's own texture coordinates. */
+  get textureMapping(): { ox: number; oy: number; rx: number; ry: number } {
+    const texture = this._texture;
+    return texture ? { ox: texture.offset.x, oy: texture.offset.y, rx: texture.repeat.x, ry: texture.repeat.y } : { ox: 0, oy: 0, rx: 1, ry: 1 };
+  }
+
+  private _batched = false;
+
+  /**
+   * Drawn by a batch rather than by its own mesh: the mesh moves to a layer the camera does not
+   * render (it stays in the tree for layout, links and bounds) and its texture leaves the GPU;
+   * both come back when the line is drawn on its own again.
+   */
+  get batched(): boolean {
+    return this._batched;
+  }
+
+  set batched(value: boolean) {
+    const mesh = this.getTextureMesh();
+    if (!mesh || value === this._batched) return;
+    this._batched = value;
+    mesh.layers.set(value ? 1 : 0);
+    if (value) this._texture?.dispose();
+  }
+
   /** Pixel size of the base font on the supersampled canvas. */
   private _px(): number {
     return (this.getFontSize() * 4) / 3 * textResolutionScale();
@@ -300,6 +353,7 @@ export class StyledLine extends Text {
     });
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     if (this._texture) this._texture.needsUpdate = true;
+    this._rasterVersion += 1;
     RASTER_STATS.count += 1;
     RASTER_STATS.ms += performance.now() - drawStarted;
   }

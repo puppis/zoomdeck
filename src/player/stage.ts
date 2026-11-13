@@ -4,6 +4,7 @@
  * canvas when the browser has extra room.
  */
 import { Scene } from 'manim-web';
+import { TextBatcher } from './textbatch';
 import type { Presenter } from '../runtime';
 import type { Vec3 } from '../geometry';
 import { TEXT_LINES, textBasePxPerWorld, type StyledLine } from '../markup/text';
@@ -50,6 +51,7 @@ export class Stage {
       // task, so the buffer need not survive compositing: keeping it costs a copy every frame.
       preserveDrawingBuffer: false,
     });
+    this.textBatcher = new TextBatcher(this.scene.threeScene);
     const canvas = this.scene.getCanvas();
     canvas.style.display = 'block';
     if (typeof ResizeObserver !== 'undefined') {
@@ -57,6 +59,9 @@ export class Stage {
       this._observer.observe(container);
     }
   }
+
+  /** Draws runs of text lines with one call each; rebuilt whenever the text has settled. */
+  readonly textBatcher: TextBatcher;
 
   attach(presenter: Presenter): void {
     this.presenter = presenter;
@@ -163,6 +168,7 @@ export class Stage {
   /** The camera is about to move: visible lines go back to mipmapped, unaligned sampling. */
   unrestText(): void {
     this._cancelRefresh();
+    this.textBatcher.setMotion(true);
     if (this._resting.size === 0) return;
     for (const line of this._resting) line.unrest();
     this._resting.clear();
@@ -240,6 +246,11 @@ export class Stage {
       this._resting.add(job.line);
       changed = true;
     }
+    // Settled: the lines in view are drawn in batches from now on, until the camera moves again.
+    if (!left) {
+      this.textBatcher.rebuild(presenter);
+      changed = true;
+    }
     if (changed) this.render();
     if (left) {
       this._refreshFrame = requestAnimationFrame(() => {
@@ -264,12 +275,14 @@ export class Stage {
       max: [camera.center[0] + view.width / 2, camera.center[1] + view.height / 2, 0] as Vec3,
     };
     presenter.prepareRender(this._width, this._height, bounds, view.width);
+    this.textBatcher.sync();
     this.scene.render();
     for (const callback of this.afterRender) callback();
   }
 
   dispose(): void {
     this._observer?.disconnect();
+    this.textBatcher.clear();
     this.scene.dispose();
   }
 }
