@@ -105,7 +105,7 @@ export class Stage {
     this._printing = true;
     this._resize(Math.max(2, Math.round(width / ratio)), Math.max(2, Math.round(height / ratio)));
     const capture = (): HTMLCanvasElement => {
-      this.refreshText();
+      this.refreshText(Infinity);
       this.render();
       const copy = document.createElement('canvas');
       copy.width = canvas.width;
@@ -156,22 +156,35 @@ export class Stage {
     return { left: (this._width - width) / 2, top: (this._height - height) / 2, width, height };
   }
 
-  /**
-   * Redraw the text lines in view at the screen's own pixel density, so that
-   * prose is sharp wherever the camera has come to rest. Lines outside the
-   * view keep their current bitmaps. Renders again when anything changed.
-   */
   private readonly _resting = new Set<StyledLine>();
+  /** The frame scheduled to go on with a sharpening pass that ran out of its time budget. */
+  private _refreshFrame: number | null = null;
 
   /** The camera is about to move: visible lines go back to mipmapped, unaligned sampling. */
   unrestText(): void {
+    this._cancelRefresh();
     if (this._resting.size === 0) return;
     for (const line of this._resting) line.unrest();
     this._resting.clear();
     this.render();
   }
 
-  refreshText(): void {
+  private _cancelRefresh(): void {
+    if (this._refreshFrame === null) return;
+    cancelAnimationFrame(this._refreshFrame);
+    this._refreshFrame = null;
+  }
+
+  /**
+   * Redraw the text lines in view at the screen's own pixel density, so that prose is sharp
+   * wherever the camera has come to rest, and send the lines out of view back to the base
+   * density. The result is the same whatever the budget: a pass spends at most `budgetMs`
+   * rasterizing, the largest lines on screen first, renders what it has and goes on next
+   * frame, so a stop that shows a great deal of text (the front page of a deck, say) appears
+   * at once and sharpens within a few frames. `Infinity` does it all at once, for a capture.
+   */
+  refreshText(budgetMs = 6): void {
+    this._cancelRefresh();
     const presenter = this.presenter;
     if (!presenter || !TEXT_LINES.size) return;
     const view = this._view();
@@ -187,7 +200,8 @@ export class Stage {
     const marginX = view.width * 0.25;
     const marginY = view.height * 0.25;
     const root = this.scene.threeScene;
-    let changed = false;
+    // What each line needs, the lines in view first and the largest of them before the rest.
+    const jobs: Array<{ line: StyledLine; outside: boolean; density: number; size: number }> = [];
     for (const line of TEXT_LINES) {
       const object = line.getThreeObject();
       let ancestor = object.parent;
@@ -202,20 +216,37 @@ export class Stage {
       const outside = x + halfWidth < center[0] - view.width / 2 - marginX || x - halfWidth > center[0] + view.width / 2 + marginX
         || y + halfHeight < center[1] - view.height / 2 - marginY || y - halfHeight > center[1] + view.height / 2 + marginY;
       // Lines out of view go back to the base density, so zooming around never accumulates large canvases.
-      if (line.rasterizeAt(outside ? textBasePxPerWorld() : pxPerWorld * scale)) changed = true;
-      if (outside) {
-        if (this._resting.delete(line)) {
-          line.unrest();
+      jobs.push({ line, outside, density: outside ? textBasePxPerWorld() : pxPerWorld * scale, size: outside ? -1 : halfWidth * halfHeight });
+    }
+    jobs.sort((a, b) => b.size - a.size);
+    const started = performance.now();
+    let changed = false;
+    let left = 0;
+    for (const job of jobs) {
+      if (performance.now() - started > budgetMs) {
+        left += 1;
+        continue;
+      }
+      if (job.line.rasterizeAt(job.density)) changed = true;
+      if (job.outside) {
+        if (this._resting.delete(job.line)) {
+          job.line.unrest();
           changed = true;
         }
         continue;
       }
       // At rest, the texels of a visible line sit on the screen's pixels, sampled without mipmaps.
-      line.restOnScreen(toDevicePixel);
-      this._resting.add(line);
+      job.line.restOnScreen(toDevicePixel);
+      this._resting.add(job.line);
       changed = true;
     }
     if (changed) this.render();
+    if (left) {
+      this._refreshFrame = requestAnimationFrame(() => {
+        this._refreshFrame = null;
+        this.refreshText(budgetMs);
+      });
+    }
   }
 
   /** Draw the current presenter state. */
