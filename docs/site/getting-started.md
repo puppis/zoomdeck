@@ -172,7 +172,8 @@ explains each one and what to do when an editor cannot find the command.
 my-deck/
 ├── slides.md        the slides, in the Markdown dialect
 ├── deck.json        title, colors, typography, presenter options, styles, macros
-├── code-slides.ts   optional: Slide classes used by [[subslide: Name]]
+├── code-slides.ts   optional: Slide classes used by [[subslide: Name]]; zoomdeck and manim-web
+│                    resolve through the checkout wherever the deck lives
 ├── parts/           optional: Markdown files spliced in with [[import: path.md]]
 ├── assets/          images, videos, pages referenced from slides.md
 └── recordings/      optional: recorded talks, written by the player (see The player)

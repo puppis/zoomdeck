@@ -36,6 +36,26 @@ namespaces. Each occurrence creates its own instance, with the same placement at
 include. A slide's natural canvas defaults to 16 × 9; pass `{ size: [20, 12] }` or
 `width`/`height` to `super()` to change it.
 
+A deck may live anywhere on disk: `zoomdeck` and `manim-web` (and the engine's other
+dependencies) in a deck's own modules resolve against the checkout that runs the `zoomdeck`
+command or the development page, so a `code-slides.ts` next to your deck needs no
+`node_modules` of its own, and the deck and the player share one copy of the engine. For type
+checking and completion in an editor, which do not go through the command, put a `tsconfig.json`
+next to the deck that points the two names at the checkout:
+
+```json
+{
+  "compilerOptions": {
+    "target": "es2022", "module": "esnext", "moduleResolution": "bundler", "strict": true, "noEmit": true,
+    "paths": {
+      "zoomdeck": ["/path/to/Zoomdeck/src/index.ts"],
+      "manim-web": ["/path/to/Zoomdeck/node_modules/manim-web"]
+    }
+  },
+  "include": ["*.ts"]
+}
+```
+
 ## The Slide API
 
 | Member | Role |

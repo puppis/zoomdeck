@@ -228,7 +228,8 @@ picture is mirrored while presenting (the recording is never mirrored).
 
 **Playing a recording.** When the deck's folder holds recordings, the footer shows **Talk** (with
 their number when there are several); it opens the recording, or a list to choose from, with a
-Delete button where the server can remove files. During playback the deck follows the recording:
+Delete button where the server can remove files. The same list opens from **Talks…** in the
+playback bar, so one recording can be continued or deleted as well. During playback the deck follows the recording:
 stops play as they did, strokes appear as they were drawn, the whiteboard and the camera switch
 when they did, and the laser or spotlight moves where the presenter pointed. A bar over the
 slides has play and pause (also Space), a scrubber (also `←` and `→`, five seconds at a time),

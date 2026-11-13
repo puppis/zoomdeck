@@ -217,9 +217,11 @@ export class PlayerUI {
     this._playRange = el('input', { type: 'range', min: '0', max: '1000', value: '0', 'aria-label': 'Position in the recording' });
     this._playTime = el('span', { class: 'play-time', text: '0:00 / 0:00' });
     this._exportButton = el('button', { class: 'export-button', text: 'Export video', title: 'Render this recording as a video file, in real time' });
+    const talks = el('button', { class: 'talks-button', text: 'Talks…', title: 'Choose, continue or delete a recorded talk' });
+    talks.addEventListener('click', () => this.openRecordingList());
     const closePlayback = el('button', { class: 'close-playback', 'aria-label': 'Leave the recording', title: 'Leave the recording (Esc)', text: '×' });
     this._playbackBar = el('div', { class: 'playback-bar', hidden: '', role: 'group', 'aria-label': 'Recording playback' },
-      this._playToggle, this._playRange, this._playTime, this._exportButton, closePlayback);
+      this._playToggle, this._playRange, this._playTime, talks, this._exportButton, closePlayback);
     this._playToggle.addEventListener('click', () => this._playback?.toggle());
     this._playRange.addEventListener('input', () => {
       const playback = this._playback;
@@ -916,10 +918,16 @@ export class PlayerUI {
     this._recordingsButton.textContent = this._recordings.length > 1 ? `▶ Talks (${this._recordings.length})` : '▶ Talk';
   }
 
-  /** The list of recordings: one opens at once, several are offered in a dialog. */
+  /** The footer's Talk button: one recording opens at once, several are offered in the list. */
   openRecordings(): void {
-    if (this._recordings.length === 1) {
-      void this.openRecording(this._recordings[0]);
+    if (this._recordings.length === 1) void this.openRecording(this._recordings[0]);
+    else this.openRecordingList();
+  }
+
+  /** The list of recorded talks, each with Play, Continue and Delete; also reached from the playback bar. */
+  openRecordingList(): void {
+    if (!this._recordings.length) {
+      this.notice('No recorded talk yet: Record starts one');
       return;
     }
     const dialog = el('dialog', { class: 'settings recordings' });
@@ -945,7 +953,9 @@ export class PlayerUI {
         if (!confirm(`Delete the recording of ${when}?`)) return;
         void deleteRecording(this._deck.base as string, entry.name).then(() => this._refreshRecordings()).then(() => {
           dialog.close();
-          if (this._recordings.length > 1) this.openRecordings();
+          // The talk being played is gone with its files: the deck is the viewer's again.
+          if (this._playbackName === entry.name) this.closeRecording();
+          if (this._recordings.length) this.openRecordingList();
         }).catch((error: Error) => this.notice(error.message));
       });
       list.append(el('div', { class: 'binding recording' },

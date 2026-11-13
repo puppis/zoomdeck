@@ -72,6 +72,22 @@ without arguments and return a fresh slide; qualified names (<code>helpers.Orbit
 namespaces. Each occurrence creates its own instance, with the same placement attributes as an
 include. A slide's natural canvas defaults to 16 × 9; pass <code>{ size: [20, 12] }</code> or
 <code>width</code>/<code>height</code> to <code>super()</code> to change it.</p>
+<p>A deck may live anywhere on disk: <code>zoomdeck</code> and <code>manim-web</code> (and the engine's other
+dependencies) in a deck's own modules resolve against the checkout that runs the <code>zoomdeck</code>
+command or the development page, so a <code>code-slides.ts</code> next to your deck needs no
+<code>node_modules</code> of its own, and the deck and the player share one copy of the engine. For type
+checking and completion in an editor, which do not go through the command, put a <code>tsconfig.json</code>
+next to the deck that points the two names at the checkout:</p>
+<pre><code class="language-json">{
+  <span class="tk-attribute">&quot;compilerOptions&quot;</span>: {
+    <span class="tk-attribute">&quot;target&quot;</span>: <span class="tk-string">&quot;es2022&quot;</span>, <span class="tk-attribute">&quot;module&quot;</span>: <span class="tk-string">&quot;esnext&quot;</span>, <span class="tk-attribute">&quot;moduleResolution&quot;</span>: <span class="tk-string">&quot;bundler&quot;</span>, <span class="tk-attribute">&quot;strict&quot;</span>: <span class="tk-keyword">true</span>, <span class="tk-attribute">&quot;noEmit&quot;</span>: <span class="tk-keyword">true</span>,
+    <span class="tk-attribute">&quot;paths&quot;</span>: {
+      <span class="tk-attribute">&quot;zoomdeck&quot;</span>: [<span class="tk-string">&quot;/path/to/Zoomdeck/src/index.ts&quot;</span>],
+      <span class="tk-attribute">&quot;manim-web&quot;</span>: [<span class="tk-string">&quot;/path/to/Zoomdeck/node_modules/manim-web&quot;</span>]
+    }
+  },
+  <span class="tk-attribute">&quot;include&quot;</span>: [<span class="tk-string">&quot;*.ts&quot;</span>]
+}</code></pre>
 <h2 id="the-slide-api">The Slide API<a class="anchor" href="#the-slide-api" aria-label="Link to this section">#</a></h2><table>
 <thead>
 <tr>

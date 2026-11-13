@@ -120,3 +120,32 @@ describe('step lines', () => {
     expect(steps.map((step) => [step.number, step.line])).toEqual([[1, 4], [2, 6], [4, 9], [5, 8]]);
   });
 });
+
+import { isBareImport, isInside, resolveFromPackage } from '../bin/resolve.mjs';
+
+describe('resolving a deck\'s imports from the package', () => {
+  const root = '/checkout/Zoomdeck';
+  const plugin = resolveFromPackage(root);
+  const resolveId = plugin.resolveId as (this: { resolve: (...args: unknown[]) => Promise<unknown> }, source: string, importer: string | undefined, options: object) => Promise<unknown>;
+
+  it('tells package names from paths', () => {
+    expect(isBareImport('manim-web')).toBe(true);
+    expect(isBareImport('@scope/pkg/sub')).toBe(true);
+    for (const path of ['./a', '../a', '/abs/a', 'C:/a', 'C:\\a', 'file:///a', 'virtual:x', '\0id']) expect(isBareImport(path)).toBe(false);
+    expect(isInside('/checkout/Zoomdeck/src/x.ts', root)).toBe(true);
+    expect(isInside('/checkout/Zoomdeck-other/x.ts', root)).toBe(false);
+  });
+
+  it('answers zoomdeck with the source entry and bare imports from elsewhere as if from the package', async () => {
+    const calls: unknown[][] = [];
+    const context = { resolve: async (...args: unknown[]) => { calls.push(args); return { id: '/checkout/Zoomdeck/node_modules/manim-web/index.js' }; } };
+    expect(await resolveId.call(context, 'zoomdeck', '/elsewhere/deck/code-slides.ts', {})).toBe('/checkout/Zoomdeck/src/index.ts');
+    expect(await resolveId.call(context, './other', '/elsewhere/deck/code-slides.ts', {})).toBeNull();
+    expect(await resolveId.call(context, 'manim-web', '/checkout/Zoomdeck/src/index.ts', {})).toBeNull();
+    expect(await resolveId.call(context, 'manim-web', undefined, {})).toBeNull();
+    expect(calls.length).toBe(0);
+    const resolved = await resolveId.call(context, 'manim-web', '/elsewhere/deck/code-slides.ts', { isEntry: false });
+    expect(resolved).toEqual({ id: '/checkout/Zoomdeck/node_modules/manim-web/index.js' });
+    expect(calls).toEqual([['manim-web', '/checkout/Zoomdeck/src/index.ts', { isEntry: false, skipSelf: true }]]);
+  });
+});

@@ -20,10 +20,13 @@ import { tmpdir } from 'node:os';
 import { lanAddresses, padRelay } from './relay.mjs';
 import { EDITOR_PRESETS, editorSync, previewsFor, requestJump } from './sync.mjs';
 import { FOLDER as RECORDINGS, isRecordingFile, recordingStore } from './recordings.mjs';
+import { resolveFromPackage } from './resolve.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(here, '..');
 const require = createRequire(import.meta.url);
+/** `zoomdeck` and `manim-web` resolve against this package from a deck anywhere on disk. */
+const resolveDeps = resolveFromPackage(packageRoot);
 
 function usage(message) {
   if (message) console.error(`error: ${message}\n`);
@@ -138,7 +141,7 @@ async function serve(options) {
     root: packageRoot,
     resolve: { alias: optionalStubs },
     optimizeDeps: { entries: ['index.html'] },
-    plugins: [dropEngineMuxers, reloadPlugin, padRelay(), editorSync({ editor: options.editor, roots: watchRoots, deck: deckPath }), recordingStore({ roots: watchRoots })],
+    plugins: [resolveDeps, dropEngineMuxers, reloadPlugin, padRelay(), editorSync({ editor: options.editor, roots: watchRoots, deck: deckPath }), recordingStore({ roots: watchRoots })],
     // Bind the IPv4 loopback explicitly: "localhost" may resolve to ::1 only, which would leave
     // the printed 127.0.0.1 address refusing connections. Without --port, a busy 8000 falls
     // through to the next free port instead of failing, so a second preview can always start.
@@ -290,7 +293,7 @@ runDeck(markupDeck({
     base: './',
     logLevel: 'warn',
     resolve: { alias: optionalStubs },
-    plugins: [dropEngineMuxers],
+    plugins: [resolveDeps, dropEngineMuxers],
     // Slide names default to class names, which minification would otherwise mangle.
     esbuild: { keepNames: true },
     server: { fs: { allow: [packageRoot, deckDir] } },
