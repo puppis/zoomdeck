@@ -39,7 +39,7 @@ export function sanitizeRecording(value: unknown): RecordingSettings {
 
 export type ActionName =
   | 'next' | 'previous' | 'home' | 'replay' | 'fullscreen' | 'outline' | 'undo' | 'redo' | 'clear' | 'settings' | 'exit' | 'pointer' | 'whiteboard'
-  | 'edit' | 'camera' | 'record' | 'resume';
+  | 'edit' | 'camera' | 'record' | 'resume' | 'print';
 
 export interface ActionInfo {
   name: ActionName;
@@ -61,6 +61,7 @@ export const ACTIONS: ActionInfo[] = [
   { name: 'record', label: 'Start or stop recording the talk' },
   { name: 'resume', label: 'Continue the latest recording where it stopped (append)' },
   { name: 'edit', label: 'Open the source of this stop in the editor (preview server)' },
+  { name: 'print', label: 'Print the deck to a PDF' },
   { name: 'fullscreen', label: 'Toggle fullscreen' },
   { name: 'exit', label: 'Leave fullscreen' },
   { name: 'outline', label: 'Toggle the slide outline' },
@@ -81,6 +82,7 @@ export const DEFAULT_BINDINGS: Record<ActionName, string[]> = {
   record: ['Shift+r'],
   resume: ['Shift+a'],
   edit: ['e'],
+  print: ['Shift+p', 'Meta+p', 'Control+p'],
   fullscreen: ['f'],
   exit: ['Escape'],
   outline: ['o'],

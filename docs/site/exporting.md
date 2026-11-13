@@ -1,11 +1,12 @@
 ---
 title: Exporting a deck
-description: Turn a deck into a static folder or into one self-contained HTML file that plays anywhere, without Node or a server.
+description: Turn a deck into a static folder or into one self-contained HTML file that plays anywhere, without Node or a server, or print it to a PDF.
 ---
 
 <a class="try" href="guide.html#slide=player">Open in the guide ↗</a>
 
-A deck that previews on the dev page can be exported with the command line. Two forms exist.
+A deck that previews on the dev page can be exported with the command line. Two forms exist,
+and the player itself prints a deck to a [PDF](#a-pdf-printout).
 
 ## One self-contained file
 
@@ -62,6 +63,14 @@ The deck argument is a `deck.json`, a Markdown file (default settings) or a JS/T
 a deck definition. The export records nothing in advance: like the dev page, the exported player
 runs the deck's program once when it loads, so changes to the Markdown require a new export while
 settings such as key bindings travel with the viewer's browser.
+
+## A PDF printout
+
+The player's **Print** button (Shift+P, also ⌘P / Ctrl+P) writes the deck as a PDF, one page per
+stage or one per slide, at 1920, 2560 or 3840 pixels of width, drawn by the deck's own renderer
+and stored losslessly, with the slides as bookmarks. It works in the preview, in an exported
+deck and in the single file alike, since the browser does the rendering; see
+[Printing to PDF](player.html#printing-to-pdf) for what a page shows and leaves out.
 
 ## From a script
 

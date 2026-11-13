@@ -64,15 +64,56 @@ export class Stage {
 
   /** Match the canvas to the container size. */
   fit(): void {
+    if (this._printing) return;
     const width = Math.max(2, Math.round(this.container.clientWidth));
     const height = Math.max(2, Math.round(this.container.clientHeight));
     if (width === this._width && height === this._height) return;
+    this._resize(width, height);
+  }
+
+  /** Give the canvas another size in CSS pixels (the engine applies the device pixel ratio) and redraw. */
+  private _resize(width: number, height: number): void {
     this._width = width;
     this._height = height;
     this.scene.resize(width, height);
     if (this.presenter) for (const ctx of this.presenter.contexts.values()) ctx.display.invalidateStrokes();
     this.render();
     for (const callback of this.afterResize) callback();
+  }
+
+  private _printing = false;
+
+  /**
+   * Run `body` with the canvas sized to `width × height` device pixels and the proportions of
+   * the presentation viewport, so that the viewport fills it; `capture` renders the current
+   * state with its text drawn at that density and returns a copy of the picture. The screen
+   * size and its text come back afterwards.
+   */
+  async atPrintSize(width: number, height: number, body: (capture: () => HTMLCanvasElement) => Promise<void>): Promise<void> {
+    const canvas = this.scene.getCanvas();
+    const ratio = canvas.width && this._width ? canvas.width / this._width : 1;
+    const saved = { width: this._width, height: this._height };
+    this._printing = true;
+    this._resize(Math.max(2, Math.round(width / ratio)), Math.max(2, Math.round(height / ratio)));
+    const capture = (): HTMLCanvasElement => {
+      this.refreshText();
+      this.render();
+      const copy = document.createElement('canvas');
+      copy.width = canvas.width;
+      copy.height = canvas.height;
+      const context = copy.getContext('2d');
+      if (!context) throw new Error('No drawing context');
+      context.drawImage(canvas, 0, 0);
+      return copy;
+    };
+    try {
+      await body(capture);
+    } finally {
+      this._printing = false;
+      this._resize(saved.width, saved.height);
+      this.fit();
+      this.refreshText();
+    }
   }
 
   /** The camera view (world units) that contains the presentation viewport. */

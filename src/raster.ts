@@ -315,6 +315,13 @@ export interface RasterImageOptions {
 export class RasterImage extends Mobject implements SnapshotExtra {
   /** Called whenever a frame finishes decoding after the fact, so the host can redraw. */
   static onUpdate: (() => void) | null = null;
+  /** The decodes under way, for whoever must wait until every picture shows its frame. */
+  private static readonly _pending = new Set<Promise<void>>();
+
+  /** Resolve once no picture is still decoding towards its frame. */
+  static async settle(): Promise<void> {
+    while (RasterImage._pending.size) await Promise.all([...RasterImage._pending]);
+  }
   readonly source: RasterSource;
   private _worldWidth: number;
   private _worldHeight: number;
@@ -380,7 +387,9 @@ export class RasterImage extends Mobject implements SnapshotExtra {
     if (this._shown === this._target) return Promise.resolve();
     const pump = this._pump().finally(() => {
       if (this._pumping === pump) this._pumping = null;
+      RasterImage._pending.delete(pump);
     });
+    RasterImage._pending.add(pump);
     this._pumping = pump;
     return pump;
   }

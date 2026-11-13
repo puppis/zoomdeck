@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Exporting a deck · Zoomdeck</title>
-<meta name="description" content="Turn a deck into a static folder or into one self-contained HTML file that plays anywhere, without Node or a server.">
+<meta name="description" content="Turn a deck into a static folder or into one self-contained HTML file that plays anywhere, without Node or a server, or print it to a PDF.">
 <link rel="stylesheet" href="docs.css">
 </head>
 <body>
@@ -38,7 +38,7 @@
       </section>
       <section>
         <h4>Presenting</h4>
-        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html" aria-current="page">Exporting a deck</a><ul class="subsections"><li><a href="#one-self-contained-file">One self-contained file</a></li><li><a href="#a-static-folder">A static folder</a></li><li><a href="#options">Options</a></li><li><a href="#from-a-script">From a script</a></li></ul></li></ul>
+        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html" aria-current="page">Exporting a deck</a><ul class="subsections"><li><a href="#one-self-contained-file">One self-contained file</a></li><li><a href="#a-static-folder">A static folder</a></li><li><a href="#options">Options</a></li><li><a href="#a-pdf-printout">A PDF printout</a></li><li><a href="#from-a-script">From a script</a></li></ul></li></ul>
       </section>
       <section>
         <h4>Advanced</h4>
@@ -48,9 +48,10 @@
   <main id="content">
     <article>
       <h1>Exporting a deck</h1>
-      <p class="lead">Turn a deck into a static folder or into one self-contained HTML file that plays anywhere, without Node or a server.</p>
+      <p class="lead">Turn a deck into a static folder or into one self-contained HTML file that plays anywhere, without Node or a server, or print it to a PDF.</p>
       <p><a class="try" href="guide.html#slide=player">Open in the guide ↗</a></p>
-<p>A deck that previews on the dev page can be exported with the command line. Two forms exist.</p>
+<p>A deck that previews on the dev page can be exported with the command line. Two forms exist,
+and the player itself prints a deck to a <a href="#a-pdf-printout">PDF</a>.</p>
 <h2 id="one-self-contained-file">One self-contained file<a class="anchor" href="#one-self-contained-file" aria-label="Link to this section">#</a></h2><pre><code class="language-bash"><span class="tk-keyword">node</span> bin/zoomdeck.mjs build path/to/deck.json <span class="tk-attribute">-o</span> out <span class="tk-attribute">--one-file</span></code></pre>
 <p>This writes <code>out/offline.html</code>: the player, the engine, the bundled fonts, your Markdown source
 and every asset it references (images, animated images, videos, embedded pages) in a single HTML
@@ -104,6 +105,11 @@ them like any other file.</p>
 a deck definition. The export records nothing in advance: like the dev page, the exported player
 runs the deck's program once when it loads, so changes to the Markdown require a new export while
 settings such as key bindings travel with the viewer's browser.</p>
+<h2 id="a-pdf-printout">A PDF printout<a class="anchor" href="#a-pdf-printout" aria-label="Link to this section">#</a></h2><p>The player's <strong>Print</strong> button (Shift+P, also ⌘P / Ctrl+P) writes the deck as a PDF, one page per
+stage or one per slide, at 1920, 2560 or 3840 pixels of width, drawn by the deck's own renderer
+and stored losslessly, with the slides as bookmarks. It works in the preview, in an exported
+deck and in the single file alike, since the browser does the rendering; see
+<a href="player.html#printing-to-pdf">Printing to PDF</a> for what a page shows and leaves out.</p>
 <h2 id="from-a-script">From a script<a class="anchor" href="#from-a-script" aria-label="Link to this section">#</a></h2><p>Programmatic use goes through the same entry points as the dev page:</p>
 <pre><code class="language-ts"><span class="tk-keyword">import</span> { runDeck, markupDeck } <span class="tk-keyword">from</span> <span class="tk-string">'zoomdeck'</span>;
 
@@ -117,7 +123,7 @@ your own layout around the player.</p>
       <a class="next" href="code-slides.html">Code-authored slides →</a>
     </footer>
   </main>
-  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#one-self-contained-file">One self-contained file</a></li><li><a href="#a-static-folder">A static folder</a></li><li><a href="#options">Options</a></li><li><a href="#from-a-script">From a script</a></li></ul></nav>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#one-self-contained-file">One self-contained file</a></li><li><a href="#a-static-folder">A static folder</a></li><li><a href="#options">Options</a></li><li><a href="#a-pdf-printout">A PDF printout</a></li><li><a href="#from-a-script">From a script</a></li></ul></nav>
 </div>
 </body>
 </html>

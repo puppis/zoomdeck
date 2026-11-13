@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The player · Zoomdeck</title>
-<meta name="description" content="Keyboard and pointer controls, the pen and its pressure styles, the whiteboard, a companion tablet, the camera, recording a talk and exporting it as a video, spotlight and laser, reverse playback, deep links, speed and fullscreen.">
+<meta name="description" content="Keyboard and pointer controls, the pen and its pressure styles, the whiteboard, a companion tablet, the camera, recording a talk and exporting it as a video, printing the deck to a PDF, spotlight and laser, reverse playback, deep links, speed and fullscreen.">
 <link rel="stylesheet" href="docs.css">
 </head>
 <body>
@@ -38,7 +38,7 @@
       </section>
       <section>
         <h4>Presenting</h4>
-        <ul><li><a href="player.html" aria-current="page">The player</a><ul class="subsections"><li><a href="#controls">Controls</a></li><li><a href="#settings">Settings</a></li><li><a href="#pointer-tools">Pointer tools</a></li><li><a href="#the-pen">The pen</a></li><li><a href="#the-whiteboard">The whiteboard</a></li><li><a href="#a-tablet-as-a-drawing-pad">A tablet as a drawing pad</a></li><li><a href="#the-camera">The camera</a></li><li><a href="#recording-a-talk">Recording a talk</a></li><li><a href="#reverse-playback">Reverse playback</a></li><li><a href="#cuts">Cuts</a></li><li><a href="#outline-and-deep-links">Outline and deep links</a></li><li><a href="#loops-and-automatic-advancement">Loops and automatic advancement</a></li><li><a href="#editing-preview">Editing preview</a></li><li><a href="#static-exports">Static exports</a></li></ul></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
+        <ul><li><a href="player.html" aria-current="page">The player</a><ul class="subsections"><li><a href="#controls">Controls</a></li><li><a href="#settings">Settings</a></li><li><a href="#pointer-tools">Pointer tools</a></li><li><a href="#the-pen">The pen</a></li><li><a href="#the-whiteboard">The whiteboard</a></li><li><a href="#a-tablet-as-a-drawing-pad">A tablet as a drawing pad</a></li><li><a href="#the-camera">The camera</a></li><li><a href="#recording-a-talk">Recording a talk</a></li><li><a href="#printing-to-pdf">Printing to PDF</a></li><li><a href="#reverse-playback">Reverse playback</a></li><li><a href="#cuts">Cuts</a></li><li><a href="#outline-and-deep-links">Outline and deep links</a></li><li><a href="#loops-and-automatic-advancement">Loops and automatic advancement</a></li><li><a href="#editing-preview">Editing preview</a></li><li><a href="#static-exports">Static exports</a></li></ul></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
       </section>
       <section>
         <h4>Advanced</h4>
@@ -48,7 +48,7 @@
   <main id="content">
     <article>
       <h1>The player</h1>
-      <p class="lead">Keyboard and pointer controls, the pen and its pressure styles, the whiteboard, a companion tablet, the camera, recording a talk and exporting it as a video, spotlight and laser, reverse playback, deep links, speed and fullscreen.</p>
+      <p class="lead">Keyboard and pointer controls, the pen and its pressure styles, the whiteboard, a companion tablet, the camera, recording a talk and exporting it as a video, printing the deck to a PDF, spotlight and laser, reverse playback, deep links, speed and fullscreen.</p>
       <p><a class="try" href="guide.html#slide=player">Open in the guide ↗</a></p>
 <h2 id="controls">Controls<a class="anchor" href="#controls" aria-label="Link to this section">#</a></h2><table>
 <thead>
@@ -111,6 +111,10 @@
 <td>open the source line of this stop in the editor (preview server with <code>--editor</code>; see <a href="editors.html#forward-and-inverse-search">Editors</a>)</td>
 </tr>
 <tr>
+<td>Shift+P, ⌘P / Ctrl+P</td>
+<td>print the deck to a PDF, one page per stage</td>
+</tr>
+<tr>
 <td>F</td>
 <td>toggle fullscreen; Esc leaves it</td>
 </tr>
@@ -124,8 +128,8 @@
 </tr>
 </tbody>
 </table>
-<p>The footer has previous/next buttons, a progress bar, the pen settings, the speed control
-(0.5× to 2×), the settings gear and the fullscreen button. The header shows the breadcrumb of the
+<p>The footer has previous/next buttons, a progress bar, the pen settings, the recording buttons,
+the speed control (0.5× to 2×), the Print button, the settings gear and the fullscreen button. The header shows the breadcrumb of the
 current slide and the player state.</p>
 <h2 id="settings">Settings<a class="anchor" href="#settings" aria-label="Link to this section">#</a></h2><p>The gear button (or the <code>,</code> key) opens the settings dialog, in six parts:</p>
 <ul>
@@ -341,6 +345,31 @@ folder, so a deck published that way shows its Talk button to viewers; the singl
 leaves recordings out, since a talk's media would not fit in a page. Playback needs a browser that
 can play the recorded file: a WebM from Chrome or Firefox plays in those two, an MP4 from Safari
 plays everywhere.</p>
+<h2 id="printing-to-pdf">Printing to PDF<a class="anchor" href="#printing-to-pdf" aria-label="Link to this section">#</a></h2><p><strong>Print</strong> in the footer (or Shift+P, also ⌘P / Ctrl+P) writes the deck as a PDF file, one page
+per stage: every stop the presentation passes through, in order, as the screen shows it at that
+stop, with the camera where it rests. Returns to a parent slide after its children, which show
+nothing new, and stops the presentation runs straight through (automatic advancement, as before
+a looping movie), seen only as the start of the next, are left out. The dialog offers two choices:</p>
+<ul>
+<li><strong>Pages</strong>: every stage, or only the last stage of each slide, which makes a handout without the
+intermediate steps. The page counts are shown next to each choice.</li>
+<li><strong>Resolution</strong>: the width of each page picture, 1920, 2560 or 3840 pixels; the height follows
+the deck's proportions. A 16:9 deck prints on a 960 × 540 pt page (the size of a widescreen
+slide), so 2560 pixels are about 190 dpi and 3840 about 290 dpi.</li>
+</ul>
+<p>The pages are drawn by the deck's own renderer at the chosen resolution, with the text
+rasterized at that density, so they are as sharp as the screen at rest, and stored losslessly
+(deflated, as PDF readers decode natively; a browser that cannot deflate gets fine JPEG pages
+instead). Formulas, shapes, images and code look as they do on screen; pen strokes, highlights,
+the whiteboard, the spotlight and the camera picture are not part of a page, and an embedded
+page (<code>iframe:</code>) prints as its frame with its poster or caption. The slide tree becomes the
+bookmarks of the file, so a PDF reader's outline lists the slides.</p>
+<p>A stop whose animation leaves the picture as it was (an indication, a flash, a full turn along a path) prints as a page that looks like the one before it: it is a stage all the same.</p>
+<p>While the pages are made the deck leafs through its stops in the window, at the pace of the
+renderer (a page takes a fraction of a second; a long deck at 4K, a minute or two); closing the
+dialog cancels, and the deck comes back to the stop you were at either way. The file is
+downloaded by the browser, named after the deck's title. Printing is not available while a talk
+is recorded or played back.</p>
 <h2 id="reverse-playback">Reverse playback<a class="anchor" href="#reverse-playback" aria-label="Link to this section">#</a></h2><p>Going back plays the stop's animations in reverse: fades, property animations, effects, morphs and
 camera moves retrace their path, including zooming back into a child you just left. Videos, loops
 and updater-driven waits cannot run backwards and are passed over. Pressing <code>←</code> again during a
@@ -371,7 +400,7 @@ disk; both keep the complete player, including settings and deep links. See
       <a class="next" href="exporting.html">Exporting a deck →</a>
     </footer>
   </main>
-  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#controls">Controls</a></li><li><a href="#settings">Settings</a></li><li><a href="#pointer-tools">Pointer tools</a></li><li><a href="#the-pen">The pen</a></li><li><a href="#the-whiteboard">The whiteboard</a></li><li><a href="#a-tablet-as-a-drawing-pad">A tablet as a drawing pad</a></li><li><a href="#the-camera">The camera</a></li><li><a href="#recording-a-talk">Recording a talk</a></li><li><a href="#reverse-playback">Reverse playback</a></li><li><a href="#cuts">Cuts</a></li><li><a href="#outline-and-deep-links">Outline and deep links</a></li><li><a href="#loops-and-automatic-advancement">Loops and automatic advancement</a></li><li><a href="#editing-preview">Editing preview</a></li><li><a href="#static-exports">Static exports</a></li></ul></nav>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#controls">Controls</a></li><li><a href="#settings">Settings</a></li><li><a href="#pointer-tools">Pointer tools</a></li><li><a href="#the-pen">The pen</a></li><li><a href="#the-whiteboard">The whiteboard</a></li><li><a href="#a-tablet-as-a-drawing-pad">A tablet as a drawing pad</a></li><li><a href="#the-camera">The camera</a></li><li><a href="#recording-a-talk">Recording a talk</a></li><li><a href="#printing-to-pdf">Printing to PDF</a></li><li><a href="#reverse-playback">Reverse playback</a></li><li><a href="#cuts">Cuts</a></li><li><a href="#outline-and-deep-links">Outline and deep links</a></li><li><a href="#loops-and-automatic-advancement">Loops and automatic advancement</a></li><li><a href="#editing-preview">Editing preview</a></li><li><a href="#static-exports">Static exports</a></li></ul></nav>
 </div>
 </body>
 </html>

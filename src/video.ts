@@ -16,7 +16,31 @@ export interface VideoClipOptions {
 export class VideoClip extends VideoMobject implements SnapshotExtra {
   /** Called when a seek has produced a new frame while nothing animates. */
   static onUpdate: (() => void) | null = null;
+  /** Seeks under way after a state was restored, for whoever must wait for their frames. */
+  private static readonly _seeking = new Set<Promise<void>>();
   private _listening = false;
+
+  /** Resolve once every restored video shows the frame it was asked for (or gave up after a while). */
+  static async settle(): Promise<void> {
+    while (VideoClip._seeking.size) await Promise.all([...VideoClip._seeking]);
+  }
+
+  /** Move the element to `time` and remember the seek until its frame arrives. */
+  private _seekTo(time: number): void {
+    const video = this._video;
+    if (!video) return;
+    const seek = new Promise<void>((resolve) => {
+      const done = () => {
+        video.removeEventListener('seeked', done);
+        clearTimeout(timer);
+        resolve();
+      };
+      const timer = setTimeout(done, 1500);
+      video.addEventListener('seeked', done);
+    }).finally(() => VideoClip._seeking.delete(seek));
+    VideoClip._seeking.add(seek);
+    video.currentTime = time;
+  }
 
   constructor(src: string, options: VideoClipOptions = {}) {
     super({
@@ -64,7 +88,7 @@ export class VideoClip extends VideoMobject implements SnapshotExtra {
     const video = this._video;
     if (video) {
       video.pause();
-      video.currentTime = 0;
+      this._seekTo(0);
       this.refresh();
     }
     return this;
@@ -80,7 +104,7 @@ export class VideoClip extends VideoMobject implements SnapshotExtra {
     const state = value as { time: number } | null;
     if (!video || !state) return;
     video.pause();
-    if (Math.abs(video.currentTime - state.time) > 0.02) video.currentTime = state.time;
+    if (Math.abs(video.currentTime - state.time) > 0.02) this._seekTo(state.time);
   }
 }
 

@@ -21,6 +21,7 @@ import { Swatches } from './swatches';
 import { Recorder, initialEvents } from './recorder';
 import { Playback } from './playback';
 import { exportMimeType, exportVideo, type ExportSource } from './export';
+import { PRINT_WIDTHS, printDeck, printPages, type PrintPages } from './print';
 import { deleteRecording, describeMedia, download, listRecordings, loadTimeline, mediaFileName, recordingStoreAvailable, recordingUrl, saveFile, saveMedia, saveTimeline, type RecordingEntry } from './store';
 import { appendPart, formatTime, recordingName, stopRef, structureHash, type Corner, type PointerKind, type Timeline, type TimelineEvent, type UntimedEvent } from './timeline';
 
@@ -105,6 +106,7 @@ export class PlayerUI {
   private _cameraOn = false;
   // Recording a talk.
   private _recorder: Recorder | null = null;
+  private _printButton: HTMLButtonElement;
   private _recordStream: MediaStream | null = null;
   /** The recording being continued, when the current one appends to an earlier talk. */
   private _appendTo: { name: string; timeline: Timeline } | null = null;
@@ -126,6 +128,9 @@ export class PlayerUI {
   private readonly _recordingsButton: HTMLButtonElement;
   private _recordings: RecordingEntry[] = [];
   private _exporting = false;
+  private _printing = false;
+  /** The last choices made in the print dialog, kept for the session. */
+  private _printChoice: { pages: PrintPages; width: number } = { pages: 'stages', width: 2560 };
   private _editSource: ((at?: { x: number; y: number }) => void) | null = null;
   private _stateMessage = 'Loading…';
   private _noticeTimer: number | null = null;
@@ -242,6 +247,8 @@ export class PlayerUI {
     this._recordingsButton = el('button', { class: 'recordings-button', text: '▶ Talk', title: 'Play a recorded talk', hidden: '' });
     this._recordingsButton.addEventListener('click', () => this.openRecordings());
     const fullscreen = el('button', { class: 'fullscreen', text: 'Fullscreen' });
+    this._printButton = el('button', { class: 'print-button', text: 'Print', title: 'Print the deck to a PDF (Shift+P)' });
+    this._printButton.addEventListener('click', () => this.openPrint());
     const settingsButton = el('button', { class: 'settings-button', 'aria-label': 'Settings', title: 'Settings', text: '⚙' });
     this._dialog = this._buildSettingsDialog();
     this._progress = el('progress', { max: '1', value: '0', 'aria-label': 'Presentation progress' });
@@ -259,6 +266,7 @@ export class PlayerUI {
       el('div', { class: 'record-controls', role: 'group', 'aria-label': 'Recording' }, this._recordButton, this._pauseButton, this._recordingsButton),
       el('label', { class: 'speed' }, 'Speed ', this._speed),
       this._counter,
+      this._printButton,
       settingsButton,
       fullscreen,
       this._progress,
@@ -447,7 +455,8 @@ export class PlayerUI {
       this._renderBindings();
       return;
     }
-    if (this._dialog.open) return;
+    // Any open dialog (settings, recordings, print) keeps the keys to itself.
+    if (this._dialog.open || this.root.querySelector('dialog[open]')) return;
     if (combo === 'Space' && /^(BUTTON|SUMMARY)$/.test(target.tagName)) return;
     // While a recording plays, the keys serve the playback: the deck follows the recording, not the viewer.
     if (this._playback) {
@@ -496,6 +505,7 @@ export class PlayerUI {
       case 'camera': void this.toggleCamera(); break;
       case 'record': void this.toggleRecording(); break;
       case 'resume': void this.appendLatest(); break;
+      case 'print': this.openPrint(); break;
     }
   }
 
@@ -1039,6 +1049,92 @@ export class PlayerUI {
       this._exportButton.disabled = false;
       this._exportButton.textContent = 'Export video';
       this._playRange.disabled = false;
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // Printing
+  // ---------------------------------------------------------------------
+
+  /** The print dialog: which stops become pages and at what resolution; the PDF is then downloaded. */
+  openPrint(): void {
+    const player = this._player;
+    const stage = this._stage;
+    const navigation = this._navigation;
+    if (!player || !stage || !navigation || this._printing) return;
+    if (this._recorder) {
+      this.notice('Stop the recording before printing');
+      return;
+    }
+    if (this._playback) {
+      this.notice('Leave the recording before printing');
+      return;
+    }
+    const dialog = el('dialog', { class: 'settings print' });
+    const close = el('button', { class: 'close', 'aria-label': 'Close', text: '×' });
+    close.addEventListener('click', () => dialog.close());
+    const pagesSelect = el('select', { 'aria-label': 'Pages' });
+    const counts: Record<PrintPages, number> = { stages: printPages(navigation, 'stages').length, slides: printPages(navigation, 'slides').length };
+    for (const [value, label] of [['stages', `Every stage (${counts.stages} pages)`], ['slides', `The last stage of each slide (${counts.slides} pages)`]] as Array<[PrintPages, string]>) {
+      const option = el('option', { value, text: label });
+      if (value === this._printChoice.pages) option.selected = true;
+      pagesSelect.append(option);
+    }
+    const widthSelect = el('select', { 'aria-label': 'Resolution' });
+    for (const [width, label] of PRINT_WIDTHS) {
+      const option = el('option', { value: String(width), text: label });
+      if (width === this._printChoice.width) option.selected = true;
+      widthSelect.append(option);
+    }
+    const run = el('button', { class: 'add', text: 'Print to PDF' });
+    const status = el('p', { class: 'note', text: 'Each page is a stage of the deck, drawn as the screen shows it, without ink or pointer; the slides become the bookmarks of the file. The deck leafs through its stops while the pages are made, then comes back here.' });
+    run.addEventListener('click', () => {
+      this._printChoice = { pages: pagesSelect.value as PrintPages, width: Number(widthSelect.value) };
+      pagesSelect.disabled = widthSelect.disabled = run.disabled = true;
+      void this._print(dialog, status).finally(() => dialog.close());
+    });
+    dialog.append(
+      el('header', {}, el('h2', { text: 'Print the deck' }), close),
+      el('section', {},
+        el('div', { class: 'row' }, el('label', {}, 'Pages ', pagesSelect)),
+        el('div', { class: 'row' }, el('label', {}, 'Resolution ', widthSelect)),
+        status,
+        el('div', { class: 'row' }, run)),
+    );
+    dialog.addEventListener('close', () => dialog.remove());
+    this.root.append(dialog);
+    dialog.showModal();
+  }
+
+  /** Render the pages and download the file; closing the dialog cancels. */
+  private async _print(dialog: HTMLDialogElement, status: HTMLElement): Promise<void> {
+    const player = this._player;
+    const stage = this._stage;
+    if (!player || !stage) return;
+    this._printing = true;
+    this._printButton.disabled = true;
+    this._finishStroke();
+    try {
+      const blob = await printDeck(player, stage, {
+        ...this._printChoice,
+        title: this._deck.title,
+        onProgress: (done, total) => {
+          status.textContent = done < total ? `Printing page ${done + 1} of ${total}…` : 'Writing the file…';
+        },
+        cancelled: () => !dialog.open,
+      });
+      if (!blob) {
+        this.notice('Printing cancelled');
+        return;
+      }
+      const name = this._deck.title.replace(/[\\/:*?"<>|]+/g, ' ').trim() || 'deck';
+      download(blob, `${name}.pdf`);
+      this.notice(`${name}.pdf is ready`);
+    } catch (error) {
+      this.notice(`Printing failed: ${(error as Error).message}`);
+    } finally {
+      this._printing = false;
+      this._printButton.disabled = false;
     }
   }
 

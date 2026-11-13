@@ -1,6 +1,6 @@
 ---
 title: The player
-description: Keyboard and pointer controls, the pen and its pressure styles, the whiteboard, a companion tablet, the camera, recording a talk and exporting it as a video, spotlight and laser, reverse playback, deep links, speed and fullscreen.
+description: Keyboard and pointer controls, the pen and its pressure styles, the whiteboard, a companion tablet, the camera, recording a talk and exporting it as a video, printing the deck to a PDF, spotlight and laser, reverse playback, deep links, speed and fullscreen.
 ---
 
 <a class="try" href="guide.html#slide=player">Open in the guide ↗</a>
@@ -22,12 +22,13 @@ description: Keyboard and pointer controls, the pen and its pressure styles, the
 | Shift+R | start or stop recording the talk |
 | Shift+A | continue the latest recording where it stopped |
 | E | open the source line of this stop in the editor (preview server with `--editor`; see [Editors](editors.html#forward-and-inverse-search)) |
+| Shift+P, ⌘P / Ctrl+P | print the deck to a PDF, one page per stage |
 | F | toggle fullscreen; Esc leaves it |
 | O | toggle the slide outline |
 | , | open the settings |
 
-The footer has previous/next buttons, a progress bar, the pen settings, the speed control
-(0.5× to 2×), the settings gear and the fullscreen button. The header shows the breadcrumb of the
+The footer has previous/next buttons, a progress bar, the pen settings, the recording buttons,
+the speed control (0.5× to 2×), the Print button, the settings gear and the fullscreen button. The header shows the breadcrumb of the
 current slide and the player state.
 
 ## Settings
@@ -237,6 +238,36 @@ folder, so a deck published that way shows its Talk button to viewers; the singl
 leaves recordings out, since a talk's media would not fit in a page. Playback needs a browser that
 can play the recorded file: a WebM from Chrome or Firefox plays in those two, an MP4 from Safari
 plays everywhere.
+
+## Printing to PDF
+
+**Print** in the footer (or Shift+P, also ⌘P / Ctrl+P) writes the deck as a PDF file, one page
+per stage: every stop the presentation passes through, in order, as the screen shows it at that
+stop, with the camera where it rests. Returns to a parent slide after its children, which show
+nothing new, and stops the presentation runs straight through (automatic advancement, as before
+a looping movie), seen only as the start of the next, are left out. The dialog offers two choices:
+
+- **Pages**: every stage, or only the last stage of each slide, which makes a handout without the
+  intermediate steps. The page counts are shown next to each choice.
+- **Resolution**: the width of each page picture, 1920, 2560 or 3840 pixels; the height follows
+  the deck's proportions. A 16:9 deck prints on a 960 × 540 pt page (the size of a widescreen
+  slide), so 2560 pixels are about 190 dpi and 3840 about 290 dpi.
+
+The pages are drawn by the deck's own renderer at the chosen resolution, with the text
+rasterized at that density, so they are as sharp as the screen at rest, and stored losslessly
+(deflated, as PDF readers decode natively; a browser that cannot deflate gets fine JPEG pages
+instead). Formulas, shapes, images and code look as they do on screen; pen strokes, highlights,
+the whiteboard, the spotlight and the camera picture are not part of a page, and an embedded
+page (`iframe:`) prints as its frame with its poster or caption. The slide tree becomes the
+bookmarks of the file, so a PDF reader's outline lists the slides.
+
+A stop whose animation leaves the picture as it was (an indication, a flash, a full turn along a path) prints as a page that looks like the one before it: it is a stage all the same.
+
+While the pages are made the deck leafs through its stops in the window, at the pace of the
+renderer (a page takes a fraction of a second; a long deck at 4K, a minute or two); closing the
+dialog cancels, and the deck comes back to the stop you were at either way. The file is
+downloaded by the browser, named after the deck's title. Printing is not available while a talk
+is recorded or played back.
 
 ## Reverse playback
 
