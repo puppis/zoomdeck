@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { appendPart, eventsBetween, formatTime, inkUpTo, isTimeline, mediaAt, recordingName, stateAt, stopIndex, stopRef, structureHash, type Timeline, type TimelineEvent } from '../src/player/timeline';
+import { appendPart, eventsBetween, formatTime, inkUpTo, isTimeline, mediaAt, recordingName, stateAt, stopIndex, stopRef, structureHash, type Timeline, type TimelineEvent, type TimelineMedia } from '../src/player/timeline';
 import { Recorder, initialEvents } from '../src/player/recorder';
 import { Playback } from '../src/player/playback';
 import type { Player } from '../src/player/player';
@@ -105,9 +105,9 @@ describe('timelines', () => {
   it('keeps the files of a part in a row when the camera was turned on or off while recording', () => {
     const first: Timeline = { version: 1, deck: { title: 't', hash: 'x' }, recorded: '2026-11-13T09:00:00.000Z', duration: 0, media: [], pip: { corner: 'bottom-right', size: 0.18 }, events: [] };
     const sound = { file: 'a.webm', type: 'audio/webm', video: false, start: 0, duration: 800 };
-    const picture = { file: 'a.part2.webm', type: 'video/webm', video: true, start: 800, duration: 1200 };
+    const picture: TimelineMedia = { file: 'a.part2.webm', type: 'video/webm', video: true, source: 'screen', start: 800, duration: 1200 };
     const one = appendPart(first, { events: [{ t: 800, type: 'camera', on: false }], duration: 2000, media: [sound, picture] });
-    expect(one.media.map((part) => [part.file, part.start, part.duration, part.video])).toEqual([['a.webm', 0, 800, false], ['a.part2.webm', 800, 1200, true]]);
+    expect(one.media.map((part) => [part.file, part.start, part.duration, part.video, part.source])).toEqual([['a.webm', 0, 800, false, undefined], ['a.part2.webm', 800, 1200, true, 'screen']]);
     expect(mediaAt(one.media, 799)?.file).toBe('a.webm');
     expect(mediaAt(one.media, 800)?.file).toBe('a.part2.webm');
     // A later part's files shift after the talk so far, as its events do.

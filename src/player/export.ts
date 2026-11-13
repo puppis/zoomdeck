@@ -22,6 +22,8 @@ export interface ExportSource {
   stage: () => { canvas: HTMLCanvasElement; sx: number; sy: number; sw: number; sh: number } | null;
   /** The recording's picture, when it has one. */
   camera: HTMLVideoElement | null;
+  /** Whether the picture playing now is the screen (shown whole, full frame) rather than the camera. */
+  screen?: () => boolean;
   mirror: boolean;
   pip: { corner: Corner; size: number };
 }
@@ -67,6 +69,17 @@ export function drawFrame(context: CanvasRenderingContext2D, width: number, heig
   context.fillRect(0, 0, width, height);
   const camera = source.camera;
   const cameraReady = camera !== null && camera.videoWidth > 0;
+  if (cameraReady && source.screen?.()) {
+    // Another application's window must stay whole: the screen is fitted, not cropped.
+    const video = camera as HTMLVideoElement;
+    const scale = Math.min(width / video.videoWidth, height / video.videoHeight);
+    const w = Math.round(video.videoWidth * scale);
+    const h = Math.round(video.videoHeight * scale);
+    context.fillStyle = '#000';
+    context.fillRect(0, 0, width, height);
+    context.drawImage(video, Math.round((width - w) / 2), Math.round((height - h) / 2), w, h);
+    return;
+  }
   if (state.camera && cameraReady) {
     drawVideo(context, camera as HTMLVideoElement, 0, 0, width, height, source.mirror);
     return;

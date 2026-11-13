@@ -99,6 +99,10 @@
 <td>camera: in a corner, then full frame, then off</td>
 </tr>
 <tr>
+<td>S</td>
+<td>film the screen, for the time spent in another application, or stop</td>
+</tr>
+<tr>
 <td>R</td>
 <td>record the talk (a new one, or continuing a saved one), or stop recording</td>
 </tr>
@@ -136,7 +140,8 @@ an element's source in the editor (Alt by default). Each can be &quot;Plain&quot
 (no key), one of Shift, Control, Alt, ⌘/Win or a pair of them, or &quot;Off&quot;; choosing keys already
 used by another gesture frees them from it.</li>
 <li><strong>Pen</strong>: how pressure and motion shape a stroke; see <a href="#the-pen">The pen</a>.</li>
-<li><strong>Recording</strong>: the microphone and camera, and where the camera picture sits; see
+<li><strong>Recording</strong>: the microphone and camera, where the camera picture sits, and whether the screen
+is filmed while the page is hidden; see
 <a href="#recording-a-talk">Recording a talk</a>.</li>
 <li><strong>Tablet</strong>: pairing a companion tablet; see <a href="#a-tablet-as-a-drawing-pad">A tablet as a drawing pad</a>.</li>
 <li><strong>Keyboard</strong>: every action with its keys. Click a key to remove it, or choose &quot;Add key&quot; and press
@@ -313,6 +318,18 @@ development page; otherwise the two files are offered as downloads, to put in su
 hand. When <code>ffmpeg</code> is installed, the server also rewrites the media file so that it carries its
 duration and can be seeked in any player. The recording is named after the date and time,
 <code>talk-2026-11-13-1030</code>.</p>
+<p><strong>Filming the screen.</strong> A talk may leave the deck for a while: a demonstration in another
+application, a terminal, a web page. <strong>Screen</strong> in the footer, or <code>S</code>, asks the browser which
+screen or window to share and films it, in place of the camera, until you press it again or stop
+the share from the browser's own bar; choose the entire screen to follow yourself across
+applications. With &quot;Film the screen while this page is hidden&quot; in the settings, a recording asks
+for the screen when it starts and films it by itself whenever the page is hidden, as when you
+switch to another application, and goes back to the deck when you return; the switch still works
+at any time. A filmed stretch is a further media file of the talk; in playback and in the exported
+video it fills the frame, whole, and the deck stands still meanwhile. Your voice goes on through
+the microphone, while the sound of other applications is not captured. The browser needs the
+system's permission to record the screen (macOS asks once), and screen files are larger than
+camera files, about twenty megabytes a minute.</p>
 <p><strong>Continuing a talk.</strong> A stopped recording can be taken up again later, even after closing the
 browser: the Record dialog offers every saved talk to continue, and so does the <strong>Continue</strong>
 button in the list of talks. What follows is stamped after the end of the earlier part, with a cut

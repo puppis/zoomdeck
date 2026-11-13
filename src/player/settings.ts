@@ -18,12 +18,14 @@ export interface RecordingSettings {
   corner: Corner;
   /** Width of the camera picture as a share of the frame width. */
   size: number;
+  /** Film the screen whenever the page is hidden during a recording (the presenter went to another application). */
+  screenWhenHidden: boolean;
 }
 
 export const CORNERS: Corner[] = ['bottom-right', 'bottom-left', 'top-right', 'top-left'];
 export const PIP_SIZES: Array<[number, string]> = [[0.12, 'Small'], [0.18, 'Medium'], [0.25, 'Large']];
 
-export const DEFAULT_RECORDING: RecordingSettings = { microphone: null, camera: null, mirror: true, corner: 'bottom-right', size: 0.18 };
+export const DEFAULT_RECORDING: RecordingSettings = { microphone: null, camera: null, mirror: true, corner: 'bottom-right', size: 0.18, screenWhenHidden: false };
 
 export function sanitizeRecording(value: unknown): RecordingSettings {
   const result = { ...DEFAULT_RECORDING };
@@ -34,12 +36,13 @@ export function sanitizeRecording(value: unknown): RecordingSettings {
   if (typeof saved.mirror === 'boolean') result.mirror = saved.mirror;
   if (typeof saved.corner === 'string' && CORNERS.includes(saved.corner as Corner)) result.corner = saved.corner as Corner;
   if (typeof saved.size === 'number' && PIP_SIZES.some(([size]) => size === saved.size)) result.size = saved.size;
+  if (typeof saved.screenWhenHidden === 'boolean') result.screenWhenHidden = saved.screenWhenHidden;
   return result;
 }
 
 export type ActionName =
   | 'next' | 'previous' | 'home' | 'replay' | 'fullscreen' | 'outline' | 'undo' | 'redo' | 'clear' | 'settings' | 'exit' | 'pointer' | 'whiteboard'
-  | 'edit' | 'camera' | 'record' | 'print';
+  | 'edit' | 'camera' | 'screen' | 'record' | 'print';
 
 export interface ActionInfo {
   name: ActionName;
@@ -58,6 +61,7 @@ export const ACTIONS: ActionInfo[] = [
   { name: 'pointer', label: 'Switch between spotlight and laser' },
   { name: 'whiteboard', label: 'Show or hide the whiteboard' },
   { name: 'camera', label: 'Camera: in a corner, then full frame, then off' },
+  { name: 'screen', label: 'Film the screen, for the time spent in another application, or stop' },
   { name: 'record', label: 'Record the talk (a new one, or continuing a saved one), or stop recording' },
   { name: 'edit', label: 'Open the source of this stop in the editor (preview server)' },
   { name: 'print', label: 'Print the deck to a PDF' },
@@ -78,6 +82,7 @@ export const DEFAULT_BINDINGS: Record<ActionName, string[]> = {
   pointer: ['l'],
   whiteboard: ['w'],
   camera: ['c'],
+  screen: ['s'],
   record: ['r'],
   edit: ['e'],
   print: ['p', 'Meta+p', 'Control+p'],

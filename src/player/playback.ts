@@ -52,6 +52,11 @@ export class Playback {
     return this.timeline.duration;
   }
 
+  /** The media file loaded in the element, when the recording has any. */
+  get part(): TimelineMedia | null {
+    return this._part;
+  }
+
   get playing(): boolean {
     return this._playing;
   }

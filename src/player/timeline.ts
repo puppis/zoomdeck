@@ -89,8 +89,10 @@ export interface TimelineMedia {
   /** File name next to the timeline, in the deck's recordings folder. */
   file: string;
   type: string;
-  /** Whether the file has a camera picture besides the sound. */
+  /** Whether the file has a picture besides the sound. */
   video: boolean;
+  /** What the picture shows: the camera (also when absent), or the screen, filmed while the presenter worked in another application. */
+  source?: 'camera' | 'screen';
   start: number;
   duration: number;
 }

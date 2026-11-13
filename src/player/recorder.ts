@@ -18,17 +18,23 @@ export function recordingMimeType(video: boolean): string | null {
   return candidates.find((type) => MediaRecorder.isTypeSupported(type)) ?? null;
 }
 
+/** What a captured picture shows. */
+export type PictureSource = 'camera' | 'screen';
+
 export interface RecorderOptions {
-  /** The microphone (and the camera, when it is on) at the start; null records the timeline alone (no sound). */
+  /** The microphone (and the camera or the screen, when one is on) at the start; null records the timeline alone (no sound). */
   stream: MediaStream | null;
+  /** What the picture in `stream` shows, when it has one. */
+  source?: PictureSource;
 }
 
 /** One media file captured during a part. */
 export interface CapturedMedia {
   blob: Blob;
   type: string;
-  /** Whether the file has a camera picture besides the sound. */
+  /** Whether the file has a picture besides the sound, and what it shows. */
   video: boolean;
+  source: PictureSource;
   /** Where the file begins on the part's clock, and how long it runs there. */
   start: number;
   duration: number;
@@ -48,6 +54,7 @@ interface Capture {
   chunks: Blob[];
   type: string;
   video: boolean;
+  source: PictureSource;
   start: number;
 }
 
@@ -89,7 +96,7 @@ export class Recorder {
   async start(): Promise<void> {
     if (this.state !== 'idle') return;
     this._started = new Date();
-    await this._beginCapture(this.options.stream, 0);
+    await this._beginCapture(this.options.stream, 0, this.options.source ?? 'camera');
     this._runStart = performance.now();
     this.state = 'recording';
   }
@@ -123,13 +130,13 @@ export class Recorder {
    * closed and a new one begins where it ends on the clock. A recording that captures nothing
    * stays that way, so that the media files always cover the talk from its start.
    */
-  switchStream(stream: MediaStream | null): Promise<void> {
+  switchStream(stream: MediaStream | null, source: PictureSource = 'camera'): Promise<void> {
     const run = async () => {
       if (this.state !== 'recording' && this.state !== 'paused') return;
       if (!this._capture) return;
       // The file ends where the next begins: the clock is read once the recorder has stopped.
       const seam = await this._endCapture();
-      await this._beginCapture(stream, seam);
+      await this._beginCapture(stream, seam, source);
     };
     this._switching = this._switching.then(run, run);
     return this._switching;
@@ -149,13 +156,14 @@ export class Recorder {
   }
 
   /** Begin a media file from `stream` at `start` on the clock; nothing when the stream has no tracks. */
-  private async _beginCapture(stream: MediaStream | null, start: number): Promise<void> {
+  private async _beginCapture(stream: MediaStream | null, start: number, source: PictureSource): Promise<void> {
     if (!stream || !stream.getTracks().length) return;
     const video = stream.getVideoTracks().length > 0;
     const type = recordingMimeType(video);
     if (!type) throw new Error('This browser cannot record audio or video');
-    const recorder = new MediaRecorder(stream, { mimeType: type });
-    const capture: Capture = { recorder, chunks: [], type, video, start };
+    // A screen is large and mostly still: a capped bitrate keeps its files within reason.
+    const recorder = new MediaRecorder(stream, source === 'screen' && video ? { mimeType: type, videoBitsPerSecond: 2_500_000 } : { mimeType: type });
+    const capture: Capture = { recorder, chunks: [], type, video, source, start };
     recorder.addEventListener('dataavailable', (event) => {
       if (event.data.size) capture.chunks.push(event.data);
     });
@@ -193,7 +201,7 @@ export class Recorder {
     }
     const end = Math.round(this.elapsed);
     if (capture.chunks.length) {
-      this._captured.push({ blob: new Blob(capture.chunks, { type: capture.type }), type: capture.type, video: capture.video, start: capture.start, duration: Math.max(0, end - capture.start) });
+      this._captured.push({ blob: new Blob(capture.chunks, { type: capture.type }), type: capture.type, video: capture.video, source: capture.source, start: capture.start, duration: Math.max(0, end - capture.start) });
     }
     return end;
   }

@@ -414,7 +414,7 @@ A recording keeps your voice, the camera while you have it on, and every move on
 [media + timeline]{#recording-cap-file at=left:#recording-file.right dx=0.25 font_size=15 color=GRAY}
 
 1. **Set up** once: ⚙ settings ▸ Recording ▸ Detect devices; choose the microphone and the camera, test them, and pick the corner and size of your picture. {x=2.3 width=7.4 font_size=17}
-2. **Record** with R or the ● Record button; a dialog says what will be kept, then the header counts the time. Present as usual: keys, pen, W for the whiteboard, the Camera button or C for the camera (in a corner, full frame, off), recorded while it is on. Pause leaves a gap out. {x=2.3 width=7.4 font_size=17}
+2. **Record** with R or the ● Record button; a dialog says what will be kept, then the header counts the time. Present as usual: keys, pen, W for the whiteboard, the Camera button or C for the camera (in a corner, full frame, off), recorded while it is on; S films the screen while you work in another application. Pause leaves a gap out. {x=2.3 width=7.4 font_size=17}
 3. **Stop** saves the talk in `recordings/` next to the deck when the deck is served by `zoomdeck serve` (downloads otherwise). R later offers to continue it where it stopped. {x=2.3 width=7.4 font_size=17}
 4. **Play** it with ▶ Talk in the footer: the deck follows the recording; Space pauses, ← and → seek, Esc leaves. {x=2.3 width=7.4 font_size=17}
 5. **Export video** in the playback bar renders it in real time: slides or whiteboard with ink, camera in a corner or full frame, and the sound. {x=2.3 width=7.4 font_size=17}
