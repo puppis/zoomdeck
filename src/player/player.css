@@ -22,6 +22,8 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
 .zd-app button:focus-visible, .zd-app select:focus-visible, .zd-app summary:focus-visible {
   outline: 2px solid var(--foreground); outline-offset: 3px;
 }
+/* The bar at the bottom never shows a focus ring: its buttons are clicked, and the keys go to the deck. */
+.zd-app footer button:focus-visible, .zd-app footer select:focus-visible, .zd-app footer button:focus, .zd-app footer select:focus { outline: none; }
 .zd-app aside {
   overflow-y: auto; width: 260px; flex-shrink: 0; padding: 24px 18px;
   border-right: 1px solid var(--border); background: var(--background);
@@ -135,6 +137,8 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
 .zd-app .swatch[data-value=foreground] { box-shadow: inset 0 0 0 2px var(--background), inset 0 0 0 3px var(--border); }
 .zd-app .board-button[aria-pressed=true] { background: var(--hover); font-weight: 600; }
 .zd-app dialog.print select { max-width: 100%; }
+.zd-app dialog.settings input[type=text] { font: inherit; padding: 5px 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--background); color: var(--foreground); min-width: 260px; }
+.zd-app dialog.export .row .note { margin: 0; }
 .zd-app .record-button[aria-pressed=true] { background: #d22; color: #fff; border-color: #d22; }
 .zd-app .camera-button[aria-pressed=true] { background: var(--hover); font-weight: 600; }
 .zd-app .record-label { font-size: 12px; color: #d22; font-variant-numeric: tabular-nums; font-weight: 600; }

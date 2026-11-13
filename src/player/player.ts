@@ -80,9 +80,10 @@ export class Player {
 
   /**
    * Show clip `next`. With `autoplay`, play it from its recorded start state;
-   * otherwise display its settled end state.
+   * otherwise display its settled end state. `hold` keeps a clip that would
+   * run straight on into the next (a reveal before a loop) at its own end.
    */
-  async goTo(next: number, autoplay = false): Promise<void> {
+  async goTo(next: number, autoplay = false, hold = false): Promise<void> {
     if (!Number.isInteger(next) || next < 0 || next >= this.clips.length) return;
     const token = ++this._request;
     this.runner.cancel();
@@ -110,7 +111,7 @@ export class Player {
       if (clip.loop) continue;
       break;
     }
-    if (clip.autoNext && next < this.clips.length - 1) {
+    if (clip.autoNext && !hold && next < this.clips.length - 1) {
       void this.goTo(next + 1, true);
       return;
     }
@@ -163,8 +164,17 @@ export class Player {
     this._setState('paused', 'Paused');
   }
 
+  /**
+   * Play the stop the viewer rests on again, from where it began: a stop reached through clips
+   * that run straight on (the reveal before a loop) replays from the first of them, and a stop
+   * that would itself run on is held at its end, so a replay never moves the counter.
+   */
   replay(): Promise<void> {
-    return this.goTo(this.settledIndex, true);
+    const settled = this.settledIndex;
+    if (this.clips[settled]?.autoNext) return this.goTo(settled, true, true);
+    let from = settled;
+    while (from > 0 && this.clips[from - 1].autoNext) from -= 1;
+    return this.goTo(from, true);
   }
 
   home(): Promise<void> {

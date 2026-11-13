@@ -47,12 +47,12 @@ the configuration and a one-page reference. `docs/markup.md` is the compact dial
   (Shift + drag) with configurable gestures, an unbounded whiteboard (`W`) with its own history,
   a companion tablet that mirrors strokes both ways over the preview server, a camera view (`C`),
   `href=` links on any element, loops and automatic advancement.
-- **Recording a talk** (`Shift+R`): the microphone, and the camera while it is on, go into media files while every
+- **Recording a talk** (`R`): the microphone, and the camera while it is on, go into media files while every
   move on the deck (stops, strokes, whiteboard, pointer, camera switches) is stamped on a timeline;
-  the slides are never filmed. A stopped recording can be continued later (`Shift+A`). A recording plays back on the deck itself and exports as a video
+  the slides are never filmed. A stopped recording can be continued later from the same dialog. A recording plays back on the deck itself and exports as a video
   (slides or whiteboard with ink, camera in a corner or full frame, sound); recordings live in a
   `recordings/` folder next to the deck and travel with the folder export.
-- **A PDF printout** (`Shift+P`): every stage of the deck, or the last stage of each slide,
+- **A PDF printout** (`P`): every stage of the deck, or the last stage of each slide,
   drawn by the deck's own renderer at up to 4K and stored losslessly, one per page, with the
   slides as bookmarks.
 - **An editing preview** (`zoomdeck serve`) that reloads on save and restores the current

@@ -12,17 +12,16 @@ description: Keyboard and pointer controls, the pen and its pressure styles, the
 | `→`, Space | next stop (plays its animations) |
 | `←` | previous stop, playing the current stop backwards |
 | Home | first stop |
-| R | replay the current stop |
+| A | replay the current stop (play it again) |
 | ⌘Z / Ctrl+Z | undo the last pen or highlighter stroke |
 | ⌘⇧Z / Ctrl+Shift+Z / Ctrl+Y | redo a stroke |
 | Delete, Backspace | clear all strokes on this slide |
 | L | switch the pointer tool between spotlight and laser |
 | W | show or hide the whiteboard; while it is shown the arrows scroll it |
 | C | camera: in a corner, then full frame, then off |
-| Shift+R | start or stop recording the talk |
-| Shift+A | continue the latest recording where it stopped |
+| R | record the talk (a new one, or continuing a saved one), or stop recording |
 | E | open the source line of this stop in the editor (preview server with `--editor`; see [Editors](editors.html#forward-and-inverse-search)) |
-| Shift+P, ⌘P / Ctrl+P | print the deck to a PDF, one page per stage |
+| P, ⌘P / Ctrl+P | print the deck to a PDF, one page per stage |
 | F | toggle fullscreen; Esc leaves it |
 | O | toggle the slide outline |
 | , | open the settings |
@@ -185,7 +184,7 @@ only.
 
 ## Recording a talk
 
-**Record** in the footer, or `Shift+R`, records the talk: your voice through the microphone, the
+**Record** in the footer, or `R`, records the talk (a dialog first says what will be kept and where it goes, and offers to continue a saved talk instead of starting a new one): your voice through the microphone, the
 camera while it is on (see [The camera](#the-camera); recording never turns it on by itself),
 and everything you do on the deck, each on the same clock: the stops you move through and how
 (played forwards, backwards or jumped to), every pen and highlighter stroke as it is drawn, undo
@@ -207,8 +206,8 @@ duration and can be seeked in any player. The recording is named after the date 
 `talk-2026-11-13-1030`.
 
 **Continuing a talk.** A stopped recording can be taken up again later, even after closing the
-browser: `Shift+A` continues the latest one, and the **Continue** button in the list of talks
-continues any of them. What follows is stamped after the end of the earlier part, with a cut
+browser: the Record dialog offers every saved talk to continue, and so does the **Continue**
+button in the list of talks. What follows is stamped after the end of the earlier part, with a cut
 marking the seam, and is kept as a further media file of the same recording (`talk.part2.webm`,
 since a browser cannot append to a finished file); playback and the export run through the
 parts as one talk. The header counts from where the talk stood. Stop and Continue therefore
@@ -240,7 +239,10 @@ are off until you leave the recording.
 
 **Exporting a video.** Export video renders the open recording as a video file: the slides or the
 whiteboard with their ink, the camera in its corner or full frame, the pointer, and the recorded
-sound, at 1920 pixels wide in the deck's proportions. The recording plays from the start while
+sound, at 1920 pixels wide in the deck's proportions. A dialog first asks for the file's name
+and where it goes: the `recordings/` folder next to the deck (with the preview server), a folder
+of your choice through the browser's own save dialog (Chrome and Edge), or the browser's
+downloads. The recording plays from the start while
 the frames are captured, so the export takes exactly as long as the talk, and the window must
 stay visible meanwhile (a hidden tab draws nothing). The result is a WebM file (VP9 and Opus),
 saved as `recordings/<name>.video.webm` next to the recording or downloaded; `ffmpeg -i
@@ -256,7 +258,7 @@ plays everywhere.
 
 ## Printing to PDF
 
-**Print** in the footer (or Shift+P, also ⌘P / Ctrl+P) writes the deck as a PDF file, one page
+**Print** in the footer (or P, also ⌘P / Ctrl+P) writes the deck as a PDF file, one page
 per stage: every stop the presentation passes through, in order, as the screen shows it at that
 stop, with the camera where it rests. Returns to a parent slide after its children, which show
 nothing new, and stops the presentation runs straight through (automatic advancement, as before

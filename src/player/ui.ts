@@ -37,6 +37,19 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 /** The live camera as the presenter sets it: off, in a corner of the slides, or full frame. */
 export type CameraMode = 'off' | 'corner' | 'full';
 
+/** What the export dialog settles: the file's name (without extension) and where it goes. */
+interface ExportChoice {
+  name: string;
+  destination: 'folder' | 'pick' | 'download';
+  /** The file chosen through the browser's save dialog, where it offers one. */
+  handle?: FileSystemFileHandle;
+}
+
+/** The File System Access API's save dialog, present in Chromium browsers and not yet in the DOM typings used here. */
+interface SavePickerWindow extends Window {
+  showSaveFilePicker?: (options?: { suggestedName?: string; types?: Array<{ description?: string; accept: Record<string, string[]> }> }) => Promise<FileSystemFileHandle>;
+}
+
 function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
   attributes: Record<string, string> = {},
@@ -251,14 +264,14 @@ export class PlayerUI {
     this._boardButton.addEventListener('click', () => this.toggleWhiteboard());
     this._cameraButton = el('button', { class: 'camera-button', text: 'Camera', title: 'Turn the camera on in a corner of the slides, or off (C steps through corner, full frame and off)', 'aria-pressed': 'false' });
     this._cameraButton.addEventListener('click', () => void this.toggleCamera(this._cameraMode === 'off' ? 'corner' : 'off'));
-    this._recordButton = el('button', { class: 'record-button', text: '● Record', title: 'Start or stop recording the talk (Shift+R)', 'aria-pressed': 'false' });
+    this._recordButton = el('button', { class: 'record-button', text: '● Record', title: 'Start or stop recording the talk (R)', 'aria-pressed': 'false' });
     this._recordButton.addEventListener('click', () => void this.toggleRecording());
     this._pauseButton = el('button', { class: 'pause-button', text: 'Pause', title: 'Pause or resume the recording', hidden: '' });
     this._pauseButton.addEventListener('click', () => this.pauseRecording());
     this._recordingsButton = el('button', { class: 'recordings-button', text: '▶ Talk', title: 'Play a recorded talk', hidden: '' });
     this._recordingsButton.addEventListener('click', () => this.openRecordings());
     const fullscreen = el('button', { class: 'fullscreen', text: 'Fullscreen' });
-    this._printButton = el('button', { class: 'print-button', text: 'Print', title: 'Print the deck to a PDF (Shift+P)' });
+    this._printButton = el('button', { class: 'print-button', text: 'Print', title: 'Print the deck to a PDF (P)' });
     this._printButton.addEventListener('click', () => this.openPrint());
     const settingsButton = el('button', { class: 'settings-button', 'aria-label': 'Settings', title: 'Settings', text: '⚙' });
     this._dialog = this._buildSettingsDialog();
@@ -332,7 +345,7 @@ export class PlayerUI {
       ...gestures,
       `${keys('undo')}: undo stroke`, `${keys('redo')}: redo stroke`, `${keys('clear')}: clear strokes`,
       `${keys('whiteboard')}: whiteboard (arrows, scrolling or two fingers move it)`,
-      `${keys('camera')}: camera in a corner, then full frame, then off`, `${keys('record')}: record the talk`, `${keys('resume')}: continue the latest recording`,
+      `${keys('camera')}: camera in a corner, then full frame, then off`, `${keys('record')}: record the talk, or continue a saved one`,
       ...(this._editSource ? [`${keys('edit')}: open this stop's source in the editor`] : []),
       `${keys('settings')}: settings`,
     ];
@@ -522,7 +535,6 @@ export class PlayerUI {
         break;
       case 'camera': void this.toggleCamera(); break;
       case 'record': void this.toggleRecording(); break;
-      case 'resume': void this.appendLatest(); break;
       case 'print': this.openPrint(); break;
     }
   }
@@ -754,37 +766,29 @@ export class PlayerUI {
     else await this.startRecording();
   }
 
-  /** Continue the most recent recording where it stopped: what follows is appended to it. */
-  async appendLatest(): Promise<void> {
-    if (this._recorder) {
-      await this.stopRecording();
-      return;
-    }
-    const latest = this._recordings[0];
-    if (!latest) {
-      this.notice('No recording to continue: Record starts one');
-      return;
-    }
-    await this.continueRecording(latest);
-  }
-
-  /** Continue a recording: the new part is stamped after its end and kept as a further media file. */
+  /** Continue a recording: the dialog opens with it chosen; the new part is stamped after its end and kept as a further media file. */
   async continueRecording(entry: RecordingEntry): Promise<void> {
-    const base = this._deck.base;
-    if (!base || this._recorder) return;
-    let timeline: Timeline;
-    try {
-      timeline = await loadTimeline(base, entry.name);
-    } catch (error) {
-      this.notice((error as Error).message);
-      return;
-    }
-    await this.startRecording({ name: entry.name, timeline });
+    await this.startRecording(entry);
   }
 
-  /** Start recording the talk with the devices chosen in the settings; `append` continues an earlier recording. */
-  async startRecording(append: { name: string; timeline: Timeline } | null = null): Promise<void> {
+  /**
+   * Record the talk with the devices chosen in the settings, after the dialog that says what is
+   * kept and asks whether to start a new talk or to continue a saved one (`preselect` names the
+   * one offered first).
+   */
+  async startRecording(preselect: RecordingEntry | null = null): Promise<void> {
     if (this._recorder || !this._player || !this._navigation) return;
+    const choice = await this._confirmRecording(preselect);
+    if (choice === false || this._recorder) return;
+    let append: { name: string; timeline: Timeline } | null = null;
+    if (choice) {
+      try {
+        append = { name: choice.name, timeline: await loadTimeline(this._deck.base as string, choice.name) };
+      } catch (error) {
+        this.notice((error as Error).message);
+        return;
+      }
+    }
     if (this._playback) this.closeRecording();
     this._stopDeviceTest();
     // The microphone is opened here; the camera is the presenter's to turn on, and is recorded while it is.
@@ -822,6 +826,66 @@ export class PlayerUI {
     this._updateRecordLabel();
     const what = stream ? (videoTracks.length ? 'with the camera' : 'the sound (the camera joins while it is on)') : 'the timeline only';
     this.notice(append ? `Continuing ${append.name} at ${formatTime(append.timeline.duration)}, recording ${what}` : `Recording ${what}`);
+  }
+
+  /**
+   * Say what a recording will keep and where it goes, and ask whether to start a new talk or to
+   * continue a saved one: resolves with the talk to continue, null for a new one, or false when
+   * the dialog is dismissed.
+   */
+  private _confirmRecording(preselect: RecordingEntry | null): Promise<RecordingEntry | null | false> {
+    const option = (select: HTMLSelectElement) => select.selectedOptions[0]?.textContent ?? 'Default';
+    const camera = this._settings.recording.camera === 'none'
+      ? 'no camera (the settings say None)'
+      : this._cameraMode === 'off'
+        ? `the camera (${option(this._cameraSelect)}) while it is on: it is off now, and the Camera button or C turns it on whenever you want it in the recording`
+        : `the camera (${option(this._cameraSelect)}), on now ${this._cameraMode === 'full' ? 'full frame' : 'in a corner'}, for as long as it stays on`;
+    const where = this._deck.base && recordingStoreAvailable()
+      ? 'saves it in the recordings/ folder next to the deck'
+      : 'offers its files as downloads, to put in a recordings/ folder next to the deck';
+    const dialog = el('dialog', { class: 'settings record' });
+    const close = el('button', { class: 'close', 'aria-label': 'Close', text: '×' });
+    // What to record: a new talk, or more of a saved one (only where the server keeps them).
+    const what = el('select', { 'aria-label': 'What to record' });
+    what.append(el('option', { value: '', text: 'A new talk' }));
+    const continuable = this._deck.base && recordingStoreAvailable() ? this._recordings : [];
+    for (const entry of continuable) {
+      const when = entry.recorded ? new Date(entry.recorded).toLocaleString() : entry.name;
+      what.append(el('option', { value: entry.name, text: `Continue the talk of ${when} (${formatTime(entry.duration)})` }));
+    }
+    if (preselect && continuable.includes(preselect)) what.value = preselect.name;
+    const seam = el('p', { class: 'note' });
+    const start = el('button', { class: 'add', autofocus: '' });
+    const cancel = el('button', { text: 'Cancel' });
+    const update = () => {
+      const chosen = continuable.find((entry) => entry.name === what.value) ?? null;
+      start.textContent = chosen ? 'Continue recording' : 'Start recording';
+      seam.textContent = chosen ? `What follows is appended to ${chosen.name} after ${formatTime(chosen.duration)}, with a cut at the seam; the deck should stand where the talk left it.` : '';
+      seam.hidden = !chosen;
+    };
+    what.addEventListener('change', update);
+    update();
+    dialog.append(
+      el('header', {}, el('h2', { text: 'Record the talk' }), close),
+      el('section', {},
+        ...(continuable.length ? [el('div', { class: 'row' }, el('label', {}, 'Record ', what))] : []),
+        el('p', { class: 'note', text: `The recording keeps your voice through the microphone (${option(this._micSelect)}), ${camera}, and every move on the deck: the stops, the ink, the whiteboard, the pointer and the camera switches. The slides themselves are not filmed; the talk plays back on the deck and exports as a video.` }),
+        el('p', { class: 'note', text: `The header counts the time. Pause leaves a gap out of the talk; Stop (the same key or button) ends the recording and ${where}. A stopped talk can be continued later from this dialog or from the list of talks.` }),
+        seam,
+        el('div', { class: 'row' }, start, cancel)),
+    );
+    return new Promise((resolve) => {
+      let result: RecordingEntry | null | false = false;
+      start.addEventListener('click', () => {
+        result = continuable.find((entry) => entry.name === what.value) ?? null;
+        dialog.close();
+      });
+      cancel.addEventListener('click', () => dialog.close());
+      close.addEventListener('click', () => dialog.close());
+      dialog.addEventListener('close', () => { dialog.remove(); resolve(result); });
+      this.root.append(dialog);
+      dialog.showModal();
+    });
   }
 
   private _updateRecordLabel(): void {
@@ -1069,9 +1133,11 @@ export class PlayerUI {
   /** Render the open recording as a video file, in real time, and keep it next to the deck or download it. */
   async exportRecording(): Promise<void> {
     const playback = this._playback;
-    const name = this._playbackName;
-    if (!playback || !name || this._exporting) return;
-    if (!confirm('The recording will play from the start while the video is written, which takes as long as the talk. Keep this window visible until it ends. Continue?')) return;
+    const talk = this._playbackName;
+    if (!playback || !talk || this._exporting) return;
+    const choice = await this._confirmExport(talk);
+    if (!choice || this._exporting || this._playback !== playback) return;
+    const name = choice.name;
     this._exporting = true;
     this._exportButton.disabled = true;
     this._playRange.disabled = true;
@@ -1092,12 +1158,17 @@ export class PlayerUI {
           this._exportButton.textContent = `Exporting… ${Math.round(fraction * 100)}%`;
         },
       });
-      const base = this._deck.base;
-      if (base && recordingStoreAvailable()) {
-        await saveFile(base, `${name}.video`, 'webm', blob);
-        this.notice(`Video saved as recordings/${name}.video.webm`);
+      if (choice.handle) {
+        const writable = await choice.handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        this.notice(`Video saved as ${choice.handle.name}`);
+      } else if (choice.destination === 'folder') {
+        await saveFile(this._deck.base as string, name, 'webm', blob);
+        this.notice(`Video saved as recordings/${name}.webm`);
       } else {
         download(blob, `${name}.webm`);
+        this.notice(`${name}.webm downloaded`);
       }
     } catch (error) {
       this.notice(`Export failed: ${(error as Error).message}`);
@@ -1107,6 +1178,61 @@ export class PlayerUI {
       this._exportButton.textContent = 'Export video';
       this._playRange.disabled = false;
     }
+  }
+
+  /** Ask for the video's name and where it goes, and for the go-ahead; null when the dialog is dismissed. */
+  private _confirmExport(talk: string): Promise<ExportChoice | null> {
+    const folder = Boolean(this._deck.base && recordingStoreAvailable());
+    const picker = typeof (window as SavePickerWindow).showSaveFilePicker === 'function';
+    const dialog = el('dialog', { class: 'settings export' });
+    const close = el('button', { class: 'close', 'aria-label': 'Close', text: '×' });
+    const nameInput = el('input', { type: 'text', value: `${talk}.video`, 'aria-label': 'File name', spellcheck: 'false' });
+    const where = el('select', { 'aria-label': 'Where to save the video' });
+    if (folder) where.append(el('option', { value: 'folder', text: 'The recordings/ folder next to the deck' }));
+    if (picker) where.append(el('option', { value: 'pick', text: 'A folder of my choice (asked when the export starts)' }));
+    where.append(el('option', { value: 'download', text: "The browser's downloads" }));
+    const status = el('p', { class: 'note', text: 'The recording plays from the start while the video is written, which takes as long as the talk; keep this window visible until it ends. The file is WebM (VP9 and Opus), 1920 pixels wide in the deck\'s proportions, with the slides or the whiteboard and their ink, the camera in its corner or full frame, the pointer, and the sound.' });
+    const run = el('button', { class: 'add', text: 'Export', autofocus: '' });
+    const cancel = el('button', { text: 'Cancel' });
+    dialog.append(
+      el('header', {}, el('h2', { text: 'Export the talk as a video' }), close),
+      el('section', {},
+        el('div', { class: 'row' }, el('label', {}, 'Name ', nameInput), el('span', { class: 'note', text: '.webm' })),
+        el('div', { class: 'row' }, el('label', {}, 'Save to ', where)),
+        status,
+        el('div', { class: 'row' }, run, cancel)),
+    );
+    return new Promise((resolve) => {
+      let choice: ExportChoice | null = null;
+      run.addEventListener('click', () => {
+        void (async () => {
+          // Characters a file name or the server refuse become dashes; an empty name falls back to the talk's.
+          const name = nameInput.value.trim().replace(/[^\w.-]+/g, '-').replace(/^[^A-Za-z0-9]+|-+$/g, '') || `${talk}.video`;
+          const destination = where.value as ExportChoice['destination'];
+          let handle: FileSystemFileHandle | undefined;
+          if (destination === 'pick') {
+            try {
+              // The picker must follow the click directly; the file is written when the export ends.
+              handle = await (window as SavePickerWindow).showSaveFilePicker?.({ suggestedName: `${name}.webm`, types: [{ description: 'WebM video', accept: { 'video/webm': ['.webm'] } }] });
+            } catch {
+              return; // dismissed: the dialog stays
+            }
+            if (!handle) return;
+          }
+          choice = { name, destination, handle };
+          dialog.close();
+        })();
+      });
+      nameInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') run.click();
+      });
+      cancel.addEventListener('click', () => dialog.close());
+      close.addEventListener('click', () => dialog.close());
+      dialog.addEventListener('close', () => { dialog.remove(); resolve(choice); });
+      this.root.append(dialog);
+      dialog.showModal();
+      nameInput.select();
+    });
   }
 
   // ---------------------------------------------------------------------
@@ -1422,7 +1548,7 @@ export class PlayerUI {
       ),
       el('section', { class: 'recording' },
         el('h3', { text: 'Recording' }),
-        el('p', { class: 'note', text: 'Record (Shift+R, or the button in the bar) keeps your voice, the camera when one is chosen, and everything you do on the deck: stops, ink, the whiteboard, the pointer and the camera switch (C shows the camera full frame). The slides are not filmed; a recording replays on the deck itself and exports as a video. Pause leaves a gap out.' }),
+        el('p', { class: 'note', text: 'Record (R, or the button in the bar) keeps your voice, the camera while it is on (the Camera button or C), and everything you do on the deck: stops, ink, the whiteboard, the pointer and the camera switches. The slides are not filmed; a recording replays on the deck itself and exports as a video. Pause leaves a gap out.' }),
         this._recordingStatus,
         recordingRows,
         el('div', { class: 'row' }, detect, this._testButton, resetRecording),

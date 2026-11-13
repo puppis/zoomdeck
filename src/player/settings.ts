@@ -39,7 +39,7 @@ export function sanitizeRecording(value: unknown): RecordingSettings {
 
 export type ActionName =
   | 'next' | 'previous' | 'home' | 'replay' | 'fullscreen' | 'outline' | 'undo' | 'redo' | 'clear' | 'settings' | 'exit' | 'pointer' | 'whiteboard'
-  | 'edit' | 'camera' | 'record' | 'resume' | 'print';
+  | 'edit' | 'camera' | 'record' | 'print';
 
 export interface ActionInfo {
   name: ActionName;
@@ -51,15 +51,14 @@ export const ACTIONS: ActionInfo[] = [
   { name: 'next', label: 'Next stop' },
   { name: 'previous', label: 'Previous stop' },
   { name: 'home', label: 'First stop' },
-  { name: 'replay', label: 'Replay this stop' },
+  { name: 'replay', label: 'Replay this stop (play it again)' },
   { name: 'undo', label: 'Undo the last pen or highlighter stroke' },
   { name: 'redo', label: 'Redo a stroke' },
   { name: 'clear', label: 'Clear all strokes on this slide' },
   { name: 'pointer', label: 'Switch between spotlight and laser' },
   { name: 'whiteboard', label: 'Show or hide the whiteboard' },
   { name: 'camera', label: 'Camera: in a corner, then full frame, then off' },
-  { name: 'record', label: 'Start or stop recording the talk' },
-  { name: 'resume', label: 'Continue the latest recording where it stopped (append)' },
+  { name: 'record', label: 'Record the talk (a new one, or continuing a saved one), or stop recording' },
   { name: 'edit', label: 'Open the source of this stop in the editor (preview server)' },
   { name: 'print', label: 'Print the deck to a PDF' },
   { name: 'fullscreen', label: 'Toggle fullscreen' },
@@ -72,17 +71,16 @@ export const DEFAULT_BINDINGS: Record<ActionName, string[]> = {
   next: ['ArrowRight', 'Space'],
   previous: ['ArrowLeft'],
   home: ['Home'],
-  replay: ['r'],
+  replay: ['a'],
   undo: ['Meta+z', 'Control+z'],
   redo: ['Meta+Shift+z', 'Control+Shift+z', 'Control+y'],
   clear: ['Delete', 'Backspace'],
   pointer: ['l'],
   whiteboard: ['w'],
   camera: ['c'],
-  record: ['Shift+r'],
-  resume: ['Shift+a'],
+  record: ['r'],
   edit: ['e'],
-  print: ['Shift+p', 'Meta+p', 'Control+p'],
+  print: ['p', 'Meta+p', 'Control+p'],
   fullscreen: ['f'],
   exit: ['Escape'],
   outline: ['o'],
@@ -105,6 +103,15 @@ export const POINTER_ACTIONS: PointerActionInfo[] = [
 ];
 
 /** Modifier combinations a pointer action can be bound to; `''` is a plain click or drag. */
+/**
+ * Defaults of earlier versions that changed since: settings saved with exactly these keys were
+ * never customized, so they follow the new defaults instead of pinning the old ones.
+ */
+const FORMER_BINDINGS: Array<Partial<Record<ActionName, string[]>>> = [
+  { replay: ['r'], record: ['Shift+r'] },
+  { print: ['Shift+p', 'Meta+p', 'Control+p'] },
+];
+
 export const MODIFIER_COMBOS = ['', 'Shift', 'Control', 'Alt', 'Meta', 'Shift+Control', 'Shift+Alt', 'Control+Alt'];
 
 /** Modifier combination of each pointer action; null leaves the action without a gesture. */
@@ -199,6 +206,10 @@ export function loadSettings(): PlayerSettings {
       for (const action of ACTIONS) {
         const list = saved.bindings[action.name];
         if (Array.isArray(list)) settings.bindings[action.name] = list.filter((item) => typeof item === 'string');
+      }
+      for (const former of FORMER_BINDINGS) {
+        const untouched = Object.entries(former).every(([name, keys]) => JSON.stringify(settings.bindings[name as ActionName]) === JSON.stringify(keys));
+        if (untouched) for (const name of Object.keys(former) as ActionName[]) settings.bindings[name] = [...DEFAULT_BINDINGS[name]];
       }
     }
     if (saved?.pointer) {

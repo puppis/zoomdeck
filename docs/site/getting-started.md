@@ -149,9 +149,9 @@ audience will see. `→` or Space advances, `←` goes back (playing the stop ba
 the outline and `F` the fullscreen view. The pointer tools work with a mouse, a pen or a paired
 tablet: drag to draw, with pressure on a pencil or stylus; hold Shift for a spotlight or a laser
 (`L` switches between them), Shift + drag to highlight; `W` opens a whiteboard without edges.
-`C` turns the camera on in a corner of the slides, then full frame, then off. `Shift+R` records
+`C` turns the camera on in a corner of the slides, then full frame, then off. `R` records
 the talk (your voice, the camera while it is on, and every move on the deck) and **▶ Talk** plays
-it back on the deck itself or exports it as a video; `Shift+P` prints the deck to a PDF, a page
+it back on the deck itself or exports it as a video; `P` prints the deck to a PDF, a page
 per stage. Every key and gesture can be changed in the settings (`,`). [The player](player.html)
 describes each tool in full, and the guide's section 2, Presenting, shows them live.
 

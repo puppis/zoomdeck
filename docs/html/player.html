@@ -71,8 +71,8 @@
 <td>first stop</td>
 </tr>
 <tr>
-<td>R</td>
-<td>replay the current stop</td>
+<td>A</td>
+<td>replay the current stop (play it again)</td>
 </tr>
 <tr>
 <td>⌘Z / Ctrl+Z</td>
@@ -99,19 +99,15 @@
 <td>camera: in a corner, then full frame, then off</td>
 </tr>
 <tr>
-<td>Shift+R</td>
-<td>start or stop recording the talk</td>
-</tr>
-<tr>
-<td>Shift+A</td>
-<td>continue the latest recording where it stopped</td>
+<td>R</td>
+<td>record the talk (a new one, or continuing a saved one), or stop recording</td>
 </tr>
 <tr>
 <td>E</td>
 <td>open the source line of this stop in the editor (preview server with <code>--editor</code>; see <a href="editors.html#forward-and-inverse-search">Editors</a>)</td>
 </tr>
 <tr>
-<td>Shift+P, ⌘P / Ctrl+P</td>
+<td>P, ⌘P / Ctrl+P</td>
 <td>print the deck to a PDF, one page per stage</td>
 </tr>
 <tr>
@@ -298,7 +294,7 @@ the corner, the size and the mirroring are settings. The pen never draws on the 
 belong to slides and to the whiteboard. A recording keeps the camera exactly while it is on, so
 you can record a talk without it even with a camera attached, or bring it in for some moments
 only.</p>
-<h2 id="recording-a-talk">Recording a talk<a class="anchor" href="#recording-a-talk" aria-label="Link to this section">#</a></h2><p><strong>Record</strong> in the footer, or <code>Shift+R</code>, records the talk: your voice through the microphone, the
+<h2 id="recording-a-talk">Recording a talk<a class="anchor" href="#recording-a-talk" aria-label="Link to this section">#</a></h2><p><strong>Record</strong> in the footer, or <code>R</code>, records the talk (a dialog first says what will be kept and where it goes, and offers to continue a saved talk instead of starting a new one): your voice through the microphone, the
 camera while it is on (see <a href="#the-camera">The camera</a>; recording never turns it on by itself),
 and everything you do on the deck, each on the same clock: the stops you move through and how
 (played forwards, backwards or jumped to), every pen and highlighter stroke as it is drawn, undo
@@ -318,8 +314,8 @@ hand. When <code>ffmpeg</code> is installed, the server also rewrites the media 
 duration and can be seeked in any player. The recording is named after the date and time,
 <code>talk-2026-11-13-1030</code>.</p>
 <p><strong>Continuing a talk.</strong> A stopped recording can be taken up again later, even after closing the
-browser: <code>Shift+A</code> continues the latest one, and the <strong>Continue</strong> button in the list of talks
-continues any of them. What follows is stamped after the end of the earlier part, with a cut
+browser: the Record dialog offers every saved talk to continue, and so does the <strong>Continue</strong>
+button in the list of talks. What follows is stamped after the end of the earlier part, with a cut
 marking the seam, and is kept as a further media file of the same recording (<code>talk.part2.webm</code>,
 since a browser cannot append to a finished file); playback and the export run through the
 parts as one talk. The header counts from where the talk stood. Stop and Continue therefore
@@ -348,7 +344,10 @@ recorded with, or full frame where the presenter switched to it. Your keys and c
 are off until you leave the recording.</p>
 <p><strong>Exporting a video.</strong> Export video renders the open recording as a video file: the slides or the
 whiteboard with their ink, the camera in its corner or full frame, the pointer, and the recorded
-sound, at 1920 pixels wide in the deck's proportions. The recording plays from the start while
+sound, at 1920 pixels wide in the deck's proportions. A dialog first asks for the file's name
+and where it goes: the <code>recordings/</code> folder next to the deck (with the preview server), a folder
+of your choice through the browser's own save dialog (Chrome and Edge), or the browser's
+downloads. The recording plays from the start while
 the frames are captured, so the export takes exactly as long as the talk, and the window must
 stay visible meanwhile (a hidden tab draws nothing). The result is a WebM file (VP9 and Opus),
 saved as <code>recordings/&lt;name&gt;.video.webm</code> next to the recording or downloaded; <code>ffmpeg -i talk.video.webm -c:v libx264 -c:a aac talk.mp4</code> turns it into an MP4 when a tool or a site wants
@@ -359,7 +358,7 @@ folder, so a deck published that way shows its Talk button to viewers; the singl
 leaves recordings out, since a talk's media would not fit in a page. Playback needs a browser that
 can play the recorded file: a WebM from Chrome or Firefox plays in those two, an MP4 from Safari
 plays everywhere.</p>
-<h2 id="printing-to-pdf">Printing to PDF<a class="anchor" href="#printing-to-pdf" aria-label="Link to this section">#</a></h2><p><strong>Print</strong> in the footer (or Shift+P, also ⌘P / Ctrl+P) writes the deck as a PDF file, one page
+<h2 id="printing-to-pdf">Printing to PDF<a class="anchor" href="#printing-to-pdf" aria-label="Link to this section">#</a></h2><p><strong>Print</strong> in the footer (or P, also ⌘P / Ctrl+P) writes the deck as a PDF file, one page
 per stage: every stop the presentation passes through, in order, as the screen shows it at that
 stop, with the camera where it rests. Returns to a parent slide after its children, which show
 nothing new, and stops the presentation runs straight through (automatic advancement, as before

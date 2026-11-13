@@ -353,13 +353,13 @@ Images are centered on `x`, `y` and sized by `width`. SVG files keep nested tran
 
 [Documentation ↗]{#player-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/player.html}
 
-**Keys:** → or Space next · ← previous (plays the stop backwards) · Home first stop · R replay · L spotlight or laser · C camera · Shift+R record · Shift+P print · F fullscreen · O outline · , settings, where every key and gesture can be changed. {x=-9.35 width=19 font_size=21}
+**Keys:** → or Space next · ← previous (plays the stop backwards) · Home first stop · A replay · L spotlight or laser · C camera · R record · P print · F fullscreen · O outline · , settings, where every key and gesture can be changed. {x=-9.35 width=19 font_size=21}
 
 **Pointer:** drag to draw with the pen, which follows the pressure of a pencil or stylus (the settings tune the look); hold Shift for a spotlight or laser, Shift + drag to highlight. A click never changes the stop unless the settings bind a key to it. W opens a whiteboard without edges, scrolled with the arrows or the wheel, with its own undo. A tablet on the network can pair from the settings and draw on the deck. {x=-9.35 width=19 font_size=21}
 
 **Links:** `#step=N` or `#slide=id` opens a stop directly, also as `href=` on any element (this guide's front page is built that way); the outline lists every slide; the preview server restores your position after each reload. {x=-9.35 width=19 font_size=21}
 
-**Export:** `zoomdeck build deck.json -o out` writes a static folder; `--one-file` writes one HTML file with the player, fonts and assets embedded, which opens without a server. This guide is such a file. **Print** in the footer (Shift+P) writes a PDF with a page per stage, or per slide, at up to 4K, drawn by the renderer itself, with the slides as bookmarks. {x=-9.35 width=19 font_size=21}
+**Export:** `zoomdeck build deck.json -o out` writes a static folder; `--one-file` writes one HTML file with the player, fonts and assets embedded, which opens without a server. This guide is such a file. **Print** in the footer (P) writes a PDF with a page per stage, or per slide, at up to 4K, drawn by the renderer itself, with the slides as bookmarks. {x=-9.35 width=19 font_size=21}
 :::
 
 ::: slide {#tablet width=20}
@@ -414,8 +414,8 @@ A recording keeps your voice, the camera while you have it on, and every move on
 [media + timeline]{#recording-cap-file at=left:#recording-file.right dx=0.25 font_size=15 color=GRAY}
 
 1. **Set up** once: ⚙ settings ▸ Recording ▸ Detect devices; choose the microphone and the camera, test them, and pick the corner and size of your picture. {x=2.3 width=7.4 font_size=17}
-2. **Record** with Shift+R or the ● Record button; the header counts the time. Present as usual: keys, pen, W for the whiteboard, the Camera button or C for the camera (in a corner, full frame, off), recorded while it is on. Pause leaves a gap out. {x=2.3 width=7.4 font_size=17}
-3. **Stop** saves the talk in `recordings/` next to the deck when the deck is served by `zoomdeck serve` (downloads otherwise). Shift+A later continues it where it stopped. {x=2.3 width=7.4 font_size=17}
+2. **Record** with R or the ● Record button; a dialog says what will be kept, then the header counts the time. Present as usual: keys, pen, W for the whiteboard, the Camera button or C for the camera (in a corner, full frame, off), recorded while it is on. Pause leaves a gap out. {x=2.3 width=7.4 font_size=17}
+3. **Stop** saves the talk in `recordings/` next to the deck when the deck is served by `zoomdeck serve` (downloads otherwise). R later offers to continue it where it stopped. {x=2.3 width=7.4 font_size=17}
 4. **Play** it with ▶ Talk in the footer: the deck follows the recording; Space pauses, ← and → seek, Esc leaves. {x=2.3 width=7.4 font_size=17}
 5. **Export video** in the playback bar renders it in real time: slides or whiteboard with ink, camera in a corner or full frame, and the sound. {x=2.3 width=7.4 font_size=17}
 

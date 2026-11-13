@@ -66,7 +66,7 @@ settings such as key bindings travel with the viewer's browser.
 
 ## A PDF printout
 
-The player's **Print** button (Shift+P, also ⌘P / Ctrl+P) writes the deck as a PDF, one page per
+The player's **Print** button (P, also ⌘P / Ctrl+P) writes the deck as a PDF, one page per
 stage or one per slide, at 1920, 2560 or 3840 pixels of width, drawn by the deck's own renderer
 and stored losslessly, with the slides as bookmarks. It works in the preview, in an exported
 deck and in the single file alike, since the browser does the rendering; see

@@ -40,3 +40,32 @@ describe('player settings', () => {
     expect(fallback.pointerMode).toBe('spotlight');
   });
 });
+
+describe('key defaults that changed', () => {
+  beforeEach(() => localStorage.clear());
+
+  it('moves a saved setup with the former default keys to the new ones, and keeps customized keys', () => {
+    const former = defaultSettings();
+    former.bindings.replay = ['r'];
+    former.bindings.record = ['Shift+r'];
+    former.bindings.print = ['Shift+p', 'Meta+p', 'Control+p'];
+    saveSettings(former);
+    const migrated = loadSettings();
+    expect(migrated.bindings.record).toEqual(['r']);
+    expect(migrated.bindings.replay).toEqual(['a']);
+    expect(migrated.bindings.print).toEqual(['p', 'Meta+p', 'Control+p']);
+    former.bindings.record = ['Shift+r', 'x'];
+    saveSettings(former);
+    expect(loadSettings().bindings.record).toEqual(['Shift+r', 'x']);
+    expect(loadSettings().bindings.replay).toEqual(['r']);
+    // A setup saved before printing existed still moves the recording keys.
+    const older = defaultSettings();
+    older.bindings.replay = ['r'];
+    older.bindings.record = ['Shift+r'];
+    const { print: _print, ...withoutPrint } = older.bindings;
+    localStorage.setItem('zoomdeck:settings', JSON.stringify({ ...older, bindings: withoutPrint }));
+    const moved = loadSettings();
+    expect(moved.bindings.record).toEqual(['r']);
+    expect(moved.bindings.replay).toEqual(['a']);
+  });
+});
