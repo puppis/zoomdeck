@@ -20,12 +20,16 @@ export interface RecordingSettings {
   size: number;
   /** Film the screen whenever the page is hidden during a recording (the presenter went to another application). */
   screenWhenHidden: boolean;
+  /** The kind of surface shared last time (a whole screen, a window or a tab), which the browser's picker opens on. */
+  screenSurface: 'monitor' | 'window' | 'browser';
 }
+
+export const SCREEN_SURFACES = ['monitor', 'window', 'browser'] as const;
 
 export const CORNERS: Corner[] = ['bottom-right', 'bottom-left', 'top-right', 'top-left'];
 export const PIP_SIZES: Array<[number, string]> = [[0.12, 'Small'], [0.18, 'Medium'], [0.25, 'Large']];
 
-export const DEFAULT_RECORDING: RecordingSettings = { microphone: null, camera: null, mirror: true, corner: 'bottom-right', size: 0.18, screenWhenHidden: false };
+export const DEFAULT_RECORDING: RecordingSettings = { microphone: null, camera: null, mirror: true, corner: 'bottom-right', size: 0.18, screenWhenHidden: false, screenSurface: 'monitor' };
 
 export function sanitizeRecording(value: unknown): RecordingSettings {
   const result = { ...DEFAULT_RECORDING };
@@ -37,12 +41,13 @@ export function sanitizeRecording(value: unknown): RecordingSettings {
   if (typeof saved.corner === 'string' && CORNERS.includes(saved.corner as Corner)) result.corner = saved.corner as Corner;
   if (typeof saved.size === 'number' && PIP_SIZES.some(([size]) => size === saved.size)) result.size = saved.size;
   if (typeof saved.screenWhenHidden === 'boolean') result.screenWhenHidden = saved.screenWhenHidden;
+  if (typeof saved.screenSurface === 'string' && (SCREEN_SURFACES as readonly string[]).includes(saved.screenSurface)) result.screenSurface = saved.screenSurface as RecordingSettings['screenSurface'];
   return result;
 }
 
 export type ActionName =
   | 'next' | 'previous' | 'home' | 'replay' | 'fullscreen' | 'outline' | 'undo' | 'redo' | 'clear' | 'settings' | 'exit' | 'pointer' | 'whiteboard'
-  | 'edit' | 'camera' | 'screen' | 'record' | 'print';
+  | 'edit' | 'camera' | 'screen' | 'screenAgain' | 'record' | 'print';
 
 export interface ActionInfo {
   name: ActionName;
@@ -61,7 +66,8 @@ export const ACTIONS: ActionInfo[] = [
   { name: 'pointer', label: 'Switch between spotlight and laser' },
   { name: 'whiteboard', label: 'Show or hide the whiteboard' },
   { name: 'camera', label: 'Camera: in a corner, then full frame, then off' },
-  { name: 'screen', label: 'Film the screen, for the time spent in another application, or stop' },
+  { name: 'screen', label: 'Film the screen (the browser asks which), for the time spent in another application, or stop' },
+  { name: 'screenAgain', label: 'Film the screen shared before, without asking again (asks when none is shared), or stop' },
   { name: 'record', label: 'Record the talk (a new one, or continuing a saved one), or stop recording' },
   { name: 'edit', label: 'Open the source of this stop in the editor (preview server)' },
   { name: 'print', label: 'Print the deck to a PDF' },
@@ -83,6 +89,7 @@ export const DEFAULT_BINDINGS: Record<ActionName, string[]> = {
   whiteboard: ['w'],
   camera: ['c'],
   screen: ['s'],
+  screenAgain: ['Alt+s'],
   record: ['r'],
   edit: ['e'],
   print: ['p', 'Meta+p', 'Control+p'],
@@ -147,6 +154,8 @@ const MODIFIERS = ['Control', 'Alt', 'Meta', 'Shift'];
 export function keyCombo(event: KeyboardEvent): string | null {
   if (MODIFIERS.includes(event.key)) return null;
   let key = event.key === ' ' ? 'Space' : event.key;
+  // With Alt held, macOS types another character (Alt+S gives ß): the physical key names the letter or digit.
+  if (event.altKey && /^(?:Key[A-Z]|Digit[0-9])$/.test(event.code)) key = event.code.replace(/^Key|^Digit/, '');
   if (key.length === 1) key = key.toLowerCase();
   const parts: string[] = [];
   if (event.ctrlKey) parts.push('Control');

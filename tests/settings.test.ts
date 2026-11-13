@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  DEFAULT_POINTER_BINDINGS, defaultSettings, describeModifiers, loadSettings, modifierCombo, pointerActionFor, saveSettings,
+  DEFAULT_POINTER_BINDINGS, defaultSettings, describeModifiers, keyCombo, loadSettings, modifierCombo, pointerActionFor, saveSettings,
 } from '../src/player/settings';
 
 describe('player settings', () => {
@@ -38,6 +38,14 @@ describe('player settings', () => {
     const fallback = loadSettings();
     expect(fallback.pointer.pen).toBe('');
     expect(fallback.pointerMode).toBe('spotlight');
+  });
+});
+
+describe('key combinations', () => {
+  it('names an Alt combination by the physical key, since macOS types another character with Alt held', () => {
+    expect(keyCombo(new KeyboardEvent('keydown', { key: 'ß', code: 'KeyS', altKey: true }))).toBe('Alt+s');
+    expect(keyCombo(new KeyboardEvent('keydown', { key: 's', code: 'KeyS' }))).toBe('s');
+    expect(keyCombo(new KeyboardEvent('keydown', { key: 'S', code: 'KeyS', shiftKey: true }))).toBe('Shift+s');
   });
 });
 

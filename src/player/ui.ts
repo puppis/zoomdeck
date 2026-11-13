@@ -353,7 +353,7 @@ export class PlayerUI {
       ...gestures,
       `${keys('undo')}: undo stroke`, `${keys('redo')}: redo stroke`, `${keys('clear')}: clear strokes`,
       `${keys('whiteboard')}: whiteboard (arrows, scrolling or two fingers move it)`,
-      `${keys('camera')}: camera in a corner, then full frame, then off`, `${keys('screen')}: film the screen, or stop`, `${keys('record')}: record the talk, or continue a saved one`,
+      `${keys('camera')}: camera in a corner, then full frame, then off`, `${keys('screen')}: film the screen, or stop`, `${keys('screenAgain')}: film the screen shared before, without asking`, `${keys('record')}: record the talk, or continue a saved one`,
       ...(this._editSource ? [`${keys('edit')}: open this stop's source in the editor`] : []),
       `${keys('settings')}: settings`,
     ];
@@ -543,6 +543,7 @@ export class PlayerUI {
         break;
       case 'camera': void this.toggleCamera(); break;
       case 'screen': void this.toggleScreen(); break;
+      case 'screenAgain': void this.toggleScreen(undefined, true); break;
       case 'record': void this.toggleRecording(); break;
       case 'print': this.openPrint(); break;
     }
@@ -681,28 +682,42 @@ export class PlayerUI {
   // Filming the screen: what happens in another application while the talk goes on there
   // ---------------------------------------------------------------------
 
-  /** Film the screen from now on (the browser asks which), or stop; a recording in progress takes it in place of the camera. */
-  async toggleScreen(on = !this._screenFilming): Promise<void> {
+  /**
+   * Film the screen from now on, or stop; a recording in progress takes it in place of the camera.
+   * Starting asks the browser which screen or window to share (its picker, which a page can
+   * neither skip nor fill in, opens on the kind of surface chosen last time); with `reuse`, a
+   * share still held from before is filmed again without asking. Stopping keeps the share held
+   * for that, until it is stopped from the browser's own bar or replaced by a new choice.
+   */
+  async toggleScreen(on = !this._screenFilming, reuse = false): Promise<void> {
     if (this._playback || on === this._screenFilming) return;
     if (on) {
-      if (!this._screenStream && !(await this._acquireScreen())) return;
+      if ((!reuse || !this._screenStream) && !(await this._acquireScreen())) return;
       await this._setScreenFilming(true);
       this.notice(this._recorder ? 'Filming the screen; Screen again (or S) when you are back' : 'The screen will be filmed once a recording runs; Screen again (or S) stops');
     } else {
       await this._setScreenFilming(false);
-      this._releaseScreen();
+      this.notice(this._screenStream ? 'Screen off; the share stays for Alt+S (the browser\'s bar stops it)' : 'Screen off');
     }
   }
 
-  /** Ask the browser for the screen; false (with a notice) when it cannot, or the picker was dismissed. */
+  /** Ask the browser for a screen, replacing any share held; false (with a notice) when it cannot, or the picker was dismissed. */
   private async _acquireScreen(): Promise<boolean> {
     if (typeof navigator.mediaDevices?.getDisplayMedia !== 'function') {
       this.notice('This browser cannot capture the screen here');
       return false;
     }
     try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: { ideal: 15 } }, audio: false });
+      // The picker opens on the kind of surface chosen last time (a whole screen at first) and leaves this tab out.
+      const options = { video: { displaySurface: this._settings.recording.screenSurface, frameRate: { ideal: 15 } }, audio: false, selfBrowserSurface: 'exclude' };
+      const stream = await navigator.mediaDevices.getDisplayMedia(options as DisplayMediaStreamOptions);
+      this._releaseScreen();
       this._screenStream = stream;
+      const surface = (stream.getVideoTracks()[0]?.getSettings() as { displaySurface?: string } | undefined)?.displaySurface;
+      if (surface === 'monitor' || surface === 'window' || surface === 'browser') {
+        this._settings.recording.screenSurface = surface;
+        saveSettings(this._settings);
+      }
       // Stopping the share from the browser's own bar ends the track.
       for (const track of stream.getVideoTracks()) {
         track.addEventListener('ended', () => {
@@ -710,6 +725,7 @@ export class PlayerUI {
           void this._setScreenFilming(false).then(() => this._releaseScreen());
         });
       }
+      this._updateScreenButton();
       return true;
     } catch (error) {
       this.notice(`No screen: ${(error as Error).message}`);
@@ -720,6 +736,13 @@ export class PlayerUI {
   private _releaseScreen(): void {
     for (const track of this._screenStream?.getTracks() ?? []) track.stop();
     this._screenStream = null;
+    this._updateScreenButton();
+  }
+
+  private _updateScreenButton(): void {
+    this._screenButton.title = this._screenStream && !this._screenFilming
+      ? 'Film the screen shared before (Alt+S), or pick another (S)'
+      : 'Film the screen instead of the camera, for the time spent in another application, or stop (S)';
   }
 
   /** Put the screen into the recording in place of the camera picture, or take it out again. */
@@ -728,6 +751,7 @@ export class PlayerUI {
     this._screenFilming = on;
     this._screenButton.setAttribute('aria-pressed', String(on));
     this.root.classList.toggle('screen-filming', on);
+    this._updateScreenButton();
     await this._recordPicture();
   }
 
@@ -1010,11 +1034,11 @@ export class PlayerUI {
     this._recordButton.setAttribute('aria-pressed', 'false');
     this._pauseButton.hidden = true;
     const result = await recorder.stop();
-    // The microphone and the screen are released; the camera stays as the presenter left it.
+    // The microphone is released; the camera stays as the presenter left it, and a screen share
+    // stays held for the next time (Alt+S), until the browser's bar stops it.
     for (const track of this._recordStream?.getAudioTracks() ?? []) track.stop();
     this._recordStream = null;
     await this._setScreenFilming(false);
-    this._releaseScreen();
     // A new talk, or the one being continued: the part is appended either way.
     const append = this._appendTo;
     this._appendTo = null;

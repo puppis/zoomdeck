@@ -100,7 +100,11 @@
 </tr>
 <tr>
 <td>S</td>
-<td>film the screen, for the time spent in another application, or stop</td>
+<td>film the screen (the browser asks which), for the time spent in another application, or stop</td>
+</tr>
+<tr>
+<td>Alt+S</td>
+<td>film the screen shared before, without asking again</td>
 </tr>
 <tr>
 <td>R</td>
@@ -320,9 +324,12 @@ duration and can be seeked in any player. The recording is named after the date 
 <code>talk-2026-11-13-1030</code>.</p>
 <p><strong>Filming the screen.</strong> A talk may leave the deck for a while: a demonstration in another
 application, a terminal, a web page. <strong>Screen</strong> in the footer, or <code>S</code>, asks the browser which
-screen or window to share and films it, in place of the camera, until you press it again or stop
-the share from the browser's own bar; choose the entire screen to follow yourself across
-applications. With &quot;Film the screen while this page is hidden&quot; in the settings, a recording asks
+screen or window to share and films it, in place of the camera, until you press it again; choose
+the entire screen to follow yourself across applications. The browser's picker is its own: a page
+can neither skip it nor choose for you, but it opens on the kind of surface you chose last time,
+the entire screen at first. Stopping the filming keeps the share, so that <code>Alt+S</code> films the same
+screen again without the picker (it asks only when nothing is shared); the share ends when you stop
+it from the browser's own bar, or when <code>S</code> picks another. With &quot;Film the screen while this page is hidden&quot; in the settings, a recording asks
 for the screen when it starts and films it by itself whenever the page is hidden, as when you
 switch to another application, and goes back to the deck when you return; the switch still works
 at any time. A filmed stretch is a further media file of the talk; in playback and in the exported

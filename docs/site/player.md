@@ -19,7 +19,8 @@ description: Keyboard and pointer controls, the pen and its pressure styles, the
 | L | switch the pointer tool between spotlight and laser |
 | W | show or hide the whiteboard; while it is shown the arrows scroll it |
 | C | camera: in a corner, then full frame, then off |
-| S | film the screen, for the time spent in another application, or stop |
+| S | film the screen (the browser asks which), for the time spent in another application, or stop |
+| Alt+S | film the screen shared before, without asking again |
 | R | record the talk (a new one, or continuing a saved one), or stop recording |
 | E | open the source line of this stop in the editor (preview server with `--editor`; see [Editors](editors.html#forward-and-inverse-search)) |
 | P, ⌘P / Ctrl+P | print the deck to a PDF, one page per stage |
@@ -209,9 +210,12 @@ duration and can be seeked in any player. The recording is named after the date 
 
 **Filming the screen.** A talk may leave the deck for a while: a demonstration in another
 application, a terminal, a web page. **Screen** in the footer, or `S`, asks the browser which
-screen or window to share and films it, in place of the camera, until you press it again or stop
-the share from the browser's own bar; choose the entire screen to follow yourself across
-applications. With "Film the screen while this page is hidden" in the settings, a recording asks
+screen or window to share and films it, in place of the camera, until you press it again; choose
+the entire screen to follow yourself across applications. The browser's picker is its own: a page
+can neither skip it nor choose for you, but it opens on the kind of surface you chose last time,
+the entire screen at first. Stopping the filming keeps the share, so that `Alt+S` films the same
+screen again without the picker (it asks only when nothing is shared); the share ends when you stop
+it from the browser's own bar, or when `S` picks another. With "Film the screen while this page is hidden" in the settings, a recording asks
 for the screen when it starts and films it by itself whenever the page is hidden, as when you
 switch to another application, and goes back to the deck when you return; the switch still works
 at any time. A filmed stretch is a further media file of the talk; in playback and in the exported
