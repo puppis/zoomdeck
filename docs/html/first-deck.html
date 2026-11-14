@@ -166,15 +166,19 @@ Plain prose, **bold**, *italic*, `code`, and a formula: $e^{i\pi} + 1 = 0$.
 
 [The details are in the child slide, on the right.]<span class="tk-attribute">{#intro x=</span><span class="tk-number">-9</span><span class="tk-attribute"> y=</span><span class="tk-number">1</span><span class="tk-attribute">}</span>
 
+<span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#frame</span> <span class="tk-attribute">x=</span><span class="tk-number">4.5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.5</span> <span class="tk-attribute">width=</span><span class="tk-number">9</span> <span class="tk-attribute">height=</span><span class="tk-number">5.06</span> <span class="tk-attribute">color=</span>GRAY <span class="tk-attribute">stroke_width=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+
 <span class="tk-directive">[[include:</span> <span class="tk-attribute">#details</span> <span class="tk-attribute">x=</span><span class="tk-number">4.5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.5</span> <span class="tk-attribute">width=</span><span class="tk-number">9</span> <span class="tk-attribute">preview=</span>true<span class="tk-directive">]]</span>
 <span class="tk-directive">:::</span>
 
 <span class="tk-directive">::: slide </span><span class="tk-attribute">{#details}</span>
-<span class="tk-type tk-bold">## </span><span class="tk-bold">Details </span><span class="tk-attribute tk-bold">{y=</span><span class="tk-number tk-bold">3</span><span class="tk-attribute tk-bold">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">Details</span>
 
 [Shown on the first click]<span class="tk-attribute">{#a step=</span><span class="tk-number">1</span><span class="tk-attribute">}</span>
 
-[And on the second]<span class="tk-attribute">{#b below:#a left-aligned:#a step=</span><span class="tk-number">2</span><span class="tk-attribute">}</span>
+[And on the second]<span class="tk-attribute">{#b step=</span><span class="tk-number">2</span><span class="tk-attribute">}</span>
+
+Elements without a position flow from the top, one under the other. <span class="tk-attribute">{color=GRAY}</span>
 <span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
 <zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#start width=20}
@@ -182,18 +186,22 @@ Plain prose, **bold**, *italic*, `code`, and a formula: $e^{i\pi} + 1 = 0$.
 
 [The details are in the child slide, on the right.]{#intro x=-9 y=1}
 
+[[rectangle: #frame x=4.5 y=-1.5 width=9 height=5.06 color=GRAY stroke_width=1]]
+
 [[include: #details x=4.5 y=-1.5 width=9 preview=true]]
 :::
 
 ::: slide {#details}
-## Details {y=3}
+## Details
 
 [Shown on the first click]{#a step=1}
 
-[And on the second]{#b below:#a left-aligned:#a step=2}
+[And on the second]{#b step=2}
+
+Elements without a position flow from the top, one under the other. {color=GRAY}
 :::
 </script></zoom-deck></div></div>
-<h2 id="a-diagram-and-an-animation">A diagram and an animation<a class="anchor" href="#a-diagram-and-an-animation" aria-label="Link to this section">#</a></h2><p>Shapes are directives: an arrow between two elements, a box around one. <code>[[animate: ...]]</code> moves an element on a step; <code>enter=write</code> draws text as if by hand.</p>
+<h2 id="a-diagram-and-an-animation">A diagram and an animation<a class="anchor" href="#a-diagram-and-an-animation" aria-label="Link to this section">#</a></h2><p>Shapes are directives: an arrow between two elements, a box around one. <code>[[animate: ...]]</code> changes an element on a step, here its size and colour; <code>enter=write</code> writes text stroke by stroke, here in the bundled handwriting face (<code>font=Zeyada</code>).</p>
 
 <div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
 </span><span class="tk-directive">::: slide </span><span class="tk-attribute">{#diagram width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
@@ -205,11 +213,11 @@ Plain prose, **bold**, *italic*, `code`, and a formula: $e^{i\pi} + 1 = 0$.
 
 <span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#in</span> -&gt; <span class="tk-attribute">#out</span>, <span class="tk-attribute">#flow</span>, <span class="tk-attribute">label=</span><span class="tk-string">&quot;process&quot;</span>, <span class="tk-attribute">step=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
 
-<span class="tk-directive">[[box:</span> <span class="tk-attribute">#in</span>, <span class="tk-attribute">#b1</span>, <span class="tk-attribute">color=</span>TEAL, <span class="tk-attribute">step=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[box:</span> <span class="tk-attribute">#in</span>, <span class="tk-attribute">#b1</span>, <span class="tk-attribute">buff=</span><span class="tk-number">0.25</span>, <span class="tk-attribute">color=</span>TEAL, <span class="tk-attribute">step=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
 
-<span class="tk-directive">[[animate:</span> <span class="tk-attribute">#out</span>, <span class="tk-attribute">dy=</span><span class="tk-number">-2</span>, <span class="tk-attribute">step=</span><span class="tk-number">3</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[animate:</span> <span class="tk-attribute">#out</span>, <span class="tk-attribute">scale=</span><span class="tk-number">1.3</span>, <span class="tk-attribute">color=</span>TEAL, <span class="tk-attribute">step=</span><span class="tk-number">3</span><span class="tk-directive">]]</span>
 
-[Written by hand]<span class="tk-attribute">{#hand x=</span><span class="tk-number">-7</span><span class="tk-attribute"> y=</span><span class="tk-number">-3</span><span class="tk-attribute"> font_size=</span><span class="tk-number">28</span><span class="tk-attribute"> enter=write step=</span><span class="tk-number">4</span><span class="tk-attribute">}</span>
+[Written by hand]<span class="tk-attribute">{#hand x=</span><span class="tk-number">-7</span><span class="tk-attribute"> y=</span><span class="tk-number">-3</span><span class="tk-attribute"> font=Zeyada font_size=</span><span class="tk-number">44</span><span class="tk-attribute"> enter=write step=</span><span class="tk-number">4</span><span class="tk-attribute">}</span>
 <span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
 <zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#diagram width=20}
@@ -221,11 +229,11 @@ Plain prose, **bold**, *italic*, `code`, and a formula: $e^{i\pi} + 1 = 0$.
 
 [[arrow: #in -> #out, #flow, label="process", step=1]]
 
-[[box: #in, #b1, color=TEAL, step=2]]
+[[box: #in, #b1, buff=0.25, color=TEAL, step=2]]
 
-[[animate: #out, dy=-2, step=3]]
+[[animate: #out, scale=1.3, color=TEAL, step=3]]
 
-[Written by hand]{#hand x=-7 y=-3 font_size=28 enter=write step=4}
+[Written by hand]{#hand x=-7 y=-3 font=Zeyada font_size=44 enter=write step=4}
 :::
 </script></zoom-deck></div></div>
 <h2 id="a-pdf">A PDF<a class="anchor" href="#a-pdf" aria-label="Link to this section">#</a></h2><p>A PDF is a deck too: <code>%deck</code> with its address shows it, page after page, here three slides typeset with LaTeX.</p>

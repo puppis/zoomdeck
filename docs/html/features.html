@@ -141,7 +141,13 @@ child of its own: first child, next sibling, then down again.</p>
 ::: slide {#talk width=20}
 # A talk as a tree
 
+[Two children, placed as viewports; the second has a child of its own.]{#intro x=-9 y=2.4 width=18 font_size=20 color=GRAY}
+
+[[rectangle: #f1 x=-5 y=-1.5 width=8 height=4.5 color=GRAY stroke_width=1]]
+
 [[include: #first x=-5 y=-1.5 width=8 preview=true]]
+
+[[rectangle: #f2 x=5 y=-1.5 width=8 height=4.5 color=GRAY stroke_width=1]]
 
 [[include: #second x=5 y=-1.5 width=8 preview=true]]
 :::
@@ -149,25 +155,35 @@ child of its own: first child, next sibling, then down again.</p>
 ::: slide {#first}
 ## First child
 
-Visited first.
+Visited first; the camera then goes straight to the sibling. {font_size=24}
 :::
 
 ::: slide {#second}
 ## Second child
 
+[[rectangle: #f3 x=3 y=-1.5 width=7 height=3.94 color=GRAY stroke_width=1]]
+
 [[include: #detail x=3 y=-1.5 width=7 preview=true]]
+
+This one has a child of its own. {x=-7.35 y=1.4 width=7 font_size=24}
 :::
 
 ::: slide {#detail}
 ### A detail of the second child
 
-The last stop; then the camera zooms back out.
+The last stop; then the camera zooms back out, twice. {font_size=22}
 :::
 </script></zoom-deck>
 <details class="markup" open><summary>The markup</summary><pre><code><span class="tk-directive">::: slide </span><span class="tk-attribute">{#talk width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
 <span class="tk-type tk-bold"># </span><span class="tk-bold">A talk as a tree</span>
 
+[Two children, placed as viewports; the second has a child of its own.]<span class="tk-attribute">{#intro x=</span><span class="tk-number">-9</span><span class="tk-attribute"> y=</span><span class="tk-number">2.4</span><span class="tk-attribute"> width=</span><span class="tk-number">18</span><span class="tk-attribute"> font_size=</span><span class="tk-number">20</span><span class="tk-attribute"> color=GRAY}</span>
+
+<span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#f1</span> <span class="tk-attribute">x=</span><span class="tk-number">-5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.5</span> <span class="tk-attribute">width=</span><span class="tk-number">8</span> <span class="tk-attribute">height=</span><span class="tk-number">4.5</span> <span class="tk-attribute">color=</span>GRAY <span class="tk-attribute">stroke_width=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+
 <span class="tk-directive">[[include:</span> <span class="tk-attribute">#first</span> <span class="tk-attribute">x=</span><span class="tk-number">-5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.5</span> <span class="tk-attribute">width=</span><span class="tk-number">8</span> <span class="tk-attribute">preview=</span>true<span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#f2</span> <span class="tk-attribute">x=</span><span class="tk-number">5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.5</span> <span class="tk-attribute">width=</span><span class="tk-number">8</span> <span class="tk-attribute">height=</span><span class="tk-number">4.5</span> <span class="tk-attribute">color=</span>GRAY <span class="tk-attribute">stroke_width=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
 
 <span class="tk-directive">[[include:</span> <span class="tk-attribute">#second</span> <span class="tk-attribute">x=</span><span class="tk-number">5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.5</span> <span class="tk-attribute">width=</span><span class="tk-number">8</span> <span class="tk-attribute">preview=</span>true<span class="tk-directive">]]</span>
 <span class="tk-directive">:::</span>
@@ -175,19 +191,23 @@ The last stop; then the camera zooms back out.
 <span class="tk-directive">::: slide </span><span class="tk-attribute">{#first}</span>
 <span class="tk-type tk-bold">## </span><span class="tk-bold">First child</span>
 
-Visited first.
+Visited first; the camera then goes straight to the sibling. <span class="tk-attribute">{font_size=</span><span class="tk-number">24</span><span class="tk-attribute">}</span>
 <span class="tk-directive">:::</span>
 
 <span class="tk-directive">::: slide </span><span class="tk-attribute">{#second}</span>
 <span class="tk-type tk-bold">## </span><span class="tk-bold">Second child</span>
 
+<span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#f3</span> <span class="tk-attribute">x=</span><span class="tk-number">3</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.5</span> <span class="tk-attribute">width=</span><span class="tk-number">7</span> <span class="tk-attribute">height=</span><span class="tk-number">3.94</span> <span class="tk-attribute">color=</span>GRAY <span class="tk-attribute">stroke_width=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+
 <span class="tk-directive">[[include:</span> <span class="tk-attribute">#detail</span> <span class="tk-attribute">x=</span><span class="tk-number">3</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.5</span> <span class="tk-attribute">width=</span><span class="tk-number">7</span> <span class="tk-attribute">preview=</span>true<span class="tk-directive">]]</span>
+
+This one has a child of its own. <span class="tk-attribute">{x=</span><span class="tk-number">-7.35</span><span class="tk-attribute"> y=</span><span class="tk-number">1.4</span><span class="tk-attribute"> width=</span><span class="tk-number">7</span><span class="tk-attribute"> font_size=</span><span class="tk-number">24</span><span class="tk-attribute">}</span>
 <span class="tk-directive">:::</span>
 
 <span class="tk-directive">::: slide </span><span class="tk-attribute">{#detail}</span>
 <span class="tk-type tk-bold">### </span><span class="tk-bold">A detail of the second child</span>
 
-The last stop; then the camera zooms back out.
+The last stop; then the camera zooms back out, twice. <span class="tk-attribute">{font_size=</span><span class="tk-number">22</span><span class="tk-attribute">}</span>
 <span class="tk-directive">:::</span></code></pre></details>
 </figure>
 <h2 id="spotlight-and-laser">Spotlight and laser<a class="anchor" href="#spotlight-and-laser" aria-label="Link to this section">#</a></h2><p><a class="try" href="tour.html#slide=feat-spotlight">This chapter in the tour ↗</a></p>
@@ -232,7 +252,9 @@ Press **D** and draw on this slide; the keys **1** to **4** (or the dots in the 
 A recording (R) keeps the whole talk: your voice, the camera and every move on the deck,
 strokes included; it plays back on the deck itself, where it stays navigable, and exports as a
 plain video file. A shared screen (S), another application say, can be filmed as part of the
-talk. The deck below has these controls on; each asks the browser for permission the first time.</p>
+talk. The desktop app is to render a recording off line as well, faster than real time, into
+one flat video file. The deck below has these controls on; each asks the browser for permission
+the first time.</p>
 <figure class="live">
 <zoom-deck ><script type="text/markdown">
 ::: slide {#rec width=20}
@@ -247,8 +269,9 @@ The **Camera** button (C) shows the camera, **Record** (R) starts a talk (voice,
 <p>Formulas are LaTeX, inline or displayed, rendered by MathJax and zoomable like everything else.
 Diagrams are directives: arrows between elements, boxes and blobs around them, icons, braces,
 and any of them hand-drawn with <code>sketch=true</code>. Animations in the style of Manim come with the
-same directives: elements are written, drawn, moved, morphed into one another and highlighted,
-one step per click.</p>
+same directives: elements move, grow, change colour, morph into one another, get highlighted,
+or are written stroke by stroke in the bundled handwriting face, one step per click. The deck
+below has three slides: a formula, a diagram, and five steps of motion.</p>
 <figure class="live">
 <zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#formula width=20}
@@ -256,43 +279,55 @@ one step per click.</p>
 
 [$\displaystyle \int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}$]{#gauss x=-6 y=1.2 font_size=40}
 
-[[box: #gauss, #gbox, buff=0.3, corner_radius=0.15, color=TEAL, step=1]]
+[[box: #gauss, #gbox, buff=0.3, corner_radius=0.15, color=TEAL]]
 
-[Gaussian integral]{#label x=-6 y=-1.8 font_size=24 color=TEAL enter=write step=1}
+[Gaussian integral]{#label x=-6 y=-1.8 font_size=24 color=TEAL}
 
-[[arrow: #label -> #gauss, #why, step=2]]
+[[arrow: #label -> #gauss, #why]]
+
+[Inline math shares the baseline of its line: $e^{i\pi} + 1 = 0$, and a display formula stands alone.]{#inline x=-9 y=-3.6 width=18 font_size=20 color=GRAY}
 :::
 
 ::: slide {#diagram width=20}
 ## Arrows, blobs and hand-drawn shapes
 
-[Source]{#src x=-8 y=1 font_size=28}
+[Source]{#src x=-8 y=1.5 font_size=28}
 
-[Sink]{#dst x=3 y=1 font_size=28}
+[Sink]{#dst x=3 y=1.5 font_size=28}
 
-[[arrow: #src -> #dst, #flow, label="flow", step=1]]
+[[arrow: #src -> #dst, #flow, label="flow"]]
 
-[[rectangle: #hr x=-6.5 y=-2.5 width=3.4 height=1.8 color=BLUE_E fill_opacity=0.5 sketch=true step=2]]
+[[rectangle: #hr x=-6.5 y=-2.2 width=3.4 height=1.8 color=BLUE_E fill_opacity=0.5 sketch=true]]
 
-[[circle: #hc right-of:#hr buff=1.5 radius=0.9 color=GREEN_E fill_opacity=0.6 fill_style=cross-hatch sketch=true step=2]]
+[[circle: #hc right-of:#hr buff=1.5 radius=0.9 color=GREEN_E fill_opacity=0.6 fill_style=cross-hatch sketch=true]]
 
-[[arrow: #hr -> #hc, #ha, sketch=true, step=3]]
+[[arrow: #hr -> #hc, #ha, sketch=true]]
 
-[[blob: #hr #hc, #cloud, color=ORANGE, step=4]]
+[[blob: #hr #hc, #cloud, buff=0.45, color=ORANGE]]
+
+[[icon: database #store x=5.5 y=-2.2 size=1.4 color=GOLD_E label="an icon" label_side=right]]
+
+[[brace: #store, #sb, side=bottom, label="a brace", color=GRAY]]
 :::
 
 ::: slide {#motion width=20}
-## Motion
+## Motion, one step per click
 
-[A point moves]{#mover x=-8 y=1 font_size=28}
+[A point moves]{#mover x=-8 y=1.5 font_size=28}
 
-[[animate: #mover, dx=10, step=1]]
+[[animate: #mover, dx=6, step=1]]
 
-[[animate: #mover, dy=-3, scale=1.4, color=RED, step=2]]
+[[animate: #mover, dy=-1.6, scale=1.3, color=RED, step=2]]
 
 [[effect: indicate #mover, step=3]]
 
-[Drawn by hand]{#written x=-8 y=-3 font_size=28 enter=write step=4}
+[Before]{#before x=2 y=1.5 font_size=28}
+
+[After]{#after x=2 y=1.5 font_size=28 color=TEAL step=4}
+
+[[transform: #before -> #after, step=4]]
+
+[Written by hand]{#written x=-8 y=-3 font=Zeyada font_size=44 enter=write step=5}
 :::
 </script></zoom-deck>
 <details class="markup" open><summary>The markup</summary><pre><code><span class="tk-directive">::: slide </span><span class="tk-attribute">{#formula width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
@@ -300,43 +335,55 @@ one step per click.</p>
 
 [<span class="tk-string">$\displaystyle \int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}$</span>]<span class="tk-attribute">{#gauss x=</span><span class="tk-number">-6</span><span class="tk-attribute"> y=</span><span class="tk-number">1.2</span><span class="tk-attribute"> font_size=</span><span class="tk-number">40</span><span class="tk-attribute">}</span>
 
-<span class="tk-directive">[[box:</span> <span class="tk-attribute">#gauss</span>, <span class="tk-attribute">#gbox</span>, <span class="tk-attribute">buff=</span><span class="tk-number">0.3</span>, <span class="tk-attribute">corner_radius=</span><span class="tk-number">0.15</span>, <span class="tk-attribute">color=</span>TEAL, <span class="tk-attribute">step=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[box:</span> <span class="tk-attribute">#gauss</span>, <span class="tk-attribute">#gbox</span>, <span class="tk-attribute">buff=</span><span class="tk-number">0.3</span>, <span class="tk-attribute">corner_radius=</span><span class="tk-number">0.15</span>, <span class="tk-attribute">color=</span>TEAL<span class="tk-directive">]]</span>
 
-[Gaussian integral]<span class="tk-attribute">{#label x=</span><span class="tk-number">-6</span><span class="tk-attribute"> y=</span><span class="tk-number">-1.8</span><span class="tk-attribute"> font_size=</span><span class="tk-number">24</span><span class="tk-attribute"> color=TEAL enter=write step=</span><span class="tk-number">1</span><span class="tk-attribute">}</span>
+[Gaussian integral]<span class="tk-attribute">{#label x=</span><span class="tk-number">-6</span><span class="tk-attribute"> y=</span><span class="tk-number">-1.8</span><span class="tk-attribute"> font_size=</span><span class="tk-number">24</span><span class="tk-attribute"> color=TEAL}</span>
 
-<span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#label</span> -&gt; <span class="tk-attribute">#gauss</span>, <span class="tk-attribute">#why</span>, <span class="tk-attribute">step=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#label</span> -&gt; <span class="tk-attribute">#gauss</span>, <span class="tk-attribute">#why</span><span class="tk-directive">]]</span>
+
+[Inline math shares the baseline of its line: <span class="tk-string">$e^{i\pi} + 1 = 0$</span>, and a display formula stands alone.]<span class="tk-attribute">{#inline x=</span><span class="tk-number">-9</span><span class="tk-attribute"> y=</span><span class="tk-number">-3.6</span><span class="tk-attribute"> width=</span><span class="tk-number">18</span><span class="tk-attribute"> font_size=</span><span class="tk-number">20</span><span class="tk-attribute"> color=GRAY}</span>
 <span class="tk-directive">:::</span>
 
 <span class="tk-directive">::: slide </span><span class="tk-attribute">{#diagram width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
 <span class="tk-type tk-bold">## </span><span class="tk-bold">Arrows, blobs and hand-drawn shapes</span>
 
-[Source]<span class="tk-attribute">{#src x=</span><span class="tk-number">-8</span><span class="tk-attribute"> y=</span><span class="tk-number">1</span><span class="tk-attribute"> font_size=</span><span class="tk-number">28</span><span class="tk-attribute">}</span>
+[Source]<span class="tk-attribute">{#src x=</span><span class="tk-number">-8</span><span class="tk-attribute"> y=</span><span class="tk-number">1.5</span><span class="tk-attribute"> font_size=</span><span class="tk-number">28</span><span class="tk-attribute">}</span>
 
-[Sink]<span class="tk-attribute">{#dst x=</span><span class="tk-number">3</span><span class="tk-attribute"> y=</span><span class="tk-number">1</span><span class="tk-attribute"> font_size=</span><span class="tk-number">28</span><span class="tk-attribute">}</span>
+[Sink]<span class="tk-attribute">{#dst x=</span><span class="tk-number">3</span><span class="tk-attribute"> y=</span><span class="tk-number">1.5</span><span class="tk-attribute"> font_size=</span><span class="tk-number">28</span><span class="tk-attribute">}</span>
 
-<span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#src</span> -&gt; <span class="tk-attribute">#dst</span>, <span class="tk-attribute">#flow</span>, <span class="tk-attribute">label=</span><span class="tk-string">&quot;flow&quot;</span>, <span class="tk-attribute">step=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#src</span> -&gt; <span class="tk-attribute">#dst</span>, <span class="tk-attribute">#flow</span>, <span class="tk-attribute">label=</span><span class="tk-string">&quot;flow&quot;</span><span class="tk-directive">]]</span>
 
-<span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#hr</span> <span class="tk-attribute">x=</span><span class="tk-number">-6.5</span> <span class="tk-attribute">y=</span><span class="tk-number">-2.5</span> <span class="tk-attribute">width=</span><span class="tk-number">3.4</span> <span class="tk-attribute">height=</span><span class="tk-number">1.8</span> <span class="tk-attribute">color=</span>BLUE_E <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.5</span> <span class="tk-attribute">sketch=</span>true <span class="tk-attribute">step=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#hr</span> <span class="tk-attribute">x=</span><span class="tk-number">-6.5</span> <span class="tk-attribute">y=</span><span class="tk-number">-2.2</span> <span class="tk-attribute">width=</span><span class="tk-number">3.4</span> <span class="tk-attribute">height=</span><span class="tk-number">1.8</span> <span class="tk-attribute">color=</span>BLUE_E <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.5</span> <span class="tk-attribute">sketch=</span>true<span class="tk-directive">]]</span>
 
-<span class="tk-directive">[[circle:</span> <span class="tk-attribute">#hc</span> <span class="tk-attribute">right-of:#hr</span> <span class="tk-attribute">buff=</span><span class="tk-number">1.5</span> <span class="tk-attribute">radius=</span><span class="tk-number">0.9</span> <span class="tk-attribute">color=</span>GREEN_E <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.6</span> <span class="tk-attribute">fill_style=</span>cross-hatch <span class="tk-attribute">sketch=</span>true <span class="tk-attribute">step=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[circle:</span> <span class="tk-attribute">#hc</span> <span class="tk-attribute">right-of:#hr</span> <span class="tk-attribute">buff=</span><span class="tk-number">1.5</span> <span class="tk-attribute">radius=</span><span class="tk-number">0.9</span> <span class="tk-attribute">color=</span>GREEN_E <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.6</span> <span class="tk-attribute">fill_style=</span>cross-hatch <span class="tk-attribute">sketch=</span>true<span class="tk-directive">]]</span>
 
-<span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#hr</span> -&gt; <span class="tk-attribute">#hc</span>, <span class="tk-attribute">#ha</span>, <span class="tk-attribute">sketch=</span>true, <span class="tk-attribute">step=</span><span class="tk-number">3</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#hr</span> -&gt; <span class="tk-attribute">#hc</span>, <span class="tk-attribute">#ha</span>, <span class="tk-attribute">sketch=</span>true<span class="tk-directive">]]</span>
 
-<span class="tk-directive">[[blob:</span> <span class="tk-attribute">#hr</span> <span class="tk-attribute">#hc</span>, <span class="tk-attribute">#cloud</span>, <span class="tk-attribute">color=</span>ORANGE, <span class="tk-attribute">step=</span><span class="tk-number">4</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[blob:</span> <span class="tk-attribute">#hr</span> <span class="tk-attribute">#hc</span>, <span class="tk-attribute">#cloud</span>, <span class="tk-attribute">buff=</span><span class="tk-number">0.45</span>, <span class="tk-attribute">color=</span>ORANGE<span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[icon:</span> database <span class="tk-attribute">#store</span> <span class="tk-attribute">x=</span><span class="tk-number">5.5</span> <span class="tk-attribute">y=</span><span class="tk-number">-2.2</span> <span class="tk-attribute">size=</span><span class="tk-number">1.4</span> <span class="tk-attribute">color=</span>GOLD_E <span class="tk-attribute">label=</span><span class="tk-string">&quot;an icon&quot;</span> <span class="tk-attribute">label_side=</span>right<span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[brace:</span> <span class="tk-attribute">#store</span>, <span class="tk-attribute">#sb</span>, <span class="tk-attribute">side=</span>bottom, <span class="tk-attribute">label=</span><span class="tk-string">&quot;a brace&quot;</span>, <span class="tk-attribute">color=</span>GRAY<span class="tk-directive">]]</span>
 <span class="tk-directive">:::</span>
 
 <span class="tk-directive">::: slide </span><span class="tk-attribute">{#motion width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
-<span class="tk-type tk-bold">## </span><span class="tk-bold">Motion</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">Motion, one step per click</span>
 
-[A point moves]<span class="tk-attribute">{#mover x=</span><span class="tk-number">-8</span><span class="tk-attribute"> y=</span><span class="tk-number">1</span><span class="tk-attribute"> font_size=</span><span class="tk-number">28</span><span class="tk-attribute">}</span>
+[A point moves]<span class="tk-attribute">{#mover x=</span><span class="tk-number">-8</span><span class="tk-attribute"> y=</span><span class="tk-number">1.5</span><span class="tk-attribute"> font_size=</span><span class="tk-number">28</span><span class="tk-attribute">}</span>
 
-<span class="tk-directive">[[animate:</span> <span class="tk-attribute">#mover</span>, <span class="tk-attribute">dx=</span><span class="tk-number">10</span>, <span class="tk-attribute">step=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[animate:</span> <span class="tk-attribute">#mover</span>, <span class="tk-attribute">dx=</span><span class="tk-number">6</span>, <span class="tk-attribute">step=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
 
-<span class="tk-directive">[[animate:</span> <span class="tk-attribute">#mover</span>, <span class="tk-attribute">dy=</span><span class="tk-number">-3</span>, <span class="tk-attribute">scale=</span><span class="tk-number">1.4</span>, <span class="tk-attribute">color=</span>RED, <span class="tk-attribute">step=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[animate:</span> <span class="tk-attribute">#mover</span>, <span class="tk-attribute">dy=</span><span class="tk-number">-1.6</span>, <span class="tk-attribute">scale=</span><span class="tk-number">1.3</span>, <span class="tk-attribute">color=</span>RED, <span class="tk-attribute">step=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
 
 <span class="tk-directive">[[effect:</span> indicate <span class="tk-attribute">#mover</span>, <span class="tk-attribute">step=</span><span class="tk-number">3</span><span class="tk-directive">]]</span>
 
-[Drawn by hand]<span class="tk-attribute">{#written x=</span><span class="tk-number">-8</span><span class="tk-attribute"> y=</span><span class="tk-number">-3</span><span class="tk-attribute"> font_size=</span><span class="tk-number">28</span><span class="tk-attribute"> enter=write step=</span><span class="tk-number">4</span><span class="tk-attribute">}</span>
+[Before]<span class="tk-attribute">{#before x=</span><span class="tk-number">2</span><span class="tk-attribute"> y=</span><span class="tk-number">1.5</span><span class="tk-attribute"> font_size=</span><span class="tk-number">28</span><span class="tk-attribute">}</span>
+
+[After]<span class="tk-attribute">{#after x=</span><span class="tk-number">2</span><span class="tk-attribute"> y=</span><span class="tk-number">1.5</span><span class="tk-attribute"> font_size=</span><span class="tk-number">28</span><span class="tk-attribute"> color=TEAL step=</span><span class="tk-number">4</span><span class="tk-attribute">}</span>
+
+<span class="tk-directive">[[transform:</span> <span class="tk-attribute">#before</span> -&gt; <span class="tk-attribute">#after</span>, <span class="tk-attribute">step=</span><span class="tk-number">4</span><span class="tk-directive">]]</span>
+
+[Written by hand]<span class="tk-attribute">{#written x=</span><span class="tk-number">-8</span><span class="tk-attribute"> y=</span><span class="tk-number">-3</span><span class="tk-attribute"> font=Zeyada font_size=</span><span class="tk-number">44</span><span class="tk-attribute"> enter=write step=</span><span class="tk-number">5</span><span class="tk-attribute">}</span>
 <span class="tk-directive">:::</span></code></pre></details>
 </figure>
 <h2 id="and-then">And then<a class="anchor" href="#and-then" aria-label="Link to this section">#</a></h2><ul>

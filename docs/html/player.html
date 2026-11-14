@@ -446,8 +446,8 @@ downloads. The recording plays from the start while
 the frames are captured, so the export takes exactly as long as the talk, and the window must
 stay visible meanwhile (a hidden tab draws nothing). The result is a WebM file (VP9 and Opus),
 saved as <code>recordings/&lt;name&gt;.video.webm</code> next to the recording or downloaded; <code>ffmpeg -i talk.video.webm -c:v libx264 -c:a aac talk.mp4</code> turns it into an MP4 when a tool or a site wants
-one. The timeline is independent of the clock that produced it, so a later version can render the
-same recording off line, faster than real time.</p>
+one. The timeline is independent of the clock that produced it, so the desktop app is to render
+the same recording off line as well, faster than real time, into one flat video file.</p>
 <p><strong>What travels where.</strong> The folder export (<code>zoomdeck build … -o folder</code>) copies the <code>recordings/</code>
 folder, so a deck published that way shows its Talk button to viewers; the single-file export
 leaves recordings out, since a talk's media would not fit in a page. Playback needs a browser that

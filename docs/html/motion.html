@@ -157,7 +157,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 [Step 5 follows step 3 directly]{#five x=-8 y=-4 step=5 color=RED}
 :::
 </script></zoom-deck></div></div>
-<h2 id="animations">Animations<a class="anchor" href="#animations" aria-label="Link to this section">#</a></h2><p><code>[[animate: #id, step=N, …]]</code> moves, turns, scales or recolours an element; <code>[[effect: name #id]]</code> plays a named effect, <code>[[transform: #a -&gt; #b]]</code> morphs one element into another, and <code>enter=</code>/<code>exit=</code> choose how an element appears or leaves.</p>
+<h2 id="animations">Animations<a class="anchor" href="#animations" aria-label="Link to this section">#</a></h2><p><code>[[animate: #id, step=N, …]]</code> moves, turns, scales or recolours an element; <code>[[effect: name #id]]</code> plays a named effect, <code>[[transform: #a -&gt; #b]]</code> morphs one element into another, and <code>enter=</code>/<code>exit=</code> choose how an element appears or leaves; <code>enter=write</code> writes it stroke by stroke, here in the bundled handwriting face (<code>font=Zeyada</code>).</p>
 
 <div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
 </span><span class="tk-directive">::: slide </span><span class="tk-attribute">{#animations width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
@@ -165,7 +165,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 
 <span class="tk-directive">[[circle:</span> <span class="tk-attribute">#ball</span> <span class="tk-attribute">x=</span><span class="tk-number">-7</span> <span class="tk-attribute">y=</span><span class="tk-number">1.5</span> <span class="tk-attribute">radius=</span><span class="tk-number">0.6</span> <span class="tk-attribute">color=</span>BLUE <span class="tk-attribute">fill_color=</span>BLUE <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.6</span><span class="tk-directive">]]</span>
 
-<span class="tk-directive">[[animate:</span> <span class="tk-attribute">#ball</span>, <span class="tk-attribute">step=</span><span class="tk-number">1</span>, <span class="tk-attribute">x=</span><span class="tk-number">6.5</span>, <span class="tk-attribute">run_time=</span><span class="tk-number">1.2</span>, <span class="tk-attribute">rate=</span>ease_in_out<span class="tk-directive">]]</span>
+<span class="tk-directive">[[animate:</span> <span class="tk-attribute">#ball</span>, <span class="tk-attribute">step=</span><span class="tk-number">1</span>, <span class="tk-attribute">x=</span><span class="tk-number">7</span>, <span class="tk-attribute">run_time=</span><span class="tk-number">1.2</span>, <span class="tk-attribute">rate=</span>ease_in_out<span class="tk-directive">]]</span>
 
 <span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#card</span> <span class="tk-attribute">x=</span><span class="tk-number">-7</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.5</span> <span class="tk-attribute">width=</span><span class="tk-number">2.6</span> <span class="tk-attribute">height=</span><span class="tk-number">1.6</span> <span class="tk-attribute">color=</span>GREEN <span class="tk-attribute">fill_color=</span>GREEN <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.2</span><span class="tk-directive">]]</span>
 
@@ -179,7 +179,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 
 <span class="tk-directive">[[transform:</span> <span class="tk-attribute">#before</span> -&gt; <span class="tk-attribute">#after</span>, <span class="tk-attribute">step=</span><span class="tk-number">4</span>, <span class="tk-attribute">run_time=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
 
-[Written by hand]<span class="tk-attribute">{#hand x=</span><span class="tk-number">3</span><span class="tk-attribute"> y=</span><span class="tk-number">1.5</span><span class="tk-attribute"> font_size=</span><span class="tk-number">28</span><span class="tk-attribute"> enter=write step=</span><span class="tk-number">5</span><span class="tk-attribute">}</span>
+[Written by hand]<span class="tk-attribute">{#hand x=</span><span class="tk-number">0</span><span class="tk-attribute"> y=</span><span class="tk-number">-4</span><span class="tk-attribute"> font=Zeyada font_size=</span><span class="tk-number">44</span><span class="tk-attribute"> enter=write step=</span><span class="tk-number">5</span><span class="tk-attribute">}</span>
 <span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
 <zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#animations width=20}
@@ -187,7 +187,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 
 [[circle: #ball x=-7 y=1.5 radius=0.6 color=BLUE fill_color=BLUE fill_opacity=0.6]]
 
-[[animate: #ball, step=1, x=6.5, run_time=1.2, rate=ease_in_out]]
+[[animate: #ball, step=1, x=7, run_time=1.2, rate=ease_in_out]]
 
 [[rectangle: #card x=-7 y=-1.5 width=2.6 height=1.6 color=GREEN fill_color=GREEN fill_opacity=0.2]]
 
@@ -201,7 +201,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 
 [[transform: #before -> #after, step=4, run_time=1]]
 
-[Written by hand]{#hand x=3 y=1.5 font_size=28 enter=write step=5}
+[Written by hand]{#hand x=0 y=-4 font=Zeyada font_size=44 enter=write step=5}
 :::
 </script></zoom-deck></div></div>
 <h2 id="focus-only-decorations">Focus-only decorations<a class="anchor" href="#focus-only-decorations" aria-label="Link to this section">#</a></h2><p><code>focus_only=true</code> marks an element that is visible only while the camera rests on its slide: it fades in with the focus and out when the camera leaves, so parents show their children's content without the decoration.</p>
@@ -210,11 +210,13 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 </span><span class="tk-directive">::: slide </span><span class="tk-attribute">{#focus width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
 <span class="tk-type tk-bold">## </span><span class="tk-bold">Focus-only decorations</span>
 
-<span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#paper</span> <span class="tk-attribute">x=</span><span class="tk-number">0</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">width=</span><span class="tk-number">20</span> <span class="tk-attribute">height=</span><span class="tk-number">11.25</span> <span class="tk-attribute">fill_color=</span><span class="tk-string">&quot;#1E293B&quot;</span> <span class="tk-attribute">fill_opacity=</span><span class="tk-number">1</span> <span class="tk-attribute">stroke_width=</span><span class="tk-number">0</span> <span class="tk-attribute">focus_only=</span>true<span class="tk-directive">]]</span>
+<span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#paper</span> <span class="tk-attribute">x=</span><span class="tk-number">0</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">width=</span><span class="tk-number">20</span> <span class="tk-attribute">height=</span><span class="tk-number">11.25</span> <span class="tk-attribute">fill_color=</span>TEAL <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.12</span> <span class="tk-attribute">stroke_width=</span><span class="tk-number">0</span> <span class="tk-attribute">focus_only=</span>true<span class="tk-directive">]]</span>
 
 [This caption fades in with the focus and out when the camera leaves]<span class="tk-attribute">{#caption x=</span><span class="tk-number">-9</span><span class="tk-attribute"> y=</span><span class="tk-number">0.6</span><span class="tk-attribute"> width=</span><span class="tk-number">18</span><span class="tk-attribute"> focus_only=true color=TEAL}</span>
 
 [This ordinary text stays visible from the parent too]<span class="tk-attribute">{#plain x=</span><span class="tk-number">-9</span><span class="tk-attribute"> y=</span><span class="tk-number">-2</span><span class="tk-attribute"> width=</span><span class="tk-number">18</span><span class="tk-attribute">}</span>
+
+<span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#inner-frame</span> <span class="tk-attribute">x=</span><span class="tk-number">5</span> <span class="tk-attribute">y=</span><span class="tk-number">-3.5</span> <span class="tk-attribute">width=</span><span class="tk-number">6</span> <span class="tk-attribute">height=</span><span class="tk-number">3.38</span> <span class="tk-attribute">color=</span>GRAY <span class="tk-attribute">stroke_width=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
 
 <span class="tk-directive">[[include:</span> <span class="tk-attribute">#inner</span> <span class="tk-attribute">x=</span><span class="tk-number">5</span> <span class="tk-attribute">y=</span><span class="tk-number">-3.5</span> <span class="tk-attribute">width=</span><span class="tk-number">6</span> <span class="tk-attribute">preview=</span>true<span class="tk-directive">]]</span>
 <span class="tk-directive">:::</span>
@@ -222,17 +224,19 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 <span class="tk-directive">::: slide </span><span class="tk-attribute">{#inner}</span>
 <span class="tk-type tk-bold">## </span><span class="tk-bold">Looking back</span>
 
-From here the parent's dark paper and caption are gone. <span class="tk-attribute">{font_size=</span><span class="tk-number">22</span><span class="tk-attribute">}</span>
+From here the parent's tinted paper and its caption are gone. <span class="tk-attribute">{font_size=</span><span class="tk-number">22</span><span class="tk-attribute">}</span>
 <span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
 <zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#focus width=20}
 ## Focus-only decorations
 
-[[rectangle: #paper x=0 y=0 width=20 height=11.25 fill_color="#1E293B" fill_opacity=1 stroke_width=0 focus_only=true]]
+[[rectangle: #paper x=0 y=0 width=20 height=11.25 fill_color=TEAL fill_opacity=0.12 stroke_width=0 focus_only=true]]
 
 [This caption fades in with the focus and out when the camera leaves]{#caption x=-9 y=0.6 width=18 focus_only=true color=TEAL}
 
 [This ordinary text stays visible from the parent too]{#plain x=-9 y=-2 width=18}
+
+[[rectangle: #inner-frame x=5 y=-3.5 width=6 height=3.38 color=GRAY stroke_width=1]]
 
 [[include: #inner x=5 y=-3.5 width=6 preview=true]]
 :::
@@ -240,7 +244,7 @@ From here the parent's dark paper and caption are gone. <span class="tk-attribut
 ::: slide {#inner}
 ## Looking back
 
-From here the parent's dark paper and caption are gone. {font_size=22}
+From here the parent's tinted paper and its caption are gone. {font_size=22}
 :::
 </script></zoom-deck></div></div>
 <h2 id="links">Links<a class="anchor" href="#links" aria-label="Link to this section">#</a></h2><p><code>href=</code> on any element makes it a link: to a web page, or to a stop of the deck with <code>#slide=id</code> or <code>#step=N</code>. The front page of the tour is built this way.</p>
@@ -256,6 +260,8 @@ From here the parent's dark paper and caption are gone. {font_size=22}
 <span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#hit</span> <span class="tk-attribute">x=</span><span class="tk-number">4</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">width=</span><span class="tk-number">6</span> <span class="tk-attribute">height=</span><span class="tk-number">3</span> <span class="tk-attribute">color=</span>GRAY <span class="tk-attribute">href=#slide</span>=second<span class="tk-directive">]]</span>
 
 [a shape can be a link too]<span class="tk-attribute">{#hitcap at=#hit.center anchor=center font_size=</span><span class="tk-number">18</span><span class="tk-attribute"> color=GRAY}</span>
+
+<span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#second-frame</span> <span class="tk-attribute">x=</span><span class="tk-number">4</span> <span class="tk-attribute">y=</span><span class="tk-number">-4</span> <span class="tk-attribute">width=</span><span class="tk-number">5</span> <span class="tk-attribute">height=</span><span class="tk-number">2.81</span> <span class="tk-attribute">color=</span>GRAY <span class="tk-attribute">stroke_width=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
 
 <span class="tk-directive">[[include:</span> <span class="tk-attribute">#second</span> <span class="tk-attribute">x=</span><span class="tk-number">4</span> <span class="tk-attribute">y=</span><span class="tk-number">-4</span> <span class="tk-attribute">width=</span><span class="tk-number">5</span> <span class="tk-attribute">preview=</span>true<span class="tk-directive">]]</span>
 <span class="tk-directive">:::</span>
@@ -276,6 +282,8 @@ From here the parent's dark paper and caption are gone. {font_size=22}
 [[rectangle: #hit x=4 y=0 width=6 height=3 color=GRAY href=#slide=second]]
 
 [a shape can be a link too]{#hitcap at=#hit.center anchor=center font_size=18 color=GRAY}
+
+[[rectangle: #second-frame x=4 y=-4 width=5 height=2.81 color=GRAY stroke_width=1]]
 
 [[include: #second x=4 y=-4 width=5 preview=true]]
 :::

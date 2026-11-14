@@ -66,7 +66,13 @@ child of its own: first child, next sibling, then down again.
 ::: slide {#talk width=20}
 # A talk as a tree
 
+[Two children, placed as viewports; the second has a child of its own.]{#intro x=-9 y=2.4 width=18 font_size=20 color=GRAY}
+
+[[rectangle: #f1 x=-5 y=-1.5 width=8 height=4.5 color=GRAY stroke_width=1]]
+
 [[include: #first x=-5 y=-1.5 width=8 preview=true]]
+
+[[rectangle: #f2 x=5 y=-1.5 width=8 height=4.5 color=GRAY stroke_width=1]]
 
 [[include: #second x=5 y=-1.5 width=8 preview=true]]
 :::
@@ -74,19 +80,23 @@ child of its own: first child, next sibling, then down again.
 ::: slide {#first}
 ## First child
 
-Visited first.
+Visited first; the camera then goes straight to the sibling. {font_size=24}
 :::
 
 ::: slide {#second}
 ## Second child
 
+[[rectangle: #f3 x=3 y=-1.5 width=7 height=3.94 color=GRAY stroke_width=1]]
+
 [[include: #detail x=3 y=-1.5 width=7 preview=true]]
+
+This one has a child of its own. {x=-7.35 y=1.4 width=7 font_size=24}
 :::
 
 ::: slide {#detail}
 ### A detail of the second child
 
-The last stop; then the camera zooms back out.
+The last stop; then the camera zooms back out, twice. {font_size=22}
 :::
 ```
 
@@ -139,7 +149,9 @@ The camera (C) shows you next to or over the slides, as a picture in a corner or
 A recording (R) keeps the whole talk: your voice, the camera and every move on the deck,
 strokes included; it plays back on the deck itself, where it stays navigable, and exports as a
 plain video file. A shared screen (S), another application say, can be filmed as part of the
-talk. The deck below has these controls on; each asks the browser for permission the first time.
+talk. The desktop app is to render a recording off line as well, faster than real time, into
+one flat video file. The deck below has these controls on; each asks the browser for permission
+the first time.
 
 ```zoomdeck without=none code=hidden
 ::: slide {#rec width=20}
@@ -156,8 +168,9 @@ The **Camera** button (C) shows the camera, **Record** (R) starts a talk (voice,
 Formulas are LaTeX, inline or displayed, rendered by MathJax and zoomable like everything else.
 Diagrams are directives: arrows between elements, boxes and blobs around them, icons, braces,
 and any of them hand-drawn with `sketch=true`. Animations in the style of Manim come with the
-same directives: elements are written, drawn, moved, morphed into one another and highlighted,
-one step per click.
+same directives: elements move, grow, change colour, morph into one another, get highlighted,
+or are written stroke by stroke in the bundled handwriting face, one step per click. The deck
+below has three slides: a formula, a diagram, and five steps of motion.
 
 ```zoomdeck
 ::: slide {#formula width=20}
@@ -165,43 +178,55 @@ one step per click.
 
 [$\displaystyle \int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}$]{#gauss x=-6 y=1.2 font_size=40}
 
-[[box: #gauss, #gbox, buff=0.3, corner_radius=0.15, color=TEAL, step=1]]
+[[box: #gauss, #gbox, buff=0.3, corner_radius=0.15, color=TEAL]]
 
-[Gaussian integral]{#label x=-6 y=-1.8 font_size=24 color=TEAL enter=write step=1}
+[Gaussian integral]{#label x=-6 y=-1.8 font_size=24 color=TEAL}
 
-[[arrow: #label -> #gauss, #why, step=2]]
+[[arrow: #label -> #gauss, #why]]
+
+[Inline math shares the baseline of its line: $e^{i\pi} + 1 = 0$, and a display formula stands alone.]{#inline x=-9 y=-3.6 width=18 font_size=20 color=GRAY}
 :::
 
 ::: slide {#diagram width=20}
 ## Arrows, blobs and hand-drawn shapes
 
-[Source]{#src x=-8 y=1 font_size=28}
+[Source]{#src x=-8 y=1.5 font_size=28}
 
-[Sink]{#dst x=3 y=1 font_size=28}
+[Sink]{#dst x=3 y=1.5 font_size=28}
 
-[[arrow: #src -> #dst, #flow, label="flow", step=1]]
+[[arrow: #src -> #dst, #flow, label="flow"]]
 
-[[rectangle: #hr x=-6.5 y=-2.5 width=3.4 height=1.8 color=BLUE_E fill_opacity=0.5 sketch=true step=2]]
+[[rectangle: #hr x=-6.5 y=-2.2 width=3.4 height=1.8 color=BLUE_E fill_opacity=0.5 sketch=true]]
 
-[[circle: #hc right-of:#hr buff=1.5 radius=0.9 color=GREEN_E fill_opacity=0.6 fill_style=cross-hatch sketch=true step=2]]
+[[circle: #hc right-of:#hr buff=1.5 radius=0.9 color=GREEN_E fill_opacity=0.6 fill_style=cross-hatch sketch=true]]
 
-[[arrow: #hr -> #hc, #ha, sketch=true, step=3]]
+[[arrow: #hr -> #hc, #ha, sketch=true]]
 
-[[blob: #hr #hc, #cloud, color=ORANGE, step=4]]
+[[blob: #hr #hc, #cloud, buff=0.45, color=ORANGE]]
+
+[[icon: database #store x=5.5 y=-2.2 size=1.4 color=GOLD_E label="an icon" label_side=right]]
+
+[[brace: #store, #sb, side=bottom, label="a brace", color=GRAY]]
 :::
 
 ::: slide {#motion width=20}
-## Motion
+## Motion, one step per click
 
-[A point moves]{#mover x=-8 y=1 font_size=28}
+[A point moves]{#mover x=-8 y=1.5 font_size=28}
 
-[[animate: #mover, dx=10, step=1]]
+[[animate: #mover, dx=6, step=1]]
 
-[[animate: #mover, dy=-3, scale=1.4, color=RED, step=2]]
+[[animate: #mover, dy=-1.6, scale=1.3, color=RED, step=2]]
 
 [[effect: indicate #mover, step=3]]
 
-[Drawn by hand]{#written x=-8 y=-3 font_size=28 enter=write step=4}
+[Before]{#before x=2 y=1.5 font_size=28}
+
+[After]{#after x=2 y=1.5 font_size=28 color=TEAL step=4}
+
+[[transform: #before -> #after, step=4]]
+
+[Written by hand]{#written x=-8 y=-3 font=Zeyada font_size=44 enter=write step=5}
 :::
 ```
 

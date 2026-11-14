@@ -4,8 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PDFs, flat decks and forests · Zoomdeck</title>
-<meta name="description" content="A PDF opened directly in the player, a Markdown file of plain slides read page after page, and how both are forests of slides.">
+<meta name="description" content="A PDF opened as it is, a Markdown file of plain slides read page after page, and the forest of slides that every deck is, each shown live.">
 <link rel="stylesheet" href="docs.css">
+<script type="module" src="zoomdeck/zoomdeck.js"></script>
 <script>
 // The side columns stay hidden or shown as the reader last left them, before the page paints.
 try { for (const side of ['nav', 'outline']) if (localStorage.getItem('zoomdeck-docs-' + side) === 'hidden') document.documentElement.classList.add(side + '-hidden'); } catch (e) {}
@@ -50,7 +51,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="first-deck.html">Your first deck, stage by stage</a></li><li><a href="content.html">The content of a slide</a></li><li><a href="documents.html" aria-current="page">PDFs, flat decks and forests</a><ul class="subsections"><li><a href="#a-pdf">A PDF</a></li><li><a href="#a-markdown-file-of-plain-slides">A Markdown file of plain slides</a></li><li><a href="#forests-and-trees">Forests and trees</a></li><li><a href="#in-code">In code</a></li></ul></li><li><a href="slides.html">Slides and the forest</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+        <ul><li><a href="first-deck.html">Your first deck, stage by stage</a></li><li><a href="content.html">The content of a slide</a></li><li><a href="documents.html" aria-current="page">PDFs, flat decks and forests</a><ul class="subsections"><li><a href="#a-pdf">A PDF</a></li><li><a href="#a-markdown-file-of-plain-slides">A Markdown file of plain slides</a></li><li><a href="#forests-and-trees">Forests and trees</a></li></ul></li><li><a href="slides.html">Slides and the forest</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
       </section>
       <section>
         <h4>Diagrams</h4>
@@ -72,62 +73,173 @@ for (const button of document.querySelectorAll('.side-toggle')) {
   <main id="content">
     <article>
       <h1>PDFs, flat decks and forests</h1>
-      <p class="lead">A PDF opened directly in the player, a Markdown file of plain slides read page after page, and how both are forests of slides.</p>
+      <p class="lead">A PDF opened as it is, a Markdown file of plain slides read page after page, and the forest of slides that every deck is, each shown live.</p>
       <p>The simplest deck is one you already have. This page goes from a PDF shown as it is, through a
-Markdown file that lists plain slides, to the forest of slides that every deck is.</p>
-<h2 id="a-pdf">A PDF<a class="anchor" href="#a-pdf" aria-label="Link to this section">#</a></h2><pre><code class="language-bash">zoomdeck serve paper.pdf
-zoomdeck build paper.pdf <span class="tk-attribute">-o</span> build/paper <span class="tk-attribute">--one-file</span></code></pre>
-<p>The player, the <code>zoomdeck</code> command, the dev page (<code>/?deck=path/to/paper.pdf</code>) and the desktop
-app open a PDF directly. Each page becomes a slide, the pages are visited first to last, and the
-camera cuts from one to the next with no zoom and no fade, as a classical document is read. The
-document's bookmarks, where it has them, name the pages in the outline (the others are
-numbered). The presentation viewport takes the proportions of the first page, so a portrait
-paper is shown upright with room at the sides and a landscape slide deck fills the screen. The
-title is the document's own, or its file name.</p>
-<p>Pages are drawn by <a href="https://mozilla.github.io/pdf.js/">pdf.js</a> into pictures at the density
-of the screen wherever the camera rests, drawn again when the window changes size, and reduced
-to a small picture once they are out of view, so that the text of a page stays as sharp as the
-deck's own while a long document never holds every page at full resolution. The pen, the
-whiteboard, the spotlight, recording and printing work on a PDF as on any deck; a printout
-renders the pages again at the chosen width.</p>
-<p>The exported folder copies the file next to the page; the single-file export embeds it. A page
-of your own can show a PDF with <code>mountDeck(element, 'paper.pdf')</code> or with <code>pdfDeck({ url })</code>
-(<a href="embedding.html">A deck inside a page</a>).</p>
-<h2 id="a-markdown-file-of-plain-slides">A Markdown file of plain slides<a class="anchor" href="#a-markdown-file-of-plain-slides" aria-label="Link to this section">#</a></h2><pre><code class="language-markdown"><span class="tk-directive">::: slide </span><span class="tk-attribute">{#first width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+Markdown file that lists plain slides, to the forest of slides that every deck is. Every deck
+below is the real player: click one to give it the keys, then press → and ←.</p>
+<h2 id="a-pdf">A PDF<a class="anchor" href="#a-pdf" aria-label="Link to this section">#</a></h2><p>Zoomdeck opens a PDF directly: a paper, a poster, slides typeset elsewhere. Each page becomes a
+slide, the pages are visited first to last, and the player cuts from one to the next with no
+zoom and no fade, as a document is read. The bookmarks of the document, where it has them, name
+the pages in the outline; the others are numbered. Here, three pages typeset with LaTeX:</p>
+<figure class="live">
+<zoom-deck src="live/slides.pdf" without="camera record screen"></zoom-deck>
+
+</figure>
+<pre><code class="language-bash">zoomdeck serve paper.pdf                       <span class="tk-comment"># present it</span>
+zoomdeck build paper.pdf <span class="tk-attribute">-o</span> out/paper <span class="tk-attribute">--one-file</span>   <span class="tk-comment"># a page that plays it, file embedded</span></code></pre>
+<p>The command, the development page (<code>/?deck=path/to/paper.pdf</code>), the desktop app and
+<code>mountDeck</code> in a page of your own all take a PDF where they take a deck. The presentation
+viewport takes the proportions of the first page, so a portrait paper is shown upright with room
+at the sides and landscape slides fill the screen; the title is the document's own, or its file
+name. Pages are drawn by <a href="https://mozilla.github.io/pdf.js/">pdf.js</a> at the density of the
+screen wherever the camera rests, drawn again when the window changes size, and reduced to a
+small picture once out of view, so the text of a page stays as sharp as the deck's own while a
+long document never holds every page at full resolution. The pen, the whiteboard, the spotlight,
+recording and printing work on a PDF as on any deck. The exported folder copies the file next
+to the page; the single-file export embeds it.</p>
+<h2 id="a-markdown-file-of-plain-slides">A Markdown file of plain slides<a class="anchor" href="#a-markdown-file-of-plain-slides" aria-label="Link to this section">#</a></h2><p>A Markdown file may simply list slides, one <code>::: slide</code> container after another, including none
+of them. They are then visited in the order they are written, with a cut from each to the next,
+like the pages of the PDF above, and the deck ends on the last one. Each slide is an ordinary
+slide otherwise: it has steps, fragments and animations, as the second one here, and it may
+include children of its own, which are entered and left with the usual zooms, as the third one
+does.</p>
+<figure class="live">
+<zoom-deck without="camera record screen"><script type="text/markdown">
+::: slide {#first width=20}
+# A deck of plain slides
+
+Three slides that include none of the others: the player cuts from each to the next.
+:::
+
+::: slide {#second width=20}
+## The second page
+
+[Slides keep their steps]{#a step=1}
+
+[And reveal them one at a time]{#b below:#a left-aligned:#a step=2}
+:::
+
+::: slide {#third width=20}
+## The third page has a child
+
+[[rectangle: #frame x=5 y=-1.2 width=8 height=4.5 color=GRAY stroke_width=1]]
+
+[[include: #detail x=5 y=-1.2 width=8 preview=true]]
+
+The camera zooms into the child and back out to this page; then the deck ends. {x=-9.3 y=-3.6 width=10 font_size=20 color=GRAY}
+:::
+
+::: slide {#detail}
+### A detail
+
+Children of a page keep their zooms; only the pages themselves cut. {font_size=22}
+:::
+</script></zoom-deck>
+<details class="markup" open><summary>The markup</summary><pre><code><span class="tk-directive">::: slide </span><span class="tk-attribute">{#first width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
 <span class="tk-type tk-bold"># </span><span class="tk-bold">A deck of plain slides</span>
+
+Three slides that include none of the others: the player cuts from each to the next.
 <span class="tk-directive">:::</span>
 
 <span class="tk-directive">::: slide </span><span class="tk-attribute">{#second width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
 <span class="tk-type tk-bold">## </span><span class="tk-bold">The second page</span>
 
-[Pages can still have steps]<span class="tk-attribute">{#a step=</span><span class="tk-number">1</span><span class="tk-attribute">}</span>
+[Slides keep their steps]<span class="tk-attribute">{#a step=</span><span class="tk-number">1</span><span class="tk-attribute">}</span>
+
+[And reveal them one at a time]<span class="tk-attribute">{#b below:#a left-aligned:#a step=</span><span class="tk-number">2</span><span class="tk-attribute">}</span>
 <span class="tk-directive">:::</span>
 
 <span class="tk-directive">::: slide </span><span class="tk-attribute">{#third width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
 <span class="tk-type tk-bold">## </span><span class="tk-bold">The third page has a child</span>
-<span class="tk-directive">[[include:</span> <span class="tk-attribute">#detail</span> <span class="tk-attribute">x=</span><span class="tk-number">5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.2</span> <span class="tk-attribute">width=</span><span class="tk-number">8</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#frame</span> <span class="tk-attribute">x=</span><span class="tk-number">5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.2</span> <span class="tk-attribute">width=</span><span class="tk-number">8</span> <span class="tk-attribute">height=</span><span class="tk-number">4.5</span> <span class="tk-attribute">color=</span>GRAY <span class="tk-attribute">stroke_width=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[include:</span> <span class="tk-attribute">#detail</span> <span class="tk-attribute">x=</span><span class="tk-number">5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.2</span> <span class="tk-attribute">width=</span><span class="tk-number">8</span> <span class="tk-attribute">preview=</span>true<span class="tk-directive">]]</span>
+
+The camera zooms into the child and back out to this page; then the deck ends. <span class="tk-attribute">{x=</span><span class="tk-number">-9.3</span><span class="tk-attribute"> y=</span><span class="tk-number">-3.6</span><span class="tk-attribute"> width=</span><span class="tk-number">10</span><span class="tk-attribute"> font_size=</span><span class="tk-number">20</span><span class="tk-attribute"> color=GRAY}</span>
 <span class="tk-directive">:::</span>
 
 <span class="tk-directive">::: slide </span><span class="tk-attribute">{#detail}</span>
 <span class="tk-type tk-bold">### </span><span class="tk-bold">A detail</span>
-<span class="tk-directive">:::</span></code></pre>
-<p>A Markdown file may simply list slides, one <code>::: slide</code> container after another, including none
-of them. They are then visited in the order they are written, with a cut from each to the next,
-like the pages of the PDF above; the deck ends on the last one. Each slide is an ordinary slide
-otherwise: it has steps, fragments and animations, and it may include children of its own,
-which are entered and left with the usual zooms, as the third page above does. A slide that
-would rather pan to its neighbour says <code>transition=zoom</code>; the slides then slide past one
-another, since they are laid out side by side. The example lives in <code>examples/document/</code>.</p>
+
+Children of a page keep their zooms; only the pages themselves cut. <span class="tk-attribute">{font_size=</span><span class="tk-number">22</span><span class="tk-attribute">}</span>
+<span class="tk-directive">:::</span></code></pre></details>
+</figure>
+<p>A slide that would rather pan to its neighbour says <code>transition=zoom</code>; the slides then glide
+past one another, since they are laid out side by side. The same file is at
+<code>examples/document/pages.md</code> in the repository.</p>
 <h2 id="forests-and-trees">Forests and trees<a class="anchor" href="#forests-and-trees" aria-label="Link to this section">#</a></h2><p>Both cases are instances of one rule: a deck is a <strong>forest</strong> of slides. The slides that nothing
 includes are its roots, visited first to last with cuts between them; an include places a child
 inside a slide, and the camera zooms into children and back out. A PDF is a forest of single
 pages, a file of plain slides a forest of single slides, and a talk with one slide that includes
-all the others is a single tree, the most common deck of all. The outline lists the roots at the
-top level and the children under them. <code>root</code> in <code>deck.json</code> names the single root of a tree;
-naming one in a deck with several roots is an error. <a href="slides.html">Slides and the forest</a> has
-the includes, the visit order and the flags that shape a tree.</p>
-<h2 id="in-code">In code<a class="anchor" href="#in-code" aria-label="Link to this section">#</a></h2><p><code>pageSequence(slides)</code> makes slides written in TypeScript the roots of a forest, in order; give
-its result to <code>defineDeck</code> as the deck.</p>
+all the others is a single tree, the most common deck of all. Here, a forest of two trees: a
+tree of two children, then a second root.</p>
+<figure class="live">
+<zoom-deck without="camera record screen"><script type="text/markdown">
+::: slide {#lecture width=20}
+# A tree with two children
+
+[[rectangle: #frame-1 x=-5 y=-1.5 width=8 height=4.5 color=GRAY stroke_width=1]]
+
+[[include: #part-1 x=-5 y=-1.5 width=8 preview=true]]
+
+[[rectangle: #frame-2 x=5 y=-1.5 width=8 height=4.5 color=GRAY stroke_width=1]]
+
+[[include: #part-2 x=5 y=-1.5 width=8 preview=true]]
+:::
+
+::: slide {#part-1}
+## First child
+
+Zoomed into, then straight on to the sibling. {font_size=24}
+:::
+
+::: slide {#part-2}
+## Second child
+
+The last child: the camera zooms back out after it. {font_size=24}
+:::
+
+::: slide {#appendix width=20}
+# A second root
+
+Reached with a cut from the first tree, as the next page of a document. {font_size=24}
+:::
+</script></zoom-deck>
+<details class="markup" open><summary>The markup</summary><pre><code><span class="tk-directive">::: slide </span><span class="tk-attribute">{#lecture width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold"># </span><span class="tk-bold">A tree with two children</span>
+
+<span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#frame-1</span> <span class="tk-attribute">x=</span><span class="tk-number">-5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.5</span> <span class="tk-attribute">width=</span><span class="tk-number">8</span> <span class="tk-attribute">height=</span><span class="tk-number">4.5</span> <span class="tk-attribute">color=</span>GRAY <span class="tk-attribute">stroke_width=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[include:</span> <span class="tk-attribute">#part-1</span> <span class="tk-attribute">x=</span><span class="tk-number">-5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.5</span> <span class="tk-attribute">width=</span><span class="tk-number">8</span> <span class="tk-attribute">preview=</span>true<span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#frame-2</span> <span class="tk-attribute">x=</span><span class="tk-number">5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.5</span> <span class="tk-attribute">width=</span><span class="tk-number">8</span> <span class="tk-attribute">height=</span><span class="tk-number">4.5</span> <span class="tk-attribute">color=</span>GRAY <span class="tk-attribute">stroke_width=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[include:</span> <span class="tk-attribute">#part-2</span> <span class="tk-attribute">x=</span><span class="tk-number">5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.5</span> <span class="tk-attribute">width=</span><span class="tk-number">8</span> <span class="tk-attribute">preview=</span>true<span class="tk-directive">]]</span>
+<span class="tk-directive">:::</span>
+
+<span class="tk-directive">::: slide </span><span class="tk-attribute">{#part-1}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">First child</span>
+
+Zoomed into, then straight on to the sibling. <span class="tk-attribute">{font_size=</span><span class="tk-number">24</span><span class="tk-attribute">}</span>
+<span class="tk-directive">:::</span>
+
+<span class="tk-directive">::: slide </span><span class="tk-attribute">{#part-2}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">Second child</span>
+
+The last child: the camera zooms back out after it. <span class="tk-attribute">{font_size=</span><span class="tk-number">24</span><span class="tk-attribute">}</span>
+<span class="tk-directive">:::</span>
+
+<span class="tk-directive">::: slide </span><span class="tk-attribute">{#appendix width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold"># </span><span class="tk-bold">A second root</span>
+
+Reached with a cut from the first tree, as the next page of a document. <span class="tk-attribute">{font_size=</span><span class="tk-number">24</span><span class="tk-attribute">}</span>
+<span class="tk-directive">:::</span></code></pre></details>
+</figure>
+<p>The outline lists the roots at the top level and the children under them. <code>root</code> in <code>deck.json</code>
+names the single root of a tree; naming one in a deck with several roots is an error.
+<a href="slides.html">Slides and the forest</a> has the includes, the visit order and the flags that shape
+a tree.</p>
 
     </article>
     <footer class="pager">
@@ -135,7 +247,7 @@ its result to <code>defineDeck</code> as the deck.</p>
       <a class="next" href="slides.html">Slides and the forest →</a>
     </footer>
   </main>
-  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#a-pdf">A PDF</a></li><li><a href="#a-markdown-file-of-plain-slides">A Markdown file of plain slides</a></li><li><a href="#forests-and-trees">Forests and trees</a></li><li><a href="#in-code">In code</a></li></ul></nav>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#a-pdf">A PDF</a></li><li><a href="#a-markdown-file-of-plain-slides">A Markdown file of plain slides</a></li><li><a href="#forests-and-trees">Forests and trees</a></li></ul></nav>
 </div>
 </body>
 </html>

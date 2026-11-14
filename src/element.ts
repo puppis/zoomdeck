@@ -78,6 +78,7 @@ export class ZoomDeckElement extends HTMLElement {
   private _source: string | null = null;
   private _generation = 0;
   private _settled = true;
+  private _queued = false;
   private _sizer: ResizeObserver | null = null;
 
   connectedCallback(): void {
@@ -157,11 +158,20 @@ export class ZoomDeckElement extends HTMLElement {
     if (this.isConnected) this._schedule();
   }
 
+  /**
+   * Mount once the current task is over: the attributes of an element upgraded in place, then
+   * its connection, all arrive in one task, and one mount serves them all. A mount scheduled
+   * while another is under way supersedes it: the earlier one gives up at its next await.
+   */
   private _schedule(): void {
-    const generation = ++this._generation;
+    this._generation += 1;
     this._settled = false;
+    if (this._queued) return;
+    this._queued = true;
     this.ready = new Promise((resolve) => {
       queueMicrotask(() => {
+        this._queued = false;
+        const generation = this._generation;
         void this._mount(generation).then(resolve, (error) => {
           console.error('[zoomdeck] <zoom-deck> could not show its deck', error);
           this._settled = true;
@@ -172,6 +182,7 @@ export class ZoomDeckElement extends HTMLElement {
   }
 
   private async _mount(generation: number): Promise<DeckHandle | null> {
+    if (generation !== this._generation) return null;
     this.handle?.destroy();
     this.handle = null;
     if (this._sizer) {
@@ -198,6 +209,8 @@ export class ZoomDeckElement extends HTMLElement {
     if (src) {
       const url = new URL(src, this.baseURI).href;
       deck = inherited ? await pdfDeck({ url, background, foreground, showOutline: this.hasAttribute('outline') }) : url;
+      // Superseded while the document loaded: the newer mount owns the element now.
+      if (generation !== this._generation) return null;
     } else {
       deck = markupDeck({
         source: source as string,

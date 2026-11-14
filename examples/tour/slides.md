@@ -86,7 +86,7 @@ Everything a slide can hold and everything the player does, one chapter per topi
 
 Zoomdeck opens a PDF directly: a paper, a poster, slides typeset elsewhere. Each page is a slide, the pages are visited first to last with a cut between them, the bookmarks of the document name them in the outline, and the text stays sharp at any zoom, since pages are drawn at the density of the screen. {x=-9.35 y=3.9 width=8.6 font_size=20}
 
-```bash {#feat-pdf-cmd x=-9.35 y=-1.7 width=8.6}
+```bash {#feat-pdf-cmd x=-9.35 y=0.6 width=8.6}
 zoomdeck serve paper.pdf
 zoomdeck build paper.pdf -o out
 ```
@@ -117,18 +117,21 @@ The pen, the spotlight, recording and printing work on a PDF as on any deck. On 
 :::
 ```
 
-[[rectangle: #feat-plain-r1 x=1.6 y=1.2 width=4.6 height=2.6 color=GRAY]]
-[[rectangle: #feat-plain-r2 x=6.6 y=1.2 width=4.6 height=2.6 color=GRAY]]
-[[rectangle: #feat-plain-r3 x=4.1 y=-2.4 width=4.6 height=2.6 color=GRAY]]
+[[rectangle: #feat-plain-r1 x=1.7 y=1.2 width=2.6 height=1.6 color=GRAY]]
+[[rectangle: #feat-plain-r2 x=5.0 y=1.2 width=2.6 height=1.6 color=GRAY]]
+[[rectangle: #feat-plain-r3 x=8.3 y=1.2 width=2.6 height=1.6 color=GRAY]]
 
-[One]{#feat-plain-t1 x=1.6 y=1.2 anchor=center font_size=28}
+[One]{#feat-plain-t1 x=1.7 y=1.2 anchor=center font_size=28}
 
-[Two]{#feat-plain-t2 x=6.6 y=1.2 anchor=center font_size=28}
+[Two]{#feat-plain-t2 x=5.0 y=1.2 anchor=center font_size=28}
 
-[Three]{#feat-plain-t3 x=4.1 y=-2.4 anchor=center font_size=28}
+[Three]{#feat-plain-t3 x=8.3 y=1.2 anchor=center font_size=28}
 
-[[arrow: #feat-plain-r1 -> #feat-plain-r2, #feat-plain-a1, label="cut", step=1]]
-[[arrow: #feat-plain-r2 -> #feat-plain-r3, #feat-plain-a2, label="cut", step=2]]
+[[arrow: #feat-plain-r1 -> #feat-plain-r2, #feat-plain-a1, label="cut", color=GRAY]]
+
+[[arrow: #feat-plain-r2 -> #feat-plain-r3, #feat-plain-a2, label="cut", color=GRAY]]
+
+[Visited first to last; the player cuts from each to the next.]{#feat-plain-cap x=0.6 y=-0.9 width=9 font_size=18 color=GRAY}
 
 A deck of your own is a Markdown file of `::: slide` containers. Slides that include no other slide are simply visited in order, with cuts and no animation, like the pages of a document. {#feat-plain-key x=-9.35 y=-3.6 width=18.7 font_size=20}
 
@@ -153,9 +156,13 @@ Each slide keeps its steps, fragments and animations; a slide may still include 
 :::
 ```
 
-[[include: #feat-first x=4.6 y=1.4 width=7 preview=true]]
+[[rectangle: #feat-tree-f1 x=4.6 y=1.6 width=7 height=3.94 color=GRAY stroke_width=1]]
 
-[[include: #feat-second x=4.6 y=-3.1 width=7 preview=true]]
+[[include: #feat-first x=4.6 y=1.6 width=7 preview=true]]
+
+[[rectangle: #feat-tree-f2 x=4.6 y=-3.0 width=7 height=3.94 color=GRAY stroke_width=1]]
+
+[[include: #feat-second x=4.6 y=-3.0 width=7 preview=true]]
 
 An `[[include: #id …]]` places one slide inside another, as a viewport. The camera zooms into each child in turn, goes straight from a child to its next sibling, and zooms back out after the last one. {#feat-tree-key x=-9.35 y=-3.0 width=10 font_size=18}
 
@@ -170,6 +177,8 @@ Visited first; the camera leaves it for its sibling. {x=-7.35 width=14.7 font_si
 
 ::: slide {#feat-second}
 ## Second child
+
+[[rectangle: #feat-second-f x=3 y=-1.5 width=7 height=3.94 color=GRAY stroke_width=1]]
 
 [[include: #feat-detail x=3 y=-1.5 width=7 preview=true]]
 
@@ -187,7 +196,7 @@ The last stop; then the camera zooms back out. {x=-3.35 y=0.2 width=7 font_size=
 
 [Documentation ↗]{#feat-spotlight-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/features.html#spotlight-and-laser}
 
-Hold **Shift** while moving the pointer over this slide: a spotlight follows it. **L** switches between the spotlight and a laser dot, and Shift with the mouse wheel (or a two-finger scroll) changes the size; the settings (⚙, or the comma key) offer the same choices. Both work on any deck, a PDF included, and are recorded with a talk. {x=-9.35 y=3.9 width=18.7 font_size=20}
+Hold **Shift** while moving the pointer over this slide: a spotlight follows it. **L** switches between the spotlight and a laser dot, and Shift with the mouse wheel (or a two-finger scroll) changes the size; the settings (⚙, or the comma key) offer the same choices. Both work on any deck, a PDF included. {x=-9.35 y=3.9 width=18.7 font_size=20}
 
 [Where does this term come from?]{#feat-spot-q x=-8 y=-0.6 font_size=26}
 
@@ -233,7 +242,7 @@ The camera (**C**) shows you next to or over the slides, in a corner or full scr
 
 [a talk (R), a video]{#feat-rec-cap-file at=left:#feat-rec-file.right dx=0.25 font_size=15 color=GRAY}
 
-Try it here: press R, speak, draw, turn the camera on with C, stop, then press ▶ Talk; each asks the browser for permission the first time. {x=2.3 y=-0.4 width=7.2 font_size=17 color=GRAY}
+Try it here: press R, speak, draw, turn the camera on with C, stop, then press ▶ Talk; each asks the browser for permission the first time. The desktop app is to render a recording off line as well, faster than real time, into one flat video file. {x=2.3 y=-0.4 width=7.2 font_size=17 color=GRAY}
 :::
 
 ::: slide {#feat-math width=20}
@@ -243,31 +252,35 @@ Try it here: press R, speak, draw, turn the camera on with C, stop, then press �
 
 [$\displaystyle \int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}$]{#feat-gauss x=-8.6 y=2.6 font_size=36}
 
-[[box: #feat-gauss, #feat-gbox, buff=0.3, corner_radius=0.15, color=TEAL, step=1]]
+[[box: #feat-gauss, #feat-gbox, buff=0.3, corner_radius=0.15, color=TEAL]]
 
-[Gaussian integral]{#feat-glabel x=-8.6 y=-0.2 font_size=22 color=TEAL enter=write step=1}
+[Gaussian integral]{#feat-glabel x=-8.6 y=-0.3 font_size=22 color=TEAL}
 
-[[arrow: #feat-glabel -> #feat-gauss, #feat-why, step=2]]
+[[arrow: #feat-glabel -> #feat-gauss, #feat-why]]
 
-[[rectangle: #feat-hr x=2.4 y=2.4 width=3.2 height=1.7 color=BLUE_E fill_opacity=0.5 sketch=true step=3]]
+[[rectangle: #feat-hr x=2.4 y=2.4 width=3.2 height=1.7 color=BLUE_E fill_opacity=0.5 sketch=true]]
 
-[[circle: #feat-hc right-of:#feat-hr buff=1.4 radius=0.85 color=GREEN_E fill_opacity=0.6 fill_style=cross-hatch sketch=true step=3]]
+[[circle: #feat-hc right-of:#feat-hr buff=1.4 radius=0.85 color=GREEN_E fill_opacity=0.6 fill_style=cross-hatch sketch=true]]
 
-[[arrow: #feat-hr -> #feat-hc, #feat-ha, sketch=true, step=4]]
+[[arrow: #feat-hr -> #feat-hc, #feat-ha, sketch=true]]
 
-[[blob: #feat-hr #feat-hc, #feat-cloud, buff=0.45, color=ORANGE, step=5]]
+[[blob: #feat-hr #feat-hc, #feat-cloud, buff=0.45, color=ORANGE]]
 
-[A point moves]{#feat-mover x=-8.6 y=-1.6 font_size=26}
+[hand-drawn shapes, with a blob around them]{#feat-sketch-cap x=0.6 y=0.3 width=9 font_size=16 color=GRAY}
 
-[[animate: #feat-mover, dx=6.5, step=6]]
+[A point moves]{#feat-mover x=-8.6 y=-2.6 font_size=26}
 
-[[animate: #feat-mover, dy=-1.2, scale=1.3, color=RED, step=7]]
+[[animate: #feat-mover, dx=4.5, step=1]]
 
-[[effect: indicate #feat-mover, step=8]]
+[Before]{#feat-before x=0.6 y=-2.6 font_size=26}
 
-[Written by hand]{#feat-written x=3.4 y=-2.6 font_size=26 enter=write step=9}
+[After]{#feat-after x=0.6 y=-2.6 font_size=26 color=TEAL step=2}
 
-Formulas are LaTeX, rendered by MathJax and zoomable like everything else. Diagrams are directives: arrows, boxes and blobs around elements, icons, and any of them hand-drawn with `sketch=true`. Animations in the style of Manim come with the same directives: write, move, morph, highlight, one step per click. {#feat-math-key x=-9.35 y=-4.3 width=18.7 font_size=16 color=GRAY}
+[[transform: #feat-before -> #feat-after, step=2]]
+
+[Written by hand]{#feat-written x=4.4 y=-2.6 font=Zeyada font_size=40 enter=write step=3}
+
+Formulas are LaTeX, rendered by MathJax and zoomable like everything else. Diagrams are directives: arrows, boxes and blobs around elements, icons, any of them hand-drawn with `sketch=true`. Animations in the style of Manim come with the same directives, one step per click: here a move, a morph, and a line written in the handwriting face. {#feat-math-key x=-9.35 y=-4.3 width=18.7 font_size=16 color=GRAY}
 :::
 
 ::: slide {#sec-content width=36}

@@ -190,11 +190,11 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 
 <span class="tk-directive">[[icon:</span> server <span class="tk-attribute">#worker</span> <span class="tk-attribute">x=</span><span class="tk-number">-6.5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.7</span> <span class="tk-attribute">size=</span><span class="tk-number">1.1</span> <span class="tk-attribute">color=</span>GREEN_E <span class="tk-attribute">label=</span><span class="tk-string">&quot;worker&quot;</span> <span class="tk-attribute">label_side=</span>right<span class="tk-directive">]]</span>
 
-<span class="tk-directive">[[icon:</span> database <span class="tk-attribute">#store</span> <span class="tk-attribute">x=</span><span class="tk-number">-1.5</span> <span class="tk-attribute">y=</span><span class="tk-number">-0.7</span> <span class="tk-attribute">size=</span><span class="tk-number">1.1</span> <span class="tk-attribute">color=</span>GOLD_E <span class="tk-attribute">label=</span><span class="tk-string">&quot;store&quot;</span> <span class="tk-attribute">label_side=</span>right<span class="tk-directive">]]</span>
+<span class="tk-directive">[[icon:</span> database <span class="tk-attribute">#store</span> <span class="tk-attribute">x=</span><span class="tk-number">-2.6</span> <span class="tk-attribute">y=</span><span class="tk-number">-0.7</span> <span class="tk-attribute">size=</span><span class="tk-number">1.1</span> <span class="tk-attribute">color=</span>GOLD_E <span class="tk-attribute">label=</span><span class="tk-string">&quot;store&quot;</span> <span class="tk-attribute">label_side=</span>right<span class="tk-directive">]]</span>
 
 <span class="tk-directive">[[box:</span> <span class="tk-attribute">#web</span> <span class="tk-attribute">#worker</span>, <span class="tk-attribute">#tier</span>, <span class="tk-attribute">buff=</span><span class="tk-number">0.3</span>, <span class="tk-attribute">corner_radius=</span><span class="tk-number">0.2</span>, <span class="tk-attribute">color=</span>GRAY, <span class="tk-attribute">step=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
 
-<span class="tk-directive">[[blob:</span> <span class="tk-attribute">#web</span> <span class="tk-attribute">#worker</span> <span class="tk-attribute">#store</span>, <span class="tk-attribute">#backend</span>, <span class="tk-attribute">buff=</span><span class="tk-number">0.45</span>, <span class="tk-attribute">smoothness=</span><span class="tk-number">0.7</span>, <span class="tk-attribute">color=</span>GREEN_E, <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.08</span>, <span class="tk-attribute">step=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[blob:</span> <span class="tk-attribute">#web</span> <span class="tk-attribute">#worker</span> <span class="tk-attribute">#store</span>, <span class="tk-attribute">#backend</span>, <span class="tk-attribute">buff=</span><span class="tk-number">0.6</span>, <span class="tk-attribute">smoothness=</span><span class="tk-number">1</span>, <span class="tk-attribute">color=</span>GREEN_E, <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.08</span>, <span class="tk-attribute">step=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
 
 <span class="tk-directive">[[brace:</span> <span class="tk-attribute">#store</span>, <span class="tk-attribute">#bs</span>, <span class="tk-attribute">side=</span>bottom, <span class="tk-attribute">label=</span><span class="tk-string">&quot;the data&quot;</span>, <span class="tk-attribute">color=</span>GRAY, <span class="tk-attribute">step=</span><span class="tk-number">3</span><span class="tk-directive">]]</span>
 <span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
@@ -206,16 +206,16 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 
 [[icon: server #worker x=-6.5 y=-1.7 size=1.1 color=GREEN_E label="worker" label_side=right]]
 
-[[icon: database #store x=-1.5 y=-0.7 size=1.1 color=GOLD_E label="store" label_side=right]]
+[[icon: database #store x=-2.6 y=-0.7 size=1.1 color=GOLD_E label="store" label_side=right]]
 
 [[box: #web #worker, #tier, buff=0.3, corner_radius=0.2, color=GRAY, step=1]]
 
-[[blob: #web #worker #store, #backend, buff=0.45, smoothness=0.7, color=GREEN_E, fill_opacity=0.08, step=2]]
+[[blob: #web #worker #store, #backend, buff=0.6, smoothness=1, color=GREEN_E, fill_opacity=0.08, step=2]]
 
 [[brace: #store, #bs, side=bottom, label="the data", color=GRAY, step=3]]
 :::
 </script></zoom-deck></div></div>
-<h2 id="hand-drawn">Hand-drawn<a class="anchor" href="#hand-drawn" aria-label="Link to this section">#</a></h2><p><code>sketch=true</code> draws a shape, an icon, an arrow or an enclosure as if by hand: a wobbly outline and a hatched or solid fill. A <code>::: styles</code> block turns it on for whole kinds at once.</p>
+<h2 id="hand-drawn">Hand-drawn<a class="anchor" href="#hand-drawn" aria-label="Link to this section">#</a></h2><p><code>sketch=true</code> draws a shape, an icon, an arrow or an enclosure as if by hand: a wobbly outline and a hatched or solid fill. A <code>::: styles</code> block turns it on for whole kinds at once, and <code>font=Zeyada</code> sets the matching handwriting face on text. For drawing by hand during the talk itself, the player has the pen (D) and pairs with a tablet or an iPad; see <a href="player.html">The player</a>.</p>
 
 <div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
 </span><span class="tk-directive">::: styles</span>

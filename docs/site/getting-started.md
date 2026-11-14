@@ -91,11 +91,11 @@ Slides are `::: slide` containers; this one has a 20 × 11.25 canvas.
 :::
 
 ::: slide {#details}
-## Details {y=3}
+## Details
 
 [Shown on the first click]{#a step=1}
 
-[And on the second]{#b below:#a left-aligned:#a step=2}
+[And on the second]{#b step=2}
 :::
 ```
 
