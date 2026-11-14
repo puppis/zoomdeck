@@ -26,7 +26,7 @@
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="documents.html">Flat documents and PDFs</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
       </section>
       <section>
         <h4>Diagrams</h4>
@@ -102,8 +102,9 @@ any static server works, for example:</p>
 <p>The folder export also copies the deck's <code>recordings/</code> folder, so a published deck shows its
 Talk button and plays its <a href="player.html#recording-a-talk">recorded talks</a>; a static host serves
 them like any other file.</p>
-<p>The deck argument is a <code>deck.json</code>, a Markdown file (default settings) or a JS/TS module exporting
-a deck definition. The export records nothing in advance: like the dev page, the exported player
+<p>The deck argument is a <code>deck.json</code>, a Markdown file (default settings), a PDF (its pages, with the
+file copied next to the page or embedded in the single file) or a JS/TS module exporting a deck
+definition. The export records nothing in advance: like the dev page, the exported player
 runs the deck's program once when it loads, so changes to the Markdown require a new export while
 settings such as key bindings travel with the viewer's browser.</p>
 <h2 id="a-pdf-printout">A PDF printout<a class="anchor" href="#a-pdf-printout" aria-label="Link to this section">#</a></h2><p>The player's <strong>Print</strong> button (P, also ⌘P / Ctrl+P) writes the deck as a PDF, one page per

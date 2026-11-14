@@ -1,6 +1,6 @@
 /** Tree-shaped zooming presentations that run directly in the browser. */
-export { Slide, PlaceholderSlide, Visit, walk, startingSlide, resolveSize, DEFAULT_ANIMATION_TIME } from './slides';
-export type { SlideOptions, AddChildOptions, ProgramResult } from './slides';
+export { Slide, PlaceholderSlide, Visit, walk, startingSlide, resolveSize, pageSequence, DEFAULT_ANIMATION_TIME } from './slides';
+export type { SlideOptions, AddChildOptions, ProgramResult, PageSequenceOptions } from './slides';
 export { Transform, point, positive } from './geometry';
 export type { Vec3 } from './geometry';
 export {
@@ -65,6 +65,8 @@ export type { PropertyTargets, EffectOptions, AnimationTiming, RateFunction, Tre
 export type { CodeToken, CodeTheme, TokenClass, CodeLayoutOptions } from './markup/code';
 export type { TextRun, MathPiece, MathFactory } from './markup/text';
 export { markupDeck, loadDeckConfig } from './markup/deck';
+export { pdfDeck, loadPdfJs, PdfPage, PageImage, PAGE_IMAGES, pagePixels, pageNames, pageSize, BASE_PAGE_PIXELS, MAX_PAGE_PIXELS } from './pdfdeck';
+export type { PdfDeckOptions, PageImageOptions } from './pdfdeck';
 export { expandImports, importPath, describeOrigin, IMPORT_DIRECTIVE } from './markup/imports';
 export type { ExpandOptions, ExpandedSource, LineOrigin } from './markup/imports';
 export type { MarkupDeckOptions, DeckConfig } from './markup/deck';

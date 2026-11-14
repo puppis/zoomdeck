@@ -31,8 +31,8 @@ The builds are not signed by a registered developer, so the systems warn once:
 ## Using it
 
 Started from a deck (double-clicked or dropped on the app, or passed on the command line) the
-app presents it at once. Started bare, it asks for a deck (`deck.json`, a Markdown file or a slide
-module), in the folder you used last; the very first time it offers instead to copy the guide
+app presents it at once. Started bare, it asks for a deck (`deck.json`, a Markdown file, a PDF or
+a slide module), in the folder you used last; the very first time it offers instead to copy the guide
 deck, with its examples, to a folder of yours, and opens the copy. **File ▸ Copy the Guide Deck…**
 does the same later, into a `zoomdeck-guide` folder inside the one you choose; a copy already
 there is opened as it is, or its files written afresh while the talks recorded in it stay. The

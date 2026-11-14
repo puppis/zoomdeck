@@ -26,7 +26,7 @@ const outDir = join(root, 'docs', 'html');
 const NAV: Array<{ title: string; blurb: string; pages: string[] }> = [
   { title: 'Getting started', blurb: 'Install, write a first deck, set up your editor, and learn how a deck is played.', pages: ['index', 'getting-started', 'editors', 'concepts'] },
   { title: 'Presenting', blurb: 'The player and its tools: keys, spotlight and laser, the pen and the whiteboard, the camera, recording a talk, printing the deck, exporting it to a folder or a single file, and the desktop app.', pages: ['player', 'exporting', 'desktop'] },
-  { title: 'Writing slides', blurb: 'The tree of slides and the content of a slide: prose, formulas, images, listings, tables and charts.', pages: ['slides', 'text', 'math', 'images', 'code', 'tables-charts'] },
+  { title: 'Writing slides', blurb: 'The tree of slides, flat documents and PDFs, and the content of a slide: prose, formulas, images, listings, tables and charts.', pages: ['slides', 'documents', 'text', 'math', 'images', 'code', 'tables-charts'] },
   { title: 'Diagrams', blurb: 'Shapes, arrows, icons and enclosures, crisp or hand-drawn.', pages: ['shapes', 'icons', 'enclosures', 'sketch'] },
   { title: 'Layout and style', blurb: 'Where things go and how they look: flow, anchors, constraints, groups, style sheets, and the deck.json configuration of a deck.', pages: ['positioning', 'groups', 'styles', 'configuration'] },
   { title: 'Motion and interaction', blurb: 'What happens on each click: fragments, animations, focus-only decorations and live web pages.', pages: ['fragments', 'animations', 'focus', 'live-pages'] },

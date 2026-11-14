@@ -68,7 +68,7 @@ clicks; backward and outline jumps show the recorded states without starting pla
 
 `[[skip_next: step=N]]` omits exactly one following event: a fragment step, a child visit (with
 its whole subtree) or the return to the parent, even across numeric gaps. On a child's last step
-it suppresses the zoom back to the parent, which is also what `skip_return=true` on the include
+it suppresses the zoom back to the parent, which is also what `skip_return` on the include
 does more declaratively.
 
 ## Animated images

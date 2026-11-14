@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flat documents and PDFs · Zoomdeck</title>
+<meta name="description" content="Slides without a tree, read page after page with cuts between them, and PDF files opened directly in the player.">
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+</header>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Getting started</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Presenting</h4>
+        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li><li><a href="desktop.html">The desktop app</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="documents.html" aria-current="page">Flat documents and PDFs</a><ul class="subsections"><li><a href="#a-markdown-file-without-includes">A Markdown file without includes</a></li><li><a href="#a-pdf">A PDF</a></li><li><a href="#in-code">In code</a></li></ul></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+      </section>
+      <section>
+        <h4>Diagrams</h4>
+        <ul><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li></ul>
+      </section>
+      <section>
+        <h4>Layout and style</h4>
+        <ul><li><a href="positioning.html">Positioning</a></li><li><a href="groups.html">Groups</a></li><li><a href="styles.html">Styles</a></li><li><a href="configuration.html">Configuration</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion and interaction</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Advanced</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html">A deck inside a page</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>Flat documents and PDFs</h1>
+      <p class="lead">Slides without a tree, read page after page with cuts between them, and PDF files opened directly in the player.</p>
+      <p>Not every talk is a tree. A Markdown file may simply list slides, and a paper or a set of
+slides already typeset as a PDF can be shown by the player as it is, page after page.</p>
+<h2 id="a-markdown-file-without-includes">A Markdown file without includes<a class="anchor" href="#a-markdown-file-without-includes" aria-label="Link to this section">#</a></h2><pre><code class="language-markdown"><span class="tk-directive">::: slide </span><span class="tk-attribute">{#first width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold"># </span><span class="tk-bold">A document without a tree</span>
+<span class="tk-directive">:::</span>
+
+<span class="tk-directive">::: slide </span><span class="tk-attribute">{#second width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">The second page</span>
+
+[Pages can still have steps]<span class="tk-attribute">{#a step=</span><span class="tk-number">1</span><span class="tk-attribute">}</span>
+<span class="tk-directive">:::</span>
+
+<span class="tk-directive">::: slide </span><span class="tk-attribute">{#third width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">The third page has a child</span>
+<span class="tk-directive">[[include:</span> <span class="tk-attribute">#detail</span> <span class="tk-attribute">x=</span><span class="tk-number">5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.2</span> <span class="tk-attribute">width=</span><span class="tk-number">8</span><span class="tk-directive">]]</span>
+<span class="tk-directive">:::</span>
+
+<span class="tk-directive">::: slide </span><span class="tk-attribute">{#detail}</span>
+<span class="tk-type tk-bold">### </span><span class="tk-bold">A detail</span>
+<span class="tk-directive">:::</span></code></pre>
+<p>When several slides are included by none, they are the <strong>pages</strong> of a flat document, visited
+in the order they are written. The camera cuts from each page to the next, with no zoom and no
+fade, as a classical document is read, and the deck ends on the last page. A page is an
+ordinary slide otherwise: it has steps, fragments and animations, and it may include children
+of its own, which are entered and left with the usual zooms. The outline lists the pages at the
+top level. A single slide that nothing includes is, as before, the root of a tree.</p>
+<p>A page that would rather pan to its neighbour says <code>transition=zoom</code>; the pages then slide past
+one another, since they are laid out side by side. <code>root</code> in <code>deck.json</code> is for trees: naming a
+root in a document with several top-level slides is an error.</p>
+<h2 id="a-pdf">A PDF<a class="anchor" href="#a-pdf" aria-label="Link to this section">#</a></h2><pre><code class="language-bash">zoomdeck serve paper.pdf
+zoomdeck build paper.pdf <span class="tk-attribute">-o</span> build/paper <span class="tk-attribute">--one-file</span></code></pre>
+<p>The player, the <code>zoomdeck</code> command, the dev page (<code>/?deck=path/to/paper.pdf</code>) and the desktop
+app open a PDF directly: each page becomes a slide, the pages form a flat document as above,
+and the document's bookmarks, where it has them, name the pages in the outline (the others are
+numbered). The presentation viewport takes the proportions of the first page, so a portrait
+paper is shown upright with room at the sides and a landscape slide deck fills the screen. The
+title is the document's own, or its file name.</p>
+<p>Pages are drawn by <a href="https://mozilla.github.io/pdf.js/">pdf.js</a> into pictures at the density
+of the screen wherever the camera rests, drawn again when the window changes size, and reduced
+to a small picture once they are out of view, so that the text of a page stays as sharp as the
+deck's own while a long document never holds every page at full resolution. The pen, the
+whiteboard, the spotlight, recording and printing work on a PDF as on any deck; a printout
+renders the pages again at the chosen width.</p>
+<p>The exported folder copies the file next to the page; the single-file export embeds it. A page
+of your own can show a PDF with <code>mountDeck(element, 'paper.pdf')</code> or with <code>pdfDeck({ url })</code>
+(<a href="embedding.html">A deck inside a page</a>).</p>
+<h2 id="in-code">In code<a class="anchor" href="#in-code" aria-label="Link to this section">#</a></h2><p><code>pageSequence(slides)</code> arranges slides written in TypeScript as the pages of a flat document:
+it returns the hidden root to give <code>defineDeck</code>. The root is never a stop and the camera is never
+shown its canvas; a move whose nearest common ancestor is a hidden slide is a cut.</p>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="slides.html">← Slides and the tree</a>
+      <a class="next" href="text.html">Text →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#a-markdown-file-without-includes">A Markdown file without includes</a></li><li><a href="#a-pdf">A PDF</a></li><li><a href="#in-code">In code</a></li></ul></nav>
+</div>
+</body>
+</html>

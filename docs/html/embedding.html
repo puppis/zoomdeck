@@ -26,7 +26,7 @@
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="documents.html">Flat documents and PDFs</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
       </section>
       <section>
         <h4>Diagrams</h4>
@@ -65,7 +65,8 @@ whenever the box is resized.</p>
 });</code></pre>
 <p>The first argument is the element: give it a size with your own CSS (a height, or an
 <code>aspect-ratio</code>), since the player fills it. The second is the deck: the URL of a <code>deck.json</code>,
-the URL of a Markdown file, or a deck definition made with <code>defineDeck</code> or <code>markupDeck</code>. A
+of a Markdown file or of a PDF, or a deck definition made with <code>defineDeck</code>, <code>markupDeck</code> or
+<code>pdfDeck</code>. A
 <code>deck.json</code> loads its slide classes through the browser's own <code>import</code>, so a bundler is not
 required for them. The options:</p>
 <table>

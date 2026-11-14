@@ -5,7 +5,7 @@
 import { Group, MoveAlongPath, ReplacementTransform, type Animation, type Mobject } from 'manim-web';
 import { sketchSeed, type OutlineMobject } from '../sketch';
 import { PropertyAnimation, RATE_FUNCTIONS, Tremble, enterAnimation, exitAnimation, makeEffect, type PropertyTargets } from '../animations';
-import { Slide, PlaceholderSlide, resolveSize, startingSlide, type SourceLocation, type TransitionMode } from '../slides';
+import { Slide, PlaceholderSlide, pageSequence, resolveSize, startingSlide, type SourceLocation, type TransitionMode } from '../slides';
 import { LINKED_OBJECTS, SOURCE_OBJECTS } from '../links';
 import { RasterImage, RasterMovie } from '../raster';
 import { VideoClip, VideoPlay } from '../video';
@@ -50,6 +50,13 @@ function instantiateSlide(spec: CodeSlideSpec, namespace: SlideNamespace | null)
   return child;
 }
 
+/** The return choice `skip_return=` or `return_to_parent=` make; null when neither is written. */
+function returnChoice(attrs: Record<string, string>): boolean | null {
+  if ('return_to_parent' in attrs) return attrs.return_to_parent === 'true';
+  if ('skip_return' in attrs) return attrs.skip_return !== 'true';
+  return null;
+}
+
 /** A compiled markup component using normal local membership and child calls. */
 export class MarkupSlide extends Slide {
   readonly spec: SlideSpec;
@@ -72,7 +79,7 @@ export class MarkupSlide extends Slide {
       ),
       onlyThis: (spec.attributes.only_this ?? 'false') === 'true',
       startHere: (spec.attributes.start_here ?? 'false') === 'true',
-      skipReturn: (spec.attributes.skip_return ?? 'false') === 'true',
+      returnToParent: returnChoice(spec.attributes),
       transition: (spec.attributes.transition as TransitionMode | undefined) ?? null,
       preview: (spec.attributes.preview ?? 'false') === 'true',
     });
@@ -462,7 +469,7 @@ export class SlideBuilder {
       ]),
     );
     const definitions = new Map(document.slides.map((slide) => [slide.id, slide]));
-    const order = [document.root];
+    const order = [...document.roots];
     for (let i = 0; i < order.length; i++) {
       const slide = definitions.get(order[i]) as SlideSpec;
       for (const item of slide.items) if (item instanceof IncludeSpec) order.push(item.target);
@@ -480,7 +487,7 @@ export class SlideBuilder {
         const attrs = item.attributes;
         if ('only_this' in attrs) child.onlyThis = attrs.only_this === 'true';
         if ('start_here' in attrs) child.startHere = attrs.start_here === 'true';
-        if ('skip_return' in attrs) child.skipReturn = attrs.skip_return === 'true';
+        if ('skip_return' in attrs || 'return_to_parent' in attrs) child.returnToParent = returnChoice(attrs);
         if ('transition' in attrs) child.transition = attrs.transition as TransitionMode;
         if ('preview' in attrs) child.preview = attrs.preview === 'true';
         let width = numberValue(attrs, 'width', item.line);
@@ -496,7 +503,8 @@ export class SlideBuilder {
         if (child.viewport) SOURCE_OBJECTS.set(child.viewport as unknown as Mobject, child.placement);
       }
     }
-    const root = this.slides.get(document.root) as Slide;
+    // Several top-level slides are the pages of a flat document, under a hidden root that is never a stop.
+    const root = document.sequence ? pageSequence(document.roots.map((id) => this.slides.get(id) as Slide)) : this.slides.get(document.root) as Slide;
     try {
       startingSlide(root);
     } catch (error) {

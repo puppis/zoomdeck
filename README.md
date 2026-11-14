@@ -91,6 +91,7 @@ chosen through the query string:
 
 - `http://localhost:5173/?deck=examples/guide/deck.json` — a Markdown deck with its configuration
 - `http://localhost:5173/?deck=path/to/slides.md` — a bare Markdown file with default settings
+- `http://localhost:5173/?deck=path/to/paper.pdf` — a PDF, page after page
 - `http://localhost:5173/?deck=examples/tree-deck&scene=Demo` — a named export of a module
 
 ### Command line
@@ -110,7 +111,7 @@ node bin/zoomdeck.mjs build examples/guide/deck.json -o build/guide --one-file
 player opens source lines with: E for the current stop, Alt + click for an element), `--scene
 Name` (for module decks) and repeatable `--watch PATH`; `zoomdeck jump <file> <line>` moves the
 running preview to the stop of a source line. `build` accepts `--show-outline` and `--scene Name`. The deck argument is a
-`deck.json`, a Markdown file, or a JS/TS module exporting a deck definition. Code-authored decks
+`deck.json`, a Markdown file, a PDF, or a JS/TS module exporting a deck definition. Code-authored decks
 in `--one-file` mode embed the code but not images they load themselves.
 
 ## Markdown decks

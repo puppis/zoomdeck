@@ -1,8 +1,8 @@
 /**
  * Development entry: `?deck=examples/tree-deck&scene=Demo` loads a deck module
- * (or `?deck=path/deck.json`, `?deck=path/slides.md`) from this checkout and starts the player. Without `?deck=` it opens the guide.
+ * (or `?deck=path/deck.json`, `?deck=path/slides.md`, `?deck=path/paper.pdf`) from this checkout and starts the player. Without `?deck=` it opens the guide.
  */
-import { runDeck, loadDeckConfig, markupDeck } from './index';
+import { runDeck, loadDeckConfig, markupDeck, pdfDeck } from './index';
 import type { DeckDefinition } from './deck';
 
 const params = new URLSearchParams(location.search);
@@ -16,6 +16,8 @@ async function main(): Promise<void> {
     definition = await loadDeckConfig(base, async (url) => (await import(/* @vite-ignore */ url)) as Record<string, unknown>);
   } else if (deckPath.endsWith('.md')) {
     definition = markupDeck({ url: base });
+  } else if (/\.pdf$/i.test(deckPath)) {
+    definition = await pdfDeck({ url: base });
   } else {
     const modulePath = /\.[cm]?[jt]sx?$/.test(base) ? base : `${base}.ts`;
     const module = (await import(/* @vite-ignore */ modulePath)) as Record<string, DeckDefinition>;

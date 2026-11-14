@@ -226,7 +226,7 @@ Larger decks: the order in which children are visited, splitting the markup into
 
 [[include: #branch x=4.7 y=-0.4 width=9 angle=0.08 preview=true]]
 
-Every slide is a `::: slide {#id}` container with its own canvas, 16 × 9 by default or `width` × `height`. An `[[include: #id …]]` places a child viewport in the parent’s coordinates; the camera visits each child in turn and zooms back out. {#tree-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+Every slide is a `::: slide {#id}` container with its own canvas, 16 × 9 by default or `width` × `height`. An `[[include: #id …]]` places a child viewport in the parent’s coordinates; the camera visits each child in turn, going from one to the next, and zooms back out after the last. {#tree-key x=-9.35 y=-3.6 width=18.7 font_size=20}
 
 Includes without `step` are visited in source order after the parent’s own steps. `width` or `height` sizes the viewport (the other follows the child’s proportions) and `angle` tilts it, in radians. {#tree-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
 :::
@@ -835,7 +835,7 @@ Focus-only elements are static (no `step`, `hide` or `play`), are drawn behind t
 
 ```markdown {#children-source x=-9.35 y=3.9 width=9.1}
 [[include: #visited-second x=4.7 y=-1.3 width=6 step=2 skip_return=true]]
-[[include: #visited-first x=-4.7 y=-1.3 width=6 step=1 transition=cut]]
+[[include: #visited-first x=-4.7 y=-1.3 width=6 step=1 transition=cut return_to_parent]]
 
 [Revealed at step 2, before the second child]{#between x=-9.35 y=0.7 step=2}
 
@@ -844,7 +844,7 @@ Focus-only elements are static (no `step`, `hide` or `play`), are drawn behind t
 
 [[include: #visited-second x=4.7 y=-1.3 width=6 step=2 skip_return=true]]
 
-[[include: #visited-first x=-4.7 y=-1.3 width=6 step=1 transition=cut]]
+[[include: #visited-first x=-4.7 y=-1.3 width=6 step=1 transition=cut return_to_parent]]
 
 [Revealed at step 2, before the second child]{#between x=-9.35 y=0.7 step=2}
 
@@ -852,7 +852,7 @@ Focus-only elements are static (no `step`, `hide` or `play`), are drawn behind t
 
 An include with `step` interleaves the child visit with the parent’s fragments; without `step` it is visited in source order after the numbered steps. An undefined slide, here `#missing`, is a red placeholder, skipped in playback. {#children-key x=-9.35 y=-3.6 width=18.7 font_size=20}
 
-`skip_return=true` leaves a child straight for the next stop; `preview=true` shows a child before its first visit (the tiles of the front page); `transition=cut` enters and leaves without the camera move, like a PDF page (`presenter.transition` sets it for the whole deck). {#children-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+The camera leaves a child for the next sibling and zooms back to the parent only after the last one: `return_to_parent` brings it back earlier (here, for step 2), `skip_return` not at all. `preview=true` shows a child before its first visit; `transition=cut` cuts instead of zooming, like a PDF page. {#children-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
 :::
 
 ::: slide {#visited-first}

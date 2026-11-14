@@ -60,8 +60,9 @@ The folder export also copies the deck's `recordings/` folder, so a published de
 Talk button and plays its [recorded talks](player.html#recording-a-talk); a static host serves
 them like any other file.
 
-The deck argument is a `deck.json`, a Markdown file (default settings) or a JS/TS module exporting
-a deck definition. The export records nothing in advance: like the dev page, the exported player
+The deck argument is a `deck.json`, a Markdown file (default settings), a PDF (its pages, with the
+file copied next to the page or embedded in the single file) or a JS/TS module exporting a deck
+definition. The export records nothing in advance: like the dev page, the exported player
 runs the deck's program once when it loads, so changes to the Markdown require a new export while
 settings such as key bindings travel with the viewer's browser.
 

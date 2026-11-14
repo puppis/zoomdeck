@@ -26,7 +26,7 @@
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="documents.html">Flat documents and PDFs</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
       </section>
       <section>
         <h4>Diagrams</h4>
@@ -102,6 +102,10 @@ the <strong>guide deck</strong>. Other decks are selected through the query stri
 <tr>
 <td><code>/?deck=path/to/slides.md</code></td>
 <td>a bare Markdown file with default settings</td>
+</tr>
+<tr>
+<td><code>/?deck=path/to/paper.pdf</code></td>
+<td>a PDF, page after page (<a href="documents.html">Flat documents and PDFs</a>)</td>
 </tr>
 <tr>
 <td><code>/?deck=examples/tree-deck&amp;scene=Demo</code></td>
@@ -180,8 +184,8 @@ insists on a port. The server stops with Ctrl+C, and also by itself when the pro
 started it (an editor's build panel or task) ends.</p>
 <p><code>serve</code> accepts <code>--port N</code>, <code>--host</code> (also listen on the network, for a <a href="player.html#a-tablet-as-a-drawing-pad">tablet</a>), <code>--no-open</code>, <code>--editor NAME</code> (the editor that the player's E key and Alt + click open source lines with), <code>--scene Name</code> and repeatable <code>--watch PATH</code>; <code>build</code>
 accepts <code>--show-outline</code> and <code>--scene Name</code>. <code>zoomdeck jump &lt;file&gt; &lt;line&gt;</code> moves the running
-preview to the stop of a source line. The deck argument is a <code>deck.json</code>, a Markdown file or
-a JS/TS module exporting a deck definition. The single-file export opens by double-click and needs
+preview to the stop of a source line. The deck argument is a <code>deck.json</code>, a Markdown file, a PDF
+or a JS/TS module exporting a deck definition. The single-file export opens by double-click and needs
 no server; <a href="exporting.html">Exporting a deck</a> has the details.</p>
 <h2 id="present-it">Present it<a class="anchor" href="#present-it" aria-label="Link to this section">#</a></h2><p>The preview and the exports play a deck with the same player, so what you try here is what the
 audience will see. <code>→</code> or Space advances, <code>←</code> goes back (playing the stop backwards), <code>O</code> opens

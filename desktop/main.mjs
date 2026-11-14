@@ -8,7 +8,7 @@
  * opens that deck; started bare it asks for one in the folder used last, and the first time it
  * offers to copy the guide deck to a folder of the user's, out of the app.
  *
- *   Zoomdeck [deck.json | slides.md] [--local] [--port N] [--editor NAME] [--watch PATH] [--scene Name]
+ *   Zoomdeck [deck.json | slides.md | paper.pdf] [--local] [--port N] [--editor NAME] [--watch PATH] [--scene Name]
  */
 import { app, BrowserWindow, Menu, dialog, shell, session, desktopCapturer, screen, systemPreferences } from 'electron';
 import { fileURLToPath } from 'node:url';
@@ -95,7 +95,7 @@ function remember(deckPath) {
 async function openDeck(deckPath) {
   const target = resolveDeckPath(deckPath);
   if (!existsSync(target) || !deckKind(target)) {
-    dialog.showErrorBox('Zoomdeck', `Not a deck: ${deckPath}\nOpen a deck.json, a Markdown file or a slide module.`);
+    dialog.showErrorBox('Zoomdeck', `Not a deck: ${deckPath}\nOpen a deck.json, a Markdown file, a PDF or a slide module.`);
     return;
   }
   const previous = preview;
@@ -182,7 +182,7 @@ async function chooseDeck(folder = readStore().folder) {
     ...(folder ? { defaultPath: folder } : {}),
     properties: ['openFile'],
     filters: [
-      { name: 'Decks', extensions: ['json', 'md', 'markdown', 'ts', 'js', 'mjs', 'tsx'] },
+      { name: 'Decks', extensions: ['json', 'md', 'markdown', 'pdf', 'ts', 'js', 'mjs', 'tsx'] },
       { name: 'All files', extensions: ['*'] },
     ],
   });
@@ -238,7 +238,7 @@ async function start() {
     const { response } = await dialog.showMessageBox({
       type: 'none',
       message: 'Welcome to Zoomdeck',
-      detail: 'Open a deck of yours (a deck.json, a Markdown file or a slide module), or copy the guide deck with its examples to a folder of yours and start from there.',
+      detail: 'Open a deck of yours (a deck.json, a Markdown file, a PDF or a slide module), or copy the guide deck with its examples to a folder of yours and start from there.',
       buttons: ['Open a Deck…', 'Copy the Guide…', 'Quit'],
       defaultId: 1,
       cancelId: 2,

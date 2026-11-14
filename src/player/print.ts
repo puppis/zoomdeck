@@ -6,6 +6,7 @@
  */
 import type { NavigationData } from '../runtime';
 import { RasterImage } from '../raster';
+import { PageImage } from '../pdfdeck';
 import { VideoClip } from '../video';
 import type { Player } from './player';
 import type { Stage } from './stage';
@@ -113,6 +114,7 @@ export async function printDeck(player: Player, stage: Stage, options: PrintOpti
       // Pictures decode and videos seek after the fact: wait for the ones this stop shows.
       await RasterImage.settle();
       await VideoClip.settle();
+      await PageImage.settle();
       images.push(await encodeCanvas(capture()));
       // Let the progress reach the screen between pages.
       await new Promise((resolve) => setTimeout(resolve, 0));

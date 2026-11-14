@@ -26,7 +26,7 @@
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="slides.html" aria-current="page">Slides and the tree</a><ul class="subsections"><li><a href="#slide-containers">Slide containers</a></li><li><a href="#canvas-size">Canvas size</a></li><li><a href="#includes">Includes</a></li><li><a href="#visit-order">Visit order</a></li><li><a href="#flags">Flags</a></li><li><a href="#cuts-instead-of-zooms">Cuts instead of zooms</a></li><li><a href="#code-authored-children">Code-authored children</a></li><li><a href="#splitting-a-deck-into-files">Splitting a deck into files</a></li></ul></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+        <ul><li><a href="slides.html" aria-current="page">Slides and the tree</a><ul class="subsections"><li><a href="#slide-containers">Slide containers</a></li><li><a href="#canvas-size">Canvas size</a></li><li><a href="#includes">Includes</a></li><li><a href="#visit-order">Visit order</a></li><li><a href="#flags">Flags</a></li><li><a href="#cuts-instead-of-zooms">Cuts instead of zooms</a></li><li><a href="#code-authored-children">Code-authored children</a></li><li><a href="#splitting-a-deck-into-files">Splitting a deck into files</a></li></ul></li><li><a href="documents.html">Flat documents and PDFs</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
       </section>
       <section>
         <h4>Diagrams</h4>
@@ -63,9 +63,11 @@
 <li>Every slide is a <code>::: slide {#id} … :::</code> container. IDs start with a letter or underscore and
 continue with letters, digits, <code>_</code>, <code>.</code> or <code>-</code>; they are unique in the document.</li>
 <li>Definition order and heading levels never determine nesting; only includes do.</li>
-<li>The <strong>root</strong> is the unique slide that nothing includes. Every slide must belong to that tree:
-unknown references, cycles and including the same slide twice are errors. To show the same
+<li>The <strong>root</strong> is the slide that nothing includes; every other slide belongs to its tree.
+Unknown references, cycles and including the same slide twice are errors. To show the same
 content twice, define it twice under different IDs.</li>
+<li>Several slides that nothing includes are the pages of a <a href="documents.html">flat document</a>,
+visited first to last with cuts between them, as the pages of a PDF are.</li>
 <li><code>title=&quot;…&quot;</code> names the slide in the outline; otherwise its first heading, then its ID, is used.</li>
 </ul>
 <h2 id="canvas-size">Canvas size<a class="anchor" href="#canvas-size" aria-label="Link to this section">#</a></h2><p><code>width</code> and <code>height</code> on a slide set its canvas. The default is 16 × 9 (or
@@ -85,8 +87,11 @@ same thing; <code>subslide</code> also places <a href="#code-authored-children">
 the placeholder is never a stop, so a deck keeps running while a slide is still unwritten.</p>
 <h2 id="visit-order">Visit order<a class="anchor" href="#visit-order" aria-label="Link to this section">#</a></h2><p>Children without <code>step</code> are visited in source order after all numbered steps of the parent.
 <code>step=N</code> interleaves a visit with the parent's fragments: the parent's changes of step N play
-first, then the child is visited. On return the parent resumes with its previous state; children
-keep their final appearance as previews.</p>
+first, then the child is visited. When a child ends, the camera goes straight to the next sibling
+while one is left to visit, and zooms back to the parent only after the last one; the parent then
+resumes with its previous state, and children keep their final appearance as previews. A fragment
+of the parent that falls between two children plays while the camera is still on the first of
+them; <code>return_to_parent</code> on that child brings the camera back before it (<a href="#flags">Flags</a>).</p>
 <pre><code class="language-markdown">[Shown first]<span class="tk-attribute">{#a step=</span><span class="tk-number">1</span><span class="tk-attribute">}</span>
 [[include: #left x=-4 y=-2 width=7 step=1]]     ← visited after the reveal of step 1
 [Shown next]<span class="tk-attribute">{#b step=</span><span class="tk-number">2</span><span class="tk-attribute">}</span>
@@ -111,9 +116,14 @@ keep their final appearance as previews.</p>
 <td>prepare only this subtree while editing; everything else becomes a placeholder</td>
 </tr>
 <tr>
-<td><code>skip_return=true</code></td>
+<td><code>return_to_parent</code></td>
 <td>slide, include, subslide</td>
-<td>leave this subtree straight for the next stop, without zooming back to the parent first</td>
+<td>zoom back to the parent after this child even when a sibling follows; <code>return_to_parent=false</code> is <code>skip_return</code></td>
+</tr>
+<tr>
+<td><code>skip_return</code></td>
+<td>slide, include, subslide</td>
+<td>leave this child straight for the next stop even when it is the last one, without zooming back to the parent; <code>skip_return=false</code> is <code>return_to_parent</code></td>
 </tr>
 <tr>
 <td><code>transition=cut</code></td>
@@ -127,8 +137,10 @@ keep their final appearance as previews.</p>
 </tr>
 </tbody>
 </table>
-<p><code>skip_return</code> is the clean way to move from one subslide to its next sibling without going back
-to the parent: the camera goes directly from the finished child to the sibling.</p>
+<p>A flag written bare means <code>=true</code>: <code>[[include: #proof skip_return]]</code>. By default a child returns
+to its parent only when it is the last one visited, so the camera moves from sibling to sibling
+and comes back once at the end; <code>return_to_parent</code> and <code>skip_return</code> force either choice for one
+child. They are the two sides of one choice and are never written together.</p>
 <h2 id="cuts-instead-of-zooms">Cuts instead of zooms<a class="anchor" href="#cuts-instead-of-zooms" aria-label="Link to this section">#</a></h2><p>By default the camera flies between slides. <code>transition=cut</code> on a slide (or on the include that
 places it) replaces the view at once whenever the camera moves into or out of that slide, as
 between the pages of a PDF; fades of focus-only decorations still play. To present a whole deck
@@ -158,7 +170,7 @@ preview server reloads when any of them changes.</p>
     </article>
     <footer class="pager">
       <a class="prev" href="desktop.html">← The desktop app</a>
-      <a class="next" href="text.html">Text →</a>
+      <a class="next" href="documents.html">Flat documents and PDFs →</a>
     </footer>
   </main>
   <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#slide-containers">Slide containers</a></li><li><a href="#canvas-size">Canvas size</a></li><li><a href="#includes">Includes</a></li><li><a href="#visit-order">Visit order</a></li><li><a href="#flags">Flags</a></li><li><a href="#cuts-instead-of-zooms">Cuts instead of zooms</a></li><li><a href="#code-authored-children">Code-authored children</a></li><li><a href="#splitting-a-deck-into-files">Splitting a deck into files</a></li></ul></nav>

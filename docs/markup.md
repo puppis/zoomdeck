@@ -22,9 +22,10 @@ every construct of this page live, each next to the listing that produced it; op
 
 - IDs start with a letter or underscore and continue with letters, digits, `_`, `.` or `-`; they
   are unique in the document. Definition order and heading levels never determine nesting.
-- The root is the unique slide that nothing includes. Every slide must belong to that tree;
-  unknown references, cycles and including the same slide twice are errors. To repeat a
-  component, define it again under a fresh ID.
+- The root is the slide that nothing includes; every other slide belongs to its tree. Unknown
+  references, cycles and including the same slide twice are errors. To repeat a component,
+  define it again under a fresh ID. Several slides that nothing includes are the pages of a flat
+  document, visited first to last with cuts between them (a PDF opened in the player is the same).
 - `width` / `height` on a **slide** set its canvas (default 16 × 9, or `layout.defaultSlideSize`).
   One dimension infers the other from the default proportions; two choose a different aspect.
 - On an **include** or **subslide**, `x`, `y` place the viewport's center, `width` / `height` size it
@@ -36,8 +37,11 @@ every construct of this page live, each next to the listing that produced it; op
   placeholder is never a stop, so the deck keeps running while the slide is still unwritten.
 - `start_here=true` on a slide, include or subslide opens playback at that slide (at most one).
   `only_this=true` prepares only that subtree while editing; everything else becomes a placeholder.
-- `skip_return=true` on a slide, include or subslide leaves that subtree straight for the next stop
-  (the next sibling, or the parent's next fragment) without zooming back out first.
+- When a child ends, the camera goes straight to the next sibling while one is left to visit and
+  zooms back to the parent only after the last one. `return_to_parent` on a slide, include or
+  subslide zooms back after that child even when a sibling follows; `skip_return` leaves it straight
+  for the next stop even when it is the last one. The two are one choice seen from both sides
+  (`skip_return=false` is `return_to_parent`); a flag written bare means `=true`.
 - `preview=true` on a slide, include or subslide shows its content before its first visit instead of
   fading it in on entry.
 - `transition=cut` on a slide, include or subslide replaces the view at once when the camera moves

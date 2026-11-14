@@ -39,6 +39,7 @@ the **guide deck**. Other decks are selected through the query string:
 | --- | --- |
 | `/?deck=examples/guide/deck.json` | a Markdown deck with its configuration (the guide) |
 | `/?deck=path/to/slides.md` | a bare Markdown file with default settings |
+| `/?deck=path/to/paper.pdf` | a PDF, page after page ([Flat documents and PDFs](documents.html)) |
 | `/?deck=examples/tree-deck&scene=Demo` | a named export of a module |
 
 The page reloads when a deck file under `examples/` changes and returns to the slide and step you
@@ -138,8 +139,8 @@ started it (an editor's build panel or task) ends.
 
 `serve` accepts `--port N`, `--host` (also listen on the network, for a [tablet](player.html#a-tablet-as-a-drawing-pad)), `--no-open`, `--editor NAME` (the editor that the player's E key and Alt + click open source lines with), `--scene Name` and repeatable `--watch PATH`; `build`
 accepts `--show-outline` and `--scene Name`. `zoomdeck jump <file> <line>` moves the running
-preview to the stop of a source line. The deck argument is a `deck.json`, a Markdown file or
-a JS/TS module exporting a deck definition. The single-file export opens by double-click and needs
+preview to the stop of a source line. The deck argument is a `deck.json`, a Markdown file, a PDF
+or a JS/TS module exporting a deck definition. The single-file export opens by double-click and needs
 no server; [Exporting a deck](exporting.html) has the details.
 
 ## Present it

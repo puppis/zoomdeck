@@ -25,11 +25,14 @@ root (32 × 18)
 ## Pre-order visits
 
 Playback walks the tree in pre-order: a slide runs its own steps and visits its children in
-order, each visit zooming the camera into the child's viewport; returning zooms back out. The
+order, each visit zooming the camera into the child's viewport; from a finished child the camera
+goes straight to the next sibling, and zooms back out to the parent after the last one. The
 order within a slide is the source order of its includes, unless an include carries `step=N`,
 which interleaves the visit with the parent's numbered fragments. A child's content is invisible
-until its first visit and fades in then, unless its include says `preview=true` or `presenter.revealOnEntry` is `false`. `skip_return` and `skip_next`
-let a presentation flow from one child straight to the next.
+until its first visit and fades in then, unless its include says `preview=true` or `presenter.revealOnEntry` is `false`. `return_to_parent`, `skip_return`
+and `skip_next` change where the camera goes when a child ends. A document whose slides include
+none of the others is a [flat document](documents.html), read page after page with cuts between
+them, as a PDF opened in the player is.
 
 ## Coordinates
 

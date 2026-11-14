@@ -26,7 +26,7 @@
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="documents.html">Flat documents and PDFs</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
       </section>
       <section>
         <h4>Diagrams</h4>
@@ -62,11 +62,14 @@ and when a viewport moves every descendant follows.</p>
 │   └── detail A2 (rotated by <span class="tk-number">0.1</span> rad)
 └── chapter B</code></pre>
 <h2 id="pre-order-visits">Pre-order visits<a class="anchor" href="#pre-order-visits" aria-label="Link to this section">#</a></h2><p>Playback walks the tree in pre-order: a slide runs its own steps and visits its children in
-order, each visit zooming the camera into the child's viewport; returning zooms back out. The
+order, each visit zooming the camera into the child's viewport; from a finished child the camera
+goes straight to the next sibling, and zooms back out to the parent after the last one. The
 order within a slide is the source order of its includes, unless an include carries <code>step=N</code>,
 which interleaves the visit with the parent's numbered fragments. A child's content is invisible
-until its first visit and fades in then, unless its include says <code>preview=true</code> or <code>presenter.revealOnEntry</code> is <code>false</code>. <code>skip_return</code> and <code>skip_next</code>
-let a presentation flow from one child straight to the next.</p>
+until its first visit and fades in then, unless its include says <code>preview=true</code> or <code>presenter.revealOnEntry</code> is <code>false</code>. <code>return_to_parent</code>, <code>skip_return</code>
+and <code>skip_next</code> change where the camera goes when a child ends. A document whose slides include
+none of the others is a <a href="documents.html">flat document</a>, read page after page with cuts between
+them, as a PDF opened in the player is.</p>
 <h2 id="coordinates">Coordinates<a class="anchor" href="#coordinates" aria-label="Link to this section">#</a></h2><p>Inside a slide, coordinates are the slide's own: the origin is the center of the canvas, <code>x</code> grows
 to the right and <code>y</code> upwards, and one unit is one unit of the canvas whatever the zoom level. Text
 is positioned by its left edge and first baseline, images and shapes by their center, and any

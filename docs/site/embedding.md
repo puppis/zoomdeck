@@ -25,7 +25,8 @@ const deck = await mountDeck(document.querySelector('#lecture'), '/decks/lecture
 
 The first argument is the element: give it a size with your own CSS (a height, or an
 `aspect-ratio`), since the player fills it. The second is the deck: the URL of a `deck.json`,
-the URL of a Markdown file, or a deck definition made with `defineDeck` or `markupDeck`. A
+of a Markdown file or of a PDF, or a deck definition made with `defineDeck`, `markupDeck` or
+`pdfDeck`. A
 `deck.json` loads its slide classes through the browser's own `import`, so a bundler is not
 required for them. The options:
 

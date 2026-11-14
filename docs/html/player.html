@@ -26,7 +26,7 @@
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="documents.html">Flat documents and PDFs</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
       </section>
       <section>
         <h4>Diagrams</h4>
@@ -471,7 +471,9 @@ reverse settles it and steps back once more, so quick presses step through stops
 <h2 id="cuts">Cuts<a class="anchor" href="#cuts" aria-label="Link to this section">#</a></h2><p><code>&quot;presenter&quot;: { &quot;transition&quot;: &quot;cut&quot; }</code> replaces the view at once when the camera moves between
 slides, like turning the pages of a PDF, while fragments and animations inside a slide still
 play. <code>transition=cut</code> on a slide, include or subslide does the same for that slide alone, and
-<code>transition=zoom</code> brings the zoom back for one slide of a <code>cut</code> deck.</p>
+<code>transition=zoom</code> brings the zoom back for one slide of a <code>cut</code> deck. A PDF opened in the player,
+and a Markdown file whose slides include none of the others, cut between their pages by themselves
+(<a href="documents.html">Flat documents and PDFs</a>).</p>
 <h2 id="outline-and-deep-links">Outline and deep links<a class="anchor" href="#outline-and-deep-links" aria-label="Link to this section">#</a></h2><p>The outline lists every slide; clicking one jumps to its first stop. The address bar follows the
 current stop as <code>#step=N</code>, which can be shared or bookmarked; <code>#slide=id</code> opens the first stop of a
 slide by its markup ID (or a slide by name). A URL without a hash opens at the first stop, and a

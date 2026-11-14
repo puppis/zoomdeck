@@ -26,7 +26,7 @@
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="documents.html">Flat documents and PDFs</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
       </section>
       <section>
         <h4>Diagrams</h4>
@@ -63,10 +63,10 @@ links to the page with the explanations and examples.</p>
 <tbody>
 <tr>
 <td><code>::: slide {#id attrs} … :::</code></td>
-<td>a slide; attrs: <code>title</code>, <code>width</code>, <code>height</code>, <code>start_here</code>, <code>only_this</code>, <code>skip_return</code>, <code>transition</code>, <code>preview</code></td>
+<td>a slide; attrs: <code>title</code>, <code>width</code>, <code>height</code>, <code>start_here</code>, <code>only_this</code>, <code>return_to_parent</code>, <code>skip_return</code>, <code>transition</code>, <code>preview</code></td>
 </tr>
 <tr>
-<td><code>[[include: #slide, placement, step, start_here, only_this, skip_return, transition, preview]]</code></td>
+<td><code>[[include: #slide, placement, step, start_here, only_this, return_to_parent, skip_return, transition, preview]]</code></td>
 <td>a child slide placed in this one; <code>subslide: #id</code> is the same</td>
 </tr>
 <tr>
@@ -416,9 +416,9 @@ commas; <code>(x,y)</code> tuples stay whole; <code>#id</code> sets the ID; <cod
 <td>visible only while the slide is focused</td>
 </tr>
 <tr>
-<td><code>start_here</code>, <code>only_this</code>, <code>skip_return</code>, <code>transition</code>, <code>preview</code></td>
+<td><code>start_here</code>, <code>only_this</code>, <code>return_to_parent</code>, <code>skip_return</code>, <code>transition</code>, <code>preview</code></td>
 <td>slides, includes, subslides</td>
-<td>opening stop, partial preparation, leaving a subtree without zooming out, <code>zoom</code> or <code>cut</code>, content shown before the first visit (<a href="slides.html#flags">Slides and the tree</a>)</td>
+<td>opening stop, partial preparation, zooming back to the parent after this child or leaving it straight for the next stop (by default only the last child returns), <code>zoom</code> or <code>cut</code>, content shown before the first visit; written bare, a flag means <code>=true</code> (<a href="slides.html#flags">Slides and the tree</a>)</td>
 </tr>
 </tbody>
 </table>

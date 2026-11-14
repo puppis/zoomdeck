@@ -68,6 +68,14 @@ export interface PresenterConfigOptions {
   revealOnEntry?: boolean;
 }
 
+/** The nearest slide that is `a` or above it and `b` or above it; null when they belong to different trees. */
+export function commonAncestor(a: Slide, b: Slide): Slide | null {
+  const above = new Set<Slide>();
+  for (let slide: Slide | null = a; slide !== null; slide = slide.parent) above.add(slide);
+  for (let slide: Slide | null = b; slide !== null; slide = slide.parent) if (above.has(slide)) return slide;
+  return null;
+}
+
 /** Timing and camera policy shared by every slide in one deck. */
 export class PresenterConfig {
   readonly transitionTime: number;
@@ -616,7 +624,7 @@ export class SlideContext extends LocalScene {
     this.slide = slide;
     this.transform = transform;
     const config = presenter.config;
-    if (config.showSlideBorders) {
+    if (config.showSlideBorders && !slide.hidden) {
       this._canvasBorder = new Rectangle({
         width: slide.width,
         height: slide.height,
@@ -625,7 +633,7 @@ export class SlideContext extends LocalScene {
         strokeWidth: config.slideBorderWidth,
       });
     }
-    const backgrounds = config.showSlideGrid ? [coordinateGrid(slide.width, slide.height)] : [];
+    const backgrounds = config.showSlideGrid && !slide.hidden ? [coordinateGrid(slide.width, slide.height)] : [];
     this.display = new Display(this, {
       contentOpacity: slide.parent === null || slide instanceof PlaceholderSlide || slide.preview || !config.revealOnEntry ? 1 : 0,
       gridOpacity: slide.parent === null && backgrounds.length ? 1 : 0,
@@ -1009,11 +1017,12 @@ export class Presenter {
 
   /**
    * Seconds of the camera move from one slide to another: zero (a cut) when either slide asks
-   * for a cut, or when neither says anything and the deck's `transition` is `cut`.
+   * for a cut, when neither says anything and the move crosses from one page of a flat document
+   * to another (their nearest common ancestor is hidden), or when the deck's `transition` is `cut`.
    */
   transitionTime(from: Slide, to: Slide): number {
     const modes = [from.transition, to.transition].filter((mode): mode is TransitionMode => mode !== null);
-    const mode = modes.includes('cut') ? 'cut' : modes.length ? 'zoom' : this.config.transition;
+    const mode = modes.includes('cut') ? 'cut' : modes.length ? 'zoom' : commonAncestor(from, to)?.hidden ? 'cut' : this.config.transition;
     return mode === 'cut' ? 0 : this.config.transitionTime;
   }
 
@@ -1029,6 +1038,11 @@ export class Presenter {
     this.history.mark(ctx.slide, returning ? 'return' : 'entry');
     // An entry shows the slide's definition; a return shows the line of the parent that placed the child.
     this.history.openClip.source = (returning ? from?.placement : null) ?? ctx.slide.source;
+    if (ctx.slide.hidden) {
+      // Never a stop: the camera stays where it is (on the first page, when the deck starts) and no clip closes here.
+      this.focused = ctx;
+      return;
+    }
     const target = this.cameraTarget(ctx);
     if (initial) {
       this.camera = target;
@@ -1102,6 +1116,32 @@ export class Presenter {
     }
   }
 
+  /**
+   * Whether leaving `slide` zooms back to its parent: as the slide says when it says anything,
+   * otherwise only when no sibling is left to visit, so that the camera goes straight from one
+   * child to the next and comes back after the last. A hidden parent is never returned to.
+   */
+  private _returnsToParent(slide: Slide): boolean {
+    const parent = slide.parent;
+    if (parent === null || parent.hidden) return false;
+    if (slide.returnToParent !== null) return slide.returnToParent;
+    return !parent._children.some((sibling) => {
+      if (sibling instanceof PlaceholderSlide || !this.enabled(sibling)) return false;
+      return !(this.contexts.get(sibling) as SlideContext).visited;
+    });
+  }
+
+  /** The context the camera shows first: a hidden root's first child that will be a stop, else the root itself. */
+  private _firstShown(rootCtx: SlideContext): SlideContext {
+    let ctx = rootCtx;
+    while (ctx.slide.hidden) {
+      const child = ctx.slide._children.find((candidate) => !(candidate instanceof PlaceholderSlide) && this.enabled(candidate));
+      if (!child) break;
+      ctx = this.contexts.get(child) as SlideContext;
+    }
+    return ctx;
+  }
+
   private _nextChild(ctx: SlideContext): Slide | null {
     while (ctx.autoChild !== null && (this.contexts.get(ctx.autoChild) as SlideContext).visited) {
       ctx.autoChild = ctx.autoChild.nextSibling;
@@ -1119,7 +1159,7 @@ export class Presenter {
     rootCtx.display.contentOpacity = 1;
     rootCtx.display.gridOpacity = rootCtx.display.backgrounds.length ? 1 : 0;
     rootCtx.display.sync(rootCtx.transform);
-    this.camera = this.cameraTarget(rootCtx);
+    this.camera = this.cameraTarget(this._firstShown(rootCtx));
     this.history.snapshot(-1);
     await this._enter(rootCtx, true);
     while (this.active !== null) {
@@ -1160,7 +1200,7 @@ export class Presenter {
         break;
       }
       this.active = this.contexts.get(parent) as SlideContext;
-      ctx.returnSkipped = ctx.slide.skipReturn || this._consumeSkipNext();
+      ctx.returnSkipped = !this._returnsToParent(ctx.slide) || this._consumeSkipNext();
       if (this.enabled(parent)) {
         if (!ctx.returnSkipped && (!this.selectedRender || this.focused !== this.active)) {
           await this._focus(this.active, { returning: true, from: ctx.slide });
@@ -1183,13 +1223,18 @@ export class Presenter {
   /** Serializable slide outline and clip metadata for the player. */
   navigation(): NavigationData {
     if (!this.root) throw new Error('No slide tree has been prepared');
+    const shownParent = (slide: Slide): Slide | null => {
+      let parent = slide.parent;
+      while (parent && parent.hidden) parent = parent.parent;
+      return parent;
+    };
     return {
       version: 1,
-      slides: [...walk(this.root)].map((slide) => ({
+      slides: [...walk(this.root)].filter((slide) => !slide.hidden).map((slide) => ({
         id: this._ids.get(slide) as number,
         name: slide.name,
         key: this._keys.get(slide) as string,
-        parent: slide.parent ? (this._ids.get(slide.parent) as number) : null,
+        parent: shownParent(slide) ? (this._ids.get(shownParent(slide) as Slide) as number) : null,
         placeholder: slide instanceof PlaceholderSlide || (this.selectedRender && !this._renderSlides.has(slide)),
         source: slide.source,
         placement: slide.placement,

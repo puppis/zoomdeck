@@ -22,9 +22,11 @@ description: Slide containers, canvas sizes, includes, visit order, start and pr
 - Every slide is a `::: slide {#id} … :::` container. IDs start with a letter or underscore and
   continue with letters, digits, `_`, `.` or `-`; they are unique in the document.
 - Definition order and heading levels never determine nesting; only includes do.
-- The **root** is the unique slide that nothing includes. Every slide must belong to that tree:
-  unknown references, cycles and including the same slide twice are errors. To show the same
+- The **root** is the slide that nothing includes; every other slide belongs to its tree.
+  Unknown references, cycles and including the same slide twice are errors. To show the same
   content twice, define it twice under different IDs.
+- Several slides that nothing includes are the pages of a [flat document](documents.html),
+  visited first to last with cuts between them, as the pages of a PDF are.
 - `title="…"` names the slide in the outline; otherwise its first heading, then its ID, is used.
 
 ## Canvas size
@@ -59,8 +61,11 @@ the placeholder is never a stop, so a deck keeps running while a slide is still 
 
 Children without `step` are visited in source order after all numbered steps of the parent.
 `step=N` interleaves a visit with the parent's fragments: the parent's changes of step N play
-first, then the child is visited. On return the parent resumes with its previous state; children
-keep their final appearance as previews.
+first, then the child is visited. When a child ends, the camera goes straight to the next sibling
+while one is left to visit, and zooms back to the parent only after the last one; the parent then
+resumes with its previous state, and children keep their final appearance as previews. A fragment
+of the parent that falls between two children plays while the camera is still on the first of
+them; `return_to_parent` on that child brings the camera back before it ([Flags](#flags)).
 
 ```markdown
 [Shown first]{#a step=1}
@@ -75,12 +80,15 @@ keep their final appearance as previews.
 | --- | --- | --- |
 | `start_here=true` | slide, include, subslide | open playback at this slide (at most one in a deck) |
 | `only_this=true` | slide, include | prepare only this subtree while editing; everything else becomes a placeholder |
-| `skip_return=true` | slide, include, subslide | leave this subtree straight for the next stop, without zooming back to the parent first |
+| `return_to_parent` | slide, include, subslide | zoom back to the parent after this child even when a sibling follows; `return_to_parent=false` is `skip_return` |
+| `skip_return` | slide, include, subslide | leave this child straight for the next stop even when it is the last one, without zooming back to the parent; `skip_return=false` is `return_to_parent` |
 | `transition=cut` | slide, include, subslide | enter and leave this slide without a camera animation; `transition=zoom` restores the zoom under a `cut` deck |
 | `preview=true` | slide, include, subslide | show the child's content before its first visit instead of fading it in on entry, as the tiles of the guide's front page do |
 
-`skip_return` is the clean way to move from one subslide to its next sibling without going back
-to the parent: the camera goes directly from the finished child to the sibling.
+A flag written bare means `=true`: `[[include: #proof skip_return]]`. By default a child returns
+to its parent only when it is the last one visited, so the camera moves from sibling to sibling
+and comes back once at the end; `return_to_parent` and `skip_return` force either choice for one
+child. They are the two sides of one choice and are never written together.
 
 ## Cuts instead of zooms
 

@@ -181,9 +181,26 @@ export class SlideSpec {
 export type StyleSheet = Record<string, Attributes>;
 
 /** Validated slide definitions, a root ID, an asset-resolution base URL and the style sheet. */
+/**
+ * A parsed document: its slides, the root of the tree they form, or, when several slides are
+ * included by none, those top-level slides in document order, which playback visits first to
+ * last as the pages of a flat document (`roots`; `root` is then the first of them).
+ */
 export class MarkupDocument {
-  constructor(readonly slides: SlideSpec[], readonly root: string, readonly basePath = '', readonly styles: StyleSheet = {}) {}
+  readonly roots: string[];
+
+  constructor(readonly slides: SlideSpec[], readonly root: string, readonly basePath = '', readonly styles: StyleSheet = {}, roots?: string[]) {
+    this.roots = roots ?? (root ? [root] : []);
+  }
+
+  /** Whether the document is a flat sequence of top-level slides rather than one tree. */
+  get sequence(): boolean {
+    return this.roots.length > 1;
+  }
 }
+
+/** Boolean attributes that may be written bare: `skip_return` means `skip_return=true`. */
+export const BARE_FLAGS = new Set(['start_here', 'only_this', 'skip_return', 'return_to_parent', 'preview', 'focus_only']);
 
 export const IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_.-]*$/;
 export const CONTAINER = /^\s*:::\s*(.*?)\s*$/;
@@ -489,7 +506,8 @@ export function parseAttributes(source: string, line: number, options: { commas?
     } else if (token.includes(':') && POSITION_REFERENCES.has(token.split(':', 1)[0])) {
       const index = token.indexOf(':');
       [key, value] = [token.slice(0, index), token.slice(index + 1)];
-    } else throw new MarkupError(`Expected an attribute such as x=2; found ${JSON.stringify(token)}`, line);
+    } else if (BARE_FLAGS.has(token)) [key, value] = [token, 'true'];
+    else throw new MarkupError(`Expected an attribute such as x=2; found ${JSON.stringify(token)}`, line);
     if (key in result) throw new MarkupError(`Duplicate attribute ${JSON.stringify(key)}`, line);
     result[key] = value;
   }

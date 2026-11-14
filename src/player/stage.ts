@@ -8,6 +8,7 @@ import { TextBatcher } from './textbatch';
 import type { Presenter } from '../runtime';
 import type { Vec3 } from '../geometry';
 import { TEXT_LINES, textBasePxPerWorld, type StyledLine } from '../markup/text';
+import { BASE_PAGE_PIXELS, PAGE_IMAGES, pagePixels } from '../pdfdeck';
 
 export interface StageOptions {
   background: string;
@@ -192,13 +193,15 @@ export class Stage {
   refreshText(budgetMs = 6): void {
     this._cancelRefresh();
     const presenter = this.presenter;
-    if (!presenter || !TEXT_LINES.size) return;
+    if (!presenter) return;
     const view = this._view();
     const center = presenter.camera.center;
     // The canvas's own ratio: the screen's, or the one the settings force.
     const canvas = this.container.querySelector('canvas');
     const deviceRatio = canvas && this._width ? canvas.width / this._width : (typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1);
     const pxPerWorld = (this._width * deviceRatio) / view.width;
+    this._refreshPages(view, center, pxPerWorld);
+    if (!TEXT_LINES.size) return;
     const toDevicePixel = (x: number, y: number) => {
       const pixel = this.worldToPixel(x, y);
       return { x: pixel.x * deviceRatio, y: pixel.y * deviceRatio };
@@ -257,6 +260,35 @@ export class Stage {
         this._refreshFrame = null;
         this.refreshText(budgetMs);
       });
+    }
+  }
+
+  /**
+   * Ask the pages of a PDF on this stage for pictures at the screen's density while they are
+   * in view, the nearest first, and for the small base picture once they are out of view. The
+   * pages draw in the background and the stage redraws as each arrives.
+   */
+  private _refreshPages(view: { width: number; height: number }, center: Vec3, pxPerWorld: number): void {
+    if (!PAGE_IMAGES.size) return;
+    const root = this.scene.threeScene;
+    const marginX = view.width * 0.25;
+    const marginY = view.height * 0.25;
+    for (const page of PAGE_IMAGES) {
+      const object = page.getThreeObject();
+      let ancestor = object.parent;
+      while (ancestor && ancestor !== root) ancestor = ancestor.parent;
+      if (ancestor !== root) continue;
+      const m = object.matrixWorld.elements;
+      const scale = Math.hypot(m[0], m[1], m[2]);
+      const x = m[12];
+      const y = m[13];
+      const halfWidth = (page.getWidth() * scale) / 2;
+      const halfHeight = (page.getHeight() * scale) / 2;
+      const outside = x + halfWidth < center[0] - view.width / 2 - marginX || x - halfWidth > center[0] + view.width / 2 + marginX
+        || y + halfHeight < center[1] - view.height / 2 - marginY || y - halfHeight > center[1] + view.height / 2 + marginY;
+      const distance = Math.hypot(x - center[0], y - center[1]);
+      if (outside) page.request(BASE_PAGE_PIXELS, 1 + distance, false);
+      else page.request(pagePixels(2 * Math.max(halfWidth, halfHeight), pxPerWorld), 0, true);
     }
   }
 

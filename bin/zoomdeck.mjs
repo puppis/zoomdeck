@@ -7,7 +7,7 @@
  *   zoomdeck build <deck> -o <folder> [--one-file] [--show-outline]
  *   zoomdeck jump <file> <line>        show, in the running preview, the stop of a source line
  *
- * `<deck>` is a `deck.json`, a Markdown file, or a JS/TS module exporting a
+ * `<deck>` is a `deck.json`, a Markdown file, a PDF, or a JS/TS module exporting a
  * deck definition (optionally `--scene Name` for a named export).
  */
 import { promises as fs } from 'node:fs';
@@ -102,6 +102,7 @@ export function deckKind(deckPath) {
   const ext = extname(deckPath).toLowerCase();
   if (ext === '.json') return 'json';
   if (ext === '.md' || ext === '.markdown') return 'markdown';
+  if (ext === '.pdf') return 'pdf';
   if (['.ts', '.js', '.mjs', '.tsx'].includes(ext)) return 'module';
   return null;
 }
@@ -242,6 +243,23 @@ import * as module from ${JSON.stringify(modulePath)};
 const definition = ${options.scene ? `module[${JSON.stringify(options.scene)}]` : 'module.default'};
 if (!definition) throw new Error('Deck module has no export ${options.scene ?? 'default'}');
 runDeck({ ...definition, showOutline: definition.showOutline || ${options.showOutline} });`;
+  } else if (kind === 'pdf') {
+    // The document travels with the export: as a file next to the page, or inside it as a data URL.
+    let url;
+    if (options.oneFile) {
+      url = `data:application/pdf;base64,${(await fs.readFile(deckPath)).toString('base64')}`;
+    } else {
+      await fs.mkdir(join(outDir, 'deck'), { recursive: true });
+      await fs.copyFile(deckPath, join(outDir, 'deck', basename(deckPath)));
+      url = `deck/${basename(deckPath)}`;
+    }
+    entrySource = `import { runDeck, pdfDeck } from ${JSON.stringify(sourceIndex)};
+const url = ${JSON.stringify(url)};
+runDeck(await pdfDeck({
+  url: url.startsWith('data:') ? url : new URL(url, location.href).href,
+  title: ${JSON.stringify(basename(deckPath, extname(deckPath)))},
+  showOutline: ${options.showOutline},
+}));`;
   } else {
     const config = kind === 'json' ? JSON.parse(await fs.readFile(deckPath, 'utf8')) : { markup: basename(deckPath) };
     const markupPath = resolve(deckDir, config.markup);

@@ -26,7 +26,7 @@
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="documents.html">Flat documents and PDFs</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
       </section>
       <section>
         <h4>Diagrams</h4>
@@ -100,7 +100,7 @@ visits it triggers) has finished; <code>step=0</code> marks the slide's entry. C
 clicks; backward and outline jumps show the recorded states without starting playback.</p>
 <h2 id="skipping-the-next-event">Skipping the next event<a class="anchor" href="#skipping-the-next-event" aria-label="Link to this section">#</a></h2><p><code>[[skip_next: step=N]]</code> omits exactly one following event: a fragment step, a child visit (with
 its whole subtree) or the return to the parent, even across numeric gaps. On a child's last step
-it suppresses the zoom back to the parent, which is also what <code>skip_return=true</code> on the include
+it suppresses the zoom back to the parent, which is also what <code>skip_return</code> on the include
 does more declaratively.</p>
 <h2 id="animated-images">Animated images<a class="anchor" href="#animated-images" aria-label="Link to this section">#</a></h2><p>Images with <code>play=once</code> or <code>play=loop</code> play when they are revealed: finite ones finish before the
 pause, loops become a looping stop that the next click leaves. See <a href="images.html">Images</a>.</p>

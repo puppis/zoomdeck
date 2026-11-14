@@ -17,6 +17,7 @@ import { loadDefaultFonts } from '../fonts';
 import { RASTER_STATS } from '../markup/text';
 import type { Bookmark } from '../position';
 import { RasterImage } from '../raster';
+import { PageImage, pdfDeck } from '../pdfdeck';
 import { PadLink, padLinkAvailable, padRoom } from './pad';
 import { EditorSync, editorSyncAvailable } from './sync';
 
@@ -153,6 +154,7 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
       for (const shown of stages) if (!players.get(shown)?.runner.running) shown.render();
     });
   };
+  PageImage.onUpdate = RasterImage.onUpdate;
   // Text is redrawn at the screen's resolution whenever the camera comes to rest or the stage is resized.
   player.on('state', ({ state }) => {
     if (state === 'playing') stage.unrestText();
@@ -308,7 +310,7 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
 // A deck as one element of a larger page
 // ---------------------------------------------------------------------------
 
-/** What `mountDeck` shows: a deck definition, or the URL of a `deck.json` or of a Markdown file. */
+/** What `mountDeck` shows: a deck definition, or the URL of a `deck.json`, of a Markdown file or of a PDF. */
 export type DeckSource = DeckDefinition | ResolvedDeck | string;
 
 export interface MountDeckOptions {
@@ -358,11 +360,12 @@ export interface DeckHandle {
   destroy(): void;
 }
 
-/** Load a `deck.json` (its slide modules through the browser's own `import`) or a Markdown file. */
+/** Load a `deck.json` (its slide modules through the browser's own `import`), a PDF or a Markdown file. */
 async function loadSource(source: string): Promise<ResolvedDeck> {
   if (/\.json(\?|#|$)/.test(source)) {
     return loadDeckConfig(source, async (url) => (await import(/* @vite-ignore */ url)) as SlideNamespace);
   }
+  if (/\.pdf(\?|#|$)/i.test(source)) return pdfDeck({ url: source });
   return markupDeck({ url: source });
 }
 

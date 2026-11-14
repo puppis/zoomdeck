@@ -3,8 +3,8 @@ import { resolve } from 'node:path';
 import { dropEngineMuxers } from './vite.config';
 
 // Library build: dist/zoomdeck.js (ES module) for npm consumers. The rendering
-// engine and the other runtime dependencies stay external; fonts and the
-// player stylesheet are inlined.
+// engine and the other runtime dependencies stay external (pdf.js too, loaded only when a PDF
+// is opened; its worker travels as a chunk of its own); fonts and the player stylesheet are inlined.
 const stub = resolve(__dirname, 'src/stubs/empty.ts');
 const optionalStubs = Object.fromEntries(
   ['pptxgenjs', '@myriaddreamin/typst.ts', '@myriaddreamin/typst-ts-web-compiler', '@myriaddreamin/typst-ts-renderer'].map((name) => [name, stub]),
@@ -20,6 +20,6 @@ export default defineConfig({
     emptyOutDir: true,
     sourcemap: true,
     lib: { entry: resolve(__dirname, 'src/index.ts'), formats: ['es'], fileName: 'zoomdeck' },
-    rollupOptions: { external: ['manim-web', 'three', 'markdown-it', 'gifuct-js', 'roughjs', /^three\//] },
+    rollupOptions: { external: ['manim-web', 'three', 'markdown-it', 'gifuct-js', 'roughjs', 'pdfjs-dist', /^three\//] },
   },
 });

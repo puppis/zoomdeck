@@ -49,8 +49,21 @@ export interface SlideOptions {
   build?: BuildCallback;
   /** Callback used instead of subclassing `construct`. */
   program?: ProgramCallback;
-  /** Entering the next slide does not animate the camera back to this slide first. */
+  /**
+   * Whether leaving this slide zooms back to its parent before the next stop: `true` always,
+   * `false` never, and unset (the default) only when no sibling is left to visit, so that the
+   * camera goes straight from one child to the next and comes back after the last. The same
+   * choice as `skipReturn`, from the other side; set one of the two.
+   */
+  returnToParent?: boolean | null;
+  /** Leave this slide without zooming back to its parent first (`returnToParent: false`). */
   skipReturn?: boolean;
+  /**
+   * Never a stop of its own: playback runs straight into its first child and leaves its last
+   * child without coming back. The root of a flat sequence of pages is hidden; the camera is
+   * never shown its canvas.
+   */
+  hidden?: boolean;
   /** Select this slide for a partial render. */
   onlyThis?: boolean;
   /** Open playback at this slide's first entry. At most one slide may enable it. */
@@ -79,6 +92,18 @@ export interface SourceLocation {
 
 export const TRANSITION_MODES: readonly TransitionMode[] = ['zoom', 'cut'];
 
+/** The return choice of a slide from its options: `returnToParent` first, `skipReturn` otherwise, unset when neither says anything. */
+function returnChoice(options: { returnToParent?: boolean | null; skipReturn?: boolean }): boolean | null {
+  if (options.returnToParent !== undefined) {
+    if (options.skipReturn !== undefined && options.skipReturn === options.returnToParent) {
+      throw new Error('returnToParent and skipReturn contradict each other; set one of them');
+    }
+    return options.returnToParent;
+  }
+  if (options.skipReturn !== undefined) return !options.skipReturn;
+  return null;
+}
+
 function checkTransition(mode: TransitionMode | null | undefined): TransitionMode | null {
   if (mode == null) return null;
   if (!TRANSITION_MODES.includes(mode)) throw new Error('transition must be zoom or cut');
@@ -102,6 +127,8 @@ export interface AddChildOptions extends PlacementStyle {
   angle?: number;
   onlyThis?: boolean;
   startHere?: boolean;
+  returnToParent?: boolean | null;
+  skipReturn?: boolean;
   transition?: TransitionMode | null;
   preview?: boolean;
 }
@@ -114,7 +141,10 @@ export class Slide {
   name: string;
   width: number;
   height: number;
-  skipReturn: boolean;
+  /** See `SlideOptions.returnToParent`; null leaves the choice to the position among the siblings. */
+  returnToParent: boolean | null;
+  /** Never a stop of its own; see `SlideOptions.hidden`. */
+  hidden: boolean;
   onlyThis: boolean;
   startHere: boolean;
   transition: TransitionMode | null;
@@ -145,7 +175,8 @@ export class Slide {
       [width, height] = options.size;
     }
     [this.width, this.height] = resolveSize(width, height, (this.constructor as typeof Slide).defaultSize);
-    this.skipReturn = Boolean(options.skipReturn);
+    this.returnToParent = returnChoice(options);
+    this.hidden = Boolean(options.hidden);
     this.onlyThis = Boolean(options.onlyThis);
     this.startHere = Boolean(options.startHere);
     this.transition = checkTransition(options.transition);
@@ -153,6 +184,15 @@ export class Slide {
     this._declareCallback = options.declare ?? null;
     this._buildCallback = options.build ?? null;
     this._programCallback = options.program ?? null;
+  }
+
+  /** Whether leaving this slide skips the zoom back to its parent; setting it decides `returnToParent`. */
+  get skipReturn(): boolean {
+    return this.returnToParent === false;
+  }
+
+  set skipReturn(value: boolean) {
+    this.returnToParent = !value;
   }
 
   /** Duration of automatic content and grid fades, in seconds. */
@@ -180,6 +220,7 @@ export class Slide {
     }
     if (options.onlyThis != null) child.onlyThis = Boolean(options.onlyThis);
     if (options.startHere != null) child.startHere = Boolean(options.startHere);
+    if (options.returnToParent !== undefined || options.skipReturn !== undefined) child.returnToParent = returnChoice(options);
     if (options.transition !== undefined) child.transition = checkTransition(options.transition);
     if (options.preview !== undefined) child.preview = Boolean(options.preview);
     let { width, height } = options;
@@ -282,4 +323,34 @@ export function* walk(root: Slide): Generator<Slide> {
     while (node !== root && node.nextSibling === null) node = node.parent as Slide;
     node = node === root ? null : node.nextSibling;
   }
+}
+
+export interface PageSequenceOptions {
+  /** Name of the hidden root in code that lists the tree; never shown. */
+  name?: string;
+}
+
+/**
+ * Arrange `pages` as a flat document: a hidden root places them side by side, far enough apart
+ * that no page is ever in view with another, and playback cuts from each to the next, first to
+ * last, without a stop or a zoom at the root (a move whose nearest common ancestor is hidden is a
+ * cut unless a slide asks for a zoom). A page shows at once instead of fading in, and keeps its
+ * own children and their zooms. This is what a Markdown document without includes and a PDF become.
+ */
+export function pageSequence(pages: readonly Slide[], options: PageSequenceOptions = {}): Slide {
+  if (!pages.length) throw new Error('A sequence of pages needs at least one page');
+  for (const page of pages) if (page.parent !== null) throw new Error('A page of a sequence cannot have a parent already');
+  // Three times the largest page between centers: a view padded around a page of any proportions never reaches the next.
+  const unit = Math.max(...pages.map((page) => Math.max(page.width, page.height)));
+  const spacing = 3 * unit;
+  const root = new Slide(options.name ?? 'Pages', {
+    width: spacing * pages.length,
+    height: Math.max(...pages.map((page) => page.height)),
+    hidden: true,
+  });
+  pages.forEach((page, index) => {
+    page.preview = true;
+    root.addChild(page, { center: [(index - (pages.length - 1) / 2) * spacing, 0, 0], width: page.width, height: page.height });
+  });
+  return root;
 }

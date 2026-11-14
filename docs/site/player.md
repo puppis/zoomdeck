@@ -372,7 +372,9 @@ reverse settles it and steps back once more, so quick presses step through stops
 `"presenter": { "transition": "cut" }` replaces the view at once when the camera moves between
 slides, like turning the pages of a PDF, while fragments and animations inside a slide still
 play. `transition=cut` on a slide, include or subslide does the same for that slide alone, and
-`transition=zoom` brings the zoom back for one slide of a `cut` deck.
+`transition=zoom` brings the zoom back for one slide of a `cut` deck. A PDF opened in the player,
+and a Markdown file whose slides include none of the others, cut between their pages by themselves
+([Flat documents and PDFs](documents.html)).
 
 ## Outline and deep links
 
