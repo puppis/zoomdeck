@@ -16,6 +16,7 @@ function attached(object: THREE.Object3D, root: THREE.Object3D): boolean {
   return false;
 }
 
+/** The HTML layer of live pages, moved and scaled with the camera over their hosts. */
 export class IframeLayer {
   readonly element: HTMLElement;
   private readonly _elements = new Map<IframeHost, HTMLIFrameElement>();

@@ -62,6 +62,7 @@ function attached(object: THREE.Object3D, root: THREE.Object3D): boolean {
   return false;
 }
 
+/** The clickable areas over linked elements, kept in place as the camera moves. */
 export class LinkLayer {
   readonly element: HTMLElement;
   /** Handles a `#…` target inside the deck (a slide or step); returns false to let the browser follow it. */

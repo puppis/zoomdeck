@@ -15,6 +15,7 @@ import { VGroup, VMobject, parseSVGPathData } from 'manim-web';
 
 /** Fill patterns of Rough.js. */
 export const FILL_STYLES = ['hachure', 'solid', 'zigzag', 'cross-hatch', 'dots', 'dashed', 'zigzag-line'] as const;
+/** The fill patterns of hand-drawn shapes. */
 export type FillStyle = (typeof FILL_STYLES)[number];
 
 /** Pixels per logical unit handed to Rough.js: a 16-unit slide is sketched as if it were 960 px wide. */
@@ -23,6 +24,7 @@ export const SKETCH_SCALE = 60;
 /** Engine stroke width units per logical unit. */
 const STROKE_UNITS = 100;
 
+/** The hand-drawn look of a shape: stroke, fill, pattern, roughness, bowing, hatching and seed. */
 export interface SketchOptions {
   /** Outline color; black by default. */
   color?: string;

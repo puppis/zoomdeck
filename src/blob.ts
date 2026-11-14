@@ -19,6 +19,7 @@ export interface Rect {
   height: number;
 }
 
+/** How a blob is drawn around its parts: margin, smoothness, stroke and fill. */
 export interface BlobOptions {
   /** Distance between the rectangles and the curve, in logical units; 0.3 by default. */
   buff?: number;

@@ -1,0 +1,1825 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The markup language, in full · Zoomdeck</title>
+<meta name="description" content="Every construct of the dialect and every attribute it takes, with values, defaults and the rules the parser enforces; the reference to search when the guide has shown the idea.">
+<link rel="stylesheet" href="docs.css">
+<script>
+// The side columns stay hidden or shown as the reader last left them, before the page paints.
+try { for (const side of ['nav', 'outline']) if (localStorage.getItem('zoomdeck-docs-' + side) === 'hidden') document.documentElement.classList.add(side + '-hidden'); } catch (e) {}
+</script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+  <form class="search" role="search" onsubmit="return false">
+    <input type="search" id="search" placeholder="Search the documentation" aria-label="Search the documentation" autocomplete="off" aria-controls="search-results" aria-expanded="false">
+    <div id="search-results" class="search-results" hidden></div>
+  </form>
+  <span class="sides">
+    <button class="side-toggle" data-side="nav" title="Show or hide the table of contents">Contents</button>
+    <button class="side-toggle" data-side="outline" title="Show or hide the outline of this page">On this page</button>
+  </span>
+</header>
+<script>
+for (const button of document.querySelectorAll('.side-toggle')) {
+  const side = button.dataset.side;
+  const sync = () => button.setAttribute('aria-pressed', String(!document.documentElement.classList.contains(side + '-hidden')));
+  button.addEventListener('click', () => {
+    const hidden = document.documentElement.classList.toggle(side + '-hidden');
+    try { localStorage.setItem('zoomdeck-docs-' + side, hidden ? 'hidden' : 'shown'); } catch (e) {}
+    sync();
+  });
+  sync();
+}
+// Search: the index of every section of the site loads on the first keystroke; results open the section.
+(() => {
+  const input = document.getElementById('search');
+  const panel = document.getElementById('search-results');
+  if (!input || !panel) return;
+  let index = null, loading = null, active = -1;
+  const load = () => loading ??= fetch('search.json').then((r) => r.json()).then((data) => { index = data; }).catch(() => { index = []; });
+  const close = () => { panel.hidden = true; input.setAttribute('aria-expanded', 'false'); active = -1; };
+  const escape = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const snippet = (text, terms) => {
+    const lower = text.toLowerCase();
+    let at = -1;
+    for (const term of terms) { const i = lower.indexOf(term); if (i >= 0 && (at < 0 || i < at)) at = i; }
+    const start = Math.max(0, at - 60);
+    let piece = text.slice(start, start + 180);
+    if (start > 0) piece = '…' + piece;
+    if (start + 180 < text.length) piece += '…';
+    let html = escape(piece);
+    for (const term of terms) html = html.replace(new RegExp('(' + term.replace(/[.*+?^${}()|[]\]/g, '\$&') + ')', 'ig'), '<mark>$1</mark>');
+    return html;
+  };
+  const render = (results, terms) => {
+    panel.innerHTML = results.length
+      ? results.map((r) => '<a href="' + r.u + '"><b>' + escape(r.h) + '</b><span class="search-page">' + escape(r.p) + '</span><small>' + snippet(r.t, terms) + '</small></a>').join('')
+      : '<p class="search-empty">Nothing found</p>';
+    panel.hidden = false;
+    input.setAttribute('aria-expanded', 'true');
+    active = -1;
+  };
+  const search = () => {
+    const terms = input.value.toLowerCase().split(/s+/).filter((t) => t.length >= 2);
+    if (!terms.length) { close(); return; }
+    if (!index) { load().then(search); return; }
+    const scored = [];
+    for (const entry of index) {
+      const h = entry.h.toLowerCase(), p = entry.p.toLowerCase(), t = entry.t.toLowerCase();
+      let score = 0;
+      for (const term of terms) {
+        const inHeading = h.includes(term), inPage = p.includes(term), inText = t.includes(term);
+        if (!inHeading && !inPage && !inText) { score = -1; break; }
+        if (inHeading) score += h === term ? 12 : h.startsWith(term) ? 8 : 5;
+        if (inPage) score += 1;
+        if (inText) { let n = 0, i = -1; while (n < 4 && (i = t.indexOf(term, i + 1)) >= 0) n += 1; score += n; }
+      }
+      if (score > 0) scored.push([score, entry]);
+    }
+    scored.sort((a, b) => b[0] - a[0]);
+    render(scored.slice(0, 14).map((s) => s[1]), terms);
+  };
+  input.addEventListener('focus', () => void load());
+  input.addEventListener('input', search);
+  input.addEventListener('keydown', (event) => {
+    const links = [...panel.querySelectorAll('a')];
+    if (event.key === 'Escape') { close(); input.blur(); }
+    else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      if (!links.length) return;
+      event.preventDefault();
+      active = (active + (event.key === 'ArrowDown' ? 1 : -1) + links.length) % links.length;
+      links.forEach((a, i) => a.classList.toggle('active', i === active));
+      links[active].scrollIntoView({ block: 'nearest' });
+    } else if (event.key === 'Enter') {
+      const target = links[active >= 0 ? active : 0];
+      if (target) location.href = target.getAttribute('href');
+    }
+  });
+  document.addEventListener('click', (event) => { if (!panel.contains(event.target) && event.target !== input) close(); });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === '/' && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName ?? '') && !event.metaKey && !event.ctrlKey && !event.altKey) { event.preventDefault(); input.focus(); }
+  });
+})();
+</script>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Features overview</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="features.html">A quick tour</a></li></ul>
+      </section>
+      <section>
+        <h4>Getting started</h4>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Presenting</h4>
+        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="first-deck.html">Your first deck, stage by stage</a></li><li><a href="content.html">The content of a slide</a></li><li><a href="documents.html">PDFs, flat decks and forests</a></li><li><a href="slides.html">Slides and the forest</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+      </section>
+      <section>
+        <h4>Diagrams</h4>
+        <ul><li><a href="diagrams.html">Diagrams</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li></ul>
+      </section>
+      <section>
+        <h4>Layout and style</h4>
+        <ul><li><a href="layout.html">Layout and style</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="groups.html">Groups</a></li><li><a href="styles.html">Styles</a></li><li><a href="configuration.html">Configuration</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion and interaction</h4>
+        <ul><li><a href="motion.html">Motion and interaction</a></li><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Advanced</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html">A deck inside a page</a></li><li><a href="extending.html">Extending a deck</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+      <section>
+        <h4>Reference manuals</h4>
+        <ul><li><a href="manual-markup.html" aria-current="page">The markup language, in full</a><ul class="subsections"><li><a href="#syntax">Syntax</a></li><li><a href="#document-structure">Document structure</a></li><li><a href="#content-blocks">Content blocks</a></li><li><a href="#diagram-directives">Diagram directives</a></li><li><a href="#positioning">Positioning</a></li><li><a href="#steps-and-motion">Steps and motion</a></li><li><a href="#appearance">Appearance</a></li><li><a href="#the-deck-json-file">The deck.json file</a></li><li><a href="#errors">Errors</a></li></ul></li><li><a href="api.html">The API, in full</a></li><li><a href="manual-index.html">Index of constructs</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>The markup language, in full</h1>
+      <p class="lead">Every construct of the dialect and every attribute it takes, with values, defaults and the rules the parser enforces; the reference to search when the guide has shown the idea.</p>
+      <p>The guide and the tour show what the dialect can do; this manual lists all of it. Each
+construct has its syntax, a table of its attributes with their values and defaults, and the
+rules that make a document invalid. The search box at the top finds any name on this page, and
+the <a href="manual-index.html">index</a> lists every construct and attribute alphabetically. The
+<a href="api.html">API manual</a> covers the same ground for a page or a program that drives the player.</p>
+<h2 id="syntax">Syntax<a class="anchor" href="#syntax" aria-label="Link to this section">#</a></h2><h3 id="attribute-lists">Attribute lists<a class="anchor" href="#attribute-lists" aria-label="Link to this section">#</a></h3><p>Attributes follow a construct in braces (<code>[A caption]{#cap x=2 y=-1}</code>, <code>::: slide {#intro width=20}</code>)
+or come after the name of a directive (<code>[[rectangle: #frame x=0 y=0 width=4 height=2]]</code>). Inside a
+directive they are separated by spaces or commas; elsewhere by spaces. Each attribute is one of:</p>
+<table>
+<thead>
+<tr>
+<th>Form</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>key=value</code></td>
+<td>a value; quote it with <code>&quot;…&quot;</code> or <code>'…'</code> when it holds spaces or commas, and escape a quote inside with a backslash</td>
+</tr>
+<tr>
+<td><code>key=&quot;(x,y) (x,y)&quot;</code></td>
+<td>parentheses keep a tuple whole, quoted or not: <code>at=center:(3,-2)</code></td>
+</tr>
+<tr>
+<td><code>#name</code></td>
+<td>the identifier of the element, slide or child: the same as <code>id=name</code></td>
+</tr>
+<tr>
+<td><code>.name</code></td>
+<td>a <a href="#style-roles-and-classes">style class</a> to apply; several are allowed, in order</td>
+</tr>
+<tr>
+<td><code>below:#id</code></td>
+<td>a <a href="#relative-placement">relative position</a>, equivalent to <code>below=#id</code>, for <code>below</code>, <code>above</code>, <code>left-of</code>, <code>right-of</code>, <code>left-aligned</code>, <code>right-aligned</code>, <code>top-aligned</code>, <code>bottom-aligned</code>, <code>baseline-aligned</code></td>
+</tr>
+<tr>
+<td><code>flag</code></td>
+<td>a bare flag means <code>flag=true</code>: <code>start_here</code>, <code>only_this</code>, <code>skip_return</code>, <code>return_to_parent</code>, <code>preview</code>, <code>focus_only</code></td>
+</tr>
+<tr>
+<td><code>style=&quot;color: red&quot;</code></td>
+<td>an alternative to <code>color=</code>; only the CSS <code>color</code> property is accepted, and not together with <code>color=</code></td>
+</tr>
+</tbody>
+</table>
+<p>An attribute given twice is an error, and so is a name a construct does not take (&quot;Unknown
+attributes: …&quot;). Booleans are <code>true</code> or <code>false</code>. A trailing <code>{…}</code> on a paragraph is read as
+attributes when it holds a <code>#id</code>, a <code>.class</code>, a <code>key=value</code> or a <code>ref:</code> token; any other braces
+are literal text.</p>
+<h3 id="identifiers">Identifiers<a class="anchor" href="#identifiers" aria-label="Link to this section">#</a></h3><p>An identifier starts with a letter or <code>_</code> and continues with letters, digits, <code>_</code>, <code>.</code> or <code>-</code>.
+Slide identifiers are unique in the document; element identifiers are unique within their slide.
+Elements without an explicit <code>#id</code> are named <code>element-N</code> in source order, group members
+<code>groupid.element-N</code>; these names are not meant to be referenced. Shapes, icons, artworks,
+includes and chart or code fences you refer to need an explicit <code>#id</code>.</p>
+<h3 id="numbers-and-units">Numbers and units<a class="anchor" href="#numbers-and-units" aria-label="Link to this section">#</a></h3><p>Lengths and coordinates are in <strong>logical units</strong> of the slide's canvas, which is 16 × 9 units
+by default (<code>layout.defaultSlideSize</code>), the origin at its center, <code>x</code> to the right and <code>y</code> up.
+Font sizes are in points, the engine's convention: text of <code>font_size=28</code> is about 0.47 units
+tall. Angles are in radians. Times are in seconds. Opacities run from 0 to 1. Steps are
+nonnegative integers. Every numeric attribute must be a finite number; <code>width</code>, <code>height</code>,
+<code>font_size</code> and <code>size</code> must be positive; <code>radius</code>, <code>run_time</code>, <code>hachure_gap</code> and <code>tremble_rate</code>
+must be positive; <code>buff</code>, <code>corner_radius</code>, <code>stroke_width</code>, <code>lag</code>, <code>roughness</code>, <code>bowing</code>,
+<code>fill_weight</code>, <code>seed</code>, <code>tremble_amplitude</code> and <code>padding</code> must not be negative; <code>seed</code> is an
+integer; <code>fill_opacity</code>, <code>opacity</code>, <code>smoothness</code>, <code>header_opacity</code> and <code>stripe_opacity</code> lie
+between 0 and 1.</p>
+<h3 id="colors">Colors<a class="anchor" href="#colors" aria-label="Link to this section">#</a></h3><p>A color is an engine palette name, a CSS color name, <code>#rgb</code>, <code>#rrggbb</code> (an <code>#rrggbbff</code> form is
+accepted when opaque) or <code>rgb(…)</code> with integer or percentage channels, opaque only. The palette
+names are listed under <a href="#color-names">Color names</a>. Everywhere a color is taken (<code>color</code>,
+<code>fill_color</code>, <code>border_color</code>, <code>header_color</code>, <code>axis_color</code>, <code>colors</code>, inline spans) the same
+forms apply.</p>
+<h3 id="fonts-and-sizes">Fonts and sizes<a class="anchor" href="#fonts-and-sizes" aria-label="Link to this section">#</a></h3><p><code>font=</code> names a family: the bundled text face Latin Modern Roman (the default), the bundled
+typewriter face Latin Modern Mono (the default for code), the bundled handwriting face Zeyada,
+a family in the deck's <code>fonts/</code> folder, or a family installed on the viewer's machine.
+<code>font_size=</code> is in points; the defaults are <code>layout.fontSize</code> (28) for body text, lists, tables
+and the labels of connections, <code>layout.headingSize</code> (42) for a level-one heading, shrinking by
+12 % of that size for each deeper level, and <code>layout.codeSize</code> (80 % of the body size) for
+listings. Formulas take the size of the text they sit in.</p>
+<h3 id="links">Links<a class="anchor" href="#links" aria-label="Link to this section">#</a></h3><p><code>href=</code> on an element, a group, a connection or an attachment makes it clickable; an inline link
+<code>[text](target)</code> does the same for part of a paragraph. A target is <code>https://…</code> or <code>http://…</code>,
+<code>mailto:…</code>, <code>#…</code> (a stop of this deck, as the player writes it in the address bar: <code>#slide=id</code>,
+<code>#step=N</code>), <code>/…</code> or a relative path. Anything else is rejected.</p>
+<h2 id="document-structure">Document structure<a class="anchor" href="#document-structure" aria-label="Link to this section">#</a></h2><h3 id="slide">::: slide<a class="anchor" href="#slide" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">::: slide </span><span class="tk-attribute">{#id title=</span><span class="tk-string">&quot;Shown in the outline&quot;</span><span class="tk-attribute"> width=</span><span class="tk-number">20</span><span class="tk-attribute"> height=</span><span class="tk-number">11.25</span><span class="tk-attribute">}</span>
+…content…
+<span class="tk-directive">:::</span></code></pre>
+<p>A slide is a container opening with <code>::: slide {…}</code> and closing with a line holding <code>:::</code>.
+Everything in the document is inside a slide, except <code>::: styles</code> and <code>::: snippet</code> blocks,
+comments, imports and snippet uses. Nested containers close with their own <code>:::</code>, so a slide
+may hold <code>::: {.group}</code>, <code>::: {.element}</code> and <code>::: notes</code> blocks.</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Values</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>identifier</td>
+<td>required</td>
+<td>the slide's name, used by <code>[[include: #id]]</code>, by the outline links and by <code>#slide=id</code> in the address bar</td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td>text</td>
+<td>the first heading, else the id</td>
+<td>the name shown in the outline and the breadcrumb</td>
+</tr>
+<tr>
+<td><code>width</code>, <code>height</code></td>
+<td>units</td>
+<td><code>layout.defaultSlideSize</code>, 16 × 9</td>
+<td>the canvas; one of them keeps the default proportions</td>
+</tr>
+<tr>
+<td><code>start_here</code></td>
+<td>flag</td>
+<td>false</td>
+<td>playback opens at this slide's entry; at most one slide (or include) may say so</td>
+</tr>
+<tr>
+<td><code>only_this</code></td>
+<td>flag</td>
+<td>false</td>
+<td>render only the slides that say so (a partial render while editing); the starting slide must be among them</td>
+</tr>
+<tr>
+<td><code>return_to_parent</code></td>
+<td><code>true</code>, <code>false</code></td>
+<td>unset</td>
+<td>after this slide's own program, zoom back to the parent before the next stop (<code>true</code>), go straight to the next sibling (<code>false</code>), or do so only when no sibling follows (unset)</td>
+</tr>
+<tr>
+<td><code>skip_return</code></td>
+<td>flag</td>
+<td>unset</td>
+<td><code>return_to_parent=false</code>, from the other side; not together with it</td>
+</tr>
+<tr>
+<td><code>transition</code></td>
+<td><code>zoom</code>, <code>cut</code>, a name</td>
+<td>unset</td>
+<td>how the camera arrives at this slide; a name is a module of the deck's <code>transitions/</code> folder</td>
+</tr>
+<tr>
+<td><code>preview</code></td>
+<td>flag</td>
+<td>false</td>
+<td>show the content before the first visit instead of fading it in on entry</td>
+</tr>
+</tbody>
+</table>
+<p>Rules: a slide identifier is unique; every slide is included by at most one other; the slides
+nothing includes are the <strong>roots</strong>, visited first to last with a cut between them, and a deck
+with one root is a tree. <code>root</code> in <code>deck.json</code> names the root of a single tree and is an error
+on a forest. Including a slide that is not defined makes a red placeholder.</p>
+<h3 id="include-and-subslide">[[include]] and [[subslide]]<a class="anchor" href="#include-and-subslide" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">[[include:</span> <span class="tk-attribute">#child</span> <span class="tk-attribute">x=</span><span class="tk-number">4</span> <span class="tk-attribute">y=</span><span class="tk-number">-1</span> <span class="tk-attribute">width=</span><span class="tk-number">8</span> <span class="tk-attribute">step=</span><span class="tk-number">2</span> preview<span class="tk-directive">]]</span>
+[[subslide: #child …]]           the same as include
+[[subslide: Orbit x=5 width=6]]  a class of the deck's classes module or slides/ folder</code></pre>
+<p>An include places another slide as a child inside this one, as a viewport of the given width or
+height in the parent's units, centered on <code>x</code>, <code>y</code> (0, 0 by default). It takes the layout
+attributes <code>x</code>, <code>y</code>, <code>width</code>, <code>height</code>, <code>angle</code>, <code>anchor</code>, <code>at</code>, <code>dx</code>, <code>dy</code>, <code>buff</code>, <code>class</code>
+and the relative references, plus:</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Values</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>width</code>, <code>height</code></td>
+<td>units</td>
+<td>width 6, or the parent's width minus the margins when smaller</td>
+<td>the child's size in the parent; one of them keeps the child's proportions</td>
+</tr>
+<tr>
+<td><code>angle</code></td>
+<td>radians</td>
+<td>0</td>
+<td>rotation of the child's viewport</td>
+</tr>
+<tr>
+<td><code>step</code></td>
+<td>integer ≥ 1</td>
+<td>after the numbered steps, in source order</td>
+<td>the step at which the child is visited; children without a step are visited after the last numbered one, in order</td>
+</tr>
+<tr>
+<td><code>start_here</code>, <code>only_this</code>, <code>return_to_parent</code>, <code>skip_return</code>, <code>transition</code>, <code>preview</code></td>
+<td>as for slides</td>
+<td></td>
+<td>the same flags, set from the parent's side</td>
+</tr>
+</tbody>
+</table>
+<p>A child may be included once in the whole deck. A <code>[[subslide: Name]]</code> with a class name takes
+the same attributes; the class comes from the module <code>classes</code> names in <code>deck.json</code> or from
+<code>slides/Name.ts</code>, and a dotted name (<code>helpers.Orbit</code>) walks namespaces.</p>
+<h3 id="flags-of-slides-and-children">Flags of slides and children<a class="anchor" href="#flags-of-slides-and-children" aria-label="Link to this section">#</a></h3><p><code>start_here</code>, <code>only_this</code>, <code>skip_return</code>, <code>return_to_parent</code>, <code>preview</code> and <code>focus_only</code> may be
+written bare. <code>skip_return</code> and <code>return_to_parent</code> are two sides of one choice and cannot both
+be given. <code>start_here</code> may be true on at most one slide of the deck, counting includes and
+code-authored children.</p>
+<h3 id="styles">::: styles<a class="anchor" href="#styles" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">::: styles</span>
+callout: color=ORANGE font_size=30
+heading: color=BLUE_E
+<span class="tk-directive">:::</span></code></pre>
+<p>A style block sits at the top level, before or between slides, one <code>name: attributes</code> line per
+style. Names are identifiers; the attributes are any the styled construct takes, except <code>id</code>
+and <code>class</code>. The same names may be defined under <code>styles</code> in <code>deck.json</code>, as attribute strings
+or objects; the Markdown definition wins. How styles are applied is under
+<a href="#style-roles-and-classes">Style roles and classes</a>.</p>
+<h3 id="snippet-and-snippet">::: snippet and [[snippet]]<a class="anchor" href="#snippet-and-snippet" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">::: snippet card</span>
+<span class="tk-directive">::: slide </span><span class="tk-attribute">{}</span>#<span class="tk-attribute">{}{id}</span>} width=20}
+<span class="tk-type tk-bold">## </span><span class="tk-attribute tk-bold">{}{title}</span><span class="tk-bold">}</span>
+[<span class="tk-attribute">{}{note|A note}</span>}]<span class="tk-attribute">{}</span>#<span class="tk-attribute">{}{id}</span>}-note x=0 y=-2}
+<span class="tk-directive">:::</span>
+<span class="tk-directive">:::</span>
+
+<span class="tk-directive">[[snippet:</span> card <span class="tk-attribute">id=</span>one <span class="tk-attribute">title=</span><span class="tk-string">&quot;First&quot;</span><span class="tk-directive">]]</span></code></pre>
+<p>A snippet is markup written once and expanded wherever <code>[[snippet: name key=value …]]</code> stands
+on a line of its own, before anything is parsed. It is defined in a <code>::: snippet name</code> block
+anywhere (in the document or an imported file), whose lines run to the <code>:::</code> that closes it,
+nested containers included, or in <code>snippets/name.md</code>. Placeholders <code>{{key}}</code> take the
+attribute of the use; <code>{{key|default}}</code> has a value when the use gives none; a key with
+neither is an error naming the snippet. Snippets may use imports and other snippets, eight
+levels deep; a snippet that uses itself is an error. Errors inside an expansion name the block
+and its line.</p>
+<h3 id="notes">::: notes<a class="anchor" href="#notes" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">::: notes</span>
+The presenter's notes for the slide, in Markdown.
+<span class="tk-directive">:::</span>
+
+<span class="tk-directive">::: notes </span><span class="tk-attribute">{step=</span><span class="tk-number">2</span><span class="tk-attribute">}</span>
+Notes for step 2 only.
+<span class="tk-directive">:::</span></code></pre>
+<p>Notes blocks inside a slide hold the presenter's notes. They are never laid out: they go to
+the <a href="player.html#a-tablet-as-a-drawing-pad">companion tablet</a>, under the picture, the slide's
+notes first and the current step's after them. <code>step=N</code> is the only attribute. <code>zoomdeck build --without-notes</code> leaves them out of an export.</p>
+<h3 id="import">[[import]]<a class="anchor" href="#import" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">[[import:</span> parts/footer.md<span class="tk-directive">]]</span></code></pre>
+<p>An import, on a line of its own, splices a Markdown file in before parsing: between slides it
+adds slides and style blocks, inside a slide it adds elements and directives. The path is
+relative to the importing file, then searched in the <code>paths</code> folders; it may be quoted. Imports
+nest eight levels deep and may not form a cycle. Errors in an imported file name the file and
+its line. Asset paths in an imported file resolve relative to the main document.</p>
+<h3 id="comments">Comments<a class="anchor" href="#comments" aria-label="Link to this section">#</a></h3><p><code>&lt;!-- … --&gt;</code> is discarded wherever it stands, over several lines too; the lines it covered keep
+their numbers for error messages and editor jumps.</p>
+<h2 id="content-blocks">Content blocks<a class="anchor" href="#content-blocks" aria-label="Link to this section">#</a></h2><p>A slide's body is CommonMark with the additions below. Blank lines separate blocks; a line
+starting with <code>:::</code>, <code>[[</code> or <code>$$</code> ends the block before it. Each block is one element.</p>
+<h3 id="paragraphs-and-headings">Paragraphs and headings<a class="anchor" href="#paragraphs-and-headings" aria-label="Link to this section">#</a></h3><p>A paragraph is a text element; <code># Heading</code> to <code>###### Heading</code> are text elements of levels
+one to six, in <code>layout.headingSize</code> shrinking per level. The attributes of a block go in
+braces at the end of its last line, either after the text or around it as <code>[text]{…}</code>, which
+keeps the braces off the text when the paragraph ends in a bracket:</p>
+<pre><code class="language-markdown">A caption under the figure. <span class="tk-attribute">{#cap below:#figure font_size=</span><span class="tk-number">20</span><span class="tk-attribute"> color=GRAY}</span>
+[Shown on the second click]<span class="tk-attribute">{#later step=</span><span class="tk-number">2</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">A heading placed by hand </span><span class="tk-attribute tk-bold">{x=</span><span class="tk-number tk-bold">-7</span><span class="tk-attribute tk-bold"> y=</span><span class="tk-number tk-bold">4</span><span class="tk-attribute tk-bold">}</span></code></pre>
+<p>Text elements take the common attributes:</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Values</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>identifier</td>
+<td><code>element-N</code></td>
+<td>the name other constructs refer to</td>
+</tr>
+<tr>
+<td><code>x</code>, <code>y</code></td>
+<td>units</td>
+<td>flow</td>
+<td>the position of the anchor; see <a href="#positioning">Positioning</a></td>
+</tr>
+<tr>
+<td><code>width</code></td>
+<td>units</td>
+<td>the width available in the flow</td>
+<td>the wrapping width</td>
+</tr>
+<tr>
+<td><code>height</code></td>
+<td>units</td>
+<td></td>
+<td>scale the laid-out block to this height</td>
+</tr>
+<tr>
+<td><code>anchor</code></td>
+<td><code>center</code>, <code>top</code>, <code>bottom</code>, <code>left</code>, <code>right</code>, <code>top-left</code>, <code>top-right</code>, <code>bottom-left</code>, <code>bottom-right</code>, <code>left-baseline</code>, <code>right-baseline</code></td>
+<td><code>layout.textAnchor</code>, left-baseline</td>
+<td>the point of the block that <code>x</code>, <code>y</code>, <code>at</code> and the alignments place</td>
+</tr>
+<tr>
+<td><code>at</code>, <code>dx</code>, <code>dy</code>, <code>buff</code>, <code>below</code>, <code>above</code>, <code>left-of</code>, <code>right-of</code>, <code>left-aligned</code>, <code>right-aligned</code>, <code>top-aligned</code>, <code>bottom-aligned</code>, <code>baseline-aligned</code></td>
+<td></td>
+<td></td>
+<td>relative placement, see <a href="#positioning">Positioning</a></td>
+</tr>
+<tr>
+<td><code>color</code></td>
+<td>color</td>
+<td><code>layout.color</code></td>
+<td>the text color; inline spans may override parts</td>
+</tr>
+<tr>
+<td><code>font</code></td>
+<td>family</td>
+<td><code>layout.font</code></td>
+<td>the typeface (text only; code and formulas have their own)</td>
+</tr>
+<tr>
+<td><code>font_size</code></td>
+<td>points</td>
+<td>by level</td>
+<td>the size</td>
+</tr>
+<tr>
+<td><code>opacity</code></td>
+<td>0 to 1</td>
+<td>1</td>
+<td>uniform opacity</td>
+</tr>
+<tr>
+<td><code>step</code>, <code>hide</code>, <code>enter</code>, <code>exit</code>, <code>run_time</code>, <code>lag</code></td>
+<td></td>
+<td></td>
+<td>visibility and its timing, see <a href="#steps-and-motion">Steps and motion</a></td>
+</tr>
+<tr>
+<td><code>focus_only</code></td>
+<td>flag</td>
+<td>false</td>
+<td>a decoration shown only while the slide is focused</td>
+</tr>
+<tr>
+<td><code>class</code></td>
+<td>names</td>
+<td></td>
+<td>style classes, the same as <code>.name</code> tokens</td>
+</tr>
+<tr>
+<td><code>href</code></td>
+<td>link</td>
+<td></td>
+<td>makes the block a link</td>
+</tr>
+</tbody>
+</table>
+<h3 id="inline-markup">Inline markup<a class="anchor" href="#inline-markup" aria-label="Link to this section">#</a></h3><p>Inside a paragraph, a heading, a list item, a table cell or the <code>label</code> of a connection, brace
+or icon:</p>
+<table>
+<thead>
+<tr>
+<th>Markup</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>**bold**</code>, <code>*italic*</code></td>
+<td>emphasis, nested as in CommonMark</td>
+</tr>
+<tr>
+<td><code>`code`</code></td>
+<td>inline code, in the code face</td>
+</tr>
+<tr>
+<td><code>$x^2$</code></td>
+<td>an inline formula, rendered by MathJax with the deck's <code>macros</code>; a dollar needs a backslash to stay literal</td>
+</tr>
+<tr>
+<td><code>[text](https://…)</code></td>
+<td>a link; targets as under <a href="#links">Links</a></td>
+</tr>
+<tr>
+<td><code>[text]{color=RED}</code></td>
+<td>a colored span; <code>color</code> is the only attribute an inline span takes</td>
+</tr>
+<tr>
+<td><code>\\</code></td>
+<td>a hard line break; a lone newline inside a paragraph is a space</td>
+</tr>
+</tbody>
+</table>
+<p>A <code>[text]{…}</code> at the end of a block with any attribute other than <code>color</code> is the block's
+attribute list, not a span. Raw HTML is not interpreted.</p>
+<h3 id="lists">Lists<a class="anchor" href="#lists" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown">- A bullet item
+  - nested, indented by two spaces
+1. A numbered item <span class="tk-attribute">{#first step=</span><span class="tk-number">1</span><span class="tk-attribute">}</span>
+2. The next one <span class="tk-attribute">{step=</span><span class="tk-number">2</span><span class="tk-attribute">}</span></code></pre>
+<p>Bullet (<code>-</code>, <code>*</code>, <code>+</code>) and numbered (<code>1.</code>, <code>1)</code>) lists nest by indentation. Every item is a text
+element of its own, with the attributes written at the end of its line, so items appear one
+click at a time. Bullets cycle through •, – and ◦ by depth; numbers keep the delimiter written.
+Each level indents by <code>layout.listIndent</code> (0.6) and wraps within what remains of the width. A
+blank line between items keeps the list together.</p>
+<h3 id="element">::: {.element}<a class="anchor" href="#element" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">::: </span><span class="tk-attribute">{.element #sales x=</span><span class="tk-number">5</span><span class="tk-attribute"> y=</span><span class="tk-number">1.6</span><span class="tk-attribute"> rules=rows}</span>
+| Region | 2023 |
+| --- | --- |
+| North | 3.2 |
+<span class="tk-directive">:::</span></code></pre>
+<p>A wrapper for exactly one block, giving it attributes a trailing brace cannot: tables, display
+math, a fenced listing, a paragraph whose last line would be ambiguous. The block's own
+attributes, if any, merge with the wrapper's, which win.</p>
+<h3 id="display-math">Display math<a class="anchor" href="#display-math" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-string">$$ e^{i\pi} + 1 = 0 $$</span>
+
+<span class="tk-string">$$</span>
+\int_0^1 f(x)\,dx
+<span class="tk-string">$$</span></code></pre>
+<p><code>$$</code> on one line or around several lines is a math element, centered like other blocks in the
+flow. It must not be empty. It takes the text attributes except <code>font</code>. Its color is <code>color=</code>
+or the text color; <code>\color</code> and similar commands inside the formula are honored. The macros of
+<code>deck.json</code> apply.</p>
+<h3 id="images-and-video">Images and video<a class="anchor" href="#images-and-video" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown">![alt text](<span class="tk-string">figures/plot.png</span>)<span class="tk-attribute">{#plot x=</span><span class="tk-number">4</span><span class="tk-attribute"> y=</span><span class="tk-number">0</span><span class="tk-attribute"> width=</span><span class="tk-number">6</span><span class="tk-attribute">}</span>
+![a clip](<span class="tk-string">assets/clip.mp4</span>)<span class="tk-attribute">{#clip width=</span><span class="tk-number">8</span><span class="tk-attribute"> play=loop muted=true}</span></code></pre>
+<p>A paragraph holding only an image is an image element. The path is relative to the Markdown
+file, then searched in the <code>paths</code> folders; a URL is taken as it is. PNG, JPEG, GIF, WebP,
+APNG and SVG are images; an SVG keeps its own colors, <code>currentColor</code> becoming the text color.
+A file ending in <code>.mp4</code>, <code>.m4v</code>, <code>.webm</code>, <code>.ogv</code>, <code>.ogg</code> or <code>.mov</code> is a video. Images take the
+common attributes except <code>font</code>, plus:</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Values</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>width</code></td>
+<td>units</td>
+<td>the available width</td>
+<td>the displayed width; <code>height</code> instead scales to a height, both distort nothing (the first given wins)</td>
+</tr>
+<tr>
+<td><code>play</code></td>
+<td><code>once</code>, <code>loop</code></td>
+<td></td>
+<td>play a video, an animated GIF, APNG or WebP, or a multi-page TIFF when the element appears: once, or until the slide is left</td>
+</tr>
+<tr>
+<td><code>muted</code></td>
+<td><code>true</code>, <code>false</code></td>
+<td></td>
+<td>videos only: silence the sound</td>
+</tr>
+</tbody>
+</table>
+<p>Without <code>play=</code>, a video shows its poster frame and an animated image its first frame.
+<code>play=</code> on a still image is an error.</p>
+<h3 id="code-listings">Code listings<a class="anchor" href="#code-listings" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">```</span><span class="tk-type">python </span><span class="tk-attribute">{#listing x=</span><span class="tk-number">-7</span><span class="tk-attribute"> y=</span><span class="tk-number">3</span><span class="tk-attribute"> font_size=</span><span class="tk-number">18</span><span class="tk-attribute"> width=</span><span class="tk-number">9</span><span class="tk-attribute">}</span>
+def f(x):
+    return x * x
+<span class="tk-directive">```</span></code></pre>
+<p>A fenced block (three or more backticks or tildes, closed by at least as many) is a verbatim
+listing with syntax colors. The info string is the language name, then optional attributes;
+the attribute <code>lang</code> inside the braces is accepted when no name precedes them. Listings take the common
+attributes except <code>font</code> (the family is <code>layout.codeFont</code>), at <code>layout.codeSize</code> by default;
+lines never wrap, <code>width</code> scales the block down to fit. The languages built in are <code>python</code>
+(<code>py</code>), the C-like family (<code>javascript</code>, <code>typescript</code>, <code>js</code>, <code>ts</code>, <code>jsx</code>, <code>tsx</code>, <code>java</code>, <code>c</code>,
+<code>cpp</code>, <code>c++</code>, <code>cs</code>, <code>rust</code>, <code>go</code>, <code>kotlin</code>, <code>swift</code>, <code>scala</code>, <code>dart</code>, <code>php</code>), <code>bash</code> (<code>sh</code>,
+<code>zsh</code>, <code>shell</code>, <code>console</code>, <code>fish</code>), <code>json</code> (<code>json5</code>, <code>jsonc</code>), <code>latex</code> (<code>tex</code>), <code>html</code>
+(<code>xml</code>, <code>svg</code>, <code>xhtml</code>), <code>markdown</code> (<code>md</code>, <code>slides</code>, <code>zs</code>, this dialect) and plain <code>text</code>; any
+other name is looked for as <code>languages/&lt;name&gt;.json</code> and shown plain when absent. Token colors
+follow the text color, or <code>layout.codeTheme</code>. A fence named <code>chart</code> is a chart, not a listing;
+<code>zoomdeck</code> fences exist only in this documentation.</p>
+<h3 id="tables">Tables<a class="anchor" href="#tables" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">::: </span><span class="tk-attribute">{.element #t x=</span><span class="tk-number">0</span><span class="tk-attribute"> y=</span><span class="tk-number">0</span><span class="tk-attribute"> rules=rows stripe_opacity=</span><span class="tk-number">0.08</span><span class="tk-attribute"> header=true}</span>
+| Left | Center | Right |
+| :-- | :-: | --: |
+| a | b | c |
+<span class="tk-directive">:::</span></code></pre>
+<p>A pipe table with a delimiter row is a table element. The delimiter row sets the alignment of
+each column (<code>:--</code> left, <code>:-:</code> center, <code>--:</code> right). Cells hold inline markup. Tables take the
+common attributes except <code>height</code> and <code>font</code>, the hand-drawn attributes, and:</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Values</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>header</code></td>
+<td><code>true</code>, <code>false</code></td>
+<td>true</td>
+<td>whether the first row is a header</td>
+</tr>
+<tr>
+<td><code>padding</code></td>
+<td>units</td>
+<td>0.15</td>
+<td>space between a cell's text and its rules</td>
+</tr>
+<tr>
+<td><code>rules</code></td>
+<td><code>all</code>, <code>rows</code>, <code>cols</code>, <code>outer</code>, <code>none</code></td>
+<td><code>all</code></td>
+<td>which rules are drawn</td>
+</tr>
+<tr>
+<td><code>border_color</code></td>
+<td>color</td>
+<td>the text color</td>
+<td>color of the rules</td>
+</tr>
+<tr>
+<td><code>stroke_width</code></td>
+<td>engine units</td>
+<td>1.5</td>
+<td>width of the rules</td>
+</tr>
+<tr>
+<td><code>fill_color</code>, <code>fill_opacity</code></td>
+<td>color, 0 to 1</td>
+<td>none</td>
+<td>background of the whole table</td>
+</tr>
+<tr>
+<td><code>header_color</code>, <code>header_opacity</code></td>
+<td>color, 0 to 1</td>
+<td>the rule color at 0.12</td>
+<td>background of the header row</td>
+</tr>
+<tr>
+<td><code>stripe_opacity</code></td>
+<td>0 to 1</td>
+<td>0</td>
+<td>background of every second body row, in the rule color</td>
+</tr>
+<tr>
+<td><code>width</code></td>
+<td>units</td>
+<td>the available width</td>
+<td>the width the table must fit in; columns shrink and wrap beyond it</td>
+</tr>
+</tbody>
+</table>
+<h3 id="charts">Charts<a class="anchor" href="#charts" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">```</span><span class="tk-type">chart </span><span class="tk-attribute">{#visits x=</span><span class="tk-number">4</span><span class="tk-attribute"> y=</span><span class="tk-number">0</span><span class="tk-attribute"> width=</span><span class="tk-number">7</span><span class="tk-attribute"> height=</span><span class="tk-number">3.5</span><span class="tk-attribute"> type=line colors=</span><span class="tk-string">&quot;RED_E TEAL_E&quot;</span><span class="tk-attribute"> values=true}</span>
+Month, Visits, Signups
+Jan, 12, 3
+Feb, 18, 5
+<span class="tk-directive">```</span></code></pre>
+<p>A fence named <code>chart</code> holds the data, its info string the options. Rows are separated by
+commas, semicolons or tabs; lines starting with <code>#</code> are comments. The first row names the
+series (its first cell is ignored) unless its cells after the first are plain numbers, years
+counting as names; <code>header=</code> settles it. Each later row is a category followed by one value
+per series. Charts take the common attributes, the hand-drawn attributes, and:</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Values</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td><code>bar</code>, <code>line</code>, <code>pie</code>, a name</td>
+<td><code>bar</code></td>
+<td>the kind; a name is a module of the deck's <code>charts/</code> folder</td>
+</tr>
+<tr>
+<td><code>src</code></td>
+<td>path</td>
+<td></td>
+<td>a CSV, TSV or JSON file with the rows instead of the fence's own, which is then empty; JSON is <code>{ &quot;categories&quot;, &quot;series&quot;: [{ &quot;name&quot;, &quot;values&quot; }] }</code>, <code>{ &quot;labels&quot;, &quot;datasets&quot;: [{ &quot;label&quot;, &quot;data&quot; }] }</code> or an array of rows</td>
+</tr>
+<tr>
+<td><code>header</code></td>
+<td><code>true</code>, <code>false</code></td>
+<td>detected</td>
+<td>whether the first row names the series</td>
+</tr>
+<tr>
+<td><code>width</code>, <code>height</code></td>
+<td>units</td>
+<td>6, 3.5</td>
+<td>the plot area (bars, lines) or the box a pie fits in; labels and the legend add to it</td>
+</tr>
+<tr>
+<td><code>colors</code></td>
+<td>colors, space- or comma-separated</td>
+<td>a built-in palette</td>
+<td>series or slice colors</td>
+</tr>
+<tr>
+<td><code>color</code></td>
+<td>color</td>
+<td>the text color</td>
+<td>axes, ticks and labels</td>
+</tr>
+<tr>
+<td><code>axis_color</code></td>
+<td>color</td>
+<td><code>color</code></td>
+<td>axes and gridlines</td>
+</tr>
+<tr>
+<td><code>border_color</code></td>
+<td>color</td>
+<td>each series' own</td>
+<td>outline of bars and slices</td>
+</tr>
+<tr>
+<td><code>stroke_width</code></td>
+<td>engine units</td>
+<td>2</td>
+<td>lines and outlines</td>
+</tr>
+<tr>
+<td><code>fill_opacity</code></td>
+<td>0 to 1</td>
+<td>0.85</td>
+<td>bar and slice fills</td>
+</tr>
+<tr>
+<td><code>grid</code></td>
+<td><code>true</code>, <code>false</code></td>
+<td>true for bars and lines</td>
+<td>horizontal gridlines at the ticks</td>
+</tr>
+<tr>
+<td><code>legend</code></td>
+<td><code>true</code>, <code>false</code></td>
+<td>true with several series</td>
+<td>a legend above the plot</td>
+</tr>
+<tr>
+<td><code>values</code></td>
+<td><code>true</code>, <code>false</code></td>
+<td>false (pies always)</td>
+<td>value labels on bars and points, percentages on slices</td>
+</tr>
+<tr>
+<td><code>min</code>, <code>max</code></td>
+<td>numbers</td>
+<td>from the data, zero included</td>
+<td>fixed bounds of the value axis; <code>max</code> must exceed <code>min</code></td>
+</tr>
+</tbody>
+</table>
+<p>A chart needs rows, from the fence or from <code>src=</code>, not both. Negative values extend below the
+baseline.</p>
+<h2 id="diagram-directives">Diagram directives<a class="anchor" href="#diagram-directives" aria-label="Link to this section">#</a></h2><p>Directives are <code>[[kind: …]]</code> on a line of their own. Those below draw; the directives of
+<a href="#steps-and-motion">Steps and motion</a> change what is shown.</p>
+<h3 id="shapes">Shapes<a class="anchor" href="#shapes" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#frame</span> <span class="tk-attribute">x=</span><span class="tk-number">0</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">width=</span><span class="tk-number">6</span> <span class="tk-attribute">height=</span><span class="tk-number">3</span> <span class="tk-attribute">corner_radius=</span><span class="tk-number">0.3</span> <span class="tk-attribute">fill_color=</span>BLUE_E <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.2</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[circle:</span> <span class="tk-attribute">#c</span> <span class="tk-attribute">x=</span><span class="tk-number">-4</span> <span class="tk-attribute">y=</span><span class="tk-number">1</span> <span class="tk-attribute">radius=</span><span class="tk-number">1.2</span> <span class="tk-attribute">color=</span>TEAL_E<span class="tk-directive">]]</span>
+<span class="tk-directive">[[dot:</span> <span class="tk-attribute">#p</span> <span class="tk-attribute">x=</span><span class="tk-number">2</span> <span class="tk-attribute">y=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[ellipse:</span> <span class="tk-attribute">#e</span> <span class="tk-attribute">x=</span><span class="tk-number">4</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">width=</span><span class="tk-number">3</span> <span class="tk-attribute">height=</span><span class="tk-number">1.5</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[polygon:</span> <span class="tk-attribute">#tri</span> <span class="tk-attribute">points=</span><span class="tk-string">&quot;(0,2) (-2,-1) (2,-1)&quot;</span> <span class="tk-attribute">sketch=</span>true<span class="tk-directive">]]</span>
+<span class="tk-directive">[[polyline:</span> <span class="tk-attribute">#path</span> <span class="tk-attribute">points=</span><span class="tk-string">&quot;(-6,0) (-3,2) (0,0)&quot;</span> <span class="tk-attribute">stroke_width=</span><span class="tk-number">3</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[arc:</span> <span class="tk-attribute">#a</span> <span class="tk-attribute">x=</span><span class="tk-number">0</span> <span class="tk-attribute">y=</span><span class="tk-number">-2</span> <span class="tk-attribute">radius=</span><span class="tk-number">2</span> <span class="tk-attribute">start_angle=</span><span class="tk-number">3.14</span> <span class="tk-attribute">angle=</span><span class="tk-number">-3.14</span><span class="tk-directive">]]</span></code></pre>
+<p>Every shape needs an explicit <code>#id</code>. Shapes take the common attributes except <code>font</code>,
+<code>font_size</code>, <code>width</code> and <code>height</code> (which some of them redefine), the hand-drawn attributes,
+<code>tremble</code>, and:</p>
+<table>
+<thead>
+<tr>
+<th>Shape</th>
+<th>Required</th>
+<th>Own attributes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>rectangle</code></td>
+<td><code>width</code>, <code>height</code></td>
+<td><code>corner_radius</code> (0; at most half the smaller side), <code>fill_color</code>, <code>fill_opacity</code></td>
+</tr>
+<tr>
+<td><code>circle</code></td>
+<td><code>radius</code></td>
+<td><code>fill_color</code>, <code>fill_opacity</code></td>
+</tr>
+<tr>
+<td><code>dot</code></td>
+<td></td>
+<td><code>radius</code> (0.08), <code>fill_color</code>, <code>fill_opacity</code> (1: a dot is filled)</td>
+</tr>
+<tr>
+<td><code>ellipse</code></td>
+<td><code>width</code>, <code>height</code></td>
+<td><code>fill_color</code>, <code>fill_opacity</code></td>
+</tr>
+<tr>
+<td><code>polygon</code></td>
+<td><code>points</code>, at least three <code>(x,y)</code></td>
+<td><code>fill_color</code>, <code>fill_opacity</code>; the points are absolute coordinates</td>
+</tr>
+<tr>
+<td><code>polyline</code></td>
+<td><code>points</code>, at least two <code>(x,y)</code>, consecutive ones distinct</td>
+<td>no fill; the points are absolute coordinates</td>
+</tr>
+<tr>
+<td><code>arc</code></td>
+<td><code>radius</code>, <code>angle</code> (nonzero)</td>
+<td><code>start_angle</code> (0), <code>fill_color</code>, <code>fill_opacity</code>; centered on <code>x</code>, <code>y</code>, counter-clockwise for a positive angle</td>
+</tr>
+</tbody>
+</table>
+<p>Common to all: <code>color</code> (the stroke, <code>layout.color</code> by default), <code>stroke_width</code> (2, in engine
+units: one hundredth of a logical unit), <code>fill_color</code> (the stroke color by default),
+<code>fill_opacity</code> (0 unless noted), <code>opacity</code>. <code>x</code>, <code>y</code> place the center (or the <code>anchor</code>);
+polygons, polylines and arcs stay at their own coordinates unless positioned.</p>
+<h3 id="arrow-and-line">[[arrow]] and [[line]]<a class="anchor" href="#arrow-and-line" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#alice</span> -&gt; <span class="tk-attribute">#api</span>, <span class="tk-attribute">#req</span>, <span class="tk-attribute">label=</span><span class="tk-string">&quot;HTTPS&quot;</span>, <span class="tk-attribute">color=</span>GRAY<span class="tk-directive">]]</span>
+<span class="tk-directive">[[line:</span> (<span class="tk-number">-6</span>,<span class="tk-number">0</span>) -&gt; (<span class="tk-number">6</span>,<span class="tk-number">0</span>), <span class="tk-attribute">#axis</span>, <span class="tk-attribute">stroke_width=</span><span class="tk-number">1</span><span class="tk-directive">]]</span></code></pre>
+<p>A connection runs between two endpoints, each an element <code>#id</code> (its border is hit where the
+straight line crosses it) or a point <code>(x,y)</code>; the endpoints come first, then <code>#id</code> and the
+attributes, comma-separated. Connections are laid out after the elements they join and cannot
+be the reference of a position or the target of another connection or attachment.</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Values</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>identifier</td>
+<td><code>element-N</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>from</code>, <code>to</code></td>
+<td></td>
+<td>required, written before the attributes</td>
+<td>the endpoints</td>
+</tr>
+<tr>
+<td><code>label</code></td>
+<td>inline markup</td>
+<td></td>
+<td>text at the middle of the connection</td>
+</tr>
+<tr>
+<td><code>font</code>, <code>font_size</code></td>
+<td></td>
+<td>the text face, <code>layout.fontSize</code></td>
+<td>the label's face and size</td>
+</tr>
+<tr>
+<td><code>color</code></td>
+<td>color</td>
+<td>the text color</td>
+<td>stroke and label</td>
+</tr>
+<tr>
+<td><code>stroke_width</code></td>
+<td>engine units</td>
+<td>2</td>
+<td></td>
+</tr>
+<tr>
+<td><code>opacity</code></td>
+<td>0 to 1</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td><code>step</code>, <code>hide</code>, <code>run_time</code>, <code>lag</code>, <code>href</code></td>
+<td></td>
+<td></td>
+<td>as for elements; connections fade only</td>
+</tr>
+<tr>
+<td><code>sketch</code> and the hand-drawn attributes, <code>tremble</code>, <code>tremble_amplitude</code>, <code>tremble_rate</code></td>
+<td></td>
+<td></td>
+<td>see <a href="#appearance">Appearance</a> and <a href="#tremble">tremble</a></td>
+</tr>
+</tbody>
+</table>
+<h3 id="brace">[[brace]]<a class="anchor" href="#brace" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">[[brace:</span> <span class="tk-attribute">#formula</span>, <span class="tk-attribute">#under</span>, <span class="tk-attribute">side=</span>bottom, <span class="tk-attribute">label=</span><span class="tk-string">&quot;the whole sum&quot;</span>, <span class="tk-attribute">buff=</span><span class="tk-number">0.2</span><span class="tk-directive">]]</span></code></pre>
+<p>A brace hugs one element on one side. The target comes first, then <code>#id</code> and the attributes.</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Values</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>side</code></td>
+<td><code>left</code>, <code>right</code>, <code>top</code>, <code>bottom</code></td>
+<td><code>bottom</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>buff</code></td>
+<td>units</td>
+<td>0.15</td>
+<td>distance from the element</td>
+</tr>
+<tr>
+<td><code>label</code>, <code>font</code>, <code>font_size</code></td>
+<td></td>
+<td></td>
+<td>text beyond the brace</td>
+</tr>
+<tr>
+<td><code>color</code>, <code>stroke_width</code>, <code>opacity</code>, <code>step</code>, <code>hide</code>, <code>run_time</code>, <code>lag</code>, <code>href</code></td>
+<td></td>
+<td></td>
+<td>as for connections</td>
+</tr>
+<tr>
+<td>the hand-drawn attributes, <code>tremble</code></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="box-and-blob">[[box]] and [[blob]]<a class="anchor" href="#box-and-blob" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">[[box:</span> <span class="tk-attribute">#a</span> <span class="tk-attribute">#b</span> <span class="tk-attribute">#c</span>, <span class="tk-attribute">#frame</span>, <span class="tk-attribute">buff=</span><span class="tk-number">0.3</span>, <span class="tk-attribute">corner_radius=</span><span class="tk-number">0.2</span>, <span class="tk-attribute">fill_color=</span>GOLD_E, <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.15</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[blob:</span> <span class="tk-attribute">#store</span> <span class="tk-attribute">#cache</span>, <span class="tk-attribute">#cloud</span>, <span class="tk-attribute">buff=</span><span class="tk-number">0.4</span>, <span class="tk-attribute">smoothness=</span><span class="tk-number">0.6</span>, <span class="tk-attribute">color=</span>RED, <span class="tk-attribute">sketch=</span>true<span class="tk-directive">]]</span></code></pre>
+<p>Enclosures surround one or more elements, listed before the first comma: a box is a rounded
+rectangle around their bounds, a blob a smooth outline flowing around them (a group's members
+and an icon's label count separately).</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Values</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>buff</code></td>
+<td>units</td>
+<td>0.15 for a box, 0.3 for a blob</td>
+<td>the margin around the elements</td>
+</tr>
+<tr>
+<td><code>corner_radius</code></td>
+<td>units</td>
+<td>0</td>
+<td>box only</td>
+</tr>
+<tr>
+<td><code>smoothness</code></td>
+<td>0 to 1</td>
+<td>0.5</td>
+<td>blob only: how closely the outline follows the elements</td>
+</tr>
+<tr>
+<td><code>fill_color</code>, <code>fill_opacity</code></td>
+<td></td>
+<td>the stroke color, 0</td>
+<td></td>
+</tr>
+<tr>
+<td><code>color</code>, <code>stroke_width</code>, <code>opacity</code>, <code>step</code>, <code>hide</code>, <code>run_time</code>, <code>lag</code>, <code>href</code></td>
+<td></td>
+<td></td>
+<td>as for connections</td>
+</tr>
+<tr>
+<td>the hand-drawn attributes, <code>tremble</code></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Targets must be text, image, math, code, shapes, icons or groups of the same scope (a group's
+members cannot be targeted from outside the group). The listed ids are the attachment's
+<code>target</code>, which is not written as an attribute.</p>
+<h3 id="icon-and-artwork">[[icon]] and [[artwork]]<a class="anchor" href="#icon-and-artwork" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">[[icon:</span> database <span class="tk-attribute">#db</span> <span class="tk-attribute">x=</span><span class="tk-number">3</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">size=</span><span class="tk-number">1.4</span> <span class="tk-attribute">label=</span><span class="tk-string">&quot;Store&quot;</span> <span class="tk-attribute">label_side=</span>right <span class="tk-attribute">color=</span>GOLD_E<span class="tk-directive">]]</span>
+<span class="tk-directive">[[artwork:</span> rocket <span class="tk-attribute">#r</span> <span class="tk-attribute">x=</span><span class="tk-number">-3</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">size=</span><span class="tk-number">1.6</span> <span class="tk-attribute">color=</span>BLUE_E<span class="tk-directive">]]</span></code></pre>
+<p>An icon is one of the built-in symbols, drawn from geometry in the current stroke: <code>user</code>,
+<code>users</code>, <code>database</code>, <code>server</code>, <code>client</code>, <code>desktop</code>, <code>phone</code>, <code>cloud</code>, <code>document</code>, <code>folder</code>,
+<code>lock</code>, <code>gear</code>, <code>gears</code>, <code>message</code>, <code>globe</code>, <code>question</code>, <code>exclamation</code>, <code>info</code>, <code>warning</code>,
+<code>check</code>, <code>cross</code>, <code>download</code>, <code>upload</code>, <code>puzzle</code>, <code>search</code>, <code>clock</code>, <code>calendar</code>, <code>arrival</code>,
+<code>departure</code>, <code>recycle</code>, <code>trash</code>, <code>pin</code>, <code>key</code>, <code>shield</code>, <code>bolt</code>, <code>star</code>, <code>chart</code>, <code>home</code>,
+<code>flag</code>. An artwork is one of the deck's own, <code>name.svg</code> or <code>name.ts</code> in its <code>artworks/</code>
+folder; <code>[[icon: name]]</code> with a name that is not built in is the same as <code>[[artwork: name]]</code>.
+Both need an explicit <code>#id</code> and take the common attributes except <code>width</code> and <code>height</code>, the
+hand-drawn attributes, <code>tremble</code>, and:</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Values</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>size</code></td>
+<td>units</td>
+<td>1</td>
+<td>the height</td>
+</tr>
+<tr>
+<td><code>label</code></td>
+<td>inline markup</td>
+<td></td>
+<td>a caption at 80 % of the font size</td>
+</tr>
+<tr>
+<td><code>label_side</code></td>
+<td><code>below</code>, <code>above</code>, <code>left</code>, <code>right</code></td>
+<td><code>below</code></td>
+<td>where the label sits; requires a label</td>
+</tr>
+<tr>
+<td><code>color</code>, <code>stroke_width</code>, <code>fill_color</code>, <code>fill_opacity</code></td>
+<td></td>
+<td>the text color, 2, the stroke color, 0</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>An artwork module reads any further attribute it likes, so no attribute name is rejected on
+one. The icon's style role is <code>icon-&lt;name&gt;</code>.</p>
+<h3 id="directives-of-the-deck-s-own">Directives of the deck's own<a class="anchor" href="#directives-of-the-deck-s-own" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">[[gauge:</span> <span class="tk-attribute">#load</span> <span class="tk-attribute">x=</span><span class="tk-number">4</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">level=</span><span class="tk-number">0.7</span> <span class="tk-attribute">label=</span><span class="tk-string">&quot;load&quot;</span> <span class="tk-attribute">step=</span><span class="tk-number">2</span><span class="tk-directive">]]</span></code></pre>
+<p>Any <code>[[name: …]]</code> the dialect does not know is drawn by <code>directives/name.ts</code> of the deck. It
+takes the common attributes, which position and animate it, and any attribute of its own; see
+<a href="extending.html#directives">Extending a deck</a>. Without the module, the deck fails to build
+with a message naming the folder.</p>
+<h3 id="iframe">[[iframe]]<a class="anchor" href="#iframe" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">[[iframe:</span> https://example.org/demo <span class="tk-attribute">#demo</span> <span class="tk-attribute">x=</span><span class="tk-number">3</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">width=</span><span class="tk-number">8</span> <span class="tk-attribute">height=</span><span class="tk-number">4.5</span> <span class="tk-attribute">title=</span><span class="tk-string">&quot;A live page&quot;</span> <span class="tk-attribute">poster=</span>assets/demo.png<span class="tk-directive">]]</span></code></pre>
+<p>A live web page inside the slide; see <a href="live-pages.html">Live pages</a> for how it behaves while
+the camera moves. The URL comes first and must be <code>http(s)://</code>, a root-relative or relative
+path, or a <code>.html</code> file. <code>width</code> and <code>height</code> are required.</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Values</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>url</code></td>
+<td>address</td>
+<td>required, written first</td>
+<td>the page to show</td>
+</tr>
+<tr>
+<td><code>width</code>, <code>height</code></td>
+<td>units</td>
+<td>required</td>
+<td>the frame's size</td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td>text</td>
+<td>the URL</td>
+<td>the accessible name</td>
+</tr>
+<tr>
+<td><code>poster</code></td>
+<td>path</td>
+<td></td>
+<td>an image shown until the page is live, and in exports</td>
+</tr>
+<tr>
+<td><code>x</code>, <code>y</code>, <code>anchor</code>, <code>at</code>, <code>dx</code>, <code>dy</code>, <code>buff</code>, the relative references, <code>class</code>, <code>step</code>, <code>hide</code>, <code>color</code>, <code>href</code>, <code>run_time</code>, <code>lag</code></td>
+<td></td>
+<td></td>
+<td>as for elements</td>
+</tr>
+</tbody>
+</table>
+<h3 id="group">::: {.group}<a class="anchor" href="#group" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">::: </span><span class="tk-attribute">{.group #pair x=</span><span class="tk-number">4</span><span class="tk-attribute"> y=</span><span class="tk-number">0</span><span class="tk-attribute"> width=</span><span class="tk-number">6</span><span class="tk-attribute"> step=</span><span class="tk-number">1</span><span class="tk-attribute">}</span>
+<span class="tk-directive">[[circle:</span> <span class="tk-attribute">#c</span> <span class="tk-attribute">x=</span><span class="tk-number">0</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">radius=</span><span class="tk-number">0.5</span><span class="tk-directive">]]</span>
+A caption <span class="tk-attribute">{below:#c}</span>
+<span class="tk-directive">:::</span></code></pre>
+<p>A group lays out its members in coordinates of its own, flow starting at the local origin
+<code>(0,0)</code>, and is then one element: positioned, shown, hidden, animated and enclosed as a whole.
+Members are elements, shapes, connections, attachments and nested groups; includes, subslides
+and step directives are not allowed inside, and members take no <code>step</code>, <code>hide</code>, <code>focus_only</code>
+or <code>play</code> of their own. Relative references stay within a group.</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Values</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>identifier</td>
+<td><code>element-N</code></td>
+<td>members are named <code>id.element-N</code> when they have no id</td>
+</tr>
+<tr>
+<td><code>x</code>, <code>y</code></td>
+<td>units</td>
+<td>flow</td>
+<td>place the group's <strong>origin</strong> (the local 0, 0), unless <code>anchor</code> names another point</td>
+</tr>
+<tr>
+<td><code>anchor</code></td>
+<td>the anchors, or <code>origin</code></td>
+<td><code>origin</code> for <code>x</code>, <code>y</code>; <code>center</code> for relative placement</td>
+<td></td>
+</tr>
+<tr>
+<td><code>width</code></td>
+<td>units</td>
+<td>the available width</td>
+<td>the flow width inside the group</td>
+</tr>
+<tr>
+<td><code>at</code>, <code>dx</code>, <code>dy</code>, <code>buff</code>, the relative references, <code>class</code>, <code>opacity</code>, <code>step</code>, <code>hide</code>, <code>enter</code>, <code>exit</code>, <code>run_time</code>, <code>lag</code>, <code>focus_only</code>, <code>href</code></td>
+<td></td>
+<td></td>
+<td>as for elements</td>
+</tr>
+<tr>
+<td><code>tremble</code>, <code>tremble_amplitude</code>, <code>tremble_rate</code></td>
+<td></td>
+<td></td>
+<td>shake the group's geometry</td>
+</tr>
+</tbody>
+</table>
+<h2 id="positioning">Positioning<a class="anchor" href="#positioning" aria-label="Link to this section">#</a></h2><h3 id="flow">Flow<a class="anchor" href="#flow" aria-label="Link to this section">#</a></h3><p>Elements without a position flow from the top-left corner of the canvas inside
+<code>layout.margin</code> (0.65), downward, each block followed by <code>layout.gap</code> (0.35), as wide as the
+canvas minus the margins. Text wraps at that width; images and tables take it unless they say
+otherwise. Nested list items indent. A block with an explicit <code>y</code>, an <code>at</code>, or a vertical
+relative reference (<code>below</code>, <code>above</code>, <code>top-aligned</code>, <code>bottom-aligned</code>, <code>baseline-aligned</code>)
+leaves the flow; a text block with only <code>x</code> keeps its flow line and moves horizontally.</p>
+<h3 id="coordinates-and-anchors">Coordinates and anchors<a class="anchor" href="#coordinates-and-anchors" aria-label="Link to this section">#</a></h3><p><code>x</code> and <code>y</code> place the element's <strong>anchor</strong> at that point: the left end of the first baseline
+for text, formulas and listings (<code>layout.textAnchor</code>, <code>left-baseline</code>), the center for
+everything else, the origin for a group. <code>anchor=</code> names another point: <code>center</code>, <code>top</code>,
+<code>bottom</code>, <code>left</code>, <code>right</code>, <code>top-left</code>, <code>top-right</code>, <code>bottom-left</code>, <code>bottom-right</code>,
+<code>left-baseline</code> or <code>right-baseline</code> (the baselines for text, formulas and listings only), and
+<code>origin</code> for a group. For a center-anchored element an omitted coordinate is 0; for a text
+element it is the flow position.</p>
+<h3 id="relative-placement">Relative placement<a class="anchor" href="#relative-placement" aria-label="Link to this section">#</a></h3><table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>below:#id</code>, <code>above:#id</code>, <code>left-of:#id</code>, <code>right-of:#id</code></td>
+<td>put the element next to <code>#id</code> on that side, centered on it across the other axis, at distance <code>buff</code> (<code>layout.gap</code> by default); one direction at most</td>
+</tr>
+<tr>
+<td><code>left-aligned:#id</code>, <code>right-aligned:#id</code>, <code>top-aligned:#id</code>, <code>bottom-aligned:#id</code></td>
+<td>align that edge with the edge of <code>#id</code></td>
+</tr>
+<tr>
+<td><code>baseline-aligned:#id</code></td>
+<td>align the first baselines; both elements must be text, formulas or listings</td>
+</tr>
+<tr>
+<td><code>buff</code></td>
+<td>the distance of a direction; requires one</td>
+</tr>
+<tr>
+<td><code>x</code> or <code>y</code> with a reference</td>
+<td>overrides the axis the reference leaves centered</td>
+</tr>
+</tbody>
+</table>
+<p>A reference names an element of the same slide and scope that is not a connection or an
+attachment. One horizontal and one vertical constraint at most, and not together with the
+coordinate of the same axis. References may chain; a cycle is an error.</p>
+<h3 id="at">at=<a class="anchor" href="#at" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown">[Label]<span class="tk-attribute">{#l at=center:#box.top}</span>      my center on the top of #box
+[Label]<span class="tk-attribute">{#l at=#box}</span>                 my anchor on the center of #box
+[[dot: #d at=(3,-2)]]               my anchor on a point</code></pre>
+<p><code>at=[anchor:]#id[.anchor]</code> or <code>at=[anchor:](x,y)</code> lands an anchor of the element (its default
+anchor when omitted) on an anchor of another element (its center when omitted) or on a point.
+<code>at</code> replaces <code>x</code>, <code>y</code>, <code>buff</code> and the relative references, and may not reference a connection
+or an attachment.</p>
+<h3 id="offsets">Offsets<a class="anchor" href="#offsets" aria-label="Link to this section">#</a></h3><p><code>dx</code> and <code>dy</code> shift the element after every other placement, in units; they require a
+coordinate, an <code>at</code> or a relative reference.</p>
+<h3 id="sizing">Sizing<a class="anchor" href="#sizing" aria-label="Link to this section">#</a></h3><p><code>width</code> is the wrapping width of text, the displayed width of an image, the width a table or a
+chart is drawn in, the scale of a listing, the flow width of a group, the size of a child's
+viewport and a shape's own dimension. <code>height</code> scales text, images, listings and tables to a
+height after layout, sizes charts and children, and is a dimension of rectangles and ellipses.
+<code>size</code> is the height of an icon or artwork.</p>
+<h2 id="steps-and-motion">Steps and motion<a class="anchor" href="#steps-and-motion" aria-label="Link to this section">#</a></h2><h3 id="step-and-hide">step and hide<a class="anchor" href="#step-and-hide" aria-label="Link to this section">#</a></h3><p><code>step=N</code> on an element, a group or a connection makes it appear at click <code>N</code> of its slide;
+omitted or <code>step=0</code>, it is part of the initial content. <code>hide=M</code> makes it disappear at click
+<code>M</code>, which must be later than its appearance. Numbers are local to the slide and need not be
+consecutive: a lone <code>step=4</code> is one click. Changes sharing a number play together, then the
+slide pauses; a step that also visits children plays the parent's changes first. Children are
+visited at their <code>step</code> or, without one, after the last numbered step in source order.</p>
+<h3 id="show-and-hide">[[show]] and [[hide]]<a class="anchor" href="#show-and-hide" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">[[show:</span> <span class="tk-attribute">#a</span> <span class="tk-attribute">step=</span><span class="tk-number">2</span> <span class="tk-attribute">enter=</span>grow <span class="tk-attribute">run_time=</span><span class="tk-number">0.6</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[hide:</span> <span class="tk-attribute">#a</span> <span class="tk-attribute">step=</span><span class="tk-number">3</span> <span class="tk-attribute">exit=</span>shrink <span class="tk-attribute">lag=</span><span class="tk-number">0.2</span><span class="tk-directive">]]</span></code></pre>
+<p>Visibility directives repeat changes as often as needed. They take <code>step</code> (at least 1),
+<code>run_time</code>, <code>lag</code>, and <code>enter</code> on <code>show</code> or <code>exit</code> on <code>hide</code>, which win over the element's own.
+Showing an element already visible, hiding one already hidden, or changing one twice in the
+same step is an error. Group members are shown and hidden through their group.</p>
+<h3 id="enter-and-exit-styles">Enter and exit styles<a class="anchor" href="#enter-and-exit-styles" aria-label="Link to this section">#</a></h3><table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Values</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enter</code></td>
+<td><code>fade</code>, <code>grow</code>, <code>write</code>, <code>create</code>, <code>draw</code>, or an effect of the deck's own</td>
+<td><code>fade</code></td>
+<td>how the element appears</td>
+</tr>
+<tr>
+<td><code>exit</code></td>
+<td><code>fade</code>, <code>shrink</code>, <code>uncreate</code>, or an effect of the deck's own</td>
+<td><code>fade</code></td>
+<td>how it disappears</td>
+</tr>
+<tr>
+<td><code>run_time</code></td>
+<td>seconds</td>
+<td><code>layout.animationTime</code>, 0.35</td>
+<td>the duration of the fade or effect</td>
+</tr>
+<tr>
+<td><code>lag</code></td>
+<td>seconds</td>
+<td>0</td>
+<td>a delay before it, within the step</td>
+</tr>
+</tbody>
+</table>
+<p>A name that is not built in is <code>effects/&lt;name&gt;.ts</code> of the deck.</p>
+<h3 id="focus-only-and-preview">focus_only and preview<a class="anchor" href="#focus-only-and-preview" aria-label="Link to this section">#</a></h3><p><code>focus_only</code> marks a static decoration (no <code>step</code>, <code>hide</code> or <code>play</code>) shown only while its slide
+is focused: it fades when the camera leaves and cannot be shown, hidden, transformed or
+animated. <code>preview</code> on a slide, an include or a subslide shows the child's content before its
+first visit, instead of fading it in on entry; the presenter's <code>revealOnEntry: false</code> does so
+for every slide.</p>
+<h3 id="next-and-skip-next">[[next]] and [[skip_next]]<a class="anchor" href="#next-and-skip-next" aria-label="Link to this section">#</a></h3><p><code>[[next: step=N]]</code> advances to the following stop by itself once step <code>N</code> and the child visits
+it triggers have finished; <code>step=0</code> is the slide's entry. <code>[[skip_next: step=N]]</code> omits exactly
+one following event: a step, a child visit with its subtree, or the return to the parent. Each
+takes <code>step</code> and nothing else, once per step.</p>
+<h3 id="animate">[[animate]]<a class="anchor" href="#animate" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">[[animate:</span> <span class="tk-attribute">#ball</span>, <span class="tk-attribute">step=</span><span class="tk-number">1</span>, <span class="tk-attribute">x=</span><span class="tk-number">6.5</span>, <span class="tk-attribute">run_time=</span><span class="tk-number">1.2</span>, <span class="tk-attribute">rate=</span>ease_in_out<span class="tk-directive">]]</span>
+<span class="tk-directive">[[animate:</span> <span class="tk-attribute">#card</span>, <span class="tk-attribute">step=</span><span class="tk-number">2</span>, <span class="tk-attribute">angle=</span><span class="tk-number">0.4</span>, <span class="tk-attribute">scale=</span><span class="tk-number">1.3</span>, <span class="tk-attribute">color=</span>ORANGE, <span class="tk-attribute">opacity=</span><span class="tk-number">0.6</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[animate:</span> <span class="tk-attribute">#child</span>, <span class="tk-attribute">step=</span><span class="tk-number">3</span>, <span class="tk-attribute">at=</span>center:(<span class="tk-number">4</span>,<span class="tk-number">-2</span>)<span class="tk-directive">]]</span></code></pre>
+<p>Moves or restyles a visible element, or an included child by its slide id. At least one target
+property is required.</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Values</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>step</code></td>
+<td>integer ≥ 1</td>
+<td>required</td>
+</tr>
+<tr>
+<td><code>x</code>, <code>y</code></td>
+<td>units</td>
+<td>move the anchor there (an omitted axis keeps its value)</td>
+</tr>
+<tr>
+<td><code>at</code></td>
+<td>as under <a href="#at">at=</a></td>
+<td>move an anchor onto a point or another element; not together with <code>x</code>, <code>y</code></td>
+</tr>
+<tr>
+<td><code>dx</code>, <code>dy</code></td>
+<td>units</td>
+<td>move by this much, on top of <code>x</code>, <code>y</code> or <code>at</code></td>
+</tr>
+<tr>
+<td><code>anchor</code></td>
+<td>an anchor</td>
+<td>which point <code>x</code>, <code>y</code> and <code>at</code> move; a child viewport takes a box anchor, not a baseline or <code>origin</code></td>
+</tr>
+<tr>
+<td><code>angle</code></td>
+<td>radians</td>
+<td>rotate by this much about the center</td>
+</tr>
+<tr>
+<td><code>scale</code></td>
+<td>positive</td>
+<td>scale about the center</td>
+</tr>
+<tr>
+<td><code>opacity</code></td>
+<td>0 to 1</td>
+<td>the final opacity</td>
+</tr>
+<tr>
+<td><code>color</code></td>
+<td>color</td>
+<td>the final color</td>
+</tr>
+<tr>
+<td><code>run_time</code>, <code>lag</code>, <code>rate</code></td>
+<td></td>
+<td>timing, see below</td>
+</tr>
+</tbody>
+</table>
+<h3 id="effect">[[effect]]<a class="anchor" href="#effect" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">[[effect:</span> indicate <span class="tk-attribute">#before</span>, <span class="tk-attribute">step=</span><span class="tk-number">3</span>, <span class="tk-attribute">color=</span>GOLD_E, <span class="tk-attribute">scale=</span><span class="tk-number">1.2</span><span class="tk-directive">]]</span></code></pre>
+<p>Plays a named effect (the <code>name</code>, written first) on a visible element without changing its visibility: <code>indicate</code>,
+<code>wiggle</code>, <code>circumscribe</code>, <code>flash</code>, <code>focus</code>, <code>grow</code>, <code>shrink</code>, <code>write</code>, <code>create</code>, <code>uncreate</code>,
+<code>draw</code>, <code>wave</code>, or an effect of the deck's own (<code>effects/&lt;name&gt;.ts</code>; names may hold digits and
+hyphens). <code>color</code> and <code>scale</code> tune the effects that take them; <code>step</code>, <code>run_time</code>, <code>lag</code> and
+<code>rate</code> as for the others.</p>
+<h3 id="transform">[[transform]]<a class="anchor" href="#transform" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">[[transform:</span> <span class="tk-attribute">#before</span> -&gt; <span class="tk-attribute">#after</span>, <span class="tk-attribute">step=</span><span class="tk-number">4</span>, <span class="tk-attribute">run_time=</span><span class="tk-number">1</span><span class="tk-directive">]]</span></code></pre>
+<p>Morphs a visible element into a hidden one, which is the visible element afterwards; later
+<code>show</code> and <code>hide</code> directives address the new element. Give the target <code>step=N</code> for the
+transform's own step: the morph reveals it instead of a fade. Neither may be <code>focus_only</code>, and
+the two must differ. Attributes: <code>step</code>, <code>run_time</code>, <code>lag</code>, <code>rate</code>.</p>
+<h3 id="move-along">[[move_along]]<a class="anchor" href="#move-along" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">[[move_along:</span> <span class="tk-attribute">#ball</span>, <span class="tk-attribute">step=</span><span class="tk-number">5</span>, <span class="tk-attribute">path=#orbit</span>, <span class="tk-attribute">run_time=</span><span class="tk-number">2</span>, <span class="tk-attribute">rate=</span>linear, <span class="tk-attribute">rotate=</span>true<span class="tk-directive">]]</span></code></pre>
+<p>Moves an element along a shape (<code>circle</code>, <code>arc</code>, <code>polyline</code>, <code>polygon</code>, <code>ellipse</code>,
+<code>rectangle</code>); <code>rotate=true</code> turns it along the path. Attributes: <code>step</code>, <code>path</code> (required,
+<code>#shape</code>), <code>rotate</code>, <code>run_time</code>, <code>lag</code>, <code>rate</code>.</p>
+<h3 id="timing-run-time-lag-rate">Timing: run_time, lag, rate<a class="anchor" href="#timing-run-time-lag-rate" aria-label="Link to this section">#</a></h3><table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Values</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>run_time</code></td>
+<td>seconds, positive</td>
+<td><code>layout.animationTime</code> (0.35)</td>
+<td>the duration of the change</td>
+</tr>
+<tr>
+<td><code>lag</code></td>
+<td>seconds, nonnegative</td>
+<td>0</td>
+<td>a delay before it, within the step</td>
+</tr>
+<tr>
+<td><code>rate</code></td>
+<td><code>smooth</code>, <code>linear</code>, <code>rush_into</code>, <code>rush_from</code>, <code>there_and_back</code>, <code>ease_in</code>, <code>ease_out</code>, <code>ease_in_out</code></td>
+<td><code>smooth</code></td>
+<td>the easing, for <code>animate</code>, <code>effect</code>, <code>transform</code> and <code>move_along</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="tremble">tremble<a class="anchor" href="#tremble" aria-label="Link to this section">#</a></h3><table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Values</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tremble</code></td>
+<td><code>true</code>, <code>false</code>, <code>N</code>, <code>N-M</code></td>
+<td></td>
+<td>vibrate the element's geometry: from its appearance on, from step <code>N</code> on, or from <code>N</code> until <code>M</code> (which must follow <code>N</code> and come before <code>hide</code>)</td>
+</tr>
+<tr>
+<td><code>tremble_amplitude</code></td>
+<td>units</td>
+<td></td>
+<td>the size of the vibration; requires <code>tremble</code></td>
+</tr>
+<tr>
+<td><code>tremble_rate</code></td>
+<td>per second, positive</td>
+<td></td>
+<td>its frequency; requires <code>tremble</code></td>
+</tr>
+</tbody>
+</table>
+<p>Only vector geometry trembles: shapes, connections, attachments, icons and artworks, formulas,
+groups, tables and charts.</p>
+<h2 id="appearance">Appearance<a class="anchor" href="#appearance" aria-label="Link to this section">#</a></h2><h3 id="hand-drawn-rendering-sketch">Hand-drawn rendering (sketch)<a class="anchor" href="#hand-drawn-rendering-sketch" aria-label="Link to this section">#</a></h3><p><code>sketch=true</code> draws a shape, connection, attachment, icon, table or chart as if by hand. The
+look is stable across reloads, seeded by the element's id and line unless <code>seed=</code> says
+otherwise.</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Values</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sketch</code></td>
+<td><code>true</code>, <code>false</code></td>
+<td>false</td>
+<td></td>
+</tr>
+<tr>
+<td><code>roughness</code></td>
+<td>nonnegative</td>
+<td>1</td>
+<td>the wobble: 0 is nearly exact, 2 and above careless</td>
+</tr>
+<tr>
+<td><code>bowing</code></td>
+<td>nonnegative</td>
+<td>1</td>
+<td>how much straight lines bend</td>
+</tr>
+<tr>
+<td><code>fill_style</code></td>
+<td><code>hachure</code>, <code>solid</code>, <code>zigzag</code>, <code>cross-hatch</code>, <code>dots</code>, <code>dashed</code>, <code>zigzag-line</code></td>
+<td><code>hachure</code> (<code>solid</code> for dots, tables and charts)</td>
+<td>the fill pattern when <code>fill_opacity</code> is above 0</td>
+</tr>
+<tr>
+<td><code>hachure_angle</code></td>
+<td>degrees</td>
+<td></td>
+<td>the angle of the hatching</td>
+</tr>
+<tr>
+<td><code>hachure_gap</code></td>
+<td>positive</td>
+<td></td>
+<td>the distance between hatch lines</td>
+</tr>
+<tr>
+<td><code>fill_weight</code></td>
+<td>nonnegative</td>
+<td></td>
+<td>the thickness of hatch lines</td>
+</tr>
+<tr>
+<td><code>seed</code></td>
+<td>integer</td>
+<td>from the element</td>
+<td>the random seed</td>
+</tr>
+</tbody>
+</table>
+<h3 id="style-roles-and-classes">Style roles and classes<a class="anchor" href="#style-roles-and-classes" aria-label="Link to this section">#</a></h3><p>A style is a named attribute set. It applies through <code>.name</code> tokens (or <code>class=&quot;a b&quot;</code>) on
+elements, includes and subslides, and automatically through <strong>roles</strong>: every construct has
+roles, and a style named after one applies to all of them. The roles are <code>body</code> (paragraphs
+and list items), <code>heading</code> and <code>h1</code> to <code>h6</code>, <code>image</code>, <code>math</code>, <code>code</code>, <code>table</code>, <code>chart</code>,
+<code>iframe</code>, <code>group</code>, <code>custom</code>, <code>shape</code> with the shape's kind (<code>rectangle</code>, <code>circle</code>, <code>dot</code>,
+<code>ellipse</code>, <code>polygon</code>, <code>polyline</code>, <code>arc</code>), <code>icon</code> with <code>icon-&lt;name&gt;</code>, <code>connection</code> with <code>arrow</code>
+or <code>line</code>, <code>attachment</code> with <code>brace</code>, <code>box</code> or <code>blob</code>, and <code>include</code> for children. Layers
+apply in this order, each filling in what the earlier ones left unset: the construct's own
+attributes win; then its classes, the last written first; then its roles, the most specific
+first. <code>id</code> and <code>class</code> are never copied from a style. A class that no style defines is an
+error. The <code>::: styles</code> block of the Markdown wins over <code>styles</code> in <code>deck.json</code>, which wins
+over a theme.</p>
+<h3 id="color-names">Color names<a class="anchor" href="#color-names" aria-label="Link to this section">#</a></h3><p>The engine palette, usable wherever a color is: <code>WHITE</code>, <code>BLACK</code>, <code>GRAY</code> and <code>GRAY_A</code> to
+<code>GRAY_E</code>, <code>LIGHT_GRAY</code>, <code>LIGHTER_GRAY</code>, <code>DARK_GRAY</code>, <code>DARKER_GRAY</code>, <code>BLUE</code> and <code>BLUE_A</code> to
+<code>BLUE_E</code>, <code>DARK_BLUE</code>, <code>PURE_BLUE</code>, <code>TEAL</code> and <code>TEAL_A</code> to <code>TEAL_E</code>, <code>GREEN</code> and <code>GREEN_A</code> to
+<code>GREEN_E</code>, <code>PURE_GREEN</code>, <code>YELLOW</code> and <code>YELLOW_A</code> to <code>YELLOW_E</code>, <code>GOLD</code> and <code>GOLD_A</code> to
+<code>GOLD_E</code>, <code>ORANGE</code>, <code>RED</code> and <code>RED_A</code> to <code>RED_E</code>, <code>PURE_RED</code>, <code>MAROON</code> and <code>MAROON_A</code> to
+<code>MAROON_E</code>, <code>PURPLE</code> and <code>PURPLE_A</code> to <code>PURPLE_E</code>, <code>PINK</code>, <code>LIGHT_PINK</code>, <code>LIGHT_BROWN</code>,
+<code>DARK_BROWN</code>. In each family <code>_A</code> is the lightest and <code>_E</code> the darkest; the bare name is <code>_C</code>.
+Names are matched regardless of case. CSS names (<code>crimson</code>, <code>steelblue</code>, …) and hex values work
+alike.</p>
+<h2 id="the-deck-json-file">The deck.json file<a class="anchor" href="#the-deck-json-file" aria-label="Link to this section">#</a></h2><p>A <code>deck.json</code> next to the Markdown names the file and holds the settings. Relative paths in it
+are relative to the file itself.</p>
+<h3 id="top-level-keys">Top-level keys<a class="anchor" href="#top-level-keys" aria-label="Link to this section">#</a></h3><table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Value</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>markup</code></td>
+<td>path</td>
+<td>the Markdown file (required)</td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td>text</td>
+<td>the page title and the outline's root label</td>
+</tr>
+<tr>
+<td><code>root</code></td>
+<td>id</td>
+<td>the root of a single tree, checked; an error on a forest</td>
+</tr>
+<tr>
+<td><code>classes</code></td>
+<td>path</td>
+<td>a module exporting slide classes for <code>[[subslide: Name]]</code> (<code>imports</code> is the old name)</td>
+</tr>
+<tr>
+<td><code>layout</code></td>
+<td>object</td>
+<td>typography and spacing, below</td>
+</tr>
+<tr>
+<td><code>presenter</code></td>
+<td>object</td>
+<td>timing and camera policy, below</td>
+</tr>
+<tr>
+<td><code>background</code></td>
+<td>color</td>
+<td>the canvas background (white)</td>
+</tr>
+<tr>
+<td><code>viewport</code></td>
+<td><code>{ &quot;width&quot;, &quot;height&quot; }</code></td>
+<td>the proportions the camera fits (16 × 9)</td>
+</tr>
+<tr>
+<td><code>showOutline</code></td>
+<td>boolean</td>
+<td>open the outline at start</td>
+</tr>
+<tr>
+<td><code>macros</code></td>
+<td>object</td>
+<td>LaTeX macros for every formula, name to expansion</td>
+</tr>
+<tr>
+<td><code>styles</code></td>
+<td>object</td>
+<td>named styles, as attribute strings or objects</td>
+</tr>
+<tr>
+<td><code>theme</code></td>
+<td>name or list</td>
+<td>themes applied under the deck's own settings</td>
+</tr>
+<tr>
+<td><code>paths</code></td>
+<td>list of folders</td>
+<td>searched, after the Markdown's own folder, for imports, images, videos, pages and data files</td>
+</tr>
+<tr>
+<td><code>artworks</code>, <code>fonts</code>, <code>effects</code>, <code>transitions</code>, <code>charts</code>, <code>languages</code>, <code>codeThemes</code>, <code>themes</code>, <code>slides</code>, <code>directives</code>, <code>snippets</code></td>
+<td>lists of folders</td>
+<td>the deck's library, besides the folder of the same name next to the Markdown (<code>code-themes/</code> for <code>codeThemes</code>); see <a href="extending.html">Extending a deck</a></td>
+</tr>
+</tbody>
+</table>
+<h3 id="layout">layout<a class="anchor" href="#layout" aria-label="Link to this section">#</a></h3><table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fontSize</code></td>
+<td>28</td>
+<td>body text size, in points</td>
+</tr>
+<tr>
+<td><code>headingSize</code></td>
+<td>42</td>
+<td>level-one heading size; each deeper level is 12 % of it smaller</td>
+</tr>
+<tr>
+<td><code>codeSize</code></td>
+<td>80 % of <code>fontSize</code></td>
+<td>listing size</td>
+</tr>
+<tr>
+<td><code>color</code></td>
+<td><code>#000000</code></td>
+<td>text and default stroke color</td>
+</tr>
+<tr>
+<td><code>font</code></td>
+<td>Latin Modern Roman</td>
+<td>the prose family</td>
+</tr>
+<tr>
+<td><code>codeFont</code></td>
+<td>Latin Modern Mono</td>
+<td>inline code and listings</td>
+</tr>
+<tr>
+<td><code>codeTheme</code></td>
+<td>follows <code>color</code></td>
+<td>a code theme of the deck, <code>code-themes/&lt;name&gt;.json</code></td>
+</tr>
+<tr>
+<td><code>margin</code></td>
+<td>0.65</td>
+<td>distance of the flow from the canvas edges</td>
+</tr>
+<tr>
+<td><code>gap</code></td>
+<td>0.35</td>
+<td>distance between flowing blocks, and the default <code>buff</code></td>
+</tr>
+<tr>
+<td><code>lineGap</code></td>
+<td>0.12</td>
+<td>extra space between wrapped lines</td>
+</tr>
+<tr>
+<td><code>listIndent</code></td>
+<td>0.6</td>
+<td>indentation per list level, and the minimum width of the marker column</td>
+</tr>
+<tr>
+<td><code>animationTime</code></td>
+<td>0.35</td>
+<td>the default <code>run_time</code> of fades and effects</td>
+</tr>
+<tr>
+<td><code>defaultSlideSize</code></td>
+<td><code>[16, 9]</code></td>
+<td>the canvas of slides without <code>width</code> or <code>height</code></td>
+</tr>
+<tr>
+<td><code>textAnchor</code></td>
+<td><code>left-baseline</code></td>
+<td>the default anchor of text (<code>top-left</code> or <code>center</code> possible)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="presenter">presenter<a class="anchor" href="#presenter" aria-label="Link to this section">#</a></h3><table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>transitionTime</code></td>
+<td>0.7</td>
+<td>seconds of each camera move; 0 jumps</td>
+</tr>
+<tr>
+<td><code>transition</code></td>
+<td><code>zoom</code></td>
+<td>the default move: <code>cut</code> replaces the view at once, a name is a camera transition of the deck; a slide's own <code>transition=</code> overrides it for the moves into that slide</td>
+</tr>
+<tr>
+<td><code>padding</code></td>
+<td>1</td>
+<td>camera width multiplier around a focused slide, at least 1</td>
+</tr>
+<tr>
+<td><code>pauseOnEntry</code></td>
+<td>true</td>
+<td>stop after entering a slide, before its first step</td>
+</tr>
+<tr>
+<td><code>pauseOnReturn</code></td>
+<td>true</td>
+<td>stop after returning to a parent</td>
+</tr>
+<tr>
+<td><code>showSlideBorders</code></td>
+<td>false</td>
+<td>draw every canvas border (a design aid)</td>
+</tr>
+<tr>
+<td><code>slideBorderColor</code>, <code>slideBorderWidth</code></td>
+<td><code>#FC6255</code>, 3</td>
+<td>the border's style</td>
+</tr>
+<tr>
+<td><code>showSlideGrid</code></td>
+<td>false</td>
+<td>draw a coordinate grid on the focused slide</td>
+</tr>
+<tr>
+<td><code>reversePlayback</code></td>
+<td>true</td>
+<td>play a stop's animations backwards on the left key</td>
+</tr>
+<tr>
+<td><code>revealOnEntry</code></td>
+<td>true</td>
+<td>children fade in when first entered; <code>false</code> shows every slide's content from the start</td>
+</tr>
+<tr>
+<td><code>renderCanvas</code>, <code>stillTime</code></td>
+<td></td>
+<td>accepted for older configurations; without effect</td>
+</tr>
+</tbody>
+</table>
+<h3 id="library-folders">Library folders<a class="anchor" href="#library-folders" aria-label="Link to this section">#</a></h3><p>Next to the Markdown, each of these folders extends the player by name when it exists, as do
+the folders the keys above list: <code>artworks/</code> (<code>name.svg</code>, <code>name.ts</code>), <code>fonts/</code>
+(<code>Family.woff2</code> and <code>-Bold</code>, <code>-Italic</code>, <code>-BoldItalic</code>), <code>effects/</code>, <code>transitions/</code>, <code>charts/</code>,
+<code>directives/</code>, <code>slides/</code> (modules), <code>languages/</code> (<code>lang.json</code>), <code>code-themes/</code> (<code>name.json</code>),
+<code>themes/</code> (<code>name.md</code> or <code>name.json</code>), <code>snippets/</code> (<code>name.md</code>). The <code>paths</code> folders are
+searched last for every kind. <a href="extending.html">Extending a deck</a> describes each file format.</p>
+<h3 id="theme-files">Theme files<a class="anchor" href="#theme-files" aria-label="Link to this section">#</a></h3><p>A Markdown theme is a style sheet: <code>::: styles</code> blocks, or every line when it has none, with
+three reserved names. <code>layout:</code> takes the keys of <code>layout</code> above, <code>presenter:</code> those of
+<code>presenter</code>, and <code>deck:</code> takes <code>background=</code> and <code>viewport=16x9</code>. A JSON theme is a <code>styles</code>
+map, or <code>{ &quot;styles&quot;, &quot;layout&quot;, &quot;presenter&quot;, &quot;background&quot;, &quot;viewport&quot; }</code>. Later themes of a list
+override earlier ones; the deck's own keys override them all.</p>
+<h2 id="errors">Errors<a class="anchor" href="#errors" aria-label="Link to this section">#</a></h2><p>A document that breaks a rule does not build; the message names the line (and the imported
+file or snippet) it comes from. Besides the constraints listed above, the parser rejects:</p>
+<ul>
+<li>a slide without <code>#id</code>, a duplicate slide or element id, an invalid identifier;</li>
+<li>a document without slides, or whose slides include one another in a cycle;</li>
+<li><code>::: slide</code> or <code>::: styles</code> expected at the top level and something else found; inside a
+slide, a container that is not <code>{.element …}</code>, <code>{.group …}</code> or <code>notes</code>;</li>
+<li>an <code>.element</code> wrapper around anything but one block; a group holding an include, a subslide
+or a directive; a group member with <code>step</code>, <code>hide</code>, <code>focus_only</code> or <code>play</code>;</li>
+<li>an unknown attribute, a duplicate one, a malformed value, an unknown color, an unknown style
+class, an unknown anchor, a baseline anchor on anything but text, <code>origin</code> on anything but
+a group;</li>
+<li>a reference to an element that does not exist, or that belongs to another group; a
+connection or attachment used as a reference, endpoint or target; conflicting or cyclic
+positions;</li>
+<li>an element shown when visible, hidden when hidden, changed twice in one step, animated
+while hidden, transformed when not visible (or into one not hidden); <code>hide</code> not later than
+<code>step</code>; a step of zero on a directive or a child visit;</li>
+<li><code>tremble</code> on an element without vector geometry, or starting after its <code>hide</code>;</li>
+<li>an unsupported link target, an iframe without <code>width</code> and <code>height</code> or with another kind of
+URL, <code>play=</code> on a still image;</li>
+<li>a chart without rows, with rows and <code>src=</code> both, with a type, color or bound that is not
+valid; a table with an unknown <code>rules</code>;</li>
+<li>an effect, enter or exit style, camera transition, chart type, directive, artwork, snippet
+or theme that is neither built in nor found in the deck's folders.</li>
+</ul>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="reference.html">← Reference</a>
+      <a class="next" href="api.html">The API, in full →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#syntax">Syntax</a></li><li><a href="#document-structure">Document structure</a></li><li><a href="#content-blocks">Content blocks</a></li><li><a href="#diagram-directives">Diagram directives</a></li><li><a href="#positioning">Positioning</a></li><li><a href="#steps-and-motion">Steps and motion</a></li><li><a href="#appearance">Appearance</a></li><li><a href="#the-deck-json-file">The deck.json file</a></li><li><a href="#errors">Errors</a></li></ul></nav>
+</div>
+</body>
+</html>

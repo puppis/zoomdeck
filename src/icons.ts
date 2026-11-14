@@ -11,13 +11,16 @@ import { VGroup, type Mobject } from 'manim-web';
 import { sketch, type OutlineMobject, type SketchOptions } from './sketch';
 import { arcPath, circlePath, ellipsePath, pathMobject, rectPath } from './paths';
 
+/** The names of the built-in icons. */
 export const ICON_NAMES = [
   'user', 'users', 'database', 'server', 'client', 'desktop', 'phone', 'cloud', 'document', 'folder', 'lock', 'gear', 'gears', 'message',
   'globe', 'question', 'exclamation', 'info', 'warning', 'check', 'cross', 'download', 'upload', 'puzzle', 'search', 'clock', 'calendar',
   'arrival', 'departure', 'recycle', 'trash', 'pin', 'key', 'shield', 'bolt', 'star', 'chart', 'home', 'flag',
 ] as const;
+/** One of the built-in icon names. */
 export type IconName = (typeof ICON_NAMES)[number];
 
+/** One path of an icon's drawing, in the unit box. */
 export interface IconPart {
   /** SVG path data inside the unit box, y up. */
   d: string;
@@ -25,6 +28,7 @@ export interface IconPart {
   fill: boolean;
 }
 
+/** How an icon is drawn: size, stroke, fill and hand-drawn look. */
 export interface IconOptions {
   /** Height of the unit box in logical units; 1 by default. */
   size?: number;

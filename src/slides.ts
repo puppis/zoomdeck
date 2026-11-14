@@ -11,6 +11,7 @@ import { Rectangle, Text, RED, type Mobject } from 'manim-web';
 import { point, positive, type Vec3 } from './geometry';
 import type { SlideContext } from './runtime';
 
+/** The duration of a fade, in seconds, when neither the layout nor the directive says otherwise. */
 export const DEFAULT_ANIMATION_TIME = 0.35;
 
 /** Infer omitted canvas dimensions from the configured default proportions. */
@@ -40,6 +41,7 @@ export type ProgramResult =
 export type BuildCallback = (ctx: SlideContext) => void | Promise<void>;
 export type ProgramCallback = (ctx: SlideContext) => ProgramResult;
 
+/** What a slide is made with: its canvas, callbacks in place of subclassing, and the flags of its visit. */
 export interface SlideOptions {
   /** Logical `[width, height]`; use this tuple or the width/height keys. */
   size?: readonly [number, number];
@@ -119,6 +121,7 @@ export interface PlacementStyle {
   fillOpacity?: number;
 }
 
+/** Where and how a child slide sits in its parent's canvas, and the flags of its visit. */
 export interface AddChildOptions extends PlacementStyle {
   /** Center in the parent's logical coordinates. */
   center?: ArrayLike<number>;
@@ -334,6 +337,7 @@ export function* walk(root: Slide): Generator<Slide> {
   }
 }
 
+/** How the pages of a flat document are laid out side by side under their hidden root. */
 export interface PageSequenceOptions {
   /** Name of the hidden root in code that lists the tree; never shown. */
   name?: string;

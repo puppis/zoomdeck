@@ -6,12 +6,14 @@
  */
 export type TokenClass = 'plain' | 'keyword' | 'type' | 'string' | 'comment' | 'number' | 'directive' | 'attribute';
 
+/** One token of a listing: its text, its class and its weight. */
 export interface CodeToken {
   text: string;
   cls: TokenClass;
   bold?: boolean;
 }
 
+/** A language profile for the code tokenizer: keywords, types, comments, strings and the flags of special syntaxes. */
 export interface Language {
   keywords?: string[];
   types?: string[];

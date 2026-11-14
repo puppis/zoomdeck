@@ -146,3 +146,6 @@ in the editor (E, or Alt + click on an element), and highlight the dialect insid
   the content of a slide to the reference.
 - The [tour](tour.html) shows every topic live, and each documentation page opens its chapter
   with the "Open in the tour" badge.
+- The reference manuals, [the markup language in full](manual-markup.html) and
+  [the API in full](api.html), list every construct, attribute and export; the search box at
+  the top of every page finds any name in the documentation.

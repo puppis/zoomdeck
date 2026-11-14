@@ -34,6 +34,7 @@ export function textBasePxPerWorld(): number {
   return PX_PER_WORLD_BASE * textResolutionScale();
 }
 
+/** A run of text in one style within a laid-out line. */
 export interface TextRun {
   text: string;
   bold: boolean;
@@ -465,6 +466,7 @@ export interface MathPiece {
   descent: number;
 }
 
+/** Makes the mobject of an inline formula at a size and a color. */
 export type MathFactory = (latex: string, color: string) => Promise<MathPiece>;
 
 export interface ParagraphOptions {

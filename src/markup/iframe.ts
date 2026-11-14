@@ -9,6 +9,7 @@ import type { Slide } from '../slides';
 /** Every iframe placeholder of the deck, for the player's iframe layer. */
 export const IFRAME_HOSTS = new Set<IframeHost>();
 
+/** The placeholder mobject of a live page in a slide; the page itself is an HTML element the `IframeLayer` keeps over it. */
 export class IframeHost extends Group {
   /** The slide whose focus shows the live page. */
   slide: Slide | null = null;

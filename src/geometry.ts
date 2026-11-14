@@ -8,6 +8,7 @@
  */
 import * as THREE from 'three';
 
+/** A point or vector, `[x, y, z]`, with `z` zero on the slide plane. */
 export type Vec3 = [number, number, number];
 
 /** Return `value` as a finite positive number or throw. */

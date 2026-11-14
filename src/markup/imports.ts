@@ -22,11 +22,13 @@ export interface LineOrigin {
   line: number;
 }
 
+/** The expanded document with the origin (file and line) of every line. */
 export interface ExpandedSource {
   source: string;
   origins: LineOrigin[];
 }
 
+/** How imports and snippets are resolved: the loaders and the nesting limit. */
 export interface ExpandOptions {
   /** Load an imported file by its path relative to the main document. */
   load: (path: string) => Promise<string>;

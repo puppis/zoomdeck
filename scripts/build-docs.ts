@@ -9,6 +9,7 @@
  *   npm run docs
  */
 import MarkdownIt from 'markdown-it';
+import { apiMarkdown } from './api-reference';
 import { execFileSync } from 'node:child_process';
 import { promises as fs } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -36,7 +37,11 @@ const NAV: Array<{ title: string; blurb: string; pages: string[] }> = [
   { title: 'Layout and style', blurb: 'Where things go and how they look: a notebook to try flow, anchors, constraints, groups and style sheets, then each in detail, and the deck.json configuration of a deck.', pages: ['layout', 'positioning', 'groups', 'styles', 'configuration'] },
   { title: 'Motion and interaction', blurb: 'What happens on each click: a notebook to try steps, animations, focus-only decorations and links, then fragments, animations, focus and live web pages in detail.', pages: ['motion', 'fragments', 'animations', 'focus', 'live-pages'] },
   { title: 'Advanced', blurb: 'Slides written in TypeScript, a deck inside a page of your own, the folders that extend the player, and the complete reference of the dialect.', pages: ['code-slides', 'embedding', 'extending', 'reference'] },
+  { title: 'Reference manuals', blurb: 'Every construct of the markup language with every attribute, every export of the package, and an alphabetical index of both; the search box at the top finds any name.', pages: ['manual-markup', 'api', 'manual-index'] },
 ];
+
+/** Pages the build writes itself rather than reading from docs/site/: the API manual's body and the index of constructs. */
+const GENERATED = new Set(['manual-index']);
 
 /** Features a deck in the documentation has no use for unless a fence asks for them. */
 const DOCS_WITHOUT = 'camera record screen';
@@ -63,6 +68,8 @@ interface Page {
   description: string;
   html: string;
   headings: Array<{ id: string; text: string }>;
+  /** The `###` headings, for the index of constructs. */
+  entries: Array<{ id: string; text: string }>;
   /** The tour chapter the page's first "Open in the tour" badge points at, if any. */
   tour: string | null;
 }
@@ -106,7 +113,7 @@ function liveDeck(info: string, source: string): string {
 }
 
 /** A Markdown renderer with heading anchors (collected into `headings`), admonitions and live decks. */
-function makeMarkdown(headings: Page['headings']): MarkdownIt {
+function makeMarkdown(headings: Page['headings'], entries: Page['entries'] = []): MarkdownIt {
   const md = new MarkdownIt({ html: true, linkify: false, typographer: false, highlight: (code, lang) => highlight(code, languageFor(lang)) });
   md.renderer.rules.heading_open = (tokens, index) => {
     const token = tokens[index];
@@ -114,6 +121,7 @@ function makeMarkdown(headings: Page['headings']): MarkdownIt {
     const text = inline.children?.map((child) => child.content).join('') ?? '';
     const id = slug(text);
     if (token.tag === 'h2') headings.push({ id, text });
+    if (token.tag === 'h3') entries.push({ id, text });
     return `<${token.tag} id="${id}">`;
   };
   md.renderer.rules.heading_close = (tokens, index) => {
@@ -153,9 +161,51 @@ function parsePage(name: string, source: string): Page {
     source = source.slice(front[0].length);
   }
   const headings: Page['headings'] = [];
-  const html = makeMarkdown(headings).render(source);
+  const entries: Page['entries'] = [];
+  const html = makeMarkdown(headings, entries).render(source);
   const tour = /class="try" href="(tour\.html#slide=[^"]+)"/.exec(source)?.[1] ?? null;
-  return { name, title: meta.title ?? name, description: meta.description ?? '', html, headings, tour };
+  return { name, title: meta.title ?? name, description: meta.description ?? '', html, headings, entries, tour };
+}
+
+/** The alphabetical index of the manuals: every `###` entry of the markup and API manuals, by first letter. */
+function indexPage(pages: Map<string, Page>): Page {
+  const items: Array<{ text: string; key: string; href: string; where: string }> = [];
+  for (const [name, where] of [['manual-markup', 'markup'], ['api', 'API']] as const) {
+    const page = pages.get(name);
+    if (!page) continue;
+    for (const entry of page.entries) {
+      const key = entry.text.replace(/^(\[\[|:::\s*\{?\.?|\.)/, '').replace(/[^A-Za-z0-9].*$/, '').toLowerCase() || entry.text.toLowerCase();
+      items.push({ text: entry.text, key, href: `${name}.html#${entry.id}`, where });
+    }
+  }
+  items.sort((a, b) => a.key.localeCompare(b.key) || a.text.localeCompare(b.text));
+  const letters = new Map<string, typeof items>();
+  for (const item of items) {
+    const letter = /^[a-z]/.test(item.key) ? item.key[0].toUpperCase() : '#';
+    if (!letters.has(letter)) letters.set(letter, []);
+    (letters.get(letter) as typeof items).push(item);
+  }
+  const html = [...letters.entries()].map(([letter, list]) => `<section class="index-letter"><h2 id="letter-${letter === '#' ? 'other' : letter.toLowerCase()}">${letter}</h2><ul>${list.map((item) => `<li><a href="${item.href}">${escapeHtml(item.text)}</a> <span class="index-where">${item.where}</span></li>`).join('')}</ul></section>`).join('\n');
+  const headings = [...letters.keys()].map((letter) => ({ id: `letter-${letter === '#' ? 'other' : letter.toLowerCase()}`, text: letter }));
+  return { name: 'manual-index', title: 'Index of constructs', description: 'Every construct and attribute of the markup manual and every export of the API manual, alphabetically, with a link to its entry.', html, headings, entries: [], tour: null };
+}
+
+/** The search index: every section of every page (an h2 or h3 with the text under it), as the page's script searches it. */
+function searchIndex(pages: Map<string, Page>): Array<{ u: string; p: string; h: string; t: string }> {
+  const index: Array<{ u: string; p: string; h: string; t: string }> = [];
+  const plain = (html: string) => html.replace(/<script[\s\S]*?<\/script>/g, ' ').replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/\s+/g, ' ').trim();
+  for (const page of pages.values()) {
+    const parts = page.html.split(/(?=<h[23] id=")/);
+    for (const part of parts) {
+      const heading = /^<h([23]) id="([^"]+)">([\s\S]*?)<\/h\1>/.exec(part);
+      const id = heading ? heading[2] : '';
+      const title = heading ? plain(heading[3]).replace(/\s*#$/, '') : page.title;
+      const text = plain(heading ? part.slice(heading[0].length) : part).slice(0, 2500);
+      if (!text && !heading) continue;
+      index.push({ u: `${page.name}.html${id ? `#${id}` : ''}`, p: page.title, h: title, t: text });
+    }
+  }
+  return index;
 }
 
 interface NotebookCell {
@@ -224,7 +274,7 @@ function parseNotebook(name: string, json: string): Page {
       : highlight(source, source.startsWith('%') ? 'bash' : 'python');
     parts.push(`<div class="cell"><pre class="cell-input"><code>${input}</code></pre>${outputs}</div>`);
   });
-  return { name, title: title ?? name, description: meta.description ?? '', html: parts.join('\n'), headings, tour: null };
+  return { name, title: title ?? name, description: meta.description ?? '', html: parts.join('\n'), headings, entries: [], tour: null };
 }
 
 /** The documentation map for the index page: every section with its pages and their tour chapters. */
@@ -289,6 +339,10 @@ try { for (const side of ['nav', 'outline']) if (localStorage.getItem('zoomdeck-
   <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
   <a class="brand" href="index.html">Zoomdeck</a>
   <span class="tagline">zooming presentations in the browser</span>
+  <form class="search" role="search" onsubmit="return false">
+    <input type="search" id="search" placeholder="Search the documentation" aria-label="Search the documentation" autocomplete="off" aria-controls="search-results" aria-expanded="false">
+    <div id="search-results" class="search-results" hidden></div>
+  </form>
   <span class="sides">
     <button class="side-toggle" data-side="nav" title="Show or hide the table of contents">Contents</button>
     <button class="side-toggle" data-side="outline" title="Show or hide the outline of this page">On this page</button>
@@ -305,6 +359,76 @@ for (const button of document.querySelectorAll('.side-toggle')) {
   });
   sync();
 }
+// Search: the index of every section of the site loads on the first keystroke; results open the section.
+(() => {
+  const input = document.getElementById('search');
+  const panel = document.getElementById('search-results');
+  if (!input || !panel) return;
+  let index = null, loading = null, active = -1;
+  const load = () => loading ??= fetch('search.json').then((r) => r.json()).then((data) => { index = data; }).catch(() => { index = []; });
+  const close = () => { panel.hidden = true; input.setAttribute('aria-expanded', 'false'); active = -1; };
+  const escape = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const snippet = (text, terms) => {
+    const lower = text.toLowerCase();
+    let at = -1;
+    for (const term of terms) { const i = lower.indexOf(term); if (i >= 0 && (at < 0 || i < at)) at = i; }
+    const start = Math.max(0, at - 60);
+    let piece = text.slice(start, start + 180);
+    if (start > 0) piece = '…' + piece;
+    if (start + 180 < text.length) piece += '…';
+    let html = escape(piece);
+    for (const term of terms) html = html.replace(new RegExp('(' + term.replace(/[.*+?^\${}()|[\]\\]/g, '\\$&') + ')', 'ig'), '<mark>$1</mark>');
+    return html;
+  };
+  const render = (results, terms) => {
+    panel.innerHTML = results.length
+      ? results.map((r) => '<a href="' + r.u + '"><b>' + escape(r.h) + '</b><span class="search-page">' + escape(r.p) + '</span><small>' + snippet(r.t, terms) + '</small></a>').join('')
+      : '<p class="search-empty">Nothing found</p>';
+    panel.hidden = false;
+    input.setAttribute('aria-expanded', 'true');
+    active = -1;
+  };
+  const search = () => {
+    const terms = input.value.toLowerCase().split(/\s+/).filter((t) => t.length >= 2);
+    if (!terms.length) { close(); return; }
+    if (!index) { load().then(search); return; }
+    const scored = [];
+    for (const entry of index) {
+      const h = entry.h.toLowerCase(), p = entry.p.toLowerCase(), t = entry.t.toLowerCase();
+      let score = 0;
+      for (const term of terms) {
+        const inHeading = h.includes(term), inPage = p.includes(term), inText = t.includes(term);
+        if (!inHeading && !inPage && !inText) { score = -1; break; }
+        if (inHeading) score += h === term ? 12 : h.startsWith(term) ? 8 : 5;
+        if (inPage) score += 1;
+        if (inText) { let n = 0, i = -1; while (n < 4 && (i = t.indexOf(term, i + 1)) >= 0) n += 1; score += n; }
+      }
+      if (score > 0) scored.push([score, entry]);
+    }
+    scored.sort((a, b) => b[0] - a[0]);
+    render(scored.slice(0, 14).map((s) => s[1]), terms);
+  };
+  input.addEventListener('focus', () => void load());
+  input.addEventListener('input', search);
+  input.addEventListener('keydown', (event) => {
+    const links = [...panel.querySelectorAll('a')];
+    if (event.key === 'Escape') { close(); input.blur(); }
+    else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      if (!links.length) return;
+      event.preventDefault();
+      active = (active + (event.key === 'ArrowDown' ? 1 : -1) + links.length) % links.length;
+      links.forEach((a, i) => a.classList.toggle('active', i === active));
+      links[active].scrollIntoView({ block: 'nearest' });
+    } else if (event.key === 'Enter') {
+      const target = links[active >= 0 ? active : 0];
+      if (target) location.href = target.getAttribute('href');
+    }
+  });
+  document.addEventListener('click', (event) => { if (!panel.contains(event.target) && event.target !== input) close(); });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === '/' && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName ?? '') && !event.metaKey && !event.ctrlKey && !event.altKey) { event.preventDefault(); input.focus(); }
+  });
+})();
 </script>
 <div class="shell">
   <nav class="sidebar" aria-label="Documentation">${nav}
@@ -352,19 +476,24 @@ async function main(): Promise<void> {
   }
   const order = NAV.flatMap((section) => section.pages);
   for (const name of sources.keys()) if (!order.includes(name)) throw new Error(`docs/site/${name}.${sources.get(name)} is not listed in NAV`);
-  for (const name of order) if (!sources.has(name)) throw new Error(`NAV lists ${name} but docs/site/${name}.md (or .ipynb) is missing`);
+  for (const name of order) if (!sources.has(name) && !GENERATED.has(name)) throw new Error(`NAV lists ${name} but docs/site/${name}.md (or .ipynb) is missing`);
   if (await exists(standaloneDir)) {
     const chunk = (await fs.readdir(standaloneDir)).find((file) => /^element-.*\.js$/.test(file));
     playerVersion = chunk ? chunk.replace(/^element-|\.js$/g, '') : '';
   }
   const pages = new Map<string, Page>();
   for (const name of order) {
+    if (GENERATED.has(name)) continue;
     const kind = sources.get(name) as 'md' | 'ipynb';
-    const source = await fs.readFile(join(sourceDir, `${name}.${kind}`), 'utf8');
+    let source = await fs.readFile(join(sourceDir, `${name}.${kind}`), 'utf8');
+    // The API manual's body comes from the sources.
+    if (name === 'api' && source.includes('<!-- api-reference -->')) source = source.replace('<!-- api-reference -->', apiMarkdown());
     pages.set(name, kind === 'md' ? parsePage(name, source) : parseNotebook(name, source));
   }
+  if (order.includes('manual-index')) pages.set('manual-index', indexPage(pages));
   await fs.mkdir(outDir, { recursive: true });
   for (const page of pages.values()) await fs.writeFile(join(outDir, `${page.name}.html`), layout(page, pages, order));
+  await fs.writeFile(join(outDir, 'search.json'), JSON.stringify(searchIndex(pages)));
   await fs.copyFile(join(sourceDir, 'docs.css'), join(outDir, 'docs.css'));
   // The files live decks load (a sample PDF, images) and the self-contained player they run in.
   if (await exists(join(sourceDir, 'live'))) await copyDir(join(sourceDir, 'live'), join(outDir, 'live'));

@@ -5,6 +5,7 @@
 import { Animation, VideoMobject, linear } from 'manim-web';
 import type { SnapshotExtra } from './snapshot';
 
+/** How a video element is made: its source, size and poster. */
 export interface VideoClipOptions {
   width?: number;
   height?: number;
@@ -130,6 +131,7 @@ export class VideoClip extends VideoMobject implements SnapshotExtra {
   }
 }
 
+/** How a video plays when its element appears: how many times, muted or not. */
 export interface VideoPlayOptions {
   /** Number of complete plays; zero marks a browser loop, like `RasterMovie`. */
   plays?: number;

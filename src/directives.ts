@@ -9,6 +9,7 @@ import { Group, type Mobject } from 'manim-web';
 import type { IconOptions } from './icons';
 import type { LayoutConfig, sketchOptions } from './markup/renderer';
 
+/** What a directive module receives: the directive's attributes, the deck's style, and helpers for text, icons and artworks. */
 export interface DirectiveOptions {
   /** The directive's name, so one module can serve several names. */
   name: string;
@@ -33,6 +34,7 @@ export interface DirectiveOptions {
   artwork: (name: string, attributes?: Record<string, string>) => Promise<Mobject>;
 }
 
+/** The function a directive module exports: options in, one mobject or several out. */
 export type DirectiveFactory = (options: DirectiveOptions) => Mobject | Mobject[] | Promise<Mobject | Mobject[]>;
 
 /** A module in a directives folder: `export default` the function, or a named `directive`. */

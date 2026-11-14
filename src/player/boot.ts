@@ -21,6 +21,7 @@ import { PageImage, pdfDeck } from '../pdfdeck';
 import { PadLink, padLinkAvailable, padRoom } from './pad';
 import { EditorSync, editorSyncAvailable } from './sync';
 
+/** How `runDeck` builds the page: the host element, embedding, the URL, logging and the feature flags. */
 export interface RunDeckOptions {
   /** Element that receives the player page. Defaults to `document.body`. */
   host?: HTMLElement;
@@ -37,6 +38,7 @@ export interface RunDeckOptions {
   features?: Partial<Record<Feature, boolean>>;
 }
 
+/** What `runDeck` returns: the player, the presenter, the stage and a way to stop them. */
 export interface RunningDeck {
   presenter: Presenter;
   player: Player;
@@ -313,6 +315,7 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
 /** What `mountDeck` shows: a deck definition, or the URL of a `deck.json`, of a Markdown file or of a PDF. */
 export type DeckSource = DeckDefinition | ResolvedDeck | string;
 
+/** What `mountDeck` takes besides the deck: the element to mount into, the first stop, the features and the colors. */
 export interface MountDeckOptions {
   /** Features to leave out, as `{ camera: false, record: false }`; everything is on by default. */
   features?: Partial<Record<Feature, boolean>>;
@@ -324,6 +327,7 @@ export interface MountDeckOptions {
   start?: number | string;
 }
 
+/** The events a mounted deck emits: ready, step changes, errors. */
 export interface DeckEvents {
   /** The deck moved to a stop: its index from 0, the slide it belongs to and the step within that slide. */
   stop: { index: number; slide: string; step: number; total: number };

@@ -14,6 +14,7 @@ import { tokenizeCode, type TokenClass } from './tokens';
 export { tokenizeCode, languageFor } from './tokens';
 export type { TokenClass, CodeToken } from './tokens';
 
+/** Token colors by class, as `code-themes/<name>.json` gives them. */
 export type CodeTheme = Partial<Record<TokenClass, string>>;
 
 /** Token colors for light text on a dark background. */
@@ -35,6 +36,7 @@ export function codeThemeFor(textColor: string): CodeTheme {
   return luminance > 0.5 ? DARK_CODE_THEME : LIGHT_CODE_THEME;
 }
 
+/** How a listing is laid out: font size, width, color, line gap, family and theme. */
 export interface CodeLayoutOptions {
   fontSize: number;
   maxWidth: number;

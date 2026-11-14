@@ -2,11 +2,13 @@
 import type { Slide } from './slides';
 import { PresenterConfig, type PresenterConfigOptions } from './runtime';
 
+/** The proportions the camera fits, as a width and a height. */
 export interface ViewportSize {
   width: number;
   height: number;
 }
 
+/** A deck as a program defines it: a title, a factory of slides, the presenter options, the colors and the viewport. */
 export interface DeckDefinition {
   /** Title shown in the player outline and the browser tab. */
   title?: string;
@@ -26,6 +28,7 @@ export interface DeckDefinition {
   base?: string | null;
 }
 
+/** A deck definition with every default filled in, as `defineDeck` returns it. */
 export interface ResolvedDeck {
   title: string;
   deck: () => Slide | Promise<Slide>;

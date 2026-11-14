@@ -9,14 +9,18 @@ import { Group, Line, Polygon, Rectangle, VMobject, type Mobject } from 'manim-w
 import { arcPath, pathMobject } from './paths';
 import { sketch, type SketchOptions } from './sketch';
 
+/** The built-in chart types. */
 export const CHART_TYPES = ['bar', 'line', 'pie'] as const;
+/** One of the built-in chart types. */
 export type ChartType = (typeof CHART_TYPES)[number];
 
+/** One series of a chart: its name and one value per category. */
 export interface ChartSeries {
   name: string;
   values: number[];
 }
 
+/** Parsed chart data: the categories and the series. */
 export interface ChartData {
   /** Category labels, one per value of each series. */
   categories: string[];
@@ -26,6 +30,7 @@ export interface ChartData {
 /** Colors given to successive series (bars, lines) or slices. */
 export const CHART_COLORS = ['#2F6DB5', '#3A9D5D', '#E08A2E', '#8E59B5', '#D23F3F', '#2AA198', '#B8860B', '#6C7A89'];
 
+/** How a chart is drawn: type, size, colors, axes, gridlines, legend, value labels and bounds. */
 export interface ChartOptions {
   type?: ChartType;
   /** Size of the plot area (bars, lines) or of the box the pie fits in; 6 × 3.5 by default. */
@@ -359,6 +364,7 @@ export async function chartFromModule(module: ChartModule, data: ChartData, opti
   return factory(data, options, label);
 }
 
+/** Draw a built-in chart (bars, lines or a pie) of the parsed data, with the options and a label factory. */
 export async function buildChart(data: ChartData, options: ChartOptions, label: LabelFactory): Promise<Group> {
   if (!data.series.length || !data.categories.length) throw new Error('A chart needs data');
   const o = resolve(options, data);

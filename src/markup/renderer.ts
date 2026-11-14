@@ -39,6 +39,7 @@ import { applyLatexColors, preprocessLatex } from './latex';
 /** Formula pixel size per prose point, so that `font_size` means the same for both. */
 export const MATH_SIZE_RATIO = 4 / 3;
 
+/** The typography and spacing of a deck, as `layout` in `deck.json` gives them. */
 export interface LayoutConfigOptions {
   fontSize?: number;
   headingSize?: number;
@@ -281,6 +282,7 @@ export function placeRelative(
   }
 }
 
+/** What a renderer is made with: the layout, the document's base path, macros, preloaded assets, and the deck's library folders and modules. */
 export interface MarkupRendererOptions {
   layout?: LayoutConfig;
   /** Base URL for images; relative paths resolve against it. */

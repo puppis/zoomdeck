@@ -17,6 +17,10 @@ try { for (const side of ['nav', 'outline']) if (localStorage.getItem('zoomdeck-
   <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
   <a class="brand" href="index.html">Zoomdeck</a>
   <span class="tagline">zooming presentations in the browser</span>
+  <form class="search" role="search" onsubmit="return false">
+    <input type="search" id="search" placeholder="Search the documentation" aria-label="Search the documentation" autocomplete="off" aria-controls="search-results" aria-expanded="false">
+    <div id="search-results" class="search-results" hidden></div>
+  </form>
   <span class="sides">
     <button class="side-toggle" data-side="nav" title="Show or hide the table of contents">Contents</button>
     <button class="side-toggle" data-side="outline" title="Show or hide the outline of this page">On this page</button>
@@ -33,6 +37,76 @@ for (const button of document.querySelectorAll('.side-toggle')) {
   });
   sync();
 }
+// Search: the index of every section of the site loads on the first keystroke; results open the section.
+(() => {
+  const input = document.getElementById('search');
+  const panel = document.getElementById('search-results');
+  if (!input || !panel) return;
+  let index = null, loading = null, active = -1;
+  const load = () => loading ??= fetch('search.json').then((r) => r.json()).then((data) => { index = data; }).catch(() => { index = []; });
+  const close = () => { panel.hidden = true; input.setAttribute('aria-expanded', 'false'); active = -1; };
+  const escape = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const snippet = (text, terms) => {
+    const lower = text.toLowerCase();
+    let at = -1;
+    for (const term of terms) { const i = lower.indexOf(term); if (i >= 0 && (at < 0 || i < at)) at = i; }
+    const start = Math.max(0, at - 60);
+    let piece = text.slice(start, start + 180);
+    if (start > 0) piece = '…' + piece;
+    if (start + 180 < text.length) piece += '…';
+    let html = escape(piece);
+    for (const term of terms) html = html.replace(new RegExp('(' + term.replace(/[.*+?^${}()|[]\]/g, '\$&') + ')', 'ig'), '<mark>$1</mark>');
+    return html;
+  };
+  const render = (results, terms) => {
+    panel.innerHTML = results.length
+      ? results.map((r) => '<a href="' + r.u + '"><b>' + escape(r.h) + '</b><span class="search-page">' + escape(r.p) + '</span><small>' + snippet(r.t, terms) + '</small></a>').join('')
+      : '<p class="search-empty">Nothing found</p>';
+    panel.hidden = false;
+    input.setAttribute('aria-expanded', 'true');
+    active = -1;
+  };
+  const search = () => {
+    const terms = input.value.toLowerCase().split(/s+/).filter((t) => t.length >= 2);
+    if (!terms.length) { close(); return; }
+    if (!index) { load().then(search); return; }
+    const scored = [];
+    for (const entry of index) {
+      const h = entry.h.toLowerCase(), p = entry.p.toLowerCase(), t = entry.t.toLowerCase();
+      let score = 0;
+      for (const term of terms) {
+        const inHeading = h.includes(term), inPage = p.includes(term), inText = t.includes(term);
+        if (!inHeading && !inPage && !inText) { score = -1; break; }
+        if (inHeading) score += h === term ? 12 : h.startsWith(term) ? 8 : 5;
+        if (inPage) score += 1;
+        if (inText) { let n = 0, i = -1; while (n < 4 && (i = t.indexOf(term, i + 1)) >= 0) n += 1; score += n; }
+      }
+      if (score > 0) scored.push([score, entry]);
+    }
+    scored.sort((a, b) => b[0] - a[0]);
+    render(scored.slice(0, 14).map((s) => s[1]), terms);
+  };
+  input.addEventListener('focus', () => void load());
+  input.addEventListener('input', search);
+  input.addEventListener('keydown', (event) => {
+    const links = [...panel.querySelectorAll('a')];
+    if (event.key === 'Escape') { close(); input.blur(); }
+    else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      if (!links.length) return;
+      event.preventDefault();
+      active = (active + (event.key === 'ArrowDown' ? 1 : -1) + links.length) % links.length;
+      links.forEach((a, i) => a.classList.toggle('active', i === active));
+      links[active].scrollIntoView({ block: 'nearest' });
+    } else if (event.key === 'Enter') {
+      const target = links[active >= 0 ? active : 0];
+      if (target) location.href = target.getAttribute('href');
+    }
+  });
+  document.addEventListener('click', (event) => { if (!panel.contains(event.target) && event.target !== input) close(); });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === '/' && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName ?? '') && !event.metaKey && !event.ctrlKey && !event.altKey) { event.preventDefault(); input.focus(); }
+  });
+})();
 </script>
 <div class="shell">
   <nav class="sidebar" aria-label="Documentation">
@@ -67,6 +141,10 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       <section>
         <h4>Advanced</h4>
         <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html">A deck inside a page</a></li><li><a href="extending.html">Extending a deck</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+      <section>
+        <h4>Reference manuals</h4>
+        <ul><li><a href="manual-markup.html">The markup language, in full</a></li><li><a href="api.html">The API, in full</a></li><li><a href="manual-index.html">Index of constructs</a></li></ul>
       </section>
   </nav>
   <main id="content">
@@ -125,6 +203,7 @@ from any web server, and <code>npm run dev</code> opens the same deck live. Its 
 <section class="map-section"><h3>Layout and style</h3><p>Where things go and how they look: a notebook to try flow, anchors, constraints, groups and style sheets, then each in detail, and the deck.json configuration of a deck.</p><ul><li><a href="layout.html">Layout and style</a><span>Where things go and how they look: flow and positions, anchors, relative constraints, groups and style sheets.</span></li><li><a href="positioning.html">Positioning</a> <a class="tour-link" href="tour.html#slide=layout" title="This topic in the tour deck">tour ↗</a><span>Anchors, flow, explicit coordinates, relative constraints, at= expressions, offsets and sizes.</span></li><li><a href="groups.html">Groups</a> <a class="tour-link" href="tour.html#slide=groups" title="This topic in the tour deck">tour ↗</a><span>Several elements laid out in their own coordinates and handled as one element of the slide.</span></li><li><a href="styles.html">Styles</a> <a class="tour-link" href="tour.html#slide=styles" title="This topic in the tour deck">tour ↗</a><span>Named attribute sets applied by class tokens and automatically by roles such as heading, body or code.</span></li><li><a href="configuration.html">Configuration</a> <a class="tour-link" href="tour.html#slide=config" title="This topic in the tour deck">tour ↗</a><span>Every key of deck.json, the layout and presenter options, and the command line.</span></li></ul></section>
 <section class="map-section"><h3>Motion and interaction</h3><p>What happens on each click: a notebook to try steps, animations, focus-only decorations and links, then fragments, animations, focus and live web pages in detail.</p><ul><li><a href="motion.html">Motion and interaction</a><span>What happens on each click: steps, automatic advancement, animations, effects, focus-only decorations and links.</span></li><li><a href="fragments.html">Fragments and steps</a> <a class="tour-link" href="tour.html#slide=fragments" title="This topic in the tour deck">tour ↗</a><span>Reveal and hide elements on clicks, time the fades, advance automatically and skip events.</span></li><li><a href="animations.html">Animations</a> <a class="tour-link" href="tour.html#slide=animations" title="This topic in the tour deck">tour ↗</a><span>Move, rotate, scale, recolor and fade elements, play named effects, morph one element into another, follow paths, make geometry tremble, and move child viewports.</span></li><li><a href="focus.html">Focus-only decorations</a> <a class="tour-link" href="tour.html#slide=focus" title="This topic in the tour deck">tour ↗</a><span>Elements that appear only while their slide is focused, such as an opaque local canvas.</span></li><li><a href="live-pages.html">Live pages</a> <a class="tour-link" href="tour.html#slide=media" title="This topic in the tour deck">tour ↗</a><span>Embedded web pages shown while their slide is focused, with a poster for previews.</span></li></ul></section>
 <section class="map-section"><h3>Advanced</h3><p>Slides written in TypeScript, a deck inside a page of your own, the folders that extend the player, and the complete reference of the dialect.</p><ul><li><a href="code-slides.html">Code-authored slides</a> <a class="tour-link" href="tour.html#slide=code-slides" title="This topic in the tour deck">tour ↗</a><span>Slides written in TypeScript with the complete animation engine, used alone or placed as subslides of Markdown decks.</span></li><li><a href="embedding.html">A deck inside a page</a><span>Mounting the player in an element of a larger page, the handle that drives it from the page's own script, and the features it can leave out.</span></li><li><a href="extending.html">Extending a deck</a> <a class="tour-link" href="tour.html#slide=animations" title="This topic in the tour deck">tour ↗</a><span>Folders next to the Markdown that add to the player by name, without touching it: snippets, directives, fonts, effects, camera transitions, chart types and data, languages, code themes, themes, artworks and slide classes.</span></li><li><a href="reference.html">Reference</a><span>Every container, element, directive and attribute of the dialect, grouped by topic, with the page that explains each.</span></li></ul></section>
+<section class="map-section"><h3>Reference manuals</h3><p>Every construct of the markup language with every attribute, every export of the package, and an alphabetical index of both; the search box at the top finds any name.</p><ul><li><a href="manual-markup.html">The markup language, in full</a><span>Every construct of the dialect and every attribute it takes, with values, defaults and the rules the parser enforces; the reference to search when the guide has shown the idea.</span></li><li><a href="api.html">The API, in full</a><span>Every export of the zoomdeck package, generated from the sources: deck definitions, the player, the slide runtime, the dialect's parser and renderer, the drawing helpers and the module contracts of a deck's own extensions.</span></li><li><a href="manual-index.html">Index of constructs</a><span>Every construct and attribute of the markup manual and every export of the API manual, alphabetically, with a link to its entry.</span></li></ul></section>
 <h2 id="the-project">The project<a class="anchor" href="#the-project" aria-label="Link to this section">#</a></h2><p>Zoomdeck lives at <a href="https://github.com/puppis/zoomdeck">github.com/puppis/zoomdeck</a>; this site and
 the tour are published from it at <a href="https://puppis.github.io/zoomdeck/">puppis.github.io/zoomdeck</a>.
 It needs Node.js 20.19 or newer (or 22.12 or newer) to install and build, and a browser with

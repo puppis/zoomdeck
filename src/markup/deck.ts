@@ -16,6 +16,7 @@ import { CodeSlideSpec, IncludeSpec } from './ast';
 import type { DirectiveModule } from '../directives';
 import { transitionFromModule, type TransitionModule } from '../runtime';
 
+/** What a Markdown deck is made with: the source or URL, the settings of `deck.json`, preloaded files and assets, and the library folders and modules. */
 export interface MarkupDeckOptions {
   /** Markdown source text. Provide this or `url`. */
   source?: string;

@@ -26,6 +26,7 @@ import {
   LayoutConfig, MarkupRenderer, anchorPoint, applyOpacity, elementAnchor, placeRelative, type OriginMobject, type PartsMobject,
 } from './renderer';
 
+/** Slide classes by name, as `[[subslide: Name]]` finds them. */
 export type SlideNamespace = Record<string, unknown>;
 
 function instantiateSlide(spec: CodeSlideSpec, namespace: SlideNamespace | null): Slide {
@@ -463,6 +464,7 @@ export class MarkupSlide extends Slide {
   }
 }
 
+/** What a slide builder is made with: the layout, or a renderer to share. */
 export interface SlideBuilderOptions {
   layout?: LayoutConfig;
   renderer?: MarkupRenderer;

@@ -113,6 +113,7 @@ export const ACTIONS: ActionInfo[] = [
  */
 export type Feature = 'outline' | 'pen' | 'whiteboard' | 'camera' | 'screen' | 'record' | 'print' | 'fullscreen' | 'settings';
 
+/** The features of the player a page may leave out: the outline, the pen, the whiteboard, the camera, the screen, recording, printing, fullscreen and the settings. */
 export const FEATURES: readonly Feature[] = ['outline', 'pen', 'whiteboard', 'camera', 'screen', 'record', 'print', 'fullscreen', 'settings'];
 
 /** The feature an action belongs to, or null for the actions that are always available. */

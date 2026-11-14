@@ -306,6 +306,7 @@ export class RasterSource {
   }
 }
 
+/** How a raster image is made: its displayed width or height. */
 export interface RasterImageOptions {
   width?: number;
   height?: number;
@@ -483,6 +484,7 @@ export class RasterImage extends Mobject implements SnapshotExtra {
   }
 }
 
+/** How a multi-frame image plays: how many times. */
 export interface RasterMovieOptions extends AnimationOptions {
   /** Duration of every source frame in seconds; defaults to the file's timing. */
   durations?: number[];

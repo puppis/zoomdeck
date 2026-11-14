@@ -44,6 +44,7 @@ installPatches();
 // Configuration
 // ---------------------------------------------------------------------------
 
+/** The timing and camera policy of a deck, as `presenter` in `deck.json` gives it. */
 export interface PresenterConfigOptions {
   /** Seconds used for each animated camera move. Zero positions the camera immediately. */
   transitionTime?: number;
@@ -125,6 +126,7 @@ export class PresenterConfig {
   }
 }
 
+/** Where the camera is: the center of its view and its width in logical units. */
 export interface CameraState {
   center: Vec3;
   width: number;
@@ -142,12 +144,14 @@ export interface TransitionModule {
   transition?: CameraTransition;
 }
 
+/** The camera transition a module of a deck's `transitions/` folder exports, as the presenter calls it. */
 export function transitionFromModule(module: TransitionModule, name: string): CameraTransition {
   const transition = module.transition ?? (typeof module.default === 'function' ? module.default : null);
   if (!transition) throw new Error(`The transition module ${name} exports a function (default or \`transition\`) that moves the camera`);
   return transition;
 }
 
+/** What a stop says about the clip that follows it: looping, automatic advance, notes, playback rate. */
 export interface StopOptions {
   /** Replay the following clip until the viewer advances. */
   loop?: boolean;
@@ -158,12 +162,14 @@ export interface StopOptions {
   playbackRate?: number;
 }
 
+/** Timing applied to every animation of one `play` call. */
 export interface PlayOptions {
   /** Duration applied to every animation of the call, in seconds. */
   runTime?: number;
   rateFunc?: RateFunction;
 }
 
+/** A report of the recording's progress, as the player's loading indicator receives it. */
 export type ProgressEvent = { phase: string; index?: number; total?: number; id?: string | number; name?: string; placeholder?: boolean };
 
 // ---------------------------------------------------------------------------
@@ -1312,6 +1318,7 @@ export class Presenter {
   }
 }
 
+/** A slide as the outline shows it: its id, name, key, parent and source location. */
 export interface NavigationSlide {
   id: number;
   name: string;
@@ -1323,6 +1330,7 @@ export interface NavigationSlide {
   placement?: SourceLocation | null;
 }
 
+/** One recorded clip: the slide it belongs to, its kind, its duration and the options of the stop that opened it. */
 export interface NavigationClip {
   slide: number;
   kind: ClipKind;
@@ -1335,6 +1343,7 @@ export interface NavigationClip {
   source?: SourceLocation | null;
 }
 
+/** Everything the player needs to navigate a recorded deck: its slides, its clips and the starting slide. */
 export interface NavigationData {
   version: 1;
   slides: NavigationSlide[];

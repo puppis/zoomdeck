@@ -21,6 +21,7 @@ export function slideKeys(root: Slide): Map<Slide, string> {
   return keys;
 }
 
+/** A position in a deck: the slide's key and the step within it. */
 export interface Bookmark {
   key: string;
   ancestors: string[];
@@ -28,6 +29,7 @@ export interface Bookmark {
   atEnd?: boolean;
 }
 
+/** A stable bookmark of a position in a deck (a slide key and a step), so that a URL survives edits. */
 export function bookmark(slide: Slide, keys: Map<Slide, string>, step: number): Bookmark {
   const ancestors: string[] = [];
   for (let parent = slide.parent; parent !== null; parent = parent.parent) ancestors.push(keys.get(parent) as string);

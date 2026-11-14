@@ -7,6 +7,8 @@ The dialect in one place, in the order of the documentation: the structure of a 
 content of a slide, diagrams, layout, motion, and the names that attributes accept. Each group
 links to the page with the explanations and examples.
 
+This page is the short reference, one line per construct. [The markup language, in full](manual-markup.html) lists every attribute with its values, defaults and rules, [The API, in full](api.html) every export of the package, and the [index](manual-index.html) both alphabetically; the search box at the top of every page finds any name.
+
 ## Document structure
 
 [Slides and the forest](slides.html) · [Styles](styles.html) · [Groups](groups.html)

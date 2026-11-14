@@ -18,6 +18,7 @@ export interface PlayerEvents {
 
 type Listener<K extends keyof PlayerEvents> = (event: PlayerEvents[K]) => void;
 
+/** Navigation over the recorded clips: forward playback, settled previous states, jumps to any stop, reverse playback and speed. */
 export class Player {
   readonly runner: LiveRunner;
   index = 0;

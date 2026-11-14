@@ -20,6 +20,7 @@ export interface StageOptions {
   pixelRatio?: number;
 }
 
+/** The WebGL stage the player draws on: the renderer, the camera's viewport and the display layers. */
 export class Stage {
   readonly scene: Scene;
   readonly container: HTMLElement;

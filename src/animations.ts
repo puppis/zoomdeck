@@ -11,6 +11,7 @@ import {
 } from 'manim-web';
 import type { Vec3 } from './geometry';
 
+/** An easing: progress in, eased progress out, both from 0 to 1. */
 export type RateFunction = (t: number) => number;
 
 /** Rate functions addressable from markup (`rate=`). */
@@ -19,6 +20,7 @@ export const RATE_FUNCTIONS: Record<string, RateFunction> = {
   ease_in: easeInSine, ease_out: easeOutSine, ease_in_out: easeInOutSine,
 };
 
+/** The duration and rate function of an animation. */
 export interface AnimationTiming {
   duration?: number;
   rateFunc?: RateFunction;
@@ -31,6 +33,7 @@ function timing(options: AnimationTiming): AnimationTiming {
   return result;
 }
 
+/** What an `animate` directive changes: a shift, a rotation, a scale, an opacity, a color. */
 export interface PropertyTargets {
   /** Translation applied over the animation. */
   shift?: [number, number];
@@ -119,6 +122,7 @@ export class PropertyAnimation extends Animation {
   }
 }
 
+/** How geometry trembles: amplitude, rate and seed. */
 export interface TrembleOptions extends AnimationTiming {
   /** Largest displacement of a point, in logical units; 0.04 by default. */
   amplitude?: number;
@@ -262,6 +266,7 @@ export class Tremble extends Animation {
 export const EFFECT_NAMES = ['indicate', 'wiggle', 'circumscribe', 'flash', 'focus', 'grow', 'shrink', 'write', 'create', 'uncreate', 'draw', 'wave'] as const;
 export type EffectName = (typeof EFFECT_NAMES)[number];
 
+/** The options of an effect: color, scale and timing. */
 export interface EffectOptions extends AnimationTiming {
   color?: string;
   scale?: number;
@@ -283,6 +288,7 @@ export function effectFromModule(module: EffectModule, target: Mobject, options:
   return factory(target, options);
 }
 
+/** A built-in effect by name (`indicate`, `wiggle`, …) on a mobject, with its color, scale and timing. */
 export function makeEffect(name: string, mobject: Mobject, options: EffectOptions = {}): Animation {
   const base = timing(options);
   const colored = options.color ? { color: options.color } : {};
@@ -307,11 +313,13 @@ export function makeEffect(name: string, mobject: Mobject, options: EffectOption
 export const ENTER_STYLES = ['fade', 'grow', 'write', 'create', 'draw'] as const;
 export const EXIT_STYLES = ['fade', 'shrink', 'uncreate'] as const;
 
+/** The animation of an element's appearance: a fade, or the named style. */
 export function enterAnimation(style: string, mobject: Mobject, options: AnimationTiming = {}): Animation {
   if (style === 'fade' || !style) return new FadeIn(mobject, timing(options));
   return makeEffect(style, mobject, options);
 }
 
+/** The animation of an element's disappearance: a fade, or the named style. */
 export function exitAnimation(style: string, mobject: Mobject, options: AnimationTiming = {}): Animation {
   if (style === 'fade' || !style) return new FadeOut(mobject, timing(options));
   return makeEffect(style, mobject, options);

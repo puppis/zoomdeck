@@ -8,10 +8,13 @@ import { Group, Line, Rectangle, type Mobject } from 'manim-web';
 import type { InlineSpan } from './ast';
 import { sketch, type SketchOptions } from '../sketch';
 
+/** Which rules a table may draw. */
 export const TABLE_RULES = ['all', 'rows', 'cols', 'outer', 'none'] as const;
+/** One of the rule choices of a table. */
 export type TableRules = (typeof TABLE_RULES)[number];
 export type CellAlign = 'left' | 'center' | 'right';
 
+/** How a table is drawn: font, colors, header, padding, rules and backgrounds. */
 export interface TableOptions {
   /** Text size in points; the layout's font size by default. */
   fontSize: number;

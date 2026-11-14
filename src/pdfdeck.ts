@@ -48,6 +48,7 @@ export function pageSize(page: Pick<PDFPageProxy, 'getViewport'>): [number, numb
   return [viewport.width, viewport.height];
 }
 
+/** How a page is drawn: its size and density. */
 export interface PageImageOptions {
   /** World size of the page; one dimension keeps the page's proportions. */
   width?: number;
@@ -284,6 +285,7 @@ export class PdfPage extends Slide {
   }
 }
 
+/** How a PDF becomes a deck: its URL or data, its title and whether the outline opens. */
 export interface PdfDeckOptions {
   /** URL of the PDF file. Provide this or `data`. */
   url?: string;

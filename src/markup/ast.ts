@@ -43,6 +43,7 @@ export function span(
   return href ? { content, kind, bold, italic, color, href } : { content, kind, bold, italic, color };
 }
 
+/** An attribute map, every value a string as written. */
 export type Attributes = Record<string, string>;
 
 /** One slide-local text, image, display-math, shape or connection element. */
@@ -54,6 +55,7 @@ export interface ListItem {
   marker: string;
 }
 
+/** One element of a slide as parsed: its kind, inline spans, attributes, source text, line, heading level and list position. */
 export class ElementSpec {
   constructor(
     readonly id: string,
@@ -100,6 +102,7 @@ export class CodeSlideSpec {
 }
 
 /** @deprecated Use `CodeSlideSpec`. */
+/** The old name of `CodeSlideSpec`. */
 export const ImportSpec = CodeSlideSpec;
 /** @deprecated Use `CodeSlideSpec`. */
 export type ImportSpec = CodeSlideSpec;
@@ -121,6 +124,7 @@ export class SkipNextSpec {
   constructor(readonly step: number, readonly line = 1) {}
 }
 
+/** The animation directives: `animate`, `effect`, `transform`, `move_along`. */
 export type ActionKind = 'animate' | 'effect' | 'transform' | 'move_along';
 
 /** An animation directive at a numbered step: `[[animate: #id ...]]`, `[[effect: name #id ...]]`, … */
@@ -128,6 +132,7 @@ export class ActionSpec {
   constructor(readonly action: ActionKind, readonly target: string, readonly step: number, readonly attributes: Attributes, readonly line = 1) {}
 }
 
+/** Anything a slide holds: elements, includes, code children, visibility events, actions and the next and skip_next commands. */
 export type SlideItem = ElementSpec | IncludeSpec | CodeSlideSpec | EventSpec | ActionSpec | NextSpec | SkipNextSpec;
 
 /** One change played at a step: a fade, a property animation, an effect, a morph or a path motion. */
@@ -153,6 +158,7 @@ export interface StepChange {
 }
 
 /** @deprecated Use `StepChange`. */
+/** A show or hide change of a step; the same shape as `StepChange`. */
 export type VisibilityChange = StepChange;
 
 /** A compiled click: parallel changes, then ordered child visits. */
@@ -176,6 +182,7 @@ export interface NotesSpec {
   line: number;
 }
 
+/** A slide as parsed: its id, items, attributes, line, whether it is a placeholder, and its presenter notes. */
 export class SlideSpec {
   constructor(
     readonly id: string,
@@ -346,6 +353,7 @@ export interface AtExpression {
   target: { id: string; anchor: string | null } | { point: [number, number, number] };
 }
 
+/** Parse an `at=` value: `[anchor:]#id[.anchor]` or `[anchor:](x,y)`. */
 export function parseAt(value: string, line: number): AtExpression {
   let anchor: string | null = null;
   let rest = value.trim();
@@ -504,6 +512,7 @@ export function tokenize(source: string, line: number, separators = ' \t\r\n'): 
   return tokens;
 }
 
+/** Parse an attribute list (`{#id x=2 .class flag}`) into a map; commas also separate attributes inside directives. */
 export function parseAttributes(source: string, line: number, options: { commas?: boolean } = {}): Attributes {
   source = source.trim();
   if (source.startsWith('{') && source.endsWith('}')) source = source.slice(1, -1);
