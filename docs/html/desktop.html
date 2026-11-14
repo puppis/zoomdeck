@@ -60,29 +60,41 @@ Chrome, so it is as fast as Chrome and the same on every system, not faster.</p>
 <h2 id="installing">Installing<a class="anchor" href="#installing" aria-label="Link to this section">#</a></h2><p>Download the installer for your system from the
 <a href="https://github.com/puppis/zoomdeck/releases">releases</a> of the repository: a <code>.dmg</code> (or <code>.zip</code>)
 for macOS, an <code>.AppImage</code> or <code>.deb</code> for Linux, an installer or a portable <code>.exe</code> for Windows.
-The builds are not signed, so the systems warn once:</p>
+The builds are not signed by a registered developer, so the systems warn once:</p>
 <ul>
-<li><strong>macOS</strong>: the first time, right-click the app and choose Open, then confirm; afterwards it
-opens normally. The first recording asks for the microphone and the camera; filming the screen
-asks for Screen Recording in System Settings, and the app must be started again after granting it.</li>
+<li><strong>macOS</strong>: the first time, the system says that it cannot verify the developer. Up to Sonoma,
+right-click the app and choose Open, then confirm; on Sequoia and later, open System Settings
+▸ Privacy &amp; Security and choose Open Anyway under the message, then confirm. Afterwards it opens
+normally. (The same from a terminal: <code>xattr -d com.apple.quarantine /Applications/Zoomdeck.app</code>.)
+The first recording asks for the microphone and the camera; filming the screen asks for Screen
+Recording in System Settings, and the app must be started again after granting it.</li>
 <li><strong>Windows</strong>: SmartScreen shows &quot;Windows protected your PC&quot;; choose More info, then Run anyway.</li>
 <li><strong>Linux</strong>: make the AppImage executable (<code>chmod +x</code>) and run it, or install the <code>.deb</code>.</li>
 </ul>
-<h2 id="using-it">Using it<a class="anchor" href="#using-it" aria-label="Link to this section">#</a></h2><p>Open a deck with <strong>File ▸ Open Deck…</strong> (<code>deck.json</code>, a Markdown file or a slide module), from
-<strong>Open Recent</strong>, or by passing it on the command line; without a deck the app opens the last
-one, or the guide. The window shows the deck as the browser would, and the menus add Reload
-Deck, Reveal Deck Folder, full screen, zoom and the developer tools. Links to other pages open
-in your browser.</p>
+<h2 id="using-it">Using it<a class="anchor" href="#using-it" aria-label="Link to this section">#</a></h2><p>Started from a deck (double-clicked or dropped on the app, or passed on the command line) the
+app presents it at once. Started bare, it asks for a deck (<code>deck.json</code>, a Markdown file or a slide
+module), in the folder you used last; the very first time it offers instead to copy the guide
+deck, with its examples, to a folder of yours, and opens the copy. <strong>File ▸ Copy the Guide Deck…</strong>
+does the same later, into a <code>zoomdeck-guide</code> folder inside the one you choose; a copy already
+there is opened as it is, or its files written afresh while the talks recorded in it stay. The
+guide inside the app is only the source of these copies. The window shows the deck as the browser
+would, and the menus add Open Deck, Open Recent, Reload Deck, Reveal Deck Folder, full screen, zoom
+and the developer tools. Links to other pages open in your browser. Recordings and exported videos
+go to a <code>recordings/</code> folder next to the deck, as with <code>zoomdeck serve</code>; <strong>Reveal Deck Folder</strong>
+opens the folder that holds it, which is where the timeline (<code>.json</code>) and media files of a talk
+can be picked up.</p>
 <p>The command line takes the preview's flags:</p>
 <pre><code class="language-bash"><span class="tk-comment"># macOS</span>
-/Applications/Zoomdeck.app/Contents/MacOS/Zoomdeck path/to/deck.json <span class="tk-attribute">--host</span> <span class="tk-attribute">--editor</span> code
+/Applications/Zoomdeck.app/Contents/MacOS/Zoomdeck path/to/deck.json <span class="tk-attribute">--editor</span> code
 <span class="tk-comment"># Linux</span>
 ./Zoomdeck.AppImage path/to/deck.json <span class="tk-attribute">--port</span> <span class="tk-number">8000</span>
 <span class="tk-comment"># Windows</span>
 Zoomdeck.exe path\to\deck.json <span class="tk-attribute">--watch</span> path\to\parts</code></pre>
-<p><code>--host</code> also listens on the network, so a tablet can pair from the player's settings; <code>--port</code>
-insists on a port (otherwise the app takes a free one, so it never collides with a preview started
-from a terminal); <code>--editor</code> names the editor that <code>E</code> and Alt + click open source lines with;
+<p>The app listens on the network, so a <a href="player.html#a-tablet-as-a-drawing-pad">tablet</a> can pair
+from the player's settings without any flag; <code>--local</code> keeps it to this computer. It takes port
+8765 when that is free, so a trusted tablet finds the deck again at the same address, and the
+next free port otherwise; <code>--port</code> insists on one. The first time, macOS may ask whether Zoomdeck
+may accept incoming connections: answer Allow for the tablet to reach it. <code>--editor</code> names the editor that <code>E</code> and Alt + click open source lines with;
 <code>--watch</code> adds folders whose changes reload the deck; <code>--scene</code> picks a named export of a module.
 The server's address is in the Help menu and on the terminal, and <code>zoomdeck jump</code> from an editor
 reaches it like any preview.</p>
