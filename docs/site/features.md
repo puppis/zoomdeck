@@ -166,8 +166,9 @@ The **Camera** button (C) shows the camera, **Record** (R) starts a talk (voice,
 <a class="try" href="tour.html#slide=feat-math">This chapter in the tour ↗</a>
 
 Formulas are LaTeX, inline or displayed, rendered by MathJax and zoomable like everything else.
-Diagrams are directives: arrows between elements, boxes and blobs around them, icons, braces,
-and any of them hand-drawn with `sketch=true`. Animations are directives too: elements move,
+Diagrams are directives: arrows between elements, boxes and blobs around them (a blob flows
+around each element it is given, here five stars and their lines), icons, braces, and any of
+them hand-drawn with `sketch=true`. Animations are directives too: elements move,
 grow, change color, morph into one another, get highlighted,
 or are written stroke by stroke in the bundled handwriting face, one step per click. The deck
 below has three slides: a formula, a diagram, and five steps of motion.
@@ -202,9 +203,21 @@ below has three slides: a formula, a diagram, and five steps of motion.
 
 [[arrow: #hr -> #hc, #ha, sketch=true]]
 
-[[blob: #hr #hc, #cloud, buff=0.45, color=ORANGE]]
+[[dot: #s1 x=0.6 y=-1.1 radius=0.16 color=GOLD_E]]
+[[dot: #s2 x=1.56 y=-1.96 radius=0.24 color=GOLD_E]]
+[[dot: #s3 x=2.52 y=-1.0 radius=0.16 color=GOLD_E]]
+[[dot: #s4 x=3.0 y=-2.8 radius=0.16 color=GOLD_E]]
+[[dot: #s5 x=1.2 y=-3.4 radius=0.16 color=GOLD_E]]
 
-[[icon: database #store x=5.5 y=-2.2 size=1.4 color=GOLD_E label="an icon" label_side=right]]
+[[line: #s1 -> #s2, #e1, color=GOLD_E, stroke_width=1]]
+[[line: #s2 -> #s3, #e2, color=GOLD_E, stroke_width=1]]
+[[line: #s3 -> #s4, #e3, color=GOLD_E, stroke_width=1]]
+[[line: #s4 -> #s5, #e4, color=GOLD_E, stroke_width=1]]
+[[line: #s5 -> #s2, #e5, color=GOLD_E, stroke_width=1]]
+
+[[blob: #s1 #s2 #s3 #s4 #s5, #cloud, buff=0.6, color=ORANGE]]
+
+[[icon: database #store x=6.3 y=-2.2 size=1.4 color=GOLD_E label="an icon" label_side=right]]
 
 [[brace: #store, #sb, side=bottom, label="a brace", color=GRAY]]
 :::

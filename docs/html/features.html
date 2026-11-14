@@ -345,8 +345,9 @@ The **Camera** button (C) shows the camera, **Record** (R) starts a talk (voice,
 </figure>
 <h2 id="formulas-diagrams-and-animation">Formulas, diagrams and animation<a class="anchor" href="#formulas-diagrams-and-animation" aria-label="Link to this section">#</a></h2><p><a class="try" href="tour.html#slide=feat-math">This chapter in the tour ↗</a></p>
 <p>Formulas are LaTeX, inline or displayed, rendered by MathJax and zoomable like everything else.
-Diagrams are directives: arrows between elements, boxes and blobs around them, icons, braces,
-and any of them hand-drawn with <code>sketch=true</code>. Animations are directives too: elements move,
+Diagrams are directives: arrows between elements, boxes and blobs around them (a blob flows
+around each element it is given, here five stars and their lines), icons, braces, and any of
+them hand-drawn with <code>sketch=true</code>. Animations are directives too: elements move,
 grow, change color, morph into one another, get highlighted,
 or are written stroke by stroke in the bundled handwriting face, one step per click. The deck
 below has three slides: a formula, a diagram, and five steps of motion.</p>
@@ -381,9 +382,21 @@ below has three slides: a formula, a diagram, and five steps of motion.</p>
 
 [[arrow: #hr -> #hc, #ha, sketch=true]]
 
-[[blob: #hr #hc, #cloud, buff=0.45, color=ORANGE]]
+[[dot: #s1 x=0.6 y=-1.1 radius=0.16 color=GOLD_E]]
+[[dot: #s2 x=1.56 y=-1.96 radius=0.24 color=GOLD_E]]
+[[dot: #s3 x=2.52 y=-1.0 radius=0.16 color=GOLD_E]]
+[[dot: #s4 x=3.0 y=-2.8 radius=0.16 color=GOLD_E]]
+[[dot: #s5 x=1.2 y=-3.4 radius=0.16 color=GOLD_E]]
 
-[[icon: database #store x=5.5 y=-2.2 size=1.4 color=GOLD_E label="an icon" label_side=right]]
+[[line: #s1 -> #s2, #e1, color=GOLD_E, stroke_width=1]]
+[[line: #s2 -> #s3, #e2, color=GOLD_E, stroke_width=1]]
+[[line: #s3 -> #s4, #e3, color=GOLD_E, stroke_width=1]]
+[[line: #s4 -> #s5, #e4, color=GOLD_E, stroke_width=1]]
+[[line: #s5 -> #s2, #e5, color=GOLD_E, stroke_width=1]]
+
+[[blob: #s1 #s2 #s3 #s4 #s5, #cloud, buff=0.6, color=ORANGE]]
+
+[[icon: database #store x=6.3 y=-2.2 size=1.4 color=GOLD_E label="an icon" label_side=right]]
 
 [[brace: #store, #sb, side=bottom, label="a brace", color=GRAY]]
 :::
@@ -437,9 +450,21 @@ below has three slides: a formula, a diagram, and five steps of motion.</p>
 
 <span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#hr</span> -&gt; <span class="tk-attribute">#hc</span>, <span class="tk-attribute">#ha</span>, <span class="tk-attribute">sketch=</span>true<span class="tk-directive">]]</span>
 
-<span class="tk-directive">[[blob:</span> <span class="tk-attribute">#hr</span> <span class="tk-attribute">#hc</span>, <span class="tk-attribute">#cloud</span>, <span class="tk-attribute">buff=</span><span class="tk-number">0.45</span>, <span class="tk-attribute">color=</span>ORANGE<span class="tk-directive">]]</span>
+<span class="tk-directive">[[dot:</span> <span class="tk-attribute">#s1</span> <span class="tk-attribute">x=</span><span class="tk-number">0.6</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.1</span> <span class="tk-attribute">radius=</span><span class="tk-number">0.16</span> <span class="tk-attribute">color=</span>GOLD_E<span class="tk-directive">]]</span>
+<span class="tk-directive">[[dot:</span> <span class="tk-attribute">#s2</span> <span class="tk-attribute">x=</span><span class="tk-number">1.56</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.96</span> <span class="tk-attribute">radius=</span><span class="tk-number">0.24</span> <span class="tk-attribute">color=</span>GOLD_E<span class="tk-directive">]]</span>
+<span class="tk-directive">[[dot:</span> <span class="tk-attribute">#s3</span> <span class="tk-attribute">x=</span><span class="tk-number">2.52</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.0</span> <span class="tk-attribute">radius=</span><span class="tk-number">0.16</span> <span class="tk-attribute">color=</span>GOLD_E<span class="tk-directive">]]</span>
+<span class="tk-directive">[[dot:</span> <span class="tk-attribute">#s4</span> <span class="tk-attribute">x=</span><span class="tk-number">3.0</span> <span class="tk-attribute">y=</span><span class="tk-number">-2.8</span> <span class="tk-attribute">radius=</span><span class="tk-number">0.16</span> <span class="tk-attribute">color=</span>GOLD_E<span class="tk-directive">]]</span>
+<span class="tk-directive">[[dot:</span> <span class="tk-attribute">#s5</span> <span class="tk-attribute">x=</span><span class="tk-number">1.2</span> <span class="tk-attribute">y=</span><span class="tk-number">-3.4</span> <span class="tk-attribute">radius=</span><span class="tk-number">0.16</span> <span class="tk-attribute">color=</span>GOLD_E<span class="tk-directive">]]</span>
 
-<span class="tk-directive">[[icon:</span> database <span class="tk-attribute">#store</span> <span class="tk-attribute">x=</span><span class="tk-number">5.5</span> <span class="tk-attribute">y=</span><span class="tk-number">-2.2</span> <span class="tk-attribute">size=</span><span class="tk-number">1.4</span> <span class="tk-attribute">color=</span>GOLD_E <span class="tk-attribute">label=</span><span class="tk-string">&quot;an icon&quot;</span> <span class="tk-attribute">label_side=</span>right<span class="tk-directive">]]</span>
+<span class="tk-directive">[[line:</span> <span class="tk-attribute">#s1</span> -&gt; <span class="tk-attribute">#s2</span>, <span class="tk-attribute">#e1</span>, <span class="tk-attribute">color=</span>GOLD_E, <span class="tk-attribute">stroke_width=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[line:</span> <span class="tk-attribute">#s2</span> -&gt; <span class="tk-attribute">#s3</span>, <span class="tk-attribute">#e2</span>, <span class="tk-attribute">color=</span>GOLD_E, <span class="tk-attribute">stroke_width=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[line:</span> <span class="tk-attribute">#s3</span> -&gt; <span class="tk-attribute">#s4</span>, <span class="tk-attribute">#e3</span>, <span class="tk-attribute">color=</span>GOLD_E, <span class="tk-attribute">stroke_width=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[line:</span> <span class="tk-attribute">#s4</span> -&gt; <span class="tk-attribute">#s5</span>, <span class="tk-attribute">#e4</span>, <span class="tk-attribute">color=</span>GOLD_E, <span class="tk-attribute">stroke_width=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[line:</span> <span class="tk-attribute">#s5</span> -&gt; <span class="tk-attribute">#s2</span>, <span class="tk-attribute">#e5</span>, <span class="tk-attribute">color=</span>GOLD_E, <span class="tk-attribute">stroke_width=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[blob:</span> <span class="tk-attribute">#s1</span> <span class="tk-attribute">#s2</span> <span class="tk-attribute">#s3</span> <span class="tk-attribute">#s4</span> <span class="tk-attribute">#s5</span>, <span class="tk-attribute">#cloud</span>, <span class="tk-attribute">buff=</span><span class="tk-number">0.6</span>, <span class="tk-attribute">color=</span>ORANGE<span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[icon:</span> database <span class="tk-attribute">#store</span> <span class="tk-attribute">x=</span><span class="tk-number">6.3</span> <span class="tk-attribute">y=</span><span class="tk-number">-2.2</span> <span class="tk-attribute">size=</span><span class="tk-number">1.4</span> <span class="tk-attribute">color=</span>GOLD_E <span class="tk-attribute">label=</span><span class="tk-string">&quot;an icon&quot;</span> <span class="tk-attribute">label_side=</span>right<span class="tk-directive">]]</span>
 
 <span class="tk-directive">[[brace:</span> <span class="tk-attribute">#store</span>, <span class="tk-attribute">#sb</span>, <span class="tk-attribute">side=</span>bottom, <span class="tk-attribute">label=</span><span class="tk-string">&quot;a brace&quot;</span>, <span class="tk-attribute">color=</span>GRAY<span class="tk-directive">]]</span>
 <span class="tk-directive">:::</span>
