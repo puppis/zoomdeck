@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Features overview · Zoomdeck</title>
+<meta name="description" content="The main things Zoomdeck does, each shown live on this page with the markup that produces it. Click a deck to give it the keys, then use the arrows.">
+<link rel="stylesheet" href="docs.css">
+<script type="module" src="zoomdeck/zoomdeck.js"></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+</header>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Features overview</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="features.html" aria-current="page">Features overview</a><ul class="subsections"><li><a href="#a-pdf-as-it-is">A PDF, as it is</a></li><li><a href="#plain-slides-in-a-row">Plain slides, in a row</a></li><li><a href="#slides-as-a-tree">Slides as a tree</a></li><li><a href="#spotlight-and-laser">Spotlight and laser</a></li><li><a href="#pen-tablet-and-whiteboard">Pen, tablet and whiteboard</a></li><li><a href="#camera-recording-and-video">Camera, recording and video</a></li><li><a href="#formulas-diagrams-and-animation">Formulas, diagrams and animation</a></li><li><a href="#and-then">And then</a></li></ul></li></ul>
+      </section>
+      <section>
+        <h4>Getting started</h4>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Presenting</h4>
+        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="first-deck.html">Your first deck, stage by stage</a></li><li><a href="documents.html">PDFs, flat decks and forests</a></li><li><a href="slides.html">Slides and the forest</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+      </section>
+      <section>
+        <h4>Diagrams</h4>
+        <ul><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li></ul>
+      </section>
+      <section>
+        <h4>Layout and style</h4>
+        <ul><li><a href="positioning.html">Positioning</a></li><li><a href="groups.html">Groups</a></li><li><a href="styles.html">Styles</a></li><li><a href="configuration.html">Configuration</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion and interaction</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Advanced</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html">A deck inside a page</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>Features overview</h1>
+      <p class="lead">The main things Zoomdeck does, each shown live on this page with the markup that produces it. Click a deck to give it the keys, then use the arrows.</p>
+      <p><a class="try" href="guide.html">The same tour as a deck: open the guide ↗</a></p>
+<p>Every deck on this page is the real player, embedded in the page. Click one to give it the
+keyboard, press → and ← to move, or use its buttons. The markup beside a deck is all it takes.</p>
+<h2 id="a-pdf-as-it-is">A PDF, as it is<a class="anchor" href="#a-pdf-as-it-is" aria-label="Link to this section">#</a></h2><p>Zoomdeck opens a PDF directly: a paper, a poster, slides typeset elsewhere. Each page is a
+slide, the pages are visited first to last with a cut between them, the bookmarks name them in
+the outline, and the text stays sharp at any zoom because pages are drawn at the density of the
+screen. The pen, the spotlight, recording and printing work on a PDF as on any deck.</p>
+<figure class="live no-code">
+<zoom-deck src="live/paper.pdf" without="camera record screen print"></zoom-deck>
+
+</figure>
+<pre><code class="language-bash">zoomdeck serve paper.pdf          <span class="tk-comment"># present it</span>
+zoomdeck build paper.pdf <span class="tk-attribute">-o</span> out   <span class="tk-comment"># export a page that plays it</span></code></pre>
+<h2 id="plain-slides-in-a-row">Plain slides, in a row<a class="anchor" href="#plain-slides-in-a-row" aria-label="Link to this section">#</a></h2><p>A deck of your own is a Markdown file of <code>::: slide</code> containers. Slides that include no other
+slide are simply visited in order, with cuts and no animation, like the pages of a document.</p>
+<figure class="live">
+<zoom-deck without="camera record screen"><script type="text/markdown">
+::: slide {#one}
+# One
+
+Three plain slides, visited in order.
+:::
+
+::: slide {#two}
+# Two
+
+With prose, **emphasis**, `code` and $\sum_{n\ge1} n^{-2} = \pi^2/6$.
+:::
+
+::: slide {#three}
+# Three
+
+- Lists
+- as usual
+:::
+</script></zoom-deck>
+<pre class="markup"><code><span class="tk-directive">::: slide </span><span class="tk-attribute">{#one}</span>
+<span class="tk-type tk-bold"># </span><span class="tk-bold">One</span>
+
+Three plain slides, visited in order.
+<span class="tk-directive">:::</span>
+
+<span class="tk-directive">::: slide </span><span class="tk-attribute">{#two}</span>
+<span class="tk-type tk-bold"># </span><span class="tk-bold">Two</span>
+
+With prose, <span class="tk-bold">**emphasis**</span>, <span class="tk-type">`code`</span> and <span class="tk-string">$\sum_{n\ge1} n^{-2} = \pi^2/6$</span>.
+<span class="tk-directive">:::</span>
+
+<span class="tk-directive">::: slide </span><span class="tk-attribute">{#three}</span>
+<span class="tk-type tk-bold"># </span><span class="tk-bold">Three</span>
+
+- Lists
+- as usual
+<span class="tk-directive">:::</span></code></pre>
+</figure>
+<h2 id="slides-as-a-tree">Slides as a tree<a class="anchor" href="#slides-as-a-tree" aria-label="Link to this section">#</a></h2><p>An <code>[[include: #id …]]</code> places one slide inside another, as a viewport with a position and a
+size. The camera zooms into each child in turn, goes from a child straight to its next sibling,
+and zooms back out after the last one. Here a root has two children and the second child has a
+child of its own: first child, next sibling, then down again.</p>
+<figure class="live">
+<zoom-deck without="camera record screen"><script type="text/markdown">
+::: slide {#talk width=20}
+# A talk as a tree
+
+[[include: #first x=-5 y=-1.5 width=8 preview=true]]
+
+[[include: #second x=5 y=-1.5 width=8 preview=true]]
+:::
+
+::: slide {#first}
+## First child
+
+Visited first.
+:::
+
+::: slide {#second}
+## Second child
+
+[[include: #detail x=3 y=-1.5 width=7 preview=true]]
+:::
+
+::: slide {#detail}
+### A detail of the second child
+
+The last stop; then the camera zooms back out.
+:::
+</script></zoom-deck>
+<pre class="markup"><code><span class="tk-directive">::: slide </span><span class="tk-attribute">{#talk width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold"># </span><span class="tk-bold">A talk as a tree</span>
+
+<span class="tk-directive">[[include:</span> <span class="tk-attribute">#first</span> <span class="tk-attribute">x=</span><span class="tk-number">-5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.5</span> <span class="tk-attribute">width=</span><span class="tk-number">8</span> <span class="tk-attribute">preview=</span>true<span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[include:</span> <span class="tk-attribute">#second</span> <span class="tk-attribute">x=</span><span class="tk-number">5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.5</span> <span class="tk-attribute">width=</span><span class="tk-number">8</span> <span class="tk-attribute">preview=</span>true<span class="tk-directive">]]</span>
+<span class="tk-directive">:::</span>
+
+<span class="tk-directive">::: slide </span><span class="tk-attribute">{#first}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">First child</span>
+
+Visited first.
+<span class="tk-directive">:::</span>
+
+<span class="tk-directive">::: slide </span><span class="tk-attribute">{#second}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">Second child</span>
+
+<span class="tk-directive">[[include:</span> <span class="tk-attribute">#detail</span> <span class="tk-attribute">x=</span><span class="tk-number">3</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.5</span> <span class="tk-attribute">width=</span><span class="tk-number">7</span> <span class="tk-attribute">preview=</span>true<span class="tk-directive">]]</span>
+<span class="tk-directive">:::</span>
+
+<span class="tk-directive">::: slide </span><span class="tk-attribute">{#detail}</span>
+<span class="tk-type tk-bold">### </span><span class="tk-bold">A detail of the second child</span>
+
+The last stop; then the camera zooms back out.
+<span class="tk-directive">:::</span></code></pre>
+</figure>
+<h2 id="spotlight-and-laser">Spotlight and laser<a class="anchor" href="#spotlight-and-laser" aria-label="Link to this section">#</a></h2><p>Hold the pointer button (or the key bound to it, <strong>Space</strong> by default) to dim everything but a
+circle around the pointer; the setting next to it turns the spotlight into a laser dot. Both
+work on any deck, including a PDF, and are recorded with a talk. Try it on the deck below.</p>
+<figure class="live no-code">
+<zoom-deck without="camera record screen"><script type="text/markdown">
+::: slide {#spot width=20}
+## Spotlight and laser
+
+Press and hold **Space** while moving the pointer over this slide: a spotlight follows it. The settings (⚙) switch it to a laser and set its size.
+
+[Where does this term come from?]{#q x=-6 y=-1 font_size=26}
+
+[$\displaystyle \frac{\partial L}{\partial \dot q} - \frac{\partial L}{\partial q} = 0$]{#eq x=1 y=-1 font_size=30}
+:::
+</script></zoom-deck>
+
+</figure>
+<h2 id="pen-tablet-and-whiteboard">Pen, tablet and whiteboard<a class="anchor" href="#pen-tablet-and-whiteboard" aria-label="Link to this section">#</a></h2><p><strong>P</strong> turns the pen on: a drag draws on the slide in the chosen color, with pressure from a pen
+or an Apple Pencil, and the strokes stay with the slide. A tablet or an iPad pairs with the
+player as a drawing pad (Settings → Tablet), so you write on it and the audience sees the slide:
+pressure, palm rejection, erasing with a finger. <strong>W</strong> opens the whiteboard, an infinite canvas
+of its own that keeps what you wrote and comes back when you need it again.</p>
+<figure class="live no-code">
+<zoom-deck without="camera record screen"><script type="text/markdown">
+::: slide {#ink width=20}
+## Pen and whiteboard
+
+Press **P** and draw on this slide; the colors in the footer choose the pen. Press **W** for the whiteboard, an infinite canvas that scrolls with the arrows and keeps your notes.
+
+[Annotate this: $x^2 + y^2 = r^2$]{#note x=-6 y=-1.5 font_size=30}
+:::
+</script></zoom-deck>
+
+</figure>
+<h2 id="camera-recording-and-video">Camera, recording and video<a class="anchor" href="#camera-recording-and-video" aria-label="Link to this section">#</a></h2><p>The camera shows you next to or over the slides, as a picture in a corner or full screen. A
+recording keeps the whole talk: your voice, the camera and every move on the deck, strokes
+included; it plays back on the deck itself, where it stays navigable, and exports as a plain
+video file. A shared screen (another application, say) can be filmed as part of the talk. The
+deck below has these controls on; each asks the browser for permission the first time.</p>
+<figure class="live no-code">
+<zoom-deck ><script type="text/markdown">
+::: slide {#rec width=20}
+## Camera and recording
+
+The **Camera** button shows the camera, **Record** starts a talk (voice, camera and the deck), **Screen** films a window or a screen. A recorded talk appears under the Record button, plays back on the deck and exports as a video.
+:::
+</script></zoom-deck>
+
+</figure>
+<h2 id="formulas-diagrams-and-animation">Formulas, diagrams and animation<a class="anchor" href="#formulas-diagrams-and-animation" aria-label="Link to this section">#</a></h2><p>Formulas are LaTeX, inline or displayed, rendered by MathJax and zoomable like everything else.
+Diagrams are directives: arrows between elements, boxes and blobs around them, icons, braces,
+and any of them hand-drawn with <code>sketch=true</code>. Animations in the style of Manim come with the
+same directives: elements are written, drawn, moved, morphed into one another and highlighted,
+one step per click.</p>
+<figure class="live">
+<zoom-deck without="camera record screen"><script type="text/markdown">
+::: slide {#formula width=20}
+## A formula and its parts
+
+[$\displaystyle \int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}$]{#gauss x=-6 y=1.2 font_size=40}
+
+[[box: #gauss, #gbox, buff=0.3, corner_radius=0.15, color=TEAL, step=1]]
+
+[Gaussian integral]{#label x=-6 y=-1.8 font_size=24 color=TEAL enter=write step=1}
+
+[[arrow: #label -> #gauss, #why, step=2]]
+:::
+
+::: slide {#diagram width=20}
+## Arrows, blobs and hand-drawn shapes
+
+[Source]{#src x=-8 y=1 font_size=28}
+
+[Sink]{#dst x=3 y=1 font_size=28}
+
+[[arrow: #src -> #dst, #flow, label="flow", step=1]]
+
+[[rectangle: #hr x=-6.5 y=-2.5 width=3.4 height=1.8 color=BLUE_E fill_opacity=0.5 sketch=true step=2]]
+
+[[circle: #hc right-of:#hr buff=1.5 radius=0.9 color=GREEN_E fill_opacity=0.6 fill_style=cross-hatch sketch=true step=2]]
+
+[[arrow: #hr -> #hc, #ha, sketch=true, step=3]]
+
+[[blob: #hr #hc, #cloud, color=ORANGE, step=4]]
+:::
+
+::: slide {#motion width=20}
+## Motion
+
+[A point moves]{#mover x=-8 y=1 font_size=28}
+
+[[animate: #mover, dx=10, step=1]]
+
+[[animate: #mover, dy=-3, scale=1.4, color=RED, step=2]]
+
+[[effect: indicate #mover, step=3]]
+
+[Drawn by hand]{#written x=-8 y=-3 font_size=28 enter=write step=4}
+:::
+</script></zoom-deck>
+<pre class="markup"><code><span class="tk-directive">::: slide </span><span class="tk-attribute">{#formula width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">A formula and its parts</span>
+
+[<span class="tk-string">$\displaystyle \int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}$</span>]<span class="tk-attribute">{#gauss x=</span><span class="tk-number">-6</span><span class="tk-attribute"> y=</span><span class="tk-number">1.2</span><span class="tk-attribute"> font_size=</span><span class="tk-number">40</span><span class="tk-attribute">}</span>
+
+<span class="tk-directive">[[box:</span> <span class="tk-attribute">#gauss</span>, <span class="tk-attribute">#gbox</span>, <span class="tk-attribute">buff=</span><span class="tk-number">0.3</span>, <span class="tk-attribute">corner_radius=</span><span class="tk-number">0.15</span>, <span class="tk-attribute">color=</span>TEAL, <span class="tk-attribute">step=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+
+[Gaussian integral]<span class="tk-attribute">{#label x=</span><span class="tk-number">-6</span><span class="tk-attribute"> y=</span><span class="tk-number">-1.8</span><span class="tk-attribute"> font_size=</span><span class="tk-number">24</span><span class="tk-attribute"> color=TEAL enter=write step=</span><span class="tk-number">1</span><span class="tk-attribute">}</span>
+
+<span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#label</span> -&gt; <span class="tk-attribute">#gauss</span>, <span class="tk-attribute">#why</span>, <span class="tk-attribute">step=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
+<span class="tk-directive">:::</span>
+
+<span class="tk-directive">::: slide </span><span class="tk-attribute">{#diagram width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">Arrows, blobs and hand-drawn shapes</span>
+
+[Source]<span class="tk-attribute">{#src x=</span><span class="tk-number">-8</span><span class="tk-attribute"> y=</span><span class="tk-number">1</span><span class="tk-attribute"> font_size=</span><span class="tk-number">28</span><span class="tk-attribute">}</span>
+
+[Sink]<span class="tk-attribute">{#dst x=</span><span class="tk-number">3</span><span class="tk-attribute"> y=</span><span class="tk-number">1</span><span class="tk-attribute"> font_size=</span><span class="tk-number">28</span><span class="tk-attribute">}</span>
+
+<span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#src</span> -&gt; <span class="tk-attribute">#dst</span>, <span class="tk-attribute">#flow</span>, <span class="tk-attribute">label=</span><span class="tk-string">&quot;flow&quot;</span>, <span class="tk-attribute">step=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#hr</span> <span class="tk-attribute">x=</span><span class="tk-number">-6.5</span> <span class="tk-attribute">y=</span><span class="tk-number">-2.5</span> <span class="tk-attribute">width=</span><span class="tk-number">3.4</span> <span class="tk-attribute">height=</span><span class="tk-number">1.8</span> <span class="tk-attribute">color=</span>BLUE_E <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.5</span> <span class="tk-attribute">sketch=</span>true <span class="tk-attribute">step=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[circle:</span> <span class="tk-attribute">#hc</span> <span class="tk-attribute">right-of:#hr</span> <span class="tk-attribute">buff=</span><span class="tk-number">1.5</span> <span class="tk-attribute">radius=</span><span class="tk-number">0.9</span> <span class="tk-attribute">color=</span>GREEN_E <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.6</span> <span class="tk-attribute">fill_style=</span>cross-hatch <span class="tk-attribute">sketch=</span>true <span class="tk-attribute">step=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#hr</span> -&gt; <span class="tk-attribute">#hc</span>, <span class="tk-attribute">#ha</span>, <span class="tk-attribute">sketch=</span>true, <span class="tk-attribute">step=</span><span class="tk-number">3</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[blob:</span> <span class="tk-attribute">#hr</span> <span class="tk-attribute">#hc</span>, <span class="tk-attribute">#cloud</span>, <span class="tk-attribute">color=</span>ORANGE, <span class="tk-attribute">step=</span><span class="tk-number">4</span><span class="tk-directive">]]</span>
+<span class="tk-directive">:::</span>
+
+<span class="tk-directive">::: slide </span><span class="tk-attribute">{#motion width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">Motion</span>
+
+[A point moves]<span class="tk-attribute">{#mover x=</span><span class="tk-number">-8</span><span class="tk-attribute"> y=</span><span class="tk-number">1</span><span class="tk-attribute"> font_size=</span><span class="tk-number">28</span><span class="tk-attribute">}</span>
+
+<span class="tk-directive">[[animate:</span> <span class="tk-attribute">#mover</span>, <span class="tk-attribute">dx=</span><span class="tk-number">10</span>, <span class="tk-attribute">step=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[animate:</span> <span class="tk-attribute">#mover</span>, <span class="tk-attribute">dy=</span><span class="tk-number">-3</span>, <span class="tk-attribute">scale=</span><span class="tk-number">1.4</span>, <span class="tk-attribute">color=</span>RED, <span class="tk-attribute">step=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[effect:</span> indicate <span class="tk-attribute">#mover</span>, <span class="tk-attribute">step=</span><span class="tk-number">3</span><span class="tk-directive">]]</span>
+
+[Drawn by hand]<span class="tk-attribute">{#written x=</span><span class="tk-number">-8</span><span class="tk-attribute"> y=</span><span class="tk-number">-3</span><span class="tk-attribute"> font_size=</span><span class="tk-number">28</span><span class="tk-attribute"> enter=write step=</span><span class="tk-number">4</span><span class="tk-attribute">}</span>
+<span class="tk-directive">:::</span></code></pre>
+</figure>
+<h2 id="and-then">And then<a class="anchor" href="#and-then" aria-label="Link to this section">#</a></h2><ul>
+<li><a href="getting-started.html">Getting started</a>: install, open a deck, export it, set up your editor.</li>
+<li><a href="first-deck.html">Your first deck, stage by stage</a>: a notebook that builds a deck one cell at
+a time, which you can edit and run in the browser.</li>
+<li><a href="player.html">The player</a>: everything the controls do, from keys to recordings.</li>
+<li><a href="guide.html">The guide deck</a>: this tour again, as a presentation, with the markup of every
+chapter next to its result.</li>
+</ul>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="index.html">← Zoomdeck</a>
+      <a class="next" href="getting-started.html">Getting started →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#a-pdf-as-it-is">A PDF, as it is</a></li><li><a href="#plain-slides-in-a-row">Plain slides, in a row</a></li><li><a href="#slides-as-a-tree">Slides as a tree</a></li><li><a href="#spotlight-and-laser">Spotlight and laser</a></li><li><a href="#pen-tablet-and-whiteboard">Pen, tablet and whiteboard</a></li><li><a href="#camera-recording-and-video">Camera, recording and video</a></li><li><a href="#formulas-diagrams-and-animation">Formulas, diagrams and animation</a></li><li><a href="#and-then">And then</a></li></ul></nav>
+</div>
+</body>
+</html>

@@ -11,3 +11,12 @@ examples/*/recordings/
 
 # Recorded talks the player writes next to the example decks: never published.
 examples/**/recordings/
+.venv/
+docs/book/_build/
+docs/html/zoomdeck/
+docs/html/lite/
+docs/lite/.jupyterlite.doit.db
+docs/lite/_output/
+.jupyterlite.doit.db
+docs/lite/wheels/
+docs/lite/jupyter-lite.json

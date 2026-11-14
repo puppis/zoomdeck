@@ -23,7 +23,15 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - run: npm ci
+      # The pages, the self-contained player the live decks run in, and the guide deck.
+      - run: npm run docs
+      # The notebooks, editable in the browser: JupyterLite with its Python kernel.
+      - run: pip install jupyterlite-core jupyterlite-pyodide-kernel
+      - run: npm run docs:lite
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs/html

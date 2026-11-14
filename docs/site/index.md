@@ -27,14 +27,19 @@ feature with the markup that produces it next to the result. **Source:**
 
 ## Start here
 
-1. **[Getting started](getting-started.html)**: install with Node.js and npm, write a first deck,
-   preview and export it from the command line.
-2. **[Editors](editors.html)**: ready-made setups for VS Code, Sublime Text, Emacs, Vim and
+1. **[Features overview](features.html)**: the main things Zoomdeck does, each shown live on the
+   page next to the markup that produces it: a PDF opened as it is, plain slides, a tree of
+   slides, the spotlight, the pen and the whiteboard, the camera and recordings, formulas,
+   diagrams and animations.
+2. **[Getting started](getting-started.html)**: install with Node.js and npm, write a first deck,
+   preview and export it from the command line. Then **[Your first deck, stage by
+   stage](first-deck.html)** builds a deck cell by cell in a notebook you can edit in the browser.
+3. **[Editors](editors.html)**: ready-made setups for VS Code, Sublime Text, Emacs, Vim and
    JetBrains IDEs, so that saving a file updates the browser, a key jumps from a source line to
    its stop and back from a stop or an element to its line, and a shortcut exports the deck.
-3. **[Concepts](concepts.html)**: what a slide, a viewport and a stop are, and how a deck is
+4. **[Concepts](concepts.html)**: what a slide, a viewport and a stop are, and how a deck is
    recorded and replayed.
-4. **[The player](player.html)**: presenting a deck: keys, the pen and the spotlight, the
+5. **[The player](player.html)**: presenting a deck: keys, the pen and the spotlight, the
    whiteboard and a companion tablet, the camera, recording a talk and printing the deck to a PDF.
 
 The rest of the documentation follows the map below, from presenting a deck and the content of

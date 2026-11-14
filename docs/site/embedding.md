@@ -63,6 +63,56 @@ settings themselves (pen, keys, rendering) are shared with the standalone player
 browser, so a key bound once holds everywhere; a page that hides the settings dialog keeps the
 defaults, or whatever the viewer set elsewhere.
 
+## Without a bundler: the `<zoom-deck>` element
+
+```html
+<script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
+
+<zoom-deck src="talk/deck.json" without="camera record"></zoom-deck>
+
+<zoom-deck without="camera record screen" title="Inline">
+<script type="text/markdown">
+::: slide {#hello}
+# Written inside the page
+:::
+</script>
+</zoom-deck>
+```
+
+A page without a build step loads the self-contained player, one module with the engine, the
+fonts and the stylesheet inside (`npm run build:standalone` writes it to `dist/standalone/`, and
+the documentation site serves a copy at the address above; MathJax and pdf.js follow as
+separate files only when a deck needs them). The `<zoom-deck>` element then shows a deck:
+`src` names a `deck.json`, a Markdown file or a PDF, or the Markdown is written inside the
+element, in a `<script type="text/markdown">` child, which the browser keeps verbatim. The
+element is as wide as its container and 16:9 unless the page sizes it. Its attributes are the
+options of `mountDeck`: `without="camera record"` leaves features out, `start` names the first
+stop, `title` the deck, `outline` opens the outline, `use-location` lets the deck write
+`#step=` in the page's URL. The handle is `element.handle` once the element's `ready` promise
+resolves (a `deck` event fires then too), and setting `element.source` to new Markdown shows
+another deck in place. The module also exports everything the package does, so a page can
+`import { mountDeck } from '…/zoomdeck.js'` as well.
+
+## In a notebook
+
+```python
+from zoomdeck_nb import deck
+
+deck('''
+::: slide {#hello}
+# A deck in a cell
+:::
+''')
+```
+
+`docs/site/zoomdeck_nb.py` is a small helper for Jupyter: `deck(markdown)` or `deck(src="…")`
+returns an HTML display object whose output loads the player from the documentation site (or
+from the URL in the `ZOOMDECK_BUNDLE` environment variable) and shows the deck in the cell, in
+JupyterLab, the classic notebook and JupyterLite alike. The documentation's own notebooks, such
+as [Your first deck, stage by stage](first-deck.html), are built this way: the site renders the
+cells with their decks, and the "Open in JupyterLite" badge opens the same notebook in the
+browser, where the cells can be edited and run again.
+
 ## Driving the deck
 
 The handle exposes the deck's position and the player's actions, for buttons, a table of

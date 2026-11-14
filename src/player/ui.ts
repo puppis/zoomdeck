@@ -1276,7 +1276,8 @@ export class PlayerUI {
 
   private async _refreshRecordings(): Promise<void> {
     const base = this._deck.base;
-    this._recordings = base ? await listRecordings(base) : [];
+    // Without the recorder there is no Talk button either: a deck in a page is not asked about its recordings.
+    this._recordings = base && this._features.has('record') ? await listRecordings(base) : [];
     this._recordingsButton.hidden = this._recordings.length === 0;
     this._recordingsButton.textContent = this._recordings.length > 1 ? `▶ Talks (${this._recordings.length})` : '▶ Talk';
   }

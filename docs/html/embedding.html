@@ -17,16 +17,20 @@
 <div class="shell">
   <nav class="sidebar" aria-label="Documentation">
       <section>
+        <h4>Features overview</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="features.html">Features overview</a></li></ul>
+      </section>
+      <section>
         <h4>Getting started</h4>
-        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
       </section>
       <section>
         <h4>Presenting</h4>
-        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li><li><a href="desktop.html">The desktop app</a></li></ul>
+        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="documents.html">PDFs, flat decks and forests</a></li><li><a href="slides.html">Slides and the forest</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+        <ul><li><a href="first-deck.html">Your first deck, stage by stage</a></li><li><a href="documents.html">PDFs, flat decks and forests</a></li><li><a href="slides.html">Slides and the forest</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
       </section>
       <section>
         <h4>Diagrams</h4>
@@ -42,7 +46,7 @@
       </section>
       <section>
         <h4>Advanced</h4>
-        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html" aria-current="page">A deck inside a page</a><ul class="subsections"><li><a href="#mounting">Mounting</a></li><li><a href="#features">Features</a></li><li><a href="#driving-the-deck">Driving the deck</a></li><li><a href="#an-example">An example</a></li></ul></li><li><a href="reference.html">Reference</a></li></ul>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html" aria-current="page">A deck inside a page</a><ul class="subsections"><li><a href="#mounting">Mounting</a></li><li><a href="#features">Features</a></li><li><a href="#without-a-bundler-the-element">Without a bundler: the &lt;zoom-deck&gt; element</a></li><li><a href="#in-a-notebook">In a notebook</a></li><li><a href="#driving-the-deck">Driving the deck</a></li><li><a href="#an-example">An example</a></li></ul></li><li><a href="reference.html">Reference</a></li></ul>
       </section>
   </nav>
   <main id="content">
@@ -150,6 +154,44 @@ the slides. These can be left out, one by one, and the footer shows only what is
 settings themselves (pen, keys, rendering) are shared with the standalone player in the same
 browser, so a key bound once holds everywhere; a page that hides the settings dialog keeps the
 defaults, or whatever the viewer set elsewhere.</p>
+<h2 id="without-a-bundler-the-element">Without a bundler: the <code>&lt;zoom-deck&gt;</code> element<a class="anchor" href="#without-a-bundler-the-element" aria-label="Link to this section">#</a></h2><pre><code class="language-html"><span class="tk-keyword">&lt;script</span> <span class="tk-attribute">type</span>=<span class="tk-string">&quot;module&quot;</span> <span class="tk-attribute">src</span>=<span class="tk-string">&quot;https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js&quot;</span><span class="tk-keyword">&gt;&lt;/script&gt;</span>
+
+<span class="tk-keyword">&lt;zoom-deck</span> <span class="tk-attribute">src</span>=<span class="tk-string">&quot;talk/deck.json&quot;</span> <span class="tk-attribute">without</span>=<span class="tk-string">&quot;camera record&quot;</span><span class="tk-keyword">&gt;&lt;/zoom-deck&gt;</span>
+
+<span class="tk-keyword">&lt;zoom-deck</span> <span class="tk-attribute">without</span>=<span class="tk-string">&quot;camera record screen&quot;</span> <span class="tk-attribute">title</span>=<span class="tk-string">&quot;Inline&quot;</span><span class="tk-keyword">&gt;</span>
+<span class="tk-keyword">&lt;script</span> <span class="tk-attribute">type</span>=<span class="tk-string">&quot;text/markdown&quot;</span><span class="tk-keyword">&gt;</span>
+<span class="tk-attribute">:::</span> <span class="tk-attribute">slide</span> {#hello}
+# <span class="tk-attribute">Written</span> <span class="tk-attribute">inside</span> <span class="tk-attribute">the</span> <span class="tk-attribute">page</span>
+<span class="tk-attribute">:::</span>
+<span class="tk-keyword">&lt;/script&gt;</span>
+<span class="tk-keyword">&lt;/zoom-deck&gt;</span></code></pre>
+<p>A page without a build step loads the self-contained player, one module with the engine, the
+fonts and the stylesheet inside (<code>npm run build:standalone</code> writes it to <code>dist/standalone/</code>, and
+the documentation site serves a copy at the address above; MathJax and pdf.js follow as
+separate files only when a deck needs them). The <code>&lt;zoom-deck&gt;</code> element then shows a deck:
+<code>src</code> names a <code>deck.json</code>, a Markdown file or a PDF, or the Markdown is written inside the
+element, in a <code>&lt;script type=&quot;text/markdown&quot;&gt;</code> child, which the browser keeps verbatim. The
+element is as wide as its container and 16:9 unless the page sizes it. Its attributes are the
+options of <code>mountDeck</code>: <code>without=&quot;camera record&quot;</code> leaves features out, <code>start</code> names the first
+stop, <code>title</code> the deck, <code>outline</code> opens the outline, <code>use-location</code> lets the deck write
+<code>#step=</code> in the page's URL. The handle is <code>element.handle</code> once the element's <code>ready</code> promise
+resolves (a <code>deck</code> event fires then too), and setting <code>element.source</code> to new Markdown shows
+another deck in place. The module also exports everything the package does, so a page can
+<code>import { mountDeck } from '…/zoomdeck.js'</code> as well.</p>
+<h2 id="in-a-notebook">In a notebook<a class="anchor" href="#in-a-notebook" aria-label="Link to this section">#</a></h2><pre><code class="language-python"><span class="tk-keyword">from</span> zoomdeck_nb <span class="tk-keyword">import</span> deck
+
+deck(<span class="tk-string">'''</span>
+<span class="tk-string">::: slide {#hello}</span>
+<span class="tk-string"># A deck in a cell</span>
+<span class="tk-string">:::</span>
+<span class="tk-string">'''</span>)</code></pre>
+<p><code>docs/site/zoomdeck_nb.py</code> is a small helper for Jupyter: <code>deck(markdown)</code> or <code>deck(src=&quot;…&quot;)</code>
+returns an HTML display object whose output loads the player from the documentation site (or
+from the URL in the <code>ZOOMDECK_BUNDLE</code> environment variable) and shows the deck in the cell, in
+JupyterLab, the classic notebook and JupyterLite alike. The documentation's own notebooks, such
+as <a href="first-deck.html">Your first deck, stage by stage</a>, are built this way: the site renders the
+cells with their decks, and the &quot;Open in JupyterLite&quot; badge opens the same notebook in the
+browser, where the cells can be edited and run again.</p>
 <h2 id="driving-the-deck">Driving the deck<a class="anchor" href="#driving-the-deck" aria-label="Link to this section">#</a></h2><p>The handle exposes the deck's position and the player's actions, for buttons, a table of
 contents or a script of the page's own:</p>
 <pre><code class="language-ts">deck.length;                  <span class="tk-comment">// how many stops</span>
@@ -191,7 +233,7 @@ with most features left out.</p>
       <a class="next" href="reference.html">Reference →</a>
     </footer>
   </main>
-  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#mounting">Mounting</a></li><li><a href="#features">Features</a></li><li><a href="#driving-the-deck">Driving the deck</a></li><li><a href="#an-example">An example</a></li></ul></nav>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#mounting">Mounting</a></li><li><a href="#features">Features</a></li><li><a href="#without-a-bundler-the-element">Without a bundler: the &lt;zoom-deck&gt; element</a></li><li><a href="#in-a-notebook">In a notebook</a></li><li><a href="#driving-the-deck">Driving the deck</a></li><li><a href="#an-example">An example</a></li></ul></nav>
 </div>
 </body>
 </html>

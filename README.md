@@ -12,8 +12,12 @@ each child and back out to its parent, and cuts from one root to the next.
 
 The topic-by-topic documentation is published at <https://puppis.github.io/zoomdeck/>, with the
 guide deck playable at <https://puppis.github.io/zoomdeck/guide.html>. Its sources live in
-`docs/site/*.md` and are built into static pages in `docs/html/`, together with
-`docs/html/guide.html`, the guide deck as one self-contained file.
+`docs/site/*.md`, and in `docs/site/*.ipynb` for the pages written as notebooks, and are built
+into static pages in `docs/html/`, together with `docs/html/guide.html`, the guide deck as one
+self-contained file. Live decks in the pages (a ```zoomdeck fence, or the output of a notebook
+cell) run in the self-contained player, `dist/standalone/`, which the build copies next to the
+pages; `npm run docs:lite` (JupyterLite, a Python tool) adds the notebooks as an editable
+in-browser lab, and the Pages workflow publishes all of it.
 `npm install` builds them (through the `prepare` script) and `npm run docs` rebuilds them; open
 `docs/html/index.html` in a browser (or `/docs/html/` on the dev server). The pages are
 committed, the 15 MB guide file is generated. It

@@ -65,7 +65,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "serve": "node bin/zoomdeck.mjs serve",
-    "docs": "vite-node scripts/build-docs.ts",
+    "build:standalone": "vite build --config vite.bundle.config.ts",
+    "docs": "npm run build:standalone && vite-node scripts/build-docs.ts",
+    "docs:lite": "python docs/lite/build-wheel.py && jupyter lite build --lite-dir docs/lite --output-dir docs/html/lite",
     "prepare": "npm run docs",
     "build:lib": "vite build --config vite.lib.config.ts && tsc -p tsconfig.lib.json",
     "prepack": "npm run build:lib",
@@ -91,6 +93,7 @@
     "electron": "^45.3.2",
     "electron-builder": "^26.18.0",
     "happy-dom": "^21.0.4",
+    "mystmd": "^1.13.0",
     "typescript": "^5.9.0",
     "vite-node": "^6.0.0",
     "vitest": "^5.1.0"
