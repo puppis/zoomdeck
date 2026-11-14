@@ -39,7 +39,7 @@ the **guide deck**. Other decks are selected through the query string:
 | --- | --- |
 | `/?deck=examples/guide/deck.json` | a Markdown deck with its configuration (the guide) |
 | `/?deck=path/to/slides.md` | a bare Markdown file with default settings |
-| `/?deck=path/to/paper.pdf` | a PDF, page after page ([Flat documents and PDFs](documents.html)) |
+| `/?deck=path/to/paper.pdf` | a PDF, page after page ([PDFs, flat decks and forests](documents.html)) |
 | `/?deck=examples/tree-deck&scene=Demo` | a named export of a module |
 
 The page reloads when a deck file under `examples/` changes and returns to the slide and step you
@@ -188,7 +188,7 @@ Paths in `slides.md` resolve relative to the Markdown file.
 - [Concepts](concepts.html) explains slides, coordinates and how playback is recorded.
 - [The player](player.html) covers presenting in full: keys, pen and spotlight, whiteboard,
   tablet, camera, recording a talk and printing the deck.
-- [Slides and the tree](slides.html) starts the topic-by-topic tour of the dialect; the sidebar
+- [PDFs, flat decks and forests](documents.html) and [Slides and the forest](slides.html) start the topic-by-topic tour of the dialect; the sidebar
   follows the same order, from the content of a slide to the reference.
 - The [guide deck](guide.html) shows each topic live; its front page lists the sections, and
   every documentation page opens its chapter with the "Open in the guide" badge.

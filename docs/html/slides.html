@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Slides and the tree · Zoomdeck</title>
+<title>Slides and the forest · Zoomdeck</title>
 <meta name="description" content="Slide containers, canvas sizes, includes, visit order, start and preview flags, placeholders.">
 <link rel="stylesheet" href="docs.css">
 </head>
@@ -26,7 +26,7 @@
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="slides.html" aria-current="page">Slides and the tree</a><ul class="subsections"><li><a href="#slide-containers">Slide containers</a></li><li><a href="#canvas-size">Canvas size</a></li><li><a href="#includes">Includes</a></li><li><a href="#visit-order">Visit order</a></li><li><a href="#flags">Flags</a></li><li><a href="#cuts-instead-of-zooms">Cuts instead of zooms</a></li><li><a href="#code-authored-children">Code-authored children</a></li><li><a href="#splitting-a-deck-into-files">Splitting a deck into files</a></li></ul></li><li><a href="documents.html">Flat documents and PDFs</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+        <ul><li><a href="documents.html">PDFs, flat decks and forests</a></li><li><a href="slides.html" aria-current="page">Slides and the forest</a><ul class="subsections"><li><a href="#slide-containers">Slide containers</a></li><li><a href="#canvas-size">Canvas size</a></li><li><a href="#includes">Includes</a></li><li><a href="#visit-order">Visit order</a></li><li><a href="#flags">Flags</a></li><li><a href="#cuts-instead-of-zooms">Cuts instead of zooms</a></li><li><a href="#code-authored-children">Code-authored children</a></li><li><a href="#splitting-a-deck-into-files">Splitting a deck into files</a></li></ul></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
       </section>
       <section>
         <h4>Diagrams</h4>
@@ -47,7 +47,7 @@
   </nav>
   <main id="content">
     <article>
-      <h1>Slides and the tree</h1>
+      <h1>Slides and the forest</h1>
       <p class="lead">Slide containers, canvas sizes, includes, visit order, start and preview flags, placeholders.</p>
       <p><a class="try" href="guide.html#slide=tree">Open in the guide ↗</a></p>
 <h2 id="slide-containers">Slide containers<a class="anchor" href="#slide-containers" aria-label="Link to this section">#</a></h2><pre><code class="language-markdown"><span class="tk-directive">::: slide </span><span class="tk-attribute">{#overview title=</span><span class="tk-string">&quot;Lecture overview&quot;</span><span class="tk-attribute"> width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
@@ -63,11 +63,12 @@
 <li>Every slide is a <code>::: slide {#id} … :::</code> container. IDs start with a letter or underscore and
 continue with letters, digits, <code>_</code>, <code>.</code> or <code>-</code>; they are unique in the document.</li>
 <li>Definition order and heading levels never determine nesting; only includes do.</li>
-<li>The <strong>root</strong> is the slide that nothing includes; every other slide belongs to its tree.
-Unknown references, cycles and including the same slide twice are errors. To show the same
-content twice, define it twice under different IDs.</li>
-<li>Several slides that nothing includes are the pages of a <a href="documents.html">flat document</a>,
-visited first to last with cuts between them, as the pages of a PDF are.</li>
+<li>A deck is a <strong>forest</strong>: the slides that nothing includes are its roots, visited first to last
+with cuts between them, and every other slide belongs to the tree of one root. Most decks are
+a single tree; a deck whose slides include none of the others is a
+<a href="documents.html">flat document</a>, as the pages of a PDF are. Unknown references, cycles and
+including the same slide twice are errors. To show the same content twice, define it twice
+under different IDs.</li>
 <li><code>title=&quot;…&quot;</code> names the slide in the outline; otherwise its first heading, then its ID, is used.</li>
 </ul>
 <h2 id="canvas-size">Canvas size<a class="anchor" href="#canvas-size" aria-label="Link to this section">#</a></h2><p><code>width</code> and <code>height</code> on a slide set its canvas. The default is 16 × 9 (or
@@ -169,8 +170,8 @@ preview server reloads when any of them changes.</p>
 
     </article>
     <footer class="pager">
-      <a class="prev" href="desktop.html">← The desktop app</a>
-      <a class="next" href="documents.html">Flat documents and PDFs →</a>
+      <a class="prev" href="documents.html">← PDFs, flat decks and forests</a>
+      <a class="next" href="text.html">Text →</a>
     </footer>
   </main>
   <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#slide-containers">Slide containers</a></li><li><a href="#canvas-size">Canvas size</a></li><li><a href="#includes">Includes</a></li><li><a href="#visit-order">Visit order</a></li><li><a href="#flags">Flags</a></li><li><a href="#cuts-instead-of-zooms">Cuts instead of zooms</a></li><li><a href="#code-authored-children">Code-authored children</a></li><li><a href="#splitting-a-deck-into-files">Splitting a deck into files</a></li></ul></nav>

@@ -2,11 +2,11 @@
 
 Repository: <https://github.com/puppis/zoomdeck> · Documentation and guide: <https://puppis.github.io/zoomdeck/>
 
-Author a presentation as a tree of **Slides**, each with its own logical canvas and a small
+Author a presentation as a forest of **Slides**, most often a single tree, each slide with its own logical canvas and a small
 animation program, and present it as a zooming slideshow that runs **entirely in the browser**.
 There is no server-side rendering, no LaTeX installation and no video encoding: slides execute
-live on a WebGL canvas, and the presentation navigates the slide tree in pre-order, zooming into
-each child and back out to its parent.
+live on a WebGL canvas, and the presentation navigates each tree of slides in pre-order, zooming into
+each child and back out to its parent, and cuts from one root to the next.
 
 ## Documentation
 

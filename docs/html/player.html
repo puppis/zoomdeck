@@ -26,7 +26,7 @@
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="documents.html">Flat documents and PDFs</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+        <ul><li><a href="documents.html">PDFs, flat decks and forests</a></li><li><a href="slides.html">Slides and the forest</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
       </section>
       <section>
         <h4>Diagrams</h4>
@@ -446,8 +446,8 @@ rasterized at that density, so they are as sharp as the screen at rest, and stor
 (deflated, as PDF readers decode natively; a browser that cannot deflate gets fine JPEG pages
 instead). Formulas, shapes, images and code look as they do on screen; pen strokes, highlights,
 the whiteboard, the spotlight and the camera picture are not part of a page, and an embedded
-page (<code>iframe:</code>) prints as its frame with its poster or caption. The slide tree becomes the
-bookmarks of the file, so a PDF reader's outline lists the slides.</p>
+page (<code>iframe:</code>) prints as its frame with its poster or caption. The forest of slides becomes
+the bookmarks of the file, so a PDF reader's outline lists the slides.</p>
 <p>A stop whose animation leaves the picture as it was (an indication, a flash, a full turn along a path) prints as a page that looks like the one before it: it is a stage all the same.</p>
 <p>While the pages are made the deck leafs through its stops in the window, at the pace of the
 renderer (a page takes a fraction of a second; a long deck at 4K, a minute or two); closing the
@@ -473,7 +473,7 @@ slides, like turning the pages of a PDF, while fragments and animations inside a
 play. <code>transition=cut</code> on a slide, include or subslide does the same for that slide alone, and
 <code>transition=zoom</code> brings the zoom back for one slide of a <code>cut</code> deck. A PDF opened in the player,
 and a Markdown file whose slides include none of the others, cut between their pages by themselves
-(<a href="documents.html">Flat documents and PDFs</a>).</p>
+(<a href="documents.html">PDFs, flat decks and forests</a>).</p>
 <h2 id="outline-and-deep-links">Outline and deep links<a class="anchor" href="#outline-and-deep-links" aria-label="Link to this section">#</a></h2><p>The outline lists every slide; clicking one jumps to its first stop. The address bar follows the
 current stop as <code>#step=N</code>, which can be shared or bookmarked; <code>#slide=id</code> opens the first stop of a
 slide by its markup ID (or a slide by name). A URL without a hash opens at the first stop, and a

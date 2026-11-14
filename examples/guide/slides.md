@@ -8,7 +8,7 @@ heading: color=BLUE_E
 ::: slide {#guide width=36}
 # Zoomdeck {x=-17.35 y=9.2}
 
-Zoomdeck makes zooming presentations: a tree of slides written in Markdown, with formulas, images, diagrams and animations, that the browser plays by zooming into each slide and back out. This guide tours the dialect and the player in six sections; each chapter shows the markup next to what it produces. Press → to follow the tree in order, pick a slide from the outline (O), or click a section or chapter to jump to it. {x=-17.35 y=8.1 width=27 font_size=26}
+Zoomdeck makes zooming presentations: a forest of slides written in Markdown, most often a single tree, with formulas, images, diagrams and animations, that the browser plays by zooming into each slide and back out. This guide tours the dialect and the player in six sections; each chapter shows the markup next to what it produces. Press → to follow the slides in order, pick a slide from the outline (O), or click a section or chapter to jump to it. {x=-17.35 y=8.1 width=27 font_size=26}
 
 [Documentation ↗]{#doc-link x=17.35 y=9.2 anchor=right-baseline font_size=26 color=BLUE_E href=https://puppis.github.io/zoomdeck/}
 
@@ -34,7 +34,7 @@ Zoomdeck makes zooming presentations: a tree of slides written in Markdown, with
 [[include: #sec-motion x=0 y=-5.4 width=10 skip_return=true preview=true]]
 [[rectangle: #root-hit-sec-motion x=0 y=-5.4 width=10 height=5.625 opacity=0 href=#slide=sec-motion]]
 
-[6 · Trees, files and code]{#root-cap-sec-structure x=12 y=-2.1 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-structure}
+[6 · Forests, files and code]{#root-cap-sec-structure x=12 y=-2.1 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-structure}
 [[include: #sec-structure x=12 y=-5.4 width=10 preview=true]]
 [[rectangle: #root-hit-sec-structure x=12 y=-5.4 width=10 height=5.625 opacity=0 href=#slide=sec-structure]]
 :::
@@ -42,13 +42,13 @@ Zoomdeck makes zooming presentations: a tree of slides written in Markdown, with
 ::: slide {#sec-content width=36}
 ## 1 · Slides and content {x=-17.35 y=9.2}
 
-A deck is a tree of slides, and a slide holds prose, formulas, images, listings, tables and charts. These chapters cover everything a slide can contain. {x=-17.35 y=8.1 width=25 font_size=26}
+A deck is a forest of slides, and a slide holds prose, formulas, images, listings, tables and charts. These chapters cover everything a slide can contain. {x=-17.35 y=8.1 width=25 font_size=26}
 
 [Documentation: Slides and content ↗]{#sec-content-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/slides.html}
 
 [Back to the overview]{#sec-content-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=guide}
 
-[Slides form a tree]{#sec-content-cap-tree x=-12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=tree}
+[Slides form a forest]{#sec-content-cap-tree x=-12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=tree}
 [[include: #tree x=-12 y=2.9 width=10 skip_return=true preview=true]]
 [[rectangle: #sec-content-hit-tree x=-12 y=2.9 width=10 height=5.625 opacity=0 href=#slide=tree]]
 
@@ -182,11 +182,11 @@ What happens on each click: fragments that appear and disappear, decorations see
 :::
 
 ::: slide {#sec-structure width=36}
-## 6 · Trees, files and code {x=-17.35 y=9.2}
+## 6 · Forests, files and code {x=-17.35 y=9.2}
 
 Larger decks: the order in which children are visited, splitting the markup into files, and slides written in TypeScript. {x=-17.35 y=8.1 width=25 font_size=26}
 
-[Documentation: Trees, files and code ↗]{#sec-structure-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/slides.html#visit-order}
+[Documentation: Forests, files and code ↗]{#sec-structure-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/slides.html#visit-order}
 
 [Back to the overview]{#sec-structure-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=guide}
 
@@ -204,13 +204,13 @@ Larger decks: the order in which children are visited, splitting the markup into
 :::
 
 ::: slide {#tree width=20}
-## Slides form a tree
+## Slides form a forest
 
 [Documentation ↗]{#tree-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/slides.html}
 
 ```markdown {#tree-source x=-9.35 y=3.9 width=9.1}
 ::: slide {#tree width=20}
-## Slides form a tree
+## Slides form a forest
 [[include: #branch x=4.7 y=-0.4 width=9 angle=0.08 preview=true]]
 :::
 
@@ -226,9 +226,9 @@ Larger decks: the order in which children are visited, splitting the markup into
 
 [[include: #branch x=4.7 y=-0.4 width=9 angle=0.08 preview=true]]
 
-Every slide is a `::: slide {#id}` container with its own canvas, 16 × 9 by default or `width` × `height`. An `[[include: #id …]]` places a child viewport in the parent’s coordinates; the camera visits each child in turn, going from one to the next, and zooms back out after the last. {#tree-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+Every slide is a `::: slide {#id}` container with its own canvas, 16 × 9 by default. Slides that nothing includes are roots, visited first to last with cuts between them; `[[include: #id …]]` places a child viewport in the parent’s coordinates, and the camera zooms into each child in turn and back out after the last. {#tree-key x=-9.35 y=-3.5 width=18.7 font_size=18}
 
-Includes without `step` are visited in source order after the parent’s own steps. `width` or `height` sizes the viewport (the other follows the child’s proportions) and `angle` tilts it, in radians. {#tree-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+Includes without `step` are visited in source order after the parent’s own steps. `width` or `height` sizes the viewport (the other follows the child’s proportions) and `angle` tilts it, in radians. {#tree-more x=-9.35 y=-4.9 width=18.7 font_size=16 color=GRAY}
 :::
 
 ::: slide {#branch}

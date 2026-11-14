@@ -1,12 +1,13 @@
 # The Markdown dialect
 
 A deck is a Markdown file made of **slides**, each a `::: slide {#id} … :::` container with its own
-logical canvas. Slides reference each other with `[[include: #id …]]` directives, which form the
-tree that the player walks in pre-order while zooming. The guide deck in `examples/guide/` shows
+logical canvas. Slides reference each other with `[[include: #id …]]` directives, which form a
+forest, most often a single tree, whose trees the player walks in pre-order while zooming and
+whose roots it visits first to last with cuts between them. The guide deck in `examples/guide/` shows
 every construct of this page live, each next to the listing that produced it; open it with
 `npm run dev` (it is the default deck) and keep it beside this reference.
 
-## Slides and the tree
+## Slides and the forest
 
 ```markdown
 ::: slide {#overview title="Lecture overview" width=20}
@@ -22,10 +23,11 @@ every construct of this page live, each next to the listing that produced it; op
 
 - IDs start with a letter or underscore and continue with letters, digits, `_`, `.` or `-`; they
   are unique in the document. Definition order and heading levels never determine nesting.
-- The root is the slide that nothing includes; every other slide belongs to its tree. Unknown
-  references, cycles and including the same slide twice are errors. To repeat a component,
-  define it again under a fresh ID. Several slides that nothing includes are the pages of a flat
-  document, visited first to last with cuts between them (a PDF opened in the player is the same).
+- A deck is a forest: the slides that nothing includes are its roots, visited first to last with
+  cuts between them, and every other slide belongs to the tree of one root. Most decks are a
+  single tree; a deck whose slides include none of the others is a flat document, as a PDF opened
+  in the player is. Unknown references, cycles and including the same slide twice are errors. To
+  repeat a component, define it again under a fresh ID.
 - `width` / `height` on a **slide** set its canvas (default 16 × 9, or `layout.defaultSlideSize`).
   One dimension infers the other from the default proportions; two choose a different aspect.
 - On an **include** or **subslide**, `x`, `y` place the viewport's center, `width` / `height` size it

@@ -3,9 +3,9 @@ title: Concepts
 description: Slides, logical coordinates, the zooming camera, and how a deck is recorded and replayed.
 ---
 
-## Slides and the tree
+## Slides and the forest
 
-A presentation is a tree of **slides**. In Markdown a slide is a `::: slide` container; in code it
+A presentation is a forest of **slides**, most often a single tree. In Markdown a slide is a `::: slide` container; in code it
 is an instance of `Slide`. Every slide owns a **logical canvas**, 16 × 9 units by default, and its
 content is authored in those units regardless of where the slide ends up on screen.
 
@@ -24,15 +24,15 @@ root (32 × 18)
 
 ## Pre-order visits
 
-Playback walks the tree in pre-order: a slide runs its own steps and visits its children in
-order, each visit zooming the camera into the child's viewport; from a finished child the camera
+Playback walks each tree in pre-order, and cuts from the last stop of one root to the next
+root: a slide runs its own steps and visits its children in order, each visit zooming the camera into the child's viewport; from a finished child the camera
 goes straight to the next sibling, and zooms back out to the parent after the last one. The
 order within a slide is the source order of its includes, unless an include carries `step=N`,
 which interleaves the visit with the parent's numbered fragments. A child's content is invisible
 until its first visit and fades in then, unless its include says `preview=true` or `presenter.revealOnEntry` is `false`. `return_to_parent`, `skip_return`
-and `skip_next` change where the camera goes when a child ends. A document whose slides include
-none of the others is a [flat document](documents.html), read page after page with cuts between
-them, as a PDF opened in the player is.
+and `skip_next` change where the camera goes when a child ends. A deck whose slides include none
+of the others is a forest of single slides, a [flat document](documents.html) read page after
+page, as a PDF opened in the player is.
 
 ## Coordinates
 
@@ -52,7 +52,7 @@ clip's animations in real time, so:
 - the left key can play the current stop backwards, because clips are made of interpolations;
 - author code runs exactly once per page load, like a single render.
 
-Visibility follows the tree: only the root is visible at the start, each descendant fades in on its
+Visibility follows the forest: only the first root is visible at the start, each descendant fades in on its
 first entry and stays visible afterwards, so parents show their finished children as previews.
 
 ## What runs where

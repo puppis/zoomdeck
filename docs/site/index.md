@@ -5,10 +5,11 @@ description: Zooming presentations written in Markdown and played entirely in th
 
 ## What Zoomdeck does
 
-A Zoomdeck presentation is a **tree of slides**. Each slide has its own logical canvas and a
-small animation program; child slides sit inside their parent's canvas as viewports. Presenting
-means visiting the tree in pre-order: the camera zooms into each child, plays its steps and zooms
-back out (or cuts, when you prefer), so the audience always sees where a detail belongs.
+A Zoomdeck presentation is a **forest of slides**, most often a single tree. Each slide has its
+own logical canvas and a small animation program; child slides sit inside their parent's canvas
+as viewports. Presenting means visiting each tree in pre-order: the camera zooms into each child,
+plays its steps and zooms back out (or cuts, when you prefer), so the audience always sees where
+a detail belongs; from one root to the next it cuts, as between the pages of a document.
 
 You write slides in a Markdown dialect: prose, LaTeX formulas, images, video, shapes, diagram
 icons and arrows (crisp or hand-drawn), boxes and blobs around groups of elements, tables, charts,

@@ -9,7 +9,7 @@ links to the page with the explanations and examples.
 
 ## Document structure
 
-[Slides and the tree](slides.html) · [Styles](styles.html) · [Groups](groups.html)
+[Slides and the forest](slides.html) · [Styles](styles.html) · [Groups](groups.html)
 
 | Syntax | Purpose |
 | --- | --- |
@@ -114,7 +114,7 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
 | `enter`, `exit` | elements | `fade`, `grow`, `write`, `create`, `draw` / `fade`, `shrink`, `uncreate` |
 | `tremble`, `tremble_amplitude`, `tremble_rate` | shapes, icons, connections, attachments, math, groups, tables, charts | `true`, `N` or `N-M`: vibration over a range of steps, its size and frequency |
 | `focus_only` | static elements | visible only while the slide is focused |
-| `start_here`, `only_this`, `return_to_parent`, `skip_return`, `transition`, `preview` | slides, includes, subslides | opening stop, partial preparation, zooming back to the parent after this child or leaving it straight for the next stop (by default only the last child returns), `zoom` or `cut`, content shown before the first visit; written bare, a flag means `=true` ([Slides and the tree](slides.html#flags)) |
+| `start_here`, `only_this`, `return_to_parent`, `skip_return`, `transition`, `preview` | slides, includes, subslides | opening stop, partial preparation, zooming back to the parent after this child or leaving it straight for the next stop (by default only the last child returns), `zoom` or `cut`, content shown before the first visit; written bare, a flag means `=true` ([Slides and the forest](slides.html#flags)) |
 
 ## Names
 

@@ -336,8 +336,8 @@ rasterized at that density, so they are as sharp as the screen at rest, and stor
 (deflated, as PDF readers decode natively; a browser that cannot deflate gets fine JPEG pages
 instead). Formulas, shapes, images and code look as they do on screen; pen strokes, highlights,
 the whiteboard, the spotlight and the camera picture are not part of a page, and an embedded
-page (`iframe:`) prints as its frame with its poster or caption. The slide tree becomes the
-bookmarks of the file, so a PDF reader's outline lists the slides.
+page (`iframe:`) prints as its frame with its poster or caption. The forest of slides becomes
+the bookmarks of the file, so a PDF reader's outline lists the slides.
 
 A stop whose animation leaves the picture as it was (an indication, a flash, a full turn along a path) prints as a page that looks like the one before it: it is a stage all the same.
 
@@ -374,7 +374,7 @@ slides, like turning the pages of a PDF, while fragments and animations inside a
 play. `transition=cut` on a slide, include or subslide does the same for that slide alone, and
 `transition=zoom` brings the zoom back for one slide of a `cut` deck. A PDF opened in the player,
 and a Markdown file whose slides include none of the others, cut between their pages by themselves
-([Flat documents and PDFs](documents.html)).
+([PDFs, flat decks and forests](documents.html)).
 
 ## Outline and deep links
 

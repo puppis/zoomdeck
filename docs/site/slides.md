@@ -1,5 +1,5 @@
 ---
-title: Slides and the tree
+title: Slides and the forest
 description: Slide containers, canvas sizes, includes, visit order, start and preview flags, placeholders.
 ---
 
@@ -22,11 +22,12 @@ description: Slide containers, canvas sizes, includes, visit order, start and pr
 - Every slide is a `::: slide {#id} … :::` container. IDs start with a letter or underscore and
   continue with letters, digits, `_`, `.` or `-`; they are unique in the document.
 - Definition order and heading levels never determine nesting; only includes do.
-- The **root** is the slide that nothing includes; every other slide belongs to its tree.
-  Unknown references, cycles and including the same slide twice are errors. To show the same
-  content twice, define it twice under different IDs.
-- Several slides that nothing includes are the pages of a [flat document](documents.html),
-  visited first to last with cuts between them, as the pages of a PDF are.
+- A deck is a **forest**: the slides that nothing includes are its roots, visited first to last
+  with cuts between them, and every other slide belongs to the tree of one root. Most decks are
+  a single tree; a deck whose slides include none of the others is a
+  [flat document](documents.html), as the pages of a PDF are. Unknown references, cycles and
+  including the same slide twice are errors. To show the same content twice, define it twice
+  under different IDs.
 - `title="…"` names the slide in the outline; otherwise its first heading, then its ID, is used.
 
 ## Canvas size
