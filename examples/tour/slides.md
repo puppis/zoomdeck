@@ -30,15 +30,15 @@ Zoomdeck makes zooming presentations: a forest of slides written in Markdown, mo
 [[include: #feat-spotlight x=13.2 y=1.9 width=8.6 skip_return=true preview=true]]
 [[rectangle: #root-hit-feat-spotlight x=13.2 y=1.9 width=8.6 height=4.84 opacity=0 href=#slide=feat-spotlight]]
 
-[5 · Pen, tablet and whiteboard]{#root-cap-feat-pen x=-13.2 y=-0.9500000000000002 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-pen}
+[5 · Pen, tablet and whiteboard]{#root-cap-feat-pen x=-13.2 y=-2.15 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-pen}
 [[include: #feat-pen x=-13.2 y=-4.9 width=8.6 skip_return=true preview=true]]
 [[rectangle: #root-hit-feat-pen x=-13.2 y=-4.9 width=8.6 height=4.84 opacity=0 href=#slide=feat-pen]]
 
-[6 · Camera, recording, video]{#root-cap-feat-recording x=-4.4 y=-0.9500000000000002 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-recording}
+[6 · Camera, recording, video]{#root-cap-feat-recording x=-4.4 y=-2.15 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-recording}
 [[include: #feat-recording x=-4.4 y=-4.9 width=8.6 skip_return=true preview=true]]
 [[rectangle: #root-hit-feat-recording x=-4.4 y=-4.9 width=8.6 height=4.84 opacity=0 href=#slide=feat-recording]]
 
-[7 · Formulas, diagrams, motion]{#root-cap-feat-math x=4.4 y=-0.9500000000000002 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-math}
+[7 · Formulas, diagrams, motion]{#root-cap-feat-math x=4.4 y=-2.15 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-math}
 [[include: #feat-math x=4.4 y=-4.9 width=8.6 skip_return=true preview=true]]
 [[rectangle: #root-hit-feat-math x=4.4 y=-4.9 width=8.6 height=4.84 opacity=0 href=#slide=feat-math]]
 
