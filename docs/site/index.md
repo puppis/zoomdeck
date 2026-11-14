@@ -31,8 +31,8 @@ feature with the markup that produces it next to the result. **Source:**
    page next to the markup that produces it: a PDF opened as it is, plain slides, a tree of
    slides, the spotlight, the pen and the whiteboard, the camera and recordings, formulas,
    diagrams and animations.
-2. **[Getting started](getting-started.html)**: install with Node.js and npm, write a first deck,
-   preview and export it from the command line. Then **[Your first deck, stage by
+2. **[Getting started](getting-started.html)**: the desktop app or the sources, a deck opened,
+   presented and exported, and your editor set up. Then **[Your first deck, stage by
    stage](first-deck.html)** builds a deck cell by cell in a notebook you can edit in the browser.
 3. **[Editors](editors.html)**: ready-made setups for VS Code, Sublime Text, Emacs, Vim and
    JetBrains IDEs, so that saving a file updates the browser, a key jumps from a source line to

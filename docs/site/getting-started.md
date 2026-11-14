@@ -1,86 +1,85 @@
 ---
 title: Getting started
-description: Install the project, get the zoomdeck command, write a first deck, preview and export it, and set up your editor.
+description: Get Zoomdeck as a desktop app or from the sources, open a deck, present it, export it to a folder or a single file, and set up your editor.
 ---
 
-## Install
+The [overview](features.html) showed what Zoomdeck does; this page gets it onto your computer
+and a deck of yours into it. There are two ways in: the desktop app, which needs nothing else,
+and the sources, which bring the `zoomdeck` command and the live development page.
 
-| Needed | Notes |
-| --- | --- |
-| Node.js 20.19 or newer, or 22.12 or newer, with npm | to install, preview, export and build the documentation; older and odd-numbered releases (such as 21.x) fail with `crypto.hash is not a function` |
-| A browser with WebGL 2 | Chrome, Edge, Firefox and Safari of the last few years; this is where decks run |
+## The desktop app
 
-Nothing else is required: no Python, no LaTeX installation (formulas render through MathJax in
-the browser), no video encoder, no font installation (the Latin Modern faces are bundled).
+Download the build for your system from the
+[releases](https://github.com/puppis/zoomdeck/releases): a `.dmg` for macOS, an `.AppImage` or
+`.deb` for Linux, an installer or a portable `.exe` for Windows. The app is the player and the
+preview server in a window of its own: open a `deck.json`, a Markdown file or a PDF from the
+File menu, by dropping it on the app, or by double-clicking it, and present as in the browser.
+The builds are not signed by a registered developer, so each system warns once the first time;
+[The desktop app](desktop.html) says what to click, and what the app's menus offer.
+
+## From the sources
+
+You need Node.js 20.19 or newer (or 22.12 or newer; odd-numbered releases such as 21.x fail
+inside the build with `crypto.hash is not a function`) and a browser with WebGL 2. Nothing else:
+no Python, no LaTeX, no video tools; formulas render through MathJax and the fonts are bundled.
 
 ```bash
 git clone https://github.com/puppis/zoomdeck.git Zoomdeck
 cd Zoomdeck
-npm install
-npm run dev
+npm install        # dependencies, and this documentation into docs/html/
+npm run dev        # the development page, with the tour deck
+npm link           # optional: the `zoomdeck` command, from any folder
 ```
 
-`npm install` fetches the runtime dependencies (the `manim-web` rendering engine with Three.js
-and MathJax inside, `markdown-it` for the dialect, `gifuct-js` for GIFs, `roughjs` for hand-drawn
-shapes, and Vite for the preview and exports), checks the Node version first, and builds this
-documentation into `docs/html/`, including the standalone tour (`docs/html/tour.html`);
-`npm run docs` rebuilds it later.
+`npm run dev` serves `http://localhost:5173/`, which opens the tour deck; `?deck=` selects
+another: `/?deck=path/to/deck.json`, `/?deck=path/to/slides.md`, `/?deck=path/to/paper.pdf`,
+or `/?deck=examples/tree-deck&scene=Demo` for a code-authored deck. The page reloads when a deck
+file changes and comes back to the stop you were looking at.
 
-> **Note** On an older or odd-numbered Node release such as 21.x the install would otherwise stop
-> inside the documentation build with `TypeError: crypto.hash is not a function`: that message
-> comes from Vite, which needs the Node versions above, and not from a broken download.
-> Installing a supported Node (for example with `nvm install --lts`) and running `npm install`
-> again fixes it.
+`npm link` puts a `zoomdeck` command on your path that runs the checkout as it is (so `git pull`
+updates it; `npm unlink -g zoomdeck` removes it). Without it, `node bin/zoomdeck.mjs` from the
+checkout does the same. If a shell or an editor answers `command not found`, npm's global `bin`
+folder (`npm prefix -g` prints its parent) is not on that program's `PATH`; the editor setups
+below find the command on their own, and [Editors](editors.html) covers the rest.
 
-`npm run dev` starts a Vite development server (by default on `http://localhost:5173/`) and opens
-the **tour deck**. Other decks are selected through the query string:
-
-| URL | Opens |
-| --- | --- |
-| `/?deck=examples/tour/deck.json` | a Markdown deck with its configuration (the tour) |
-| `/?deck=path/to/slides.md` | a bare Markdown file with default settings |
-| `/?deck=path/to/paper.pdf` | a PDF, page after page ([PDFs, flat decks and forests](documents.html)) |
-| `/?deck=examples/tree-deck&scene=Demo` | a named export of a module |
-
-The page reloads when a deck file under `examples/` changes and returns to the slide and step you
-were looking at.
-
-## The `zoomdeck` command
-
-The command line lives in `bin/zoomdeck.mjs`, which the checkout can run directly as
-`node bin/zoomdeck.mjs …`. To call it as plain `zoomdeck` from any folder, from an editor or from
-a script, link it into npm's global `bin` directory once, from inside the checkout:
+## Open a deck
 
 ```bash
-cd Zoomdeck
-npm install        # dependencies first, if you have not yet
-npm link           # creates the global `zoomdeck` command, pointing at this checkout
-zoomdeck --help    # prints the usage
+zoomdeck serve talk/deck.json      # also talk/slides.md, or paper.pdf
+zoomdeck serve talk/deck.json --host   # reachable on the network, for a tablet
 ```
 
-`npm link` makes a symbolic link, so the command always runs the current state of the checkout
-and `git pull` updates it; `npm unlink -g zoomdeck` removes it. `npm install -g .` copies the
-package instead and must be repeated after updates.
+The preview opens the deck in your browser at `http://127.0.0.1:8000/` (or the next free port,
+printed in the terminal), reloads it on every save and keeps your position. The argument is a
+`deck.json`, a Markdown file (a `deck.json` next to it that names it is used), a PDF, or a
+JS/TS module exporting a deck. Ctrl+C stops the server; it also stops by itself when the
+program that started it, an editor's build panel say, ends.
 
-**`zoomdeck: command not found`** afterwards means the global `bin` directory is not on the
-`PATH` of the shell that runs the command:
+## Present it
 
-- In a terminal, `npm prefix -g` prints npm's global prefix; its `bin` subfolder (for example
-  `/usr/local/bin`, `/opt/homebrew/bin`, or `~/.nvm/versions/node/<version>/bin` with nvm) must
-  appear in `echo $PATH`. Node installers normally arrange this for your shell; nvm does it in
-  `~/.zshrc` or `~/.bashrc`.
-- Editors started from the Dock, the Start menu or a launcher do not read your shell profile, so
-  their `PATH` is the system default. The Emacs, Vim and Sublime Text setups in `editors/`
-  therefore find the command themselves, through the checkout they belong to or the `PATH` of
-  your login shell; for VS Code and JetBrains, either start the editor from a terminal, or write
-  the full path of the command (`which zoomdeck` prints it) into the task or tool. See
-  [Editors](editors.html).
-- With nvm, the link belongs to the Node version that was active when you ran `npm link`; after
-  switching versions run it again.
+The preview, the exports and the app all play a deck with the same player, so what you try here
+is what the audience sees. `→` or Space advances and `←` goes back; `O` opens the outline, `F`
+the fullscreen view and `,` the settings, where every key and gesture can be changed. Hold Shift
+for the spotlight (`L` makes it a laser), press `D` to draw and `W` for the whiteboard, `C` for
+the camera, `R` to record a talk and `P` to print the deck. [The player](player.html) describes
+each tool, and chapters 4 to 6 of the [tour](tour.html#slide=feat-spotlight) show them live.
 
-## A first deck
+## Export it
 
-Create a folder with a Markdown file and a configuration next to it.
+```bash
+zoomdeck build talk/deck.json -o out/talk             # a folder: index.html, assets/, deck/
+zoomdeck build talk/deck.json -o out/talk --one-file  # one HTML file, every asset inside
+```
+
+The folder is hosted or copied as a whole; the single file opens by double-click and needs no
+server. Both run the deck's program when they load, so a changed deck needs a new export. The
+player's Print button writes a PDF with a page per stage or per slide.
+[Exporting a deck](exporting.html) has the options.
+
+## Write a first deck
+
+A deck is a Markdown file, and nothing more is needed to start; `deck.json` next to it holds
+the title and other settings when you want them.
 
 ```markdown
 ::: slide {#start width=20}
@@ -88,7 +87,7 @@ Create a folder with a Markdown file and a configuration next to it.
 
 Slides are `::: slide` containers; this one has a 20 × 11.25 canvas.
 
-[[include: #details x=4 y=-2 width=9]]
+[[include: #details x=4 y=-2 width=9 preview=true]]
 :::
 
 ::: slide {#details}
@@ -107,88 +106,39 @@ Slides are `::: slide` containers; this one has a 20 × 11.25 canvas.
 }
 ```
 
-Every slide needs an `#id`; the slide nobody includes is the root; `width` on a slide sets its
-canvas, while `x`, `y`, `width` on an include place the child inside the parent. Without further
-keys a deck is black Latin Modern text on a white canvas, which is also what the tour deck uses;
-`background` and `layout.color` change the colors ([Configuration](configuration.html) lists
-every key).
-
-Open the deck with `/?deck=path/to/deck.json` on the dev page, or with the command line below.
-
-## Preview and export
-
-```bash
-# Live preview of any deck (also outside this checkout): reloads on save, keeps your position.
-zoomdeck serve path/to/deck.json          # or: node bin/zoomdeck.mjs serve path/to/deck.json
-
-# Static bundle: index.html + assets/ + deck/. Host or copy the whole folder.
-zoomdeck build path/to/deck.json -o build/my-deck
-
-# One self-contained HTML file with every asset embedded.
-zoomdeck build path/to/deck.json -o build/my-deck --one-file
-```
-
-Both commands accept the `deck.json` or the Markdown file: a Markdown file whose folder holds a
-`deck.json` naming it is served or built through that configuration, so handing the file you are
-editing to the command (as the editor setups do) gives the same result as naming `deck.json`.
-
-The preview listens on `http://127.0.0.1:8000/`, or on the next free port when 8000 is busy
-(another preview is probably still running; the printed address is the one to use). `--port N`
-insists on a port. The server stops with Ctrl+C, and also by itself when the program that
-started it (an editor's build panel or task) ends.
-
-`serve` accepts `--port N`, `--host` (also listen on the network, for a [tablet](player.html#a-tablet-as-a-drawing-pad)), `--no-open`, `--editor NAME` (the editor that the player's E key and Alt + click open source lines with), `--scene Name` and repeatable `--watch PATH`; `build`
-accepts `--show-outline` and `--scene Name`. `zoomdeck jump <file> <line>` moves the running
-preview to the stop of a source line. The deck argument is a `deck.json`, a Markdown file, a PDF
-or a JS/TS module exporting a deck definition. The single-file export opens by double-click and needs
-no server; [Exporting a deck](exporting.html) has the details.
-
-## Present it
-
-The preview and the exports play a deck with the same player, so what you try here is what the
-audience will see. `→` or Space advances, `←` goes back (playing the stop backwards), `O` opens
-the outline and `F` the fullscreen view. The pointer tools work with a mouse, a pen or a paired
-tablet: drag to draw, with pressure on a pencil or stylus; hold Shift for a spotlight or a laser
-(`L` switches between them), Shift + drag to highlight; `W` opens a whiteboard without edges.
-`C` turns the camera on in a corner of the slides, then full frame, then off, and `S` films the
-screen while you work in another application. `R` records
-the talk (your voice, the camera while it is on, and every move on the deck) and **▶ Talk** plays
-it back on the deck itself or exports it as a video; `P` prints the deck to a PDF, a page
-per stage. Every key and gesture can be changed in the settings (`,`). [The player](player.html)
-describes each tool in full, and the tour's section 2, Presenting, shows them live.
-
-## Set up your editor
-
-Editing is most comfortable when the browser follows your typing: start the preview once, and
-every save reloads the page at the stop you were looking at. The `editors/` folder of the
-repository holds ready-made setups for **VS Code, Sublime Text, Emacs, Vim/Neovim and JetBrains
-IDEs** that save after a second of idle typing, bind the preview, the jump to the current line
-and the single-file export to shortcuts (Ctrl+Alt+B for the browser preview, Ctrl+Alt+J and Ctrl+Alt+P, or ⌘ variants),
-let the browser open a stop's or an element's source line in the editor (E, Alt + click), and
-highlight the dialect's directives and attributes inside Markdown. [Editors](editors.html)
-explains each one and what to do when an editor cannot find the command.
-
-## What a deck folder contains
+Every slide has an `#id`; the slides nothing includes are visited first to last; `width` on a
+slide sets its canvas, and `x`, `y`, `width` on an include place a child inside its parent. The
+notebook [Your first deck, stage by stage](first-deck.html) builds such a deck one cell at a
+time, with the result under each cell, and lets you edit it in the browser. A deck folder grows
+from there:
 
 ```text
-my-deck/
+talk/
 ├── slides.md        the slides, in the Markdown dialect
 ├── deck.json        title, colors, typography, presenter options, styles, macros
-├── code-slides.ts   optional: Slide classes used by [[subslide: Name]]; zoomdeck and manim-web
-│                    resolve through the checkout wherever the deck lives
-├── parts/           optional: Markdown files spliced in with [[import: path.md]]
 ├── assets/          images, videos, pages referenced from slides.md
-└── recordings/      optional: recorded talks, written by the player (see The player)
+├── parts/           optional: Markdown files spliced in with [[import: path.md]]
+├── code-slides.ts   optional: Slide classes used by [[subslide: Name]]
+└── recordings/      talks recorded by the player, when the deck is served
 ```
 
 Paths in `slides.md` resolve relative to the Markdown file.
 
+## Set up your editor
+
+Editing is most comfortable when the browser follows your typing. The `editors/` folder of the
+repository has ready-made setups for **VS Code, Sublime Text, Emacs, Vim/Neovim and JetBrains
+IDEs**: they save after a second of idle typing, bind the preview, the jump from a source line
+to its stop and the single-file export to shortcuts, let the player open a stop's source line
+in the editor (E, or Alt + click on an element), and highlight the dialect inside Markdown.
+[Editors](editors.html) explains each one.
+
 ## Next steps
 
-- [Concepts](concepts.html) explains slides, coordinates and how playback is recorded.
-- [The player](player.html) covers presenting in full: keys, pen and spotlight, whiteboard,
-  tablet, camera, recording a talk and printing the deck.
-- [PDFs, flat decks and forests](documents.html) and [Slides and the forest](slides.html) start the topic-by-topic tour of the dialect; the sidebar
-  follows the same order, from the content of a slide to the reference.
-- The [tour deck](tour.html) shows each topic live; its front page lists the sections, and
-  every documentation page opens its chapter with the "Open in the tour" badge.
+- [Concepts](concepts.html): what a slide, a viewport and a stop are, and how a deck is
+  recorded once and replayed.
+- [PDFs, flat decks and forests](documents.html), then [Slides and the forest](slides.html),
+  start the topic-by-topic part of the documentation; the sidebar follows the same order, from
+  the content of a slide to the reference.
+- The [tour](tour.html) shows every topic live, and each documentation page opens its chapter
+  with the "Open in the tour" badge.
