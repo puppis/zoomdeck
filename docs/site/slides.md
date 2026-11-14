@@ -93,12 +93,15 @@ child. They are the two sides of one choice and are never written together.
 
 ## Cuts instead of zooms
 
-By default the camera flies between slides. A slide's `transition` says how the camera arrives
-at it, whichever slide it comes from: `transition=cut` on a slide (or on the include that places
-it) replaces the view at once when the camera moves into that slide, as between the pages of a
-PDF; fades of focus-only decorations still play. The move out of the slide is the next
+Every camera move is a zoom, with one exception: a root of the forest (a page of a PDF, a slide
+nothing includes) is reached with a cut from outside its own tree, as the next page of a document
+is; zooming back out to a root from its own children is a move like any other. A slide's
+`transition` says how the camera arrives at it, whichever slide it comes from, and overrides the
+rule either way: `transition=cut` on a slide (or on the include that places it) replaces the view
+at once when the camera moves into that slide, `transition=zoom` on a root pans to it from its
+neighbour; fades of focus-only decorations still play. The move out of a slide is the next
 destination's business: back to the parent, it follows the parent's setting. To present a whole
-deck that way, set `"presenter": { "transition": "cut" }` in deck.json; individual slides can
+deck with cuts, set `"presenter": { "transition": "cut" }` in deck.json; individual slides can
 then ask for `transition=zoom` again, and a module of the deck's own by name
 ([Extending a deck](extending.html#camera-transitions)).
 

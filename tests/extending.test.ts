@@ -100,11 +100,21 @@ describe('camera transitions of the deck\'s own', () => {
     const root = new Slide('root', { hidden: true });
     const one = new Slide('one');
     const two = new Slide('two', { transition: 'zoom' });
+    const three = new Slide('three');
+    const leaf = new Slide('leaf');
     root.addChild(one, { center: [0, 0, 0], width: 4 });
     root.addChild(two, { center: [5, 0, 0], width: 4 });
+    root.addChild(three, { center: [10, 0, 0], width: 4 });
+    three.addChild(leaf, { center: [0, 0, 0], width: 2 });
     expect(presenter.transitionMode(one, two)).toBe('zoom');
     expect(presenter.transitionPath(one, two)).toBeNull();
     expect(presenter.transitionMode(two, one)).toBe('cut');
+    expect(presenter.transitionMode(two, three)).toBe('cut');
+    // Inside a tree every move is smooth, the way back out to the root included; so is a jump into the middle of another tree.
+    expect(presenter.transitionMode(three, leaf)).toBe('swoop');
+    expect(presenter.transitionMode(leaf, three)).toBe('swoop');
+    expect(presenter.transitionMode(leaf, one)).toBe('cut');
+    expect(presenter.transitionMode(one, leaf)).toBe('swoop');
   });
 });
 

@@ -166,12 +166,15 @@ them; <code>return_to_parent</code> on that child brings the camera back before 
 to its parent only when it is the last one visited, so the camera moves from sibling to sibling
 and comes back once at the end; <code>return_to_parent</code> and <code>skip_return</code> force either choice for one
 child. They are the two sides of one choice and are never written together.</p>
-<h2 id="cuts-instead-of-zooms">Cuts instead of zooms<a class="anchor" href="#cuts-instead-of-zooms" aria-label="Link to this section">#</a></h2><p>By default the camera flies between slides. A slide's <code>transition</code> says how the camera arrives
-at it, whichever slide it comes from: <code>transition=cut</code> on a slide (or on the include that places
-it) replaces the view at once when the camera moves into that slide, as between the pages of a
-PDF; fades of focus-only decorations still play. The move out of the slide is the next
+<h2 id="cuts-instead-of-zooms">Cuts instead of zooms<a class="anchor" href="#cuts-instead-of-zooms" aria-label="Link to this section">#</a></h2><p>Every camera move is a zoom, with one exception: a root of the forest (a page of a PDF, a slide
+nothing includes) is reached with a cut from outside its own tree, as the next page of a document
+is; zooming back out to a root from its own children is a move like any other. A slide's
+<code>transition</code> says how the camera arrives at it, whichever slide it comes from, and overrides the
+rule either way: <code>transition=cut</code> on a slide (or on the include that places it) replaces the view
+at once when the camera moves into that slide, <code>transition=zoom</code> on a root pans to it from its
+neighbour; fades of focus-only decorations still play. The move out of a slide is the next
 destination's business: back to the parent, it follows the parent's setting. To present a whole
-deck that way, set <code>&quot;presenter&quot;: { &quot;transition&quot;: &quot;cut&quot; }</code> in deck.json; individual slides can
+deck with cuts, set <code>&quot;presenter&quot;: { &quot;transition&quot;: &quot;cut&quot; }</code> in deck.json; individual slides can
 then ask for <code>transition=zoom</code> again, and a module of the deck's own by name
 (<a href="extending.html#camera-transitions">Extending a deck</a>).</p>
 <h2 id="code-authored-children">Code-authored children<a class="anchor" href="#code-authored-children" aria-label="Link to this section">#</a></h2><pre><code class="language-markdown"><span class="tk-directive">[[subslide:</span> Orbit <span class="tk-attribute">x=</span><span class="tk-number">0</span> <span class="tk-attribute">y=</span><span class="tk-number">-3</span> <span class="tk-attribute">width=</span><span class="tk-number">4</span> <span class="tk-attribute">step=</span><span class="tk-number">5</span><span class="tk-directive">]]</span></code></pre>

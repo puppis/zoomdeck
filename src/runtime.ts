@@ -1042,13 +1042,16 @@ export class Presenter {
   }
 
   /**
-   * How the camera moves into `to`: the destination's own `transition` when it has one; else a
-   * cut when the move crosses from one page of a flat document to another (their nearest common
-   * ancestor is hidden); else the deck's `transition`. The slide being left has no say.
+   * How the camera moves into `to`: the destination's own `transition` when it has one. Else
+   * every move follows the deck's `transition`, a zoom by default, with one exception: a root of
+   * the forest (a page of a document, a slide nothing includes) is reached with a cut from
+   * outside its own tree, as the next page is. Zooming back out to a root from its own children
+   * is a move like any other. The slide being left has no say.
    */
   transitionMode(from: Slide, to: Slide): TransitionMode {
     if (to.transition) return to.transition;
-    return commonAncestor(from, to)?.hidden ? 'cut' : this.config.transition;
+    if (to.parent?.hidden && commonAncestor(from, to) !== to) return 'cut';
+    return this.config.transition;
   }
 
   /** Seconds of the camera move from one slide to another: zero for a cut. */
