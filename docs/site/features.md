@@ -176,11 +176,11 @@ below has three slides: a formula, a diagram, and five steps of motion.
 ::: slide {#formula width=20}
 ## A formula and its parts
 
-[$\displaystyle \int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}$]{#gauss x=-6 y=1.2 font_size=40}
+[$\displaystyle \int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}$]{#gauss x=-4 y=1.2 anchor=center font_size=40}
 
 [[box: #gauss, #gbox, buff=0.3, corner_radius=0.15, color=TEAL]]
 
-[Gaussian integral]{#label x=-6 y=-1.8 font_size=24 color=TEAL}
+[Gaussian integral]{#label x=-4 y=-1.8 anchor=center font_size=24 color=TEAL}
 
 [[arrow: #label -> #gauss, #why]]
 
@@ -190,9 +190,9 @@ below has three slides: a formula, a diagram, and five steps of motion.
 ::: slide {#diagram width=20}
 ## Arrows, blobs and hand-drawn shapes
 
-[Source]{#src x=-8 y=1.5 font_size=28}
+[Source]{#src x=-6 y=1.5 anchor=center font_size=28}
 
-[Sink]{#dst x=3 y=1.5 font_size=28}
+[Sink]{#dst x=4 y=1.5 anchor=center font_size=28}
 
 [[arrow: #src -> #dst, #flow, label="flow"]]
 

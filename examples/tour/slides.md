@@ -122,36 +122,36 @@ On the right, a PDF of three pages typeset with LaTeX, placed in this slide with
 :::
 ```
 
-[[rectangle: #feat-plain-r1 x=1.7 y=1.2 width=2.6 height=1.46 color=GRAY]]
-[[rectangle: #feat-plain-r2 x=5.0 y=1.2 width=2.6 height=1.46 color=GRAY]]
-[[rectangle: #feat-plain-r3 x=8.3 y=1.2 width=2.6 height=1.46 color=GRAY]]
+[Press → : the camera zooms into the first slide, turns to the next two with cuts, in place, and zooms back out.]{#feat-plain-cap x=0.6 y=3.1 width=9 font_size=18 color=GRAY}
 
-[[include: #feat-one x=1.7 y=1.2 width=2.6 preview=true]]
+[[rectangle: #feat-plain-frame x=5 y=-0.2 width=9.2 height=5.26 color=GRAY stroke_width=1]]
 
-[[include: #feat-two x=5.0 y=1.2 width=2.6 transition=cut preview=true]]
+[[include: #feat-one x=5 y=-0.2 width=9 preview=true]]
 
-[[include: #feat-three x=8.3 y=1.2 width=2.6 transition=cut preview=true]]
+[[include: #feat-two x=5 y=-0.2 width=9 transition=cut]]
 
-[[arrow: #feat-plain-r1 -> #feat-plain-r2, #feat-plain-a1, label="cut", color=GRAY]]
-
-[[arrow: #feat-plain-r2 -> #feat-plain-r3, #feat-plain-a2, label="cut", color=GRAY]]
-
-[Press → : the camera zooms into the first slide, cuts to the next two, and zooms back out.]{#feat-plain-cap x=0.6 y=-0.9 width=9 font_size=18 color=GRAY}
+[[include: #feat-three x=5 y=-0.2 width=9 transition=cut]]
 
 A deck of your own is a Markdown file of `::: slide` containers. Slides that no other slide includes are roots, visited in order with a cut from one to the next, like the pages of a document. {#feat-plain-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-A slide still shows its content click by click, and may include children of its own, which zoom as usual. {#feat-plain-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
+The three children sit at one place, each painting a white sheet first, so a later one covers an earlier one. A slide still shows its content click by click, and may include children of its own, which zoom as usual. {#feat-plain-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#feat-one width=8}
+[[rectangle: #feat-one-sheet x=0 y=0 width=8 height=4.5 color=WHITE fill_color=WHITE fill_opacity=1]]
+
 # One
 :::
 
 ::: slide {#feat-two width=8}
+[[rectangle: #feat-two-sheet x=0 y=0 width=8 height=4.5 color=WHITE fill_color=WHITE fill_opacity=1]]
+
 # Two
 :::
 
 ::: slide {#feat-three width=8}
+[[rectangle: #feat-three-sheet x=0 y=0 width=8 height=4.5 color=WHITE fill_color=WHITE fill_opacity=1]]
+
 # Three
 :::
 
