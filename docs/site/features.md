@@ -10,6 +10,8 @@ keyboard, press → and ← to move, or use its buttons. The markup beside a dec
 
 ## A PDF, as it is
 
+<a class="try" href="tour.html#slide=feat-pdf">This chapter in the tour ↗</a>
+
 Zoomdeck opens a PDF directly: a paper, a poster, slides typeset elsewhere. Each page is a
 slide, the pages are visited first to last with a cut between them, the bookmarks name them in
 the outline, and the text stays sharp at any zoom because pages are drawn at the density of the
@@ -24,6 +26,8 @@ zoomdeck build paper.pdf -o out   # export a page that plays it
 ```
 
 ## Plain slides, in a row
+
+<a class="try" href="tour.html#slide=feat-plain">This chapter in the tour ↗</a>
 
 A deck of your own is a Markdown file of `::: slide` containers. Slides that include no other
 slide are simply visited in order, with cuts and no animation, like the pages of a document.
@@ -50,6 +54,8 @@ With prose, **emphasis**, `code` and $\sum_{n\ge1} n^{-2} = \pi^2/6$.
 ```
 
 ## Slides as a tree
+
+<a class="try" href="tour.html#slide=feat-tree">This chapter in the tour ↗</a>
 
 An `[[include: #id …]]` places one slide inside another, as a viewport with a position and a
 size. The camera zooms into each child in turn, goes from a child straight to its next sibling,
@@ -86,6 +92,8 @@ The last stop; then the camera zooms back out.
 
 ## Spotlight and laser
 
+<a class="try" href="tour.html#slide=feat-spotlight">This chapter in the tour ↗</a>
+
 Hold **Shift** while moving the pointer to dim everything but a circle around it; the `L` key
 (or the Pointer setting) turns the spotlight into a red laser dot, Shift + scroll resizes
 either, and Shift + drag draws a highlight. Both work on any deck, including a PDF, and are
@@ -105,6 +113,8 @@ Hold **Shift** while moving the pointer over this slide: a spotlight follows it.
 
 ## Pen, tablet and whiteboard
 
+<a class="try" href="tour.html#slide=feat-pen">This chapter in the tour ↗</a>
+
 **D** turns the pen on: a drag draws on the slide in the chosen color (keys 1 to 4), with
 pressure from a pen or an Apple Pencil, and the strokes stay with the slide. A tablet or an iPad
 pairs with the player as a drawing pad (Settings → Tablet), so you write on it and the audience
@@ -123,6 +133,8 @@ Press **D** and draw on this slide; the keys **1** to **4** (or the dots in the 
 
 ## Camera, recording and video
 
+<a class="try" href="tour.html#slide=feat-recording">This chapter in the tour ↗</a>
+
 The camera (C) shows you next to or over the slides, as a picture in a corner or full screen.
 A recording (R) keeps the whole talk: your voice, the camera and every move on the deck,
 strokes included; it plays back on the deck itself, where it stays navigable, and exports as a
@@ -138,6 +150,8 @@ The **Camera** button (C) shows the camera, **Record** (R) starts a talk (voice,
 ```
 
 ## Formulas, diagrams and animation
+
+<a class="try" href="tour.html#slide=feat-math">This chapter in the tour ↗</a>
 
 Formulas are LaTeX, inline or displayed, rendered by MathJax and zoomable like everything else.
 Diagrams are directives: arrows between elements, boxes and blobs around them, icons, braces,

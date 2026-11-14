@@ -77,7 +77,8 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       <p><a class="try" href="tour.html">The same tour as a deck: open the tour ↗</a></p>
 <p>Every deck on this page is the real player, embedded in the page. Click one to give it the
 keyboard, press → and ← to move, or use its buttons. The markup beside a deck is all it takes.</p>
-<h2 id="a-pdf-as-it-is">A PDF, as it is<a class="anchor" href="#a-pdf-as-it-is" aria-label="Link to this section">#</a></h2><p>Zoomdeck opens a PDF directly: a paper, a poster, slides typeset elsewhere. Each page is a
+<h2 id="a-pdf-as-it-is">A PDF, as it is<a class="anchor" href="#a-pdf-as-it-is" aria-label="Link to this section">#</a></h2><p><a class="try" href="tour.html#slide=feat-pdf">This chapter in the tour ↗</a></p>
+<p>Zoomdeck opens a PDF directly: a paper, a poster, slides typeset elsewhere. Each page is a
 slide, the pages are visited first to last with a cut between them, the bookmarks name them in
 the outline, and the text stays sharp at any zoom because pages are drawn at the density of the
 screen. The pen, the spotlight, recording and printing work on a PDF as on any deck.</p>
@@ -87,7 +88,8 @@ screen. The pen, the spotlight, recording and printing work on a PDF as on any d
 </figure>
 <pre><code class="language-bash">zoomdeck serve paper.pdf          <span class="tk-comment"># present it</span>
 zoomdeck build paper.pdf <span class="tk-attribute">-o</span> out   <span class="tk-comment"># export a page that plays it</span></code></pre>
-<h2 id="plain-slides-in-a-row">Plain slides, in a row<a class="anchor" href="#plain-slides-in-a-row" aria-label="Link to this section">#</a></h2><p>A deck of your own is a Markdown file of <code>::: slide</code> containers. Slides that include no other
+<h2 id="plain-slides-in-a-row">Plain slides, in a row<a class="anchor" href="#plain-slides-in-a-row" aria-label="Link to this section">#</a></h2><p><a class="try" href="tour.html#slide=feat-plain">This chapter in the tour ↗</a></p>
+<p>A deck of your own is a Markdown file of <code>::: slide</code> containers. Slides that include no other
 slide are simply visited in order, with cuts and no animation, like the pages of a document.</p>
 <figure class="live">
 <zoom-deck without="camera record screen"><script type="text/markdown">
@@ -129,7 +131,8 @@ With prose, <span class="tk-bold">**emphasis**</span>, <span class="tk-type">`co
 - as usual
 <span class="tk-directive">:::</span></code></pre></details>
 </figure>
-<h2 id="slides-as-a-tree">Slides as a tree<a class="anchor" href="#slides-as-a-tree" aria-label="Link to this section">#</a></h2><p>An <code>[[include: #id …]]</code> places one slide inside another, as a viewport with a position and a
+<h2 id="slides-as-a-tree">Slides as a tree<a class="anchor" href="#slides-as-a-tree" aria-label="Link to this section">#</a></h2><p><a class="try" href="tour.html#slide=feat-tree">This chapter in the tour ↗</a></p>
+<p>An <code>[[include: #id …]]</code> places one slide inside another, as a viewport with a position and a
 size. The camera zooms into each child in turn, goes from a child straight to its next sibling,
 and zooms back out after the last one. Here a root has two children and the second child has a
 child of its own: first child, next sibling, then down again.</p>
@@ -187,7 +190,8 @@ Visited first.
 The last stop; then the camera zooms back out.
 <span class="tk-directive">:::</span></code></pre></details>
 </figure>
-<h2 id="spotlight-and-laser">Spotlight and laser<a class="anchor" href="#spotlight-and-laser" aria-label="Link to this section">#</a></h2><p>Hold <strong>Shift</strong> while moving the pointer to dim everything but a circle around it; the <code>L</code> key
+<h2 id="spotlight-and-laser">Spotlight and laser<a class="anchor" href="#spotlight-and-laser" aria-label="Link to this section">#</a></h2><p><a class="try" href="tour.html#slide=feat-spotlight">This chapter in the tour ↗</a></p>
+<p>Hold <strong>Shift</strong> while moving the pointer to dim everything but a circle around it; the <code>L</code> key
 (or the Pointer setting) turns the spotlight into a red laser dot, Shift + scroll resizes
 either, and Shift + drag draws a highlight. Both work on any deck, including a PDF, and are
 recorded with a talk. Try it on the deck below.</p>
@@ -205,7 +209,8 @@ Hold **Shift** while moving the pointer over this slide: a spotlight follows it.
 </script></zoom-deck>
 
 </figure>
-<h2 id="pen-tablet-and-whiteboard">Pen, tablet and whiteboard<a class="anchor" href="#pen-tablet-and-whiteboard" aria-label="Link to this section">#</a></h2><p><strong>D</strong> turns the pen on: a drag draws on the slide in the chosen color (keys 1 to 4), with
+<h2 id="pen-tablet-and-whiteboard">Pen, tablet and whiteboard<a class="anchor" href="#pen-tablet-and-whiteboard" aria-label="Link to this section">#</a></h2><p><a class="try" href="tour.html#slide=feat-pen">This chapter in the tour ↗</a></p>
+<p><strong>D</strong> turns the pen on: a drag draws on the slide in the chosen color (keys 1 to 4), with
 pressure from a pen or an Apple Pencil, and the strokes stay with the slide. A tablet or an iPad
 pairs with the player as a drawing pad (Settings → Tablet), so you write on it and the audience
 sees the slide: pressure, palm rejection, erasing with a finger. <strong>W</strong> opens the whiteboard, an
@@ -222,7 +227,8 @@ Press **D** and draw on this slide; the keys **1** to **4** (or the dots in the 
 </script></zoom-deck>
 
 </figure>
-<h2 id="camera-recording-and-video">Camera, recording and video<a class="anchor" href="#camera-recording-and-video" aria-label="Link to this section">#</a></h2><p>The camera (C) shows you next to or over the slides, as a picture in a corner or full screen.
+<h2 id="camera-recording-and-video">Camera, recording and video<a class="anchor" href="#camera-recording-and-video" aria-label="Link to this section">#</a></h2><p><a class="try" href="tour.html#slide=feat-recording">This chapter in the tour ↗</a></p>
+<p>The camera (C) shows you next to or over the slides, as a picture in a corner or full screen.
 A recording (R) keeps the whole talk: your voice, the camera and every move on the deck,
 strokes included; it plays back on the deck itself, where it stays navigable, and exports as a
 plain video file. A shared screen (S), another application say, can be filmed as part of the
@@ -237,7 +243,8 @@ The **Camera** button (C) shows the camera, **Record** (R) starts a talk (voice,
 </script></zoom-deck>
 
 </figure>
-<h2 id="formulas-diagrams-and-animation">Formulas, diagrams and animation<a class="anchor" href="#formulas-diagrams-and-animation" aria-label="Link to this section">#</a></h2><p>Formulas are LaTeX, inline or displayed, rendered by MathJax and zoomable like everything else.
+<h2 id="formulas-diagrams-and-animation">Formulas, diagrams and animation<a class="anchor" href="#formulas-diagrams-and-animation" aria-label="Link to this section">#</a></h2><p><a class="try" href="tour.html#slide=feat-math">This chapter in the tour ↗</a></p>
+<p>Formulas are LaTeX, inline or displayed, rendered by MathJax and zoomable like everything else.
 Diagrams are directives: arrows between elements, boxes and blobs around them, icons, braces,
 and any of them hand-drawn with <code>sketch=true</code>. Animations in the style of Manim come with the
 same directives: elements are written, drawn, moved, morphed into one another and highlighted,

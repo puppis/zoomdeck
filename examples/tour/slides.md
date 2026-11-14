@@ -8,35 +8,266 @@ heading: color=BLUE_E
 ::: slide {#tour width=36}
 # Zoomdeck {x=-17.35 y=9.2}
 
-Zoomdeck makes zooming presentations: a forest of slides written in Markdown, most often a single tree, with formulas, images, diagrams and animations, that the browser plays by zooming into each slide and back out. This tour covers the dialect and the player in six sections; each chapter shows the markup next to what it produces. Press → to follow the slides in order, pick a slide from the outline (O), or click a section or chapter to jump to it. {x=-17.35 y=8.1 width=27 font_size=26}
+Zoomdeck makes zooming presentations: a forest of slides written in Markdown, most often a single tree, with formulas, images, diagrams and animations, that the browser plays by zooming into each slide and back out. The first seven chapters show what it does; the six sections that follow cover the dialect and the player in full, each chapter next to the markup that produces it. Press → to follow the slides in order, pick a slide from the outline (O), or click a chapter to jump to it. {x=-17.35 y=8.1 width=27 font_size=24}
 
 [Documentation ↗]{#doc-link x=17.35 y=9.2 anchor=right-baseline font_size=26 color=BLUE_E href=https://puppis.github.io/zoomdeck/}
 
 [Source on GitHub ↗]{#github-link x=17.35 y=8.2 anchor=right-baseline font_size=26 color=BLUE_E href=https://github.com/puppis/zoomdeck}
 
-[1 · Slides and content]{#root-cap-sec-content x=-12 y=5.5 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-content}
+[1 · A PDF, as it is]{#root-cap-feat-pdf x=-13.2 y=4.65 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-pdf}
+[[include: #feat-pdf x=-13.2 y=1.9 width=8.6 skip_return=true preview=true]]
+[[rectangle: #root-hit-feat-pdf x=-13.2 y=1.9 width=8.6 height=4.84 opacity=0 href=#slide=feat-pdf]]
+
+[2 · Plain slides, in a row]{#root-cap-feat-plain x=-4.4 y=4.65 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-plain}
+[[include: #feat-plain x=-4.4 y=1.9 width=8.6 skip_return=true preview=true]]
+[[rectangle: #root-hit-feat-plain x=-4.4 y=1.9 width=8.6 height=4.84 opacity=0 href=#slide=feat-plain]]
+
+[3 · Slides as a tree]{#root-cap-feat-tree x=4.4 y=4.65 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-tree}
+[[include: #feat-tree x=4.4 y=1.9 width=8.6 skip_return=true preview=true]]
+[[rectangle: #root-hit-feat-tree x=4.4 y=1.9 width=8.6 height=4.84 opacity=0 href=#slide=feat-tree]]
+
+[4 · Spotlight and laser]{#root-cap-feat-spotlight x=13.2 y=4.65 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-spotlight}
+[[include: #feat-spotlight x=13.2 y=1.9 width=8.6 skip_return=true preview=true]]
+[[rectangle: #root-hit-feat-spotlight x=13.2 y=1.9 width=8.6 height=4.84 opacity=0 href=#slide=feat-spotlight]]
+
+[5 · Pen, tablet and whiteboard]{#root-cap-feat-pen x=-13.2 y=-0.9500000000000002 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-pen}
+[[include: #feat-pen x=-13.2 y=-4.9 width=8.6 skip_return=true preview=true]]
+[[rectangle: #root-hit-feat-pen x=-13.2 y=-4.9 width=8.6 height=4.84 opacity=0 href=#slide=feat-pen]]
+
+[6 · Camera, recording, video]{#root-cap-feat-recording x=-4.4 y=-0.9500000000000002 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-recording}
+[[include: #feat-recording x=-4.4 y=-4.9 width=8.6 skip_return=true preview=true]]
+[[rectangle: #root-hit-feat-recording x=-4.4 y=-4.9 width=8.6 height=4.84 opacity=0 href=#slide=feat-recording]]
+
+[7 · Formulas, diagrams, motion]{#root-cap-feat-math x=4.4 y=-0.9500000000000002 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-math}
+[[include: #feat-math x=4.4 y=-4.9 width=8.6 skip_return=true preview=true]]
+[[rectangle: #root-hit-feat-math x=4.4 y=-4.9 width=8.6 height=4.84 opacity=0 href=#slide=feat-math]]
+
+[The dialect and the player, in six sections]{#root-cap-sections x=13.2 y=-2.15 anchor=bottom font_size=22 color=BLUE_E href=#slide=sections}
+[[include: #sections x=13.2 y=-4.9 width=8.6 preview=true]]
+[[rectangle: #root-hit-sections x=13.2 y=-4.9 width=8.6 height=4.84 opacity=0 href=#slide=sections]]
+:::
+
+::: slide {#sections width=36}
+## The dialect and the player, in six sections {x=-17.35 y=9.2}
+
+Everything a slide can hold and everything the player does, one chapter per topic, each showing the listing that produces it. {x=-17.35 y=8.1 width=25 font_size=26}
+
+[Back to the overview]{#sections-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=tour}
+
+[1 · Slides and content]{#sections-cap-sec-content x=-12 y=5.5 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-content}
 [[include: #sec-content x=-12 y=2.2 width=10 skip_return=true preview=true]]
-[[rectangle: #root-hit-sec-content x=-12 y=2.2 width=10 height=5.625 opacity=0 href=#slide=sec-content]]
+[[rectangle: #sections-hit-sec-content x=-12 y=2.2 width=10 height=5.625 opacity=0 href=#slide=sec-content]]
 
-[2 · Presenting]{#root-cap-sec-presenting x=0 y=5.5 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-presenting}
+[2 · Presenting]{#sections-cap-sec-presenting x=0 y=5.5 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-presenting}
 [[include: #sec-presenting x=0 y=2.2 width=10 skip_return=true preview=true]]
-[[rectangle: #root-hit-sec-presenting x=0 y=2.2 width=10 height=5.625 opacity=0 href=#slide=sec-presenting]]
+[[rectangle: #sections-hit-sec-presenting x=0 y=2.2 width=10 height=5.625 opacity=0 href=#slide=sec-presenting]]
 
-[3 · Diagrams]{#root-cap-sec-diagrams x=12 y=5.5 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-diagrams}
+[3 · Diagrams]{#sections-cap-sec-diagrams x=12 y=5.5 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-diagrams}
 [[include: #sec-diagrams x=12 y=2.2 width=10 skip_return=true preview=true]]
-[[rectangle: #root-hit-sec-diagrams x=12 y=2.2 width=10 height=5.625 opacity=0 href=#slide=sec-diagrams]]
+[[rectangle: #sections-hit-sec-diagrams x=12 y=2.2 width=10 height=5.625 opacity=0 href=#slide=sec-diagrams]]
 
-[4 · Layout and style]{#root-cap-sec-layout x=-12 y=-2.1 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-layout}
+[4 · Layout and style]{#sections-cap-sec-layout x=-12 y=-2.1 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-layout}
 [[include: #sec-layout x=-12 y=-5.4 width=10 skip_return=true preview=true]]
-[[rectangle: #root-hit-sec-layout x=-12 y=-5.4 width=10 height=5.625 opacity=0 href=#slide=sec-layout]]
+[[rectangle: #sections-hit-sec-layout x=-12 y=-5.4 width=10 height=5.625 opacity=0 href=#slide=sec-layout]]
 
-[5 · Motion and interaction]{#root-cap-sec-motion x=0 y=-2.1 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-motion}
+[5 · Motion and interaction]{#sections-cap-sec-motion x=0 y=-2.1 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-motion}
 [[include: #sec-motion x=0 y=-5.4 width=10 skip_return=true preview=true]]
-[[rectangle: #root-hit-sec-motion x=0 y=-5.4 width=10 height=5.625 opacity=0 href=#slide=sec-motion]]
+[[rectangle: #sections-hit-sec-motion x=0 y=-5.4 width=10 height=5.625 opacity=0 href=#slide=sec-motion]]
 
-[6 · Forests, files and code]{#root-cap-sec-structure x=12 y=-2.1 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-structure}
+[6 · Forests, files and code]{#sections-cap-sec-structure x=12 y=-2.1 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-structure}
 [[include: #sec-structure x=12 y=-5.4 width=10 preview=true]]
-[[rectangle: #root-hit-sec-structure x=12 y=-5.4 width=10 height=5.625 opacity=0 href=#slide=sec-structure]]
+[[rectangle: #sections-hit-sec-structure x=12 y=-5.4 width=10 height=5.625 opacity=0 href=#slide=sec-structure]]
+:::
+
+::: slide {#feat-pdf width=20}
+## 1 · A PDF, as it is
+
+[Documentation ↗]{#feat-pdf-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/features.html#a-pdf-as-it-is}
+
+Zoomdeck opens a PDF directly: a paper, a poster, slides typeset elsewhere. Each page is a slide, the pages are visited first to last with a cut between them, the bookmarks of the document name them in the outline, and the text stays sharp at any zoom, since pages are drawn at the density of the screen. {x=-9.35 y=3.9 width=8.6 font_size=20}
+
+```bash {#feat-pdf-cmd x=-9.35 y=-1.7 width=8.6}
+zoomdeck serve paper.pdf
+zoomdeck build paper.pdf -o out
+```
+
+[[rectangle: #feat-pdf-frame x=4.3 y=-0.5 width=10.2 height=5.74 color=GRAY stroke_width=1]]
+
+[[subslide: PaperPage x=4.3 y=-0.5 width=10.2 preview=true]]
+
+The pen, the spotlight, recording and printing work on a PDF as on any deck. On the right, the first page of a PDF typeset with LaTeX, drawn inside this slide; the player, the `zoomdeck` command, the dev page and the desktop app open the whole file. {x=-9.35 y=-4.5 width=18.7 font_size=16 color=GRAY}
+:::
+
+::: slide {#feat-plain width=20}
+## 2 · Plain slides, in a row
+
+[Documentation ↗]{#feat-plain-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/features.html#plain-slides-in-a-row}
+
+```markdown {#feat-plain-source x=-9.35 y=3.9 width=9.1}
+::: slide {#one}
+# One
+:::
+
+::: slide {#two}
+# Two
+:::
+
+::: slide {#three}
+# Three
+:::
+```
+
+[[rectangle: #feat-plain-r1 x=1.6 y=1.2 width=4.6 height=2.6 color=GRAY]]
+[[rectangle: #feat-plain-r2 x=6.6 y=1.2 width=4.6 height=2.6 color=GRAY]]
+[[rectangle: #feat-plain-r3 x=4.1 y=-2.4 width=4.6 height=2.6 color=GRAY]]
+
+[One]{#feat-plain-t1 x=1.6 y=1.2 anchor=center font_size=28}
+
+[Two]{#feat-plain-t2 x=6.6 y=1.2 anchor=center font_size=28}
+
+[Three]{#feat-plain-t3 x=4.1 y=-2.4 anchor=center font_size=28}
+
+[[arrow: #feat-plain-r1 -> #feat-plain-r2, #feat-plain-a1, label="cut", step=1]]
+[[arrow: #feat-plain-r2 -> #feat-plain-r3, #feat-plain-a2, label="cut", step=2]]
+
+A deck of your own is a Markdown file of `::: slide` containers. Slides that include no other slide are simply visited in order, with cuts and no animation, like the pages of a document. {#feat-plain-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+
+Each slide keeps its steps, fragments and animations; a slide may still include children of its own, which zoom as usual. {#feat-plain-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+:::
+
+::: slide {#feat-tree width=20}
+## 3 · Slides as a tree
+
+[Documentation ↗]{#feat-tree-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/features.html#slides-as-a-tree}
+
+```markdown {#feat-tree-source x=-9.35 y=3.9 width=9.1}
+::: slide {#talk width=20}
+# A talk as a tree
+[[include: #first x=-5 y=-1.5 width=8]]
+[[include: #second x=5 y=-1.5 width=8]]
+:::
+
+::: slide {#second}
+## Second child
+[[include: #detail x=3 y=-1.5 width=7]]
+:::
+```
+
+[[include: #feat-first x=4.6 y=1.4 width=7 preview=true]]
+
+[[include: #feat-second x=4.6 y=-3.1 width=7 preview=true]]
+
+An `[[include: #id …]]` places one slide inside another, as a viewport. The camera zooms into each child in turn, goes straight from a child to its next sibling, and zooms back out after the last one. {#feat-tree-key x=-9.35 y=-3.0 width=10 font_size=18}
+
+Here: first child, then its sibling, then down into the sibling's own child, then back out. {#feat-tree-more x=-9.35 y=-5.0 width=10 font_size=15 color=GRAY}
+:::
+
+::: slide {#feat-first}
+## First child
+
+Visited first; the camera leaves it for its sibling. {x=-7.35 width=14.7 font_size=22}
+:::
+
+::: slide {#feat-second}
+## Second child
+
+[[include: #feat-detail x=3 y=-1.5 width=7 preview=true]]
+
+This one has a child of its own. {x=-7.35 y=1.6 width=7 font_size=22}
+:::
+
+::: slide {#feat-detail width=8}
+### A detail of the second child {font_size=26}
+
+The last stop; then the camera zooms back out. {x=-3.35 y=0.2 width=7 font_size=18}
+:::
+
+::: slide {#feat-spotlight width=20}
+## 4 · Spotlight and laser
+
+[Documentation ↗]{#feat-spotlight-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/features.html#spotlight-and-laser}
+
+Hold **Shift** while moving the pointer over this slide: a spotlight follows it. **L** switches between the spotlight and a laser dot, and Shift with the mouse wheel (or a two-finger scroll) changes the size; the settings (⚙, or the comma key) offer the same choices. Both work on any deck, a PDF included, and are recorded with a talk. {x=-9.35 y=3.9 width=18.7 font_size=20}
+
+[Where does this term come from?]{#feat-spot-q x=-8 y=-0.6 font_size=26}
+
+[$\displaystyle \frac{\partial L}{\partial \dot q} - \frac{\partial L}{\partial q} = 0$]{#feat-spot-eq x=1 y=-0.6 font_size=32}
+
+Shift + drag draws a highlight that fades; a plain drag never moves the presentation. {x=-9.35 y=-4.5 width=18.7 font_size=16 color=GRAY}
+:::
+
+::: slide {#feat-pen width=20}
+## 5 · Pen, tablet and whiteboard
+
+[Documentation ↗]{#feat-pen-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/features.html#pen-tablet-and-whiteboard}
+
+**D** turns the pen on: a drag draws on the slide in the chosen color, the keys **1** to **4** (or the dots in the footer) pick it, ⌘Z or Ctrl+Z takes a stroke back, and the strokes stay with the slide. Pressure comes through from a pen or an Apple Pencil. {x=-9.35 y=3.9 width=9 font_size=20}
+
+**W** opens the whiteboard: an infinite canvas of its own, scrolled with the arrows, that keeps what you wrote and comes back when you need it again. {x=0.6 y=3.9 width=8.75 font_size=20}
+
+[Annotate this: $x^2 + y^2 = r^2$]{#feat-pen-note x=-8 y=-1.4 font_size=30}
+
+[[icon: phone #feat-pen-tablet x=5.5 y=-1.6 size=2.2 color=GRAY]]
+
+[a tablet as a drawing pad]{#feat-pen-tablet-cap at=bottom:#feat-pen-tablet.top dy=0.15 font_size=15 color=GRAY}
+
+A tablet or an iPad pairs with the player from the settings (Tablet) and becomes a drawing pad: you write on it, the audience sees the slide, with pressure, palm rejection and erasing with a finger. {x=-9.35 y=-4.5 width=18.7 font_size=16 color=GRAY}
+:::
+
+::: slide {#feat-recording width=20}
+## 6 · Camera, recording and video
+
+[Documentation ↗]{#feat-recording-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/features.html#camera-recording-and-video}
+
+The camera (**C**) shows you next to or over the slides, in a corner or full screen. A recording (**R**) keeps the whole talk on one clock: your voice, the camera and every move on the deck, strokes included; it plays back on the deck itself, where it stays navigable, as the **▶ Talk** button beside Record, and exports as a plain video file. A shared screen (**S**), another application say, is filmed as part of the talk; **P** prints the deck to a PDF. {x=-9.35 y=3.9 width=11.2 font_size=19}
+
+[[icon: user #feat-rec-you x=-7.6 y=-1.6 size=2 color=GRAY]]
+[[icon: desktop #feat-rec-deck x=-3.6 y=-1.6 size=2 color=GRAY]]
+[[icon: document #feat-rec-file x=-5.6 y=-4.2 size=1.6 color=GRAY]]
+[[arrow: #feat-rec-you -> #feat-rec-file, #feat-rec-a, color=GRAY, stroke_width=1]]
+[[arrow: #feat-rec-deck -> #feat-rec-file, #feat-rec-b, color=GRAY, stroke_width=1]]
+
+[voice, camera (C)]{#feat-rec-cap-you at=bottom:#feat-rec-you.top dy=0.15 font_size=15 color=GRAY}
+
+[moves on the deck]{#feat-rec-cap-deck at=bottom:#feat-rec-deck.top dy=0.15 font_size=15 color=GRAY}
+
+[a talk (R), a video]{#feat-rec-cap-file at=left:#feat-rec-file.right dx=0.25 font_size=15 color=GRAY}
+
+Try it here: press R, speak, draw, turn the camera on with C, stop, then press ▶ Talk; each asks the browser for permission the first time. {x=2.3 y=-0.4 width=7.2 font_size=17 color=GRAY}
+:::
+
+::: slide {#feat-math width=20}
+## 7 · Formulas, diagrams and motion
+
+[Documentation ↗]{#feat-math-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/features.html#formulas-diagrams-and-animation}
+
+[$\displaystyle \int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}$]{#feat-gauss x=-8.6 y=2.6 font_size=36}
+
+[[box: #feat-gauss, #feat-gbox, buff=0.3, corner_radius=0.15, color=TEAL, step=1]]
+
+[Gaussian integral]{#feat-glabel x=-8.6 y=-0.2 font_size=22 color=TEAL enter=write step=1}
+
+[[arrow: #feat-glabel -> #feat-gauss, #feat-why, step=2]]
+
+[[rectangle: #feat-hr x=2.4 y=2.4 width=3.2 height=1.7 color=BLUE_E fill_opacity=0.5 sketch=true step=3]]
+
+[[circle: #feat-hc right-of:#feat-hr buff=1.4 radius=0.85 color=GREEN_E fill_opacity=0.6 fill_style=cross-hatch sketch=true step=3]]
+
+[[arrow: #feat-hr -> #feat-hc, #feat-ha, sketch=true, step=4]]
+
+[[blob: #feat-hr #feat-hc, #feat-cloud, buff=0.45, color=ORANGE, step=5]]
+
+[A point moves]{#feat-mover x=-8.6 y=-1.6 font_size=26}
+
+[[animate: #feat-mover, dx=6.5, step=6]]
+
+[[animate: #feat-mover, dy=-1.2, scale=1.3, color=RED, step=7]]
+
+[[effect: indicate #feat-mover, step=8]]
+
+[Written by hand]{#feat-written x=3.4 y=-2.6 font_size=26 enter=write step=9}
+
+Formulas are LaTeX, rendered by MathJax and zoomable like everything else. Diagrams are directives: arrows, boxes and blobs around elements, icons, and any of them hand-drawn with `sketch=true`. Animations in the style of Manim come with the same directives: write, move, morph, highlight, one step per click. {#feat-math-key x=-9.35 y=-4.3 width=18.7 font_size=16 color=GRAY}
 :::
 
 ::: slide {#sec-content width=36}
