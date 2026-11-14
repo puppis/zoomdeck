@@ -556,7 +556,8 @@ hand-drawn attributes, `tremble`, and:
 | `color`, `stroke_width`, `fill_color`, `fill_opacity` | | the text color, 2, the stroke color, 0 | |
 
 An artwork module reads any further attribute it likes, so no attribute name is rejected on
-one. The icon's style role is `icon-<name>`.
+one; a module that returns a list of mobjects gives the artwork parts, which a blob flows
+around separately. The icon's style role is `icon-<name>`.
 
 ### Directives of the deck's own
 

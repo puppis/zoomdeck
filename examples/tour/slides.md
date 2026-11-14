@@ -273,13 +273,13 @@ Try it here: press R, speak, draw, turn the camera on with C, stop, then press â
 
 [[arrow: #feat-glabel -> #feat-gauss, #feat-why]]
 
-[[artwork: rocket #feat-art x=1.9 y=2.4 size=1.8 color=BLUE_E]]
+[[artwork: constellation #feat-art x=1.9 y=2.4 size=2.4 color=GOLD_E]]
 
-[[box: #feat-art, #feat-abox, buff=0.35, corner_radius=0.2, color=TEAL, step=1, hide=2]]
+[[box: #feat-art, #feat-abox, buff=0.3, corner_radius=0.2, color=TEAL, step=1, hide=2]]
 
-[[blob: #feat-art, #feat-ablob, buff=0.45, color=ORANGE, step=2]]
+[[blob: #feat-art, #feat-ablob, buff=0.35, color=ORANGE, step=2]]
 
-[an artwork of the deck's own, boxed, then blobbed]{#feat-art-cap at=top:#feat-art.bottom dy=-0.9 anchor=center font_size=16 color=GRAY}
+[an artwork of the deck's own, boxed, then blobbed]{#feat-art-cap at=top:#feat-art.bottom dy=-0.7 anchor=center font_size=16 color=GRAY}
 
 [[rectangle: #feat-hr x=5.4 y=2.4 width=2.4 height=1.4 color=BLUE_E fill_opacity=0.5 sketch=true]]
 

@@ -1100,7 +1100,8 @@ hand-drawn attributes, <code>tremble</code>, and:</p>
 </tbody>
 </table>
 <p>An artwork module reads any further attribute it likes, so no attribute name is rejected on
-one. The icon's style role is <code>icon-&lt;name&gt;</code>.</p>
+one; a module that returns a list of mobjects gives the artwork parts, which a blob flows
+around separately. The icon's style role is <code>icon-&lt;name&gt;</code>.</p>
 <h3 id="directives-of-the-deck-s-own">Directives of the deck's own<a class="anchor" href="#directives-of-the-deck-s-own" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">[[gauge:</span> <span class="tk-attribute">#load</span> <span class="tk-attribute">x=</span><span class="tk-number">4</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">level=</span><span class="tk-number">0.7</span> <span class="tk-attribute">label=</span><span class="tk-string">&quot;load&quot;</span> <span class="tk-attribute">step=</span><span class="tk-number">2</span><span class="tk-directive">]]</span></code></pre>
 <p>Any <code>[[name: …]]</code> the dialect does not know is drawn by <code>directives/name.ts</code> of the deck. It
 takes the common attributes, which position and animate it, and any attribute of its own; see

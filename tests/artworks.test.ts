@@ -28,6 +28,13 @@ describe('artworks of a deck', () => {
     expect(makeIconFromParts(parts, { size: 3 }).getWidth()).toBeCloseTo(3);
   });
 
+  it('keeps the parts of a module that returns several mobjects, for blobs to flow around', async () => {
+    const parts = [new Circle({ radius: 0.2 }), new Circle({ radius: 0.2 }).shift([1, 0, 0])];
+    const artwork = (await artworkFromModule({ default: () => parts }, { attributes: {} } as never)) as VGroup & { markupParts?: unknown[] };
+    expect(artwork).toBeInstanceOf(VGroup);
+    expect(artwork.markupParts).toEqual(parts);
+  });
+
   it('names its folders relative to the configuration, or keeps them relative to the document', () => {
     expect(resolveFolders(['shared', 'art/'], 'https://x.org/talk/deck.json')).toEqual(['https://x.org/talk/shared/', 'https://x.org/talk/art/']);
     expect(resolveFolders(['../common'], 'https://x.org/talk/deck.json')).toEqual(['https://x.org/common/']);

@@ -307,6 +307,11 @@ export async function artworkFromModule(module: ArtworkModule, options: ArtworkO
   if (!factory) throw new Error('An artwork module exports a drawing function (default or `artwork`) or a list of `parts`');
   const result = await factory(options);
   if (isParts(result)) return makeIconFromParts(result, options);
-  if (Array.isArray(result)) return new VGroup(...(result as Mobject[]));
+  if (Array.isArray(result)) {
+    // Several mobjects: one artwork whose parts a blob flows around separately.
+    const group = new VGroup(...(result as Mobject[])) as VGroup & { markupParts?: Mobject[] };
+    group.markupParts = result as Mobject[];
+    return group;
+  }
   return result as Mobject;
 }

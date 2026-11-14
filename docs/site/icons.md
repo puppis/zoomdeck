@@ -88,7 +88,8 @@ built in) places one like an icon, with `size`, `label`, `label_side` and a posi
   `zoomdeck` as the slide classes do. Attributes the module reads (`lit=red` above) are free.
 
 Compound figures belong here too: a module returns a `VGroup` of whatever shapes, labels and
-icons it likes, built from the directive's attributes, so a diagram vocabulary of your own
+icons it likes, or a list of them, in which case a blob around the artwork flows around each
+part rather than around their common box, built from the directive's attributes, so a diagram vocabulary of your own
 (a traffic light, a gate, a server rack) is one file per symbol. Exports bundle the modules
 and copy or embed the SVG files; the tour's `examples/tour/artworks/` holds one of each. The
 other folders a deck extends the player with, fonts, effects, camera transitions, chart types,
