@@ -9,8 +9,8 @@ import type { Player } from './player';
 import type { Stage } from './stage';
 import playerCss from './player.css?inline';
 import {
-  ACTIONS, CORNERS, DEFAULT_POINTER_BINDINGS, DEFAULT_RECORDING, DEFAULT_TIP_SIZE, MODIFIER_COMBOS, PIP_SIZES, POINTER_ACTIONS, TIP_SIZES,
-  type ActionName, type PlayerSettings, type PointerAction, type PointerMode,
+  ACTIONS, ACTION_GROUPS, CORNERS, DEFAULT_POINTER_BINDINGS, DEFAULT_RECORDING, DEFAULT_TIP_SIZE, MODIFIER_COMBOS, PIP_SIZES, POINTER_ACTIONS, TIP_SIZES,
+  type ActionInfo, type ActionName, type PlayerSettings, type PointerAction, type PointerMode,
   actionFor, defaultSettings, describeCombo, describeModifiers, keyCombo, loadSettings, modifierCombo, pointerActionFor, saveSettings,
 } from './settings';
 import {
@@ -360,7 +360,7 @@ export class PlayerUI {
       `${keys('fullscreen')}: fullscreen`, `${keys('exit')}: normal view`, `${keys('outline')}: toggle outline`,
       ...gestures,
       `${keys('undo')}: undo stroke`, `${keys('redo')}: redo stroke`, `${keys('clear')}: clear strokes`,
-      `${keys('whiteboard')}: whiteboard (arrows, scrolling or two fingers move it)`,
+      `${keys('whiteboard')}: whiteboard (${(['boardLeft', 'boardRight', 'boardUp', 'boardDown'] as const).map(keys).join(' ')}, scrolling or two fingers move it)`,
       `${keys('camera')}: camera in a corner, then full frame, then off`, `${keys('screen')}: film the screen in place of the camera (asked which the first time), or stop`, `${keys('record')}: record the talk, or continue a saved one`,
       ...(this._editSource ? [`${keys('edit')}: open this stop's source in the editor`] : []),
       `${keys('settings')}: settings`,
@@ -511,23 +511,15 @@ export class PlayerUI {
     if (combo === 'Space' && /^(BUTTON|SUMMARY)$/.test(target.tagName)) return;
     // While a recording plays, the keys serve the playback: the deck follows the recording, not the viewer.
     if (this._playback) {
-      const playback = this._playback;
-      if (combo === 'Space' || combo === 'k') playback.toggle();
-      else if (combo === 'Escape') this.closeRecording();
-      else if (combo === 'ArrowLeft' || combo === 'ArrowRight') playback.seek(playback.time + (combo === 'ArrowLeft' ? -5000 : 5000));
-      else if (combo === 'Home') playback.seek(0);
-      else if (actionFor(this._settings, combo) === 'fullscreen') void this.fullscreen();
-      else return;
+      const deckAction = actionFor(this._settings, combo);
+      const action = actionFor(this._settings, combo, ['playback']) ?? (deckAction === 'fullscreen' ? deckAction : null);
+      if (!action) return;
       event.preventDefault();
+      this._runAction(action);
       return;
     }
-    const arrow = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] }[combo];
-    if (this._boardOn && arrow) {
-      event.preventDefault();
-      this._panBoardBy(arrow[0], arrow[1]);
-      return;
-    }
-    const action = actionFor(this._settings, combo);
+    // The whiteboard's keys (the arrows scroll it) come before the deck's while it is shown.
+    const action = actionFor(this._settings, combo, this._boardOn ? ['board', 'deck'] : ['deck']);
     if (!action) return;
     event.preventDefault();
     this._runAction(action);
@@ -561,6 +553,15 @@ export class PlayerUI {
       case 'screen': void this.toggleScreen(); break;
       case 'record': void this.toggleRecording(); break;
       case 'print': this.openPrint(); break;
+      case 'boardLeft': this._panBoardBy(-1, 0); break;
+      case 'boardRight': this._panBoardBy(1, 0); break;
+      case 'boardUp': this._panBoardBy(0, 1); break;
+      case 'boardDown': this._panBoardBy(0, -1); break;
+      case 'playPause': this._playback?.toggle(); break;
+      case 'seekBack': if (this._playback) this._playback.seek(this._playback.time - 5000); break;
+      case 'seekForward': if (this._playback) this._playback.seek(this._playback.time + 5000); break;
+      case 'playStart': this._playback?.seek(0); break;
+      case 'closePlayback': if (this._playback) this.closeRecording(); break;
     }
   }
 
@@ -1811,7 +1812,7 @@ export class PlayerUI {
       ),
       el('section', {},
         el('h3', { text: 'Keyboard' }),
-        el('p', { class: 'note', text: 'Click a key to remove it, or “Add key” and press the new combination (Esc cancels). Settings are kept in this browser.' }),
+        el('p', { class: 'note', text: 'Click a key to remove it, or “Add key” and press the new combination (Esc cancels); a key already used in the same group moves to the new action. Settings are kept in this browser.' }),
         this._bindingsTable,
         resetKeys,
       ),
@@ -2159,8 +2160,10 @@ export class PlayerUI {
   }
 
   private _assignBinding(action: ActionName, combo: string): void {
+    // A key serves one action in its group; the same key may do something else while the whiteboard is shown or a talk plays.
+    const group = ACTIONS.find((info) => info.name === action)?.group;
     for (const other of ACTIONS) {
-      this._settings.bindings[other.name] = this._settings.bindings[other.name].filter((item) => item !== combo);
+      if (other.group === group) this._settings.bindings[other.name] = this._settings.bindings[other.name].filter((item) => item !== combo);
     }
     this._settings.bindings[action].push(combo);
     saveSettings(this._settings);
@@ -2168,29 +2171,34 @@ export class PlayerUI {
   }
 
   private _renderBindings(): void {
-    const rows = ACTIONS.map((action) => {
-      const chips = this._settings.bindings[action.name].map((combo) => {
-        const chip = el('button', { class: 'chip', title: `Remove ${describeCombo(combo)}`, text: describeCombo(combo) });
-        chip.addEventListener('click', () => {
-          this._settings.bindings[action.name] = this._settings.bindings[action.name].filter((item) => item !== combo);
-          saveSettings(this._settings);
-          this._renderShortcuts();
-          this._renderBindings();
-        });
-        return chip;
-      });
-      const add = el('button', { class: 'add', text: this._capturing === action.name ? 'Press keys…' : 'Add key' });
-      add.addEventListener('click', () => {
-        this._capturing = this._capturing === action.name ? null : action.name;
+    const rows = ACTION_GROUPS.flatMap(([group, heading]) => [
+      el('div', { class: 'binding-group', text: heading }),
+      ...ACTIONS.filter((action) => action.group === group).map((action) => this._bindingRow(action)),
+    ]);
+    this._bindingsTable.replaceChildren(...rows);
+  }
+
+  private _bindingRow(action: ActionInfo): HTMLElement {
+    const chips = this._settings.bindings[action.name].map((combo) => {
+      const chip = el('button', { class: 'chip', title: `Remove ${describeCombo(combo)}`, text: describeCombo(combo) });
+      chip.addEventListener('click', () => {
+        this._settings.bindings[action.name] = this._settings.bindings[action.name].filter((item) => item !== combo);
+        saveSettings(this._settings);
+        this._renderShortcuts();
         this._renderBindings();
       });
-      return el('div', { class: `binding${this._capturing === action.name ? ' capturing' : ''}` },
-        el('span', { class: 'action', text: action.label }),
-        el('span', { class: 'keys' }, ...chips),
-        add,
-      );
+      return chip;
     });
-    this._bindingsTable.replaceChildren(...rows);
+    const add = el('button', { class: 'add', text: this._capturing === action.name ? 'Press keys…' : 'Add key' });
+    add.addEventListener('click', () => {
+      this._capturing = this._capturing === action.name ? null : action.name;
+      this._renderBindings();
+    });
+    return el('div', { class: `binding${this._capturing === action.name ? ' capturing' : ''}` },
+      el('span', { class: 'action', text: action.label }),
+      el('span', { class: 'keys' }, ...chips),
+      add,
+    );
   }
 
   // ---------------------------------------------------------------------

@@ -19,7 +19,7 @@ description: Keyboard and pointer controls, the pen and its pressure styles, the
 | D | drawing on or off: while on, a plain drag draws and the pointer shows the pen in its color |
 | 1 … 4 | pen color (Default, Red, Blue, Green): drawing on in that color, or off again when it is the color in use |
 | L | switch the pointer tool between spotlight and laser |
-| W | show or hide the whiteboard; while it is shown the arrows scroll it |
+| W | show or hide the whiteboard; while it is shown the arrows scroll it (their own entries in the settings) |
 | C | camera: in a corner, then full frame, then off |
 | S | film the screen for the time spent in another application, or stop; the browser asks which screen the first time |
 | R | record the talk (a new one, or continuing a saved one), or stop recording |
@@ -52,8 +52,11 @@ The gear button (or the `,` key) opens the settings dialog, in six parts:
   is filmed while the page is hidden; see
   [Recording a talk](#recording-a-talk).
 - **Tablet**: pairing a companion tablet; see [A tablet as a drawing pad](#a-tablet-as-a-drawing-pad).
-- **Keyboard**: every action with its keys. Click a key to remove it, or choose "Add key" and press
-  the new combination, which may include modifiers; a combination already used elsewhere moves to
+- **Keyboard**: every action with its keys, in three groups: the keys while presenting, the keys
+  while the whiteboard is shown (the arrows that scroll it, which come before the first group
+  then), and the keys while a recorded talk plays (play or pause, seeking, leaving; only those
+  and fullscreen work then). Click a key to remove it, or choose "Add key" and press the new
+  combination, which may include modifiers; a combination already used in the same group moves to
   the new action.
 - **Advanced**: the playback speed of the animations (0.5× to 2×), the rendering options
   (antialiasing and the render resolution, applied when the page loads again) and the
@@ -273,9 +276,10 @@ Delete button where the server can remove files. The same list opens from **Talk
 playback bar, so one recording can be continued or deleted as well. During playback the deck follows the recording:
 stops play as they did, strokes appear as they were drawn, the whiteboard and the camera switch
 when they did, and the laser or spotlight moves where the presenter pointed. The footer gives way
-to a playback bar with play and pause (also Space), a scrubber (also `←` and `→`, five seconds
-at a time), the time, **Export video** and a way out (also Esc); seeking anywhere rebuilds the
-state at that moment. The recording's own sound plays, and its camera picture sits in the corner it was
+to a playback bar with play and pause (also Space or K), a scrubber (also `←` and `→`, five seconds
+at a time, and Home for the start), the time, **Export video** and a way out (also Esc); these
+keys have their own group in the Keyboard settings. Seeking anywhere rebuilds the state at that
+moment. The recording's own sound plays, and its camera picture sits in the corner it was
 recorded with, or full frame where the presenter switched to it. Your keys, taps and clicks on the
 deck, the pen, the whiteboard, the spotlight, links and the outline are off until you leave the
 recording, so that nothing of yours gets mixed with what the timeline replays.

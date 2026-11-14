@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  DEFAULT_POINTER_BINDINGS, DEFAULT_RENDERING, defaultSettings, describeModifiers, keyCombo, loadSettings, modifierCombo, pointerActionFor, renderPixelRatio, sanitizeRendering, saveSettings,
+  ACTIONS, DEFAULT_POINTER_BINDINGS, DEFAULT_RENDERING, actionFor, defaultSettings, describeModifiers, keyCombo, loadSettings, modifierCombo, pointerActionFor, renderPixelRatio, sanitizeRendering, saveSettings,
 } from '../src/player/settings';
 
 describe('player settings', () => {
@@ -17,6 +17,26 @@ describe('player settings', () => {
     expect(pointerActionFor(settings, 'Control')).toBeNull();
     expect(settings.pointerMode).toBe('spotlight');
     expect(settings.bindings.pointer).toEqual(['l']);
+  });
+
+  it('resolves a key within the groups asked for, the first group first, so that the arrows serve the deck, the whiteboard and a playback', () => {
+    const settings = defaultSettings();
+    expect(actionFor(settings, 'ArrowLeft')).toBe('previous');
+    expect(actionFor(settings, 'ArrowLeft', ['board', 'deck'])).toBe('boardLeft');
+    expect(actionFor(settings, 'ArrowLeft', ['playback'])).toBe('seekBack');
+    expect(actionFor(settings, 'Space', ['playback'])).toBe('playPause');
+    expect(actionFor(settings, 'f', ['playback'])).toBeNull();
+    expect(actionFor(settings, 'd', ['board', 'deck'])).toBe('draw');
+    // Within a group a key serves one action.
+    for (const group of ['deck', 'board', 'playback'] as const) {
+      const seen = new Map<string, string>();
+      for (const action of ACTIONS.filter((info) => info.group === group)) {
+        for (const combo of settings.bindings[action.name]) {
+          expect(seen.get(combo), `${combo} in ${group}`).toBeUndefined();
+          seen.set(combo, action.name);
+        }
+      }
+    }
   });
 
   it('normalizes held modifiers in a fixed order', () => {

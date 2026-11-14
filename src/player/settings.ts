@@ -48,38 +48,63 @@ export function sanitizeRecording(value: unknown): RecordingSettings {
 export type ActionName =
   | 'next' | 'previous' | 'home' | 'replay' | 'fullscreen' | 'outline' | 'undo' | 'redo' | 'clear' | 'settings' | 'exit' | 'pointer' | 'whiteboard'
   | 'edit' | 'camera' | 'screen' | 'record' | 'print' | 'draw'
-  | 'color1' | 'color2' | 'color3' | 'color4';
+  | 'color1' | 'color2' | 'color3' | 'color4'
+  | 'boardLeft' | 'boardRight' | 'boardUp' | 'boardDown'
+  | 'playPause' | 'seekBack' | 'seekForward' | 'playStart' | 'closePlayback';
+
+/**
+ * When an action's keys are listened to: `deck` while presenting; `board` while the whiteboard
+ * is shown, before the deck's; `playback` while a recorded talk plays, when the deck's keys are
+ * off (fullscreen apart). A key can serve one action in each.
+ */
+export type ActionGroup = 'deck' | 'board' | 'playback';
+
+export const ACTION_GROUPS: ReadonlyArray<readonly [ActionGroup, string]> = [
+  ['deck', 'While presenting'],
+  ['board', 'While the whiteboard is shown, before the keys above'],
+  ['playback', 'While a recorded talk plays, when only these and fullscreen work'],
+];
 
 export interface ActionInfo {
   name: ActionName;
   label: string;
+  group: ActionGroup;
 }
 
 /** Actions in the order the settings dialog lists them. */
 export const ACTIONS: ActionInfo[] = [
-  { name: 'next', label: 'Next stop' },
-  { name: 'previous', label: 'Previous stop' },
-  { name: 'home', label: 'First stop' },
-  { name: 'replay', label: 'Replay this stop (play it again)' },
-  { name: 'undo', label: 'Undo the last pen or highlighter stroke' },
-  { name: 'redo', label: 'Redo a stroke' },
-  { name: 'clear', label: 'Clear all strokes on this slide' },
-  { name: 'draw', label: 'Drawing on or off: while on, a plain drag draws, the pointer is a pencil in the pen\'s color and links are inert' },
-  { name: 'color1', label: 'Pen color 1, Default (the deck\'s text color): drawing on in it, or off when it is the color in use' },
-  { name: 'color2', label: 'Pen color 2, Red: drawing on in it, or off when it is the color in use' },
-  { name: 'color3', label: 'Pen color 3, Blue: drawing on in it, or off when it is the color in use' },
-  { name: 'color4', label: 'Pen color 4, Green: drawing on in it, or off when it is the color in use' },
-  { name: 'pointer', label: 'Switch between spotlight and laser' },
-  { name: 'whiteboard', label: 'Show or hide the whiteboard' },
-  { name: 'camera', label: 'Camera: in a corner, then full frame, then off' },
-  { name: 'screen', label: 'Film the screen for the time spent in another application, or stop; the browser asks which screen the first time' },
-  { name: 'record', label: 'Record the talk (a new one, or continuing a saved one), or stop recording' },
-  { name: 'edit', label: 'Open the source of this stop in the editor (preview server)' },
-  { name: 'print', label: 'Print the deck to a PDF' },
-  { name: 'fullscreen', label: 'Toggle fullscreen' },
-  { name: 'exit', label: 'Leave fullscreen' },
-  { name: 'outline', label: 'Toggle the slide outline' },
-  { name: 'settings', label: 'Open settings' },
+  { name: 'next', label: 'Next stop', group: 'deck' },
+  { name: 'previous', label: 'Previous stop', group: 'deck' },
+  { name: 'home', label: 'First stop', group: 'deck' },
+  { name: 'replay', label: 'Replay this stop (play it again)', group: 'deck' },
+  { name: 'undo', label: 'Undo the last pen or highlighter stroke', group: 'deck' },
+  { name: 'redo', label: 'Redo a stroke', group: 'deck' },
+  { name: 'clear', label: 'Clear all strokes on this slide', group: 'deck' },
+  { name: 'draw', label: 'Drawing on or off: while on, a plain drag draws, the pointer is a pencil in the pen\'s color and links are inert', group: 'deck' },
+  { name: 'color1', label: 'Pen color 1, Default (the deck\'s text color): drawing on in it, or off when it is the color in use', group: 'deck' },
+  { name: 'color2', label: 'Pen color 2, Red: drawing on in it, or off when it is the color in use', group: 'deck' },
+  { name: 'color3', label: 'Pen color 3, Blue: drawing on in it, or off when it is the color in use', group: 'deck' },
+  { name: 'color4', label: 'Pen color 4, Green: drawing on in it, or off when it is the color in use', group: 'deck' },
+  { name: 'pointer', label: 'Switch between spotlight and laser', group: 'deck' },
+  { name: 'whiteboard', label: 'Show or hide the whiteboard', group: 'deck' },
+  { name: 'camera', label: 'Camera: in a corner, then full frame, then off', group: 'deck' },
+  { name: 'screen', label: 'Film the screen for the time spent in another application, or stop; the browser asks which screen the first time', group: 'deck' },
+  { name: 'record', label: 'Record the talk (a new one, or continuing a saved one), or stop recording', group: 'deck' },
+  { name: 'edit', label: 'Open the source of this stop in the editor (preview server)', group: 'deck' },
+  { name: 'print', label: 'Print the deck to a PDF', group: 'deck' },
+  { name: 'fullscreen', label: 'Toggle fullscreen', group: 'deck' },
+  { name: 'exit', label: 'Leave fullscreen', group: 'deck' },
+  { name: 'outline', label: 'Toggle the slide outline', group: 'deck' },
+  { name: 'settings', label: 'Open settings', group: 'deck' },
+  { name: 'boardLeft', label: 'Scroll the whiteboard left', group: 'board' },
+  { name: 'boardRight', label: 'Scroll the whiteboard right', group: 'board' },
+  { name: 'boardUp', label: 'Scroll the whiteboard up', group: 'board' },
+  { name: 'boardDown', label: 'Scroll the whiteboard down', group: 'board' },
+  { name: 'playPause', label: 'Play or pause', group: 'playback' },
+  { name: 'seekBack', label: 'Back five seconds', group: 'playback' },
+  { name: 'seekForward', label: 'Forward five seconds', group: 'playback' },
+  { name: 'playStart', label: 'Back to the start', group: 'playback' },
+  { name: 'closePlayback', label: 'Leave the playback', group: 'playback' },
 ];
 
 export const DEFAULT_BINDINGS: Record<ActionName, string[]> = {
@@ -95,6 +120,15 @@ export const DEFAULT_BINDINGS: Record<ActionName, string[]> = {
   color2: ['2'],
   color3: ['3'],
   color4: ['4'],
+  boardLeft: ['ArrowLeft'],
+  boardRight: ['ArrowRight'],
+  boardUp: ['ArrowUp'],
+  boardDown: ['ArrowDown'],
+  playPause: ['Space', 'k'],
+  seekBack: ['ArrowLeft'],
+  seekForward: ['ArrowRight'],
+  playStart: ['Home'],
+  closePlayback: ['Escape'],
   pointer: ['l'],
   whiteboard: ['w'],
   camera: ['c'],
@@ -296,8 +330,10 @@ export function saveSettings(settings: PlayerSettings): void {
   }
 }
 
-/** The action bound to a combo, if any. */
-export function actionFor(settings: PlayerSettings, combo: string): ActionName | null {
-  for (const action of ACTIONS) if (settings.bindings[action.name].includes(combo)) return action.name;
+/** The action bound to a combo among the given groups, the first group taking precedence, if any. */
+export function actionFor(settings: PlayerSettings, combo: string, groups: readonly ActionGroup[] = ['deck']): ActionName | null {
+  for (const group of groups) {
+    for (const action of ACTIONS) if (action.group === group && settings.bindings[action.name].includes(combo)) return action.name;
+  }
   return null;
 }
