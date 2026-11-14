@@ -16,7 +16,7 @@ import {
 import {
   DEFAULT_PEN_STYLE, InkSurface, PEN_PRESETS, PEN_PRESET_LABELS, newStrokeId, type InkSample, type InkStroke, type InkTool, type PenPreset,
 } from './ink';
-import { PadLink, fetchPairingInfo, padLinkAvailable, padUrl, type InkOp, type InkSurfaceName, type PadMessage } from './pad';
+import { PadLink, fetchPairingInfo, padCode, padLinkAvailable, padUrl, type InkOp, type InkSurfaceName, type PadDevice, type PadMessage } from './pad';
 import { PEN_COLORS, Swatches } from './swatches';
 import { Recorder, initialEvents, type CapturedMedia } from './recorder';
 import { Playback } from './playback';
@@ -24,6 +24,15 @@ import { exportMimeType, exportVideo, type ExportSource } from './export';
 import { PRINT_WIDTHS, printDeck, printPages, type PrintPages } from './print';
 import { deleteRecording, describeMedia, download, listRecordings, loadTimeline, mediaFileName, recordingStoreAvailable, recordingUrl, saveFile, saveMedia, saveTimeline, type RecordingEntry } from './store';
 import { appendPart, formatTime, recordingName, stopRef, structureHash, type Corner, type PointerKind, type Timeline, type TimelineEvent, type UntimedEvent } from './timeline';
+
+/** A tablet page known to the presenter. */
+interface PadEntry {
+  device: PadDevice | null;
+  /** Admitted by trust or by the pairing code: its strokes count and it gets the pictures. */
+  admitted: boolean;
+  /** Dismissed by the presenter: no prompt for it again in this session. */
+  ignored: boolean;
+}
 
 /** How far from a stroke's path, in screen pixels, a fingertip still erases it. */
 const ERASE_REACH_PX = 12;
@@ -168,7 +177,10 @@ export class PlayerUI {
   private _editSource: ((at?: { x: number; y: number }) => void) | null = null;
   private _stateMessage = 'Loading…';
   private _noticeTimer: number | null = null;
-  private _padsSeen = new Set<string>();
+  /** The tablets that said hello, by the id of their page: admitted (by trust or the pairing code), or waiting to be allowed. */
+  private readonly _pads = new Map<string, PadEntry>();
+  private _padRequest!: HTMLElement;
+  private _padList!: HTMLElement;
   private _frameTimer: number | null = null;
   private readonly _useLocation: boolean;
   private readonly _settings: PlayerSettings;
@@ -261,7 +273,8 @@ export class PlayerUI {
     this._exportButton.addEventListener('click', () => void this.exportRecording());
     closePlayback.addEventListener('click', () => this.closeRecording());
     this._liveDot = el('span', { class: 'live-dot', role: 'status', 'aria-live': 'off' });
-    this.stageHost.append(this._boardLayer, this._highlights, this._camera, this._spotlight, this._remoteCursor, this._error, this._loading, this._liveDot);
+    this._padRequest = el('div', { class: 'pad-request', role: 'dialog', 'aria-label': 'A tablet asks to draw here', hidden: '' });
+    this.stageHost.append(this._boardLayer, this._highlights, this._camera, this._spotlight, this._remoteCursor, this._error, this._loading, this._liveDot, this._padRequest);
 
     this._previous = el('button', { class: 'previous', 'aria-label': 'Previous stop', title: 'Previous stop (←)', text: '←' });
     this._next = el('button', { class: 'next', 'aria-label': 'Next stop', title: 'Next stop (→)', text: '→' });
@@ -1777,6 +1790,7 @@ export class PlayerUI {
 
     // Tablet: pairing through the preview server.
     this._pairingStatus = el('p', { class: 'note' });
+    this._padList = el('div', { class: 'bindings pads', hidden: '' });
     this._pairingPanel = el('div', { class: 'pairing' });
     const pairButton = el('button', { text: 'Show the pairing code' });
     pairButton.addEventListener('click', () => void this._showPairing());
@@ -1805,8 +1819,9 @@ export class PlayerUI {
       ),
       el('section', { class: 'tablet' },
         el('h3', { text: 'Tablet' }),
-        el('p', { class: 'note', text: 'A tablet on the same network can show this deck and draw on it: open the code or address below on the tablet. It follows the presentation and cannot move it; strokes drawn on either device appear on both. Pairing needs the preview server started with --host (zoomdeck serve --host, or npm run dev -- --host).' }),
+        el('p', { class: 'note', text: 'A tablet on the same network can show this deck and draw on it: open the code or address below on the tablet. It follows the presentation and cannot move it; strokes drawn on either device appear on both. The code admits a tablet for this session; a tablet you trust (from the prompt on the deck, or here) comes back on its own, without the code. Pairing needs the preview server started with --host (zoomdeck serve --host, or npm run dev -- --host).' }),
         this._pairingStatus,
+        this._padList,
         pairButton,
         this._pairingPanel,
       ),
@@ -2091,11 +2106,13 @@ export class PlayerUI {
     this._penPreset.value = pen.preset;
     for (const [key, range] of this._penRanges) range.value = String(pen[key]);
     for (const [key, toggle] of this._penToggles) toggle.checked = pen[key];
+    const connected = this._admittedPads();
     this._pairingStatus.textContent = !padLinkAvailable()
       ? 'Pairing is not available here: this deck is not served by the preview or development server.'
-      : this._padsSeen.size
-        ? `${this._padsSeen.size} tablet${this._padsSeen.size > 1 ? 's' : ''} connected.`
+      : connected
+        ? `${connected} tablet${connected > 1 ? 's' : ''} connected.`
         : 'No tablet connected yet.';
+    this._renderPadList();
   }
 
   private _penChanged(): void {
@@ -2121,9 +2138,17 @@ export class PlayerUI {
       this._pairingPanel.append(el('p', { class: 'note', text: 'The server listens on this computer only. Restart it with --host (zoomdeck serve --host, or npm run dev -- --host) so the tablet can reach it, then come back here.' }));
       return;
     }
-    // One code per address: a tablet on a cable (USB sharing) reaches the computer on another
-    // link than the Wi-Fi, and only the tablet knows which one it can see.
+    // One code per name or address: the computer's name on the network outlives a change of
+    // address; a tablet on a cable (USB sharing) reaches the computer on another link than the
+    // Wi-Fi, and only the tablet knows which one it can see.
     const room = this._pad?.room ?? '';
+    const code = padCode();
+    const names = info.names ?? [];
+    const targets = [
+      ...names.map((host) => ({ host, caption: `By name: ${host} finds this computer on any network the two share, whatever its address.` })),
+      ...info.addresses.map((host) => ({ host, caption: `By address: ${host}.` })),
+    ].slice(0, 5);
+    this._pairingPanel.append(el('p', { class: 'note', text: 'The code admits the tablet for this session. To let it come back on its own, choose "Always allow" when it asks, or Trust it in the list above: it then opens the pad page from a bookmark or its home screen, without the code.' }));
     if (info.addresses.length > 1) {
       this._pairingPanel.append(el('p', { class: 'note', text: 'This computer has several network addresses; scan the one the tablet shares (the Wi-Fi, or the USB connection when sharing over the cable).' }));
     }
@@ -2133,10 +2158,10 @@ export class PlayerUI {
     } catch {
       QRCode = null;
     }
-    for (const address of info.addresses.slice(0, 4)) {
-      const url = padUrl(address, info.port, room);
-      const canvas = el('canvas', { class: 'qr', 'aria-label': `Pairing code for ${address}` });
-      this._pairingPanel.append(el('div', { class: 'code' }, canvas, el('p', { class: 'note url', text: url })));
+    for (const { host, caption } of targets) {
+      const url = padUrl(host, info.port, room, code);
+      const canvas = el('canvas', { class: 'qr', 'aria-label': `Pairing code for ${host}` });
+      this._pairingPanel.append(el('div', { class: 'code' }, canvas, el('div', {}, el('p', { class: 'note', text: caption }), el('p', { class: 'note url', text: url }))));
       try {
         if (QRCode) await QRCode.toCanvas(canvas, url, { width: 200, margin: 1 });
         else canvas.remove();
@@ -2738,29 +2763,161 @@ export class PlayerUI {
   private _onPadMessage(message: PadMessage, from: string): void {
     switch (message.type) {
       case 'hello':
-        if (message.role !== 'pad') break;
-        this._padsSeen.add(from);
-        this.notice('Tablet connected');
-        this._syncSettingsForm();
-        this._sendState();
-        this._pad?.send({ type: 'ink', surface: 'slide', op: 'replace', strokes: this._slideInk.strokes });
-        this._pad?.send({ type: 'ink', surface: 'board', op: 'replace', strokes: this._boardInk.strokes });
-        this._sendFrame();
+        if (message.role === 'pad') this._onPadHello(from, message.device ?? null, message.code);
         break;
-      // The tablet's strokes and board stay out of a recording being played, like the viewer's own.
+      case 'bye':
+        this._pads.delete(from);
+        this._renderPadRequest();
+        this._syncSettingsForm();
+        break;
+      // The tablet's strokes and board stay out of a recording being played, like the viewer's own;
+      // a tablet not admitted yet is heard but not followed.
       case 'board':
-        if (!this._playback) this._applyBoard(message.on, message.pan);
+        if (!this._playback && this._padAdmitted(from)) this._applyBoard(message.on, message.pan);
         break;
       case 'ink':
-        if (!this._playback) this._applyInk(message.surface, message);
+        if (!this._playback && this._padAdmitted(from)) this._applyInk(message.surface, message);
         break;
       case 'hover':
-        this._showRemoteCursor(message);
+        if (this._padAdmitted(from)) this._showRemoteCursor(message);
         break;
       case 'state':
       case 'frame':
+      case 'admit':
         break;
     }
+  }
+
+  private _padAdmitted(from: string): boolean {
+    return this._pads.get(from)?.admitted ?? false;
+  }
+
+  private _admittedPads(): number {
+    let count = 0;
+    for (const entry of this._pads.values()) if (entry.admitted) count += 1;
+    return count;
+  }
+
+  private _isTrusted(device: PadDevice | null): boolean {
+    return Boolean(device) && this._settings.pads.trusted.some((known) => known.id === device!.id);
+  }
+
+  /**
+   * A tablet announces itself: it is admitted when this browser trusts it or when it opened the
+   * pad page with this tab's pairing code; otherwise it waits for the presenter to allow it, once
+   * or for good, from a prompt on the deck or the settings.
+   */
+  private _onPadHello(from: string, device: PadDevice | null, code: string | undefined): void {
+    const entry = this._pads.get(from) ?? { device, admitted: false, ignored: false };
+    entry.device = device;
+    this._pads.set(from, entry);
+    const trusted = this._isTrusted(device);
+    if (entry.admitted || trusted || (Boolean(code) && code === padCode())) {
+      this._admitPad(from, trusted);
+      return;
+    }
+    if (device) this._pad?.send({ type: 'admit', to: device.id, ok: false });
+    this._renderPadRequest();
+    this._syncSettingsForm();
+  }
+
+  private _admitPad(from: string, trusted: boolean): void {
+    const entry = this._pads.get(from);
+    if (!entry) return;
+    entry.admitted = true;
+    if (entry.device) this._pad?.send({ type: 'admit', to: entry.device.id, ok: true, trusted });
+    this.notice(`${entry.device?.name ?? 'Tablet'} connected`);
+    this._sendState();
+    this._pad?.send({ type: 'ink', surface: 'slide', op: 'replace', strokes: this._slideInk.strokes });
+    this._pad?.send({ type: 'ink', surface: 'board', op: 'replace', strokes: this._boardInk.strokes });
+    this._sendFrame();
+    this._renderPadRequest();
+    this._syncSettingsForm();
+  }
+
+  /** Allow a tablet for good: it then opens the pad page without the code, in every deck of this browser. */
+  private _trustPad(device: PadDevice): void {
+    if (!this._isTrusted(device)) this._settings.pads.trusted.push({ id: device.id, name: device.name, since: new Date().toISOString() });
+    saveSettings(this._settings);
+    for (const entry of this._pads.values()) if (entry.device?.id === device.id && entry.admitted) this._pad?.send({ type: 'admit', to: device.id, ok: true, trusted: true });
+    this._syncSettingsForm();
+  }
+
+  /** Forget a tablet: it is out at once, and asks again next time. */
+  private _forgetPad(id: string): void {
+    this._settings.pads.trusted = this._settings.pads.trusted.filter((known) => known.id !== id);
+    saveSettings(this._settings);
+    for (const entry of this._pads.values()) {
+      if (entry.device?.id !== id) continue;
+      entry.admitted = false;
+      entry.ignored = true;
+      this._pad?.send({ type: 'admit', to: id, ok: false });
+    }
+    this._syncSettingsForm();
+  }
+
+  /** The prompt on the deck for the first tablet waiting to be allowed, if any. */
+  private _renderPadRequest(): void {
+    const waiting = [...this._pads].find(([, entry]) => !entry.admitted && !entry.ignored && entry.device);
+    if (!waiting) {
+      this._padRequest.hidden = true;
+      this._padRequest.replaceChildren();
+      return;
+    }
+    const [from, entry] = waiting;
+    const device = entry.device!;
+    const once = el('button', { text: 'Allow once' });
+    once.addEventListener('click', () => this._admitPad(from, false));
+    const always = el('button', { class: 'primary', text: 'Always allow' });
+    always.addEventListener('click', () => {
+      this._trustPad(device);
+      this._admitPad(from, true);
+    });
+    const ignore = el('button', { class: 'dismiss', text: '×', 'aria-label': 'Ignore' });
+    ignore.addEventListener('click', () => {
+      entry.ignored = true;
+      this._renderPadRequest();
+    });
+    this._padRequest.replaceChildren(el('span', { text: `${device.name} asks to draw on this deck.` }), once, always, ignore);
+    this._padRequest.hidden = false;
+  }
+
+  /** The Tablet section's list: the tablets connected now and those trusted. */
+  private _renderPadList(): void {
+    const rows: HTMLElement[] = [];
+    const listed = new Set<string>();
+    for (const [from, entry] of this._pads) {
+      const device = entry.device;
+      const name = device?.name ?? 'Tablet';
+      const trusted = this._isTrusted(device);
+      const state = entry.admitted ? (trusted ? 'connected, trusted' : 'connected for this session') : entry.ignored ? 'ignored' : 'waiting to be allowed';
+      const row = el('div', { class: 'binding gesture pad' }, el('span', { class: 'action', text: `${name} · ${state}` }));
+      if (device && trusted) {
+        const forget = el('button', { text: 'Forget' });
+        forget.addEventListener('click', () => this._forgetPad(device.id));
+        row.append(forget);
+        listed.add(device.id);
+      } else if (device && entry.admitted) {
+        const trust = el('button', { text: 'Trust' });
+        trust.addEventListener('click', () => this._trustPad(device));
+        row.append(trust);
+      } else if (device) {
+        const allow = el('button', { text: 'Allow' });
+        allow.addEventListener('click', () => this._admitPad(from, false));
+        row.append(allow);
+      }
+      rows.push(row);
+    }
+    for (const known of this._settings.pads.trusted) {
+      if (listed.has(known.id)) continue;
+      const since = known.since ? new Date(known.since) : null;
+      const when = since && !Number.isNaN(since.getTime()) ? `, since ${since.toLocaleDateString()}` : '';
+      const forget = el('button', { text: 'Forget' });
+      forget.addEventListener('click', () => this._forgetPad(known.id));
+      rows.push(el('div', { class: 'binding gesture pad' }, el('span', { class: 'action', text: `${known.name} · trusted${when}, not connected` }), forget));
+    }
+    this._padList.replaceChildren(...rows);
+    this._padList.hidden = rows.length === 0;
   }
 
   private _applyBoard(on: boolean, pan: { x: number; y: number }): void {
@@ -2788,7 +2945,7 @@ export class PlayerUI {
 
   /** Send the tablet a picture of the current view, a moment after things settle. */
   private _requestFrame(delay: number): void {
-    if (!this._pad || this._padsSeen.size === 0) return;
+    if (!this._pad || this._admittedPads() === 0) return;
     if (this._frameTimer !== null) clearTimeout(this._frameTimer);
     this._frameTimer = window.setTimeout(() => {
       this._frameTimer = null;

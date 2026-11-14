@@ -228,8 +228,18 @@ body { margin: 0; height: 100vh; overflow: hidden; background: var(--background)
 .zd-app dialog.settings .chip { font: inherit; font-size: 12px; padding: 2px 8px; border-radius: 999px; }
 .zd-app dialog.settings .add { font-size: 12px; }
 .zd-app dialog.settings input[type=range] { width: 160px; }
+/* A tablet waiting to be allowed asks from a small bar at the top of the stage, also in fullscreen. */
+.zd-stage .pad-request { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); z-index: 7; display: flex; align-items: center; gap: 8px; padding: 8px 10px 8px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--background); color: var(--foreground); box-shadow: 0 6px 24px rgba(0, 0, 0, 0.22); font-size: 13px; white-space: nowrap; }
+.zd-stage .pad-request[hidden] { display: none; }
+.zd-stage .pad-request button { padding: 5px 10px; font-size: 12px; }
+.zd-stage .pad-request .primary { background: var(--foreground); color: var(--background); border-color: var(--foreground); }
+.zd-stage .pad-request .dismiss { padding: 3px 8px; font-size: 16px; line-height: 1; border: 0; background: transparent; color: var(--muted); }
+.zd-app dialog.settings .pads { margin-bottom: 10px; }
+.zd-app dialog.settings .pads[hidden] { display: none; }
 .zd-app dialog.settings .pairing { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 10px; }
 .zd-app dialog.settings .pairing .code { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.zd-app dialog.settings .pairing .code > div { flex: 1; min-width: 180px; }
+.zd-app dialog.settings .pairing .code .note { margin: 0 0 6px; }
 .zd-app dialog.settings .pairing .qr { background: #fff; padding: 8px; border-radius: 8px; }
 .zd-app dialog.settings .pairing .url { user-select: all; overflow-wrap: anywhere; margin: 0; }
 .zd-app:fullscreen .zd-stage { width: 100vw; height: 100vh; }

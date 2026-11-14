@@ -161,8 +161,12 @@ describe('pairing', () => {
     expect(url.port).toBe('8000');
     expect(url.pathname).toBe('/pad.html');
     expect(url.searchParams.get('room')).toBe('abc123');
+    expect(url.searchParams.has('code')).toBe(false);
     expect(url.searchParams.has('deck')).toBe(false);
     expect(url.hash).toBe('');
+    const named = new URL(padUrl('mac.local', 8000, 'abc123', 'k1m2n3'));
+    expect(named.hostname).toBe('mac.local');
+    expect(named.searchParams.get('code')).toBe('k1m2n3');
     expect(listensOnLan('127.0.0.1')).toBe(false);
     expect(listensOnLan(true)).toBe(true);
     expect(listensOnLan('0.0.0.0')).toBe(true);

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  ACTIONS, DEFAULT_POINTER_BINDINGS, DEFAULT_RENDERING, actionFor, defaultSettings, describeModifiers, keyCombo, loadSettings, modifierCombo, pointerActionFor, renderPixelRatio, sanitizeRendering, saveSettings,
+  ACTIONS, DEFAULT_POINTER_BINDINGS, DEFAULT_RENDERING, actionFor, sanitizePads, defaultSettings, describeModifiers, keyCombo, loadSettings, modifierCombo, pointerActionFor, renderPixelRatio, sanitizeRendering, saveSettings,
 } from '../src/player/settings';
 
 describe('player settings', () => {
@@ -37,6 +37,16 @@ describe('player settings', () => {
         }
       }
     }
+  });
+
+  it('keeps the trusted tablets, dropping corrupt entries and duplicates, and starts with none', () => {
+    expect(defaultSettings().pads).toEqual({ trusted: [] });
+    expect(sanitizePads(undefined)).toEqual({ trusted: [] });
+    expect(sanitizePads({ trusted: 'no' })).toEqual({ trusted: [] });
+    const pads = sanitizePads({ trusted: [{ id: 'a1', name: 'iPad', since: '2026-11-14T10:00:00.000Z' }, { id: 'a1', name: 'twice' }, { name: 'nameless' }, { id: 'b2' }] });
+    expect(pads.trusted).toEqual([{ id: 'a1', name: 'iPad', since: '2026-11-14T10:00:00.000Z' }, { id: 'b2', name: 'Tablet', since: '' }]);
+    saveSettings({ ...defaultSettings(), pads });
+    expect(loadSettings().pads).toEqual(pads);
   });
 
   it('normalizes held modifiers in a fixed order', () => {

@@ -51,7 +51,8 @@ The gear button (or the `,` key) opens the settings dialog, in six parts:
 - **Recording**: the microphone and camera, where the camera picture sits, and whether the screen
   is filmed while the page is hidden; see
   [Recording a talk](#recording-a-talk).
-- **Tablet**: pairing a companion tablet; see [A tablet as a drawing pad](#a-tablet-as-a-drawing-pad).
+- **Tablet**: pairing a companion tablet, the tablets connected and the trusted ones; see
+  [A tablet as a drawing pad](#a-tablet-as-a-drawing-pad).
 - **Keyboard**: every action with its keys, in three groups: the keys while presenting, the keys
   while the whiteboard is shown (the arrows that scroll it, which come before the first group
   then), and the keys while a recorded talk plays (play or pause, seeking, leaving; only those
@@ -163,11 +164,24 @@ scrolls or zooms anything.
    `npm run dev -- --host` from the checkout. Pairing needs this server; an exported HTML file
    opened from disk cannot pair.
 2. On the presenting computer, open the settings and, under **Tablet**, choose "Show the pairing
-   code". A QR code and an address appear.
+   code". A QR code and an address appear: one for the computer's name on the network
+   (`Name.local`, which finds the computer whatever its address), and one per network address.
 3. Scan the code with the tablet (or type the address): the pad page opens there, with the
    current slide and a toolbar for the tool (pen or highlighter), color swatches, tip size, undo,
    redo, clear and the whiteboard, and nothing else. A fingertip erases the stroke it touches. Adding it to the home screen gives it the whole
    screen.
+
+**Coming back without the code.** The code admits the tablet for the presenter's session: a
+temporary connection, for a borrowed tablet, say. A tablet of your own is better trusted: when
+it opens the pad page without a valid code, a small prompt on the deck says which tablet asks
+to draw, and offers "Allow once" or "Always allow"; the Tablet section of the settings lists
+the tablets connected, with a Trust button, and the trusted ones, with Forget. A trusted
+tablet comes back on its own: the pad page, opened from a bookmark or the home-screen icon,
+remembers the presenter and is let in without the code, for every deck shown in that browser.
+The pairing survives a change of the computer's network address when the tablet reached it
+by name; it needs the same port, so start the server with `--port` when the default one
+can be busy. Safari may forget the pad page's memory after a week without a visit, in which
+case the tablet scans the code once more and is recognized again.
 
 **Over a cable.** The pairing needs a network between the two devices, not necessarily Wi-Fi. On
 a Mac, plug the iPad in, open System Settings → General → Sharing → Internet Sharing, share your

@@ -202,6 +202,30 @@ export const DEFAULT_POINTER_BINDINGS: PointerBindings = { pen: '', pointer: 'Sh
 
 export type PointerMode = 'spotlight' | 'laser';
 
+/** A tablet allowed to draw on the decks of this browser without the pairing code. */
+export interface TrustedPad {
+  id: string;
+  name: string;
+  /** When it was allowed, as an ISO date. */
+  since: string;
+}
+
+export interface PadSettings {
+  trusted: TrustedPad[];
+}
+
+export function sanitizePads(value: unknown): PadSettings {
+  const result: PadSettings = { trusted: [] };
+  if (!value || typeof value !== 'object') return result;
+  const saved = value as { trusted?: unknown };
+  if (!Array.isArray(saved.trusted)) return result;
+  for (const item of saved.trusted as Array<Partial<TrustedPad>>) {
+    if (!item || typeof item.id !== 'string' || !item.id || result.trusted.some((known) => known.id === item.id)) continue;
+    result.trusted.push({ id: item.id, name: typeof item.name === 'string' && item.name ? item.name : 'Tablet', since: typeof item.since === 'string' ? item.since : '' });
+  }
+  return result;
+}
+
 /** The pen tip sizes offered, in screen pixels. */
 export const TIP_SIZES: readonly number[] = [1, 3, 6, 10];
 export const DEFAULT_TIP_SIZE = 3;
@@ -221,6 +245,8 @@ export interface PlayerSettings {
   rendering: RenderingSettings;
   /** Devices and camera layout of a recording. */
   recording: RecordingSettings;
+  /** The tablets allowed to draw without the pairing code. */
+  pads: PadSettings;
 }
 
 const STORAGE_KEY = 'zoomdeck:settings';
@@ -287,6 +313,7 @@ export function defaultSettings(): PlayerSettings {
     pen: { ...DEFAULT_PEN_STYLE },
     tipSize: DEFAULT_TIP_SIZE,
     recording: { ...DEFAULT_RECORDING },
+    pads: { trusted: [] },
   };
 }
 
@@ -315,6 +342,7 @@ export function loadSettings(): PlayerSettings {
     if (saved?.pen) settings.pen = sanitizePenStyle(saved.pen);
     if (typeof saved?.tipSize === 'number' && TIP_SIZES.includes(saved.tipSize)) settings.tipSize = saved.tipSize;
     if (saved?.recording) settings.recording = sanitizeRecording(saved.recording);
+    if (saved?.pads) settings.pads = sanitizePads(saved.pads);
     if (saved?.rendering) settings.rendering = sanitizeRendering(saved.rendering);
   } catch {
     /* no storage or corrupt data: defaults */

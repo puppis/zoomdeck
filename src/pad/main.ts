@@ -7,7 +7,7 @@
  * never selects, scrolls or zooms.
  */
 import { DEFAULT_PEN_STYLE, InkSurface, newStrokeId, type InkSample, type InkStroke, type InkTool } from '../player/ink';
-import { PadLink, padLinkAvailable, type InkOp, type InkSurfaceName, type PadMessage } from '../player/pad';
+import { PadLink, padDevice, padLinkAvailable, type InkOp, type InkSurfaceName, type PadDevice, type PadMessage } from '../player/pad';
 import { Swatches } from '../player/swatches';
 import padCss from './pad.css?inline';
 
@@ -55,8 +55,11 @@ class Pad {
   private readonly touches = new Map<number, { x: number; y: number }>();
   private penSeen = 0;
   private connected = false;
+  /** Let in by the presenter (trusted, or by the pairing code); before that the pictures are not shown. */
+  private admitted = false;
+  private readonly device: PadDevice = padDevice();
 
-  constructor(room: string) {
+  constructor(room: string, private readonly code?: string) {
     document.head.append(el('style', { text: padCss }));
     this.link = new PadLink(room);
     const style = () => DEFAULT_PEN_STYLE;
@@ -105,7 +108,20 @@ class Pad {
     this.layout();
     window.addEventListener('resize', () => this.layout());
     this.link.on((message) => this.onMessage(message));
-    this.link.send({ type: 'hello', role: 'pad' });
+    this.hello();
+    // Coming back from another application, say hello again, in case the socket was lost meanwhile; leaving, say goodbye.
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted) this.hello();
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && !this.connected) this.hello();
+    });
+    window.addEventListener('pagehide', () => this.link.send({ type: 'bye' }));
+  }
+
+  /** Announce this tablet: its identity, and the pairing code when it was opened from one. */
+  private hello(): void {
+    this.link.send({ type: 'hello', role: 'pad', device: this.device, ...(this.code ? { code: this.code } : {}) });
   }
 
   // --- geometry -------------------------------------------------------
@@ -159,9 +175,23 @@ class Pad {
   private onMessage(message: PadMessage): void {
     switch (message.type) {
       case 'hello':
-        if (message.role === 'presenter') this.link.send({ type: 'hello', role: 'pad' });
+        if (message.role === 'presenter') this.hello();
+        break;
+      case 'admit':
+        if (message.to !== this.device.id) break;
+        this.admitted = message.ok;
+        if (!message.ok) {
+          this.connected = false;
+          this.status.textContent = 'Waiting to be allowed';
+          this.waiting.textContent = `Waiting for the presenter to allow this ${this.device.name}: a prompt on the deck asks, once or for good; the settings (Tablet) list it too.`;
+          this.waiting.hidden = false;
+          this.image.hidden = true;
+        } else if (message.trusted) {
+          this.status.textContent = this.connected ? 'Connected, trusted' : this.status.textContent;
+        }
         break;
       case 'state':
+        if (!this.admitted) break;
         this.connected = true;
         this.status.textContent = 'Connected';
         this.waiting.hidden = true;
@@ -176,16 +206,18 @@ class Pad {
         this.applyBoard(message.board, message.pan);
         break;
       case 'frame':
+        if (!this.admitted) break;
         this.image.src = message.image;
         this.image.hidden = false;
         break;
       case 'board':
-        this.applyBoard(message.on, message.pan);
+        if (this.admitted) this.applyBoard(message.on, message.pan);
         break;
       case 'ink':
-        this.applyInk(message.surface, message);
+        if (this.admitted) this.applyInk(message.surface, message);
         break;
       case 'hover':
+      case 'bye':
         break;
     }
   }
@@ -471,8 +503,25 @@ class Pad {
   }
 }
 
-const room = new URLSearchParams(location.search).get('room');
-if (room) new Pad(room);
+// The pairing code's URL names the room and the code; the room is kept, so that a bookmark or the
+// home-screen icon (a plain /pad.html) finds the presenter again, and the code is dropped from the
+// address, since it admits the tablet for the presenter's session only.
+const params = new URLSearchParams(location.search);
+const ROOM_KEY = 'zoomdeck:pad-room';
+let room = params.get('room');
+const code = params.get('code') ?? undefined;
+try {
+  if (room) localStorage.setItem(ROOM_KEY, room);
+  else room = localStorage.getItem(ROOM_KEY);
+} catch {
+  /* storage unavailable: the URL is all there is */
+}
+if (code) {
+  const clean = new URL(location.href);
+  clean.searchParams.delete('code');
+  history.replaceState(null, '', clean.toString());
+}
+if (room) new Pad(room, code);
 else {
-  document.body.textContent = 'This page is opened from the pairing code in the player\'s settings (Tablet).';
+  document.body.textContent = 'This page is opened from the pairing code in the player\'s settings (Tablet); a tablet the presenter trusts reopens it from a bookmark afterwards.';
 }
