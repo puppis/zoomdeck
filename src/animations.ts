@@ -267,6 +267,22 @@ export interface EffectOptions extends AnimationTiming {
   scale?: number;
 }
 
+/** An effect of a deck's own: a function returning the animation that plays on a target. */
+export type EffectFactory = (target: Mobject, options: EffectOptions) => Animation;
+
+/** A module in an effects folder: `export default` the function, or a named `effect`. */
+export interface EffectModule {
+  default?: EffectFactory;
+  effect?: EffectFactory;
+}
+
+/** The animation an effect module makes for `target`. */
+export function effectFromModule(module: EffectModule, target: Mobject, options: EffectOptions = {}): Animation {
+  const factory = module.effect ?? (typeof module.default === 'function' ? module.default : null);
+  if (!factory) throw new Error('An effect module exports a function (default or `effect`) that returns an animation');
+  return factory(target, options);
+}
+
 export function makeEffect(name: string, mobject: Mobject, options: EffectOptions = {}): Animation {
   const base = timing(options);
   const colored = options.color ? { color: options.color } : {};

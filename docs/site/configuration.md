@@ -31,6 +31,8 @@ description: Every key of deck.json, the layout and presenter options, and the c
 | `classes` | module exporting `Slide` classes for `[[subslide: Name]]` (`imports` is still accepted) |
 | `paths` | folders searched, after the Markdown file's own, for the files it names: imported Markdown, images, videos, pages; relative to this file, as in `["../shared", "figures"]` |
 | `artworks` | folders with artworks of the deck's own, `name.svg` or `name.js`/`.ts`, for `[[artwork: name]]`; an `artworks/` folder next to the Markdown is searched anyway, then the `paths`; see [Icons](icons.html#artworks-of-your-own) |
+| `fonts`, `effects`, `charts`, `languages`, `codeThemes`, `themes`, `slides` | folders with fonts, effect modules, chart modules, language profiles, code themes, themes and slide classes of the deck's own; the folder of the same name (`code-themes/` for `codeThemes`) next to the Markdown is searched anyway, then the `paths`; see [Extending a deck](extending.html) |
+| `theme` | a theme, or a list of them, applied before `styles`: `themes/<name>.md` or `.json`, see [Extending a deck](extending.html#themes) |
 | `background` | canvas background color (white by default) |
 | `viewport` | proportions the camera fits (the stage reveals surrounding canvas when it has room) |
 | `layout` | typography and spacing, below |
@@ -47,8 +49,9 @@ description: Every key of deck.json, the layout and presenter options, and the c
 | `headingSize` | 42 | level-1 heading size; deeper levels shrink slightly |
 | `codeSize` | 80 % of `fontSize` | listing size |
 | `color` | `#000000` | text and default stroke color (black on the default white canvas) |
-| `font` | Latin Modern Roman (bundled) | prose font family; the LaTeX text face by default, so prose and formulas share one design |
+| `font` | Latin Modern Roman (bundled) | prose font family; the LaTeX text face by default, so prose and formulas share one design; a family in the deck's `fonts/` folder is loaded from there |
 | `codeFont` | Latin Modern Mono (bundled) | inline code and listings; the LaTeX typewriter face, sized to pair with the text face |
+| `codeTheme` | the deck's text color decides | token colors of listings, `code-themes/<name>.json`, see [Extending a deck](extending.html#languages-and-code-themes) |
 | `margin` | 0.65 | distance of the flow from the canvas edges |
 | `gap` | 0.35 | distance between flowing blocks and default `buff` |
 | `lineGap` | 0.12 | extra space between wrapped lines |

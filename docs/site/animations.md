@@ -42,7 +42,10 @@ the move is then seen, instead of the child appearing already moved when it is e
 `[[effect: name #id, step=N, …]]` plays an engine effect without changing visibility:
 
 `indicate`, `wiggle`, `circumscribe`, `flash`, `focus`, `grow`, `shrink`, `write`, `create`,
-`uncreate`, `draw`, `wave`. `color` and `scale` tune the ones that take them.
+`uncreate`, `draw`, `wave`. `color` and `scale` tune the ones that take them. Any other name is
+an effect of the deck's own, `effects/<name>.ts` next to the Markdown, a module that returns an
+animation of the engine; the tour's `pulse` is one. [Extending a deck](extending.html#effects)
+shows how to write one.
 
 ## transform
 

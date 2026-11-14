@@ -228,6 +228,10 @@ endpoint disappears.
 `[[artwork: name #id …]]` draws an artwork of the deck's own, `name.svg` or a `name.js`/`.ts` module
 in its `artworks/` folder (or the folders `artworks` and `paths` name in `deck.json`), with any
 attributes the module reads; `paths` are also searched for imports, images, videos and pages.
+The folders `fonts/`, `effects/`, `charts/`, `languages/`, `code-themes/`, `themes/` and `slides/`
+next to the Markdown extend the player the same way, by name: a font family, an effect name, a
+chart `type`, a fence language, `layout.codeTheme`, `theme` and `[[subslide: Name]]` that are not
+built in are looked up there (docs/site/extending.md).
 `[[icon: name #id …]]` draws one of thirty-nine symbols built from geometry: people and machines
 (`user`, `users`, `client`, `desktop`, `phone`, `server`, `database`, `cloud`, `globe`), files
 (`document`, `folder`, `message`, `calendar`, `chart`), marks and places (`check`, `cross`,

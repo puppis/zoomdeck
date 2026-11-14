@@ -315,6 +315,22 @@ async function pie(group: Group, data: ChartData, o: Resolved, label: LabelFacto
 }
 
 /** Build a chart as a group centered at the origin. */
+/** A chart type of a deck's own: a function drawing the parsed data with the chart options. */
+export type ChartFactory = (data: ChartData, options: ChartOptions, label: LabelFactory) => Mobject | Promise<Mobject>;
+
+/** A module in a charts folder: `export default` the function, or a named `chart`. */
+export interface ChartModule {
+  default?: ChartFactory;
+  chart?: ChartFactory;
+}
+
+/** The drawing a chart module makes of `data`. */
+export async function chartFromModule(module: ChartModule, data: ChartData, options: ChartOptions, label: LabelFactory): Promise<Mobject> {
+  const factory = module.chart ?? (typeof module.default === 'function' ? module.default : null);
+  if (!factory) throw new Error('A chart module exports a function (default or `chart`) that draws the data');
+  return factory(data, options, label);
+}
+
 export async function buildChart(data: ChartData, options: ChartOptions, label: LabelFactory): Promise<Group> {
   if (!data.series.length || !data.categories.length) throw new Error('A chart needs data');
   const o = resolve(options, data);

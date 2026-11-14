@@ -7,13 +7,15 @@ import { sketchSeed, type OutlineMobject } from '../sketch';
 import { PropertyAnimation, RATE_FUNCTIONS, Tremble, enterAnimation, exitAnimation, makeEffect, type PropertyTargets } from '../animations';
 import { Slide, PlaceholderSlide, pageSequence, resolveSize, startingSlide, type SourceLocation, type TransitionMode } from '../slides';
 import type { ArtworkModule } from '../icons';
+import type { EffectModule } from '../animations';
+import type { ChartModule } from '../charts';
 import { LINKED_OBJECTS, SOURCE_OBJECTS } from '../links';
 import { RasterImage, RasterMovie } from '../raster';
 import { VideoClip, VideoPlay } from '../video';
 import { IframeHost } from './iframe';
 import { DelayedAnimation, type SlideContext } from '../runtime';
 import {
-  ATTACHMENTS, CONNECTIONS, NEIGHBORS, TEXT_LIKE, VERTICAL_POSITION,
+  ATTACHMENTS, CONNECTIONS, EFFECT_NAMES, NEIGHBORS, TEXT_LIKE, VERTICAL_POSITION,
   ActionSpec, AnimationStep, ElementSpec, EventSpec, GroupSpec, CodeSlideSpec, IncludeSpec, MarkupDocument, MarkupError, NextSpec,
   SkipNextSpec, SlideItem, SlideSpec, StepChange, childKey, numberValue, parseAt, parseColor, parseTremble, positionOrder, positionTargets,
   stepValue,
@@ -98,6 +100,15 @@ export class MarkupSlide extends Slide {
   /** Lay out content and component previews once in this logical canvas. */
   override async build(ctx: SlideContext): Promise<void> {
     const layout = this.renderer.layout;
+    // Effects of the deck's own load now: they are made later, when their step plays, without waiting.
+    for (const step of this.animationSteps) {
+      for (const change of step.changes) {
+        if (change.action !== 'effect' || !change.name || EFFECT_NAMES.has(change.name)) continue;
+        if (!(await this.renderer.effect(change.name))) {
+          throw new MarkupError(`Unknown effect ${JSON.stringify(change.name)}: not ${[...EFFECT_NAMES].join(', ')} and no ${change.name}.js or ${change.name}.ts in the deck's effects folders`, this.spec.line);
+        }
+      }
+    }
     const available = this.width - 2 * layout.margin;
     if (available <= 0) throw new MarkupError('Canvas width must exceed twice the layout margin', this.spec.line);
     await this._layout(
@@ -277,11 +288,12 @@ export class MarkupSlide extends Slide {
     if (change.action === 'animate') return new PropertyAnimation(obj, this._propertyTargets(change, obj), options);
     if (change.action === 'effect') {
       const opts = change.options ?? {};
-      return makeEffect(change.name as string, obj, {
+      const effectOptions = {
         ...options,
         ...(opts.color ? { color: parseColor(opts.color) } : {}),
         ...(opts.scale ? { scale: Number(opts.scale) } : {}),
-      });
+      };
+      return this.renderer.customEffect(change.name as string, obj, effectOptions) ?? makeEffect(change.name as string, obj, effectOptions);
     }
     if (change.action === 'transform') return new ReplacementTransform(obj, this.elements.get(change.to as string) as Mobject, options);
     const path = this.elements.get(change.path as string) as OutlineMobject;
@@ -457,12 +469,16 @@ export class SlideBuilder {
     options: {
       namespace?: SlideNamespace | null; macros?: Record<string, string>; assets?: Record<string, string>; locate?: (line: number) => SourceLocation;
       paths?: string[]; artworks?: string[]; artworkModules?: Record<string, ArtworkModule>;
+      fonts?: string[]; effects?: string[]; charts?: string[]; languages?: string[]; codeThemes?: string[];
+      effectModules?: Record<string, EffectModule>; chartModules?: Record<string, ChartModule>;
     } = {},
   ): Slide {
     document = new ASTTransformer().validate(document);
     const renderer = this.renderer ?? new MarkupRenderer({
       layout: this.layout, basePath: document.basePath, macros: options.macros, assets: options.assets,
       paths: options.paths, artworks: options.artworks, artworkModules: options.artworkModules,
+      fonts: options.fonts, effects: options.effects, charts: options.charts, languages: options.languages, codeThemes: options.codeThemes,
+      effectModules: options.effectModules, chartModules: options.chartModules,
     });
     const locate = options.locate ?? ((line: number) => ({ file: '', line }));
     this.slides = new Map(

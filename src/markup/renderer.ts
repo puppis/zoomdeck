@@ -11,6 +11,12 @@ import { loadSvgMobject } from '../svg';
 import { sketch, sketchSeed, type FillStyle, type OutlineMobject, type SketchOptions } from '../sketch';
 import { artworkFromModule, makeIcon, type ArtworkModule, type ArtworkOptions, type IconName } from '../icons';
 import { ICON_KINDS } from './ast';
+import { effectFromModule, type EffectModule, type EffectOptions } from '../animations';
+import { chartFromModule, CHART_TYPES, type ChartModule } from '../charts';
+import { knownLanguage, registerLanguage, type Language } from './tokens';
+import { DEFAULT_CODE_FONT, DEFAULT_HANDWRITING_FONT } from '../fonts';
+import type { CodeTheme } from './code';
+import type { Animation } from 'manim-web';
 import { blobMobject, type Rect } from '../blob';
 import { buildChart, parseChartData, type ChartType } from '../charts';
 import { buildTable, type TableRules } from './table';
@@ -41,6 +47,8 @@ export interface LayoutConfigOptions {
   font?: string;
   /** Monospace font family for inline code and listings. */
   codeFont?: string;
+  /** Name of a code theme, `name.json` in the deck's code-themes folders; the default follows the text color. */
+  codeTheme?: string;
   margin?: number;
   gap?: number;
   lineGap?: number;
@@ -59,6 +67,7 @@ export class LayoutConfig {
   readonly color: string;
   readonly font: string;
   readonly codeFont: string;
+  readonly codeTheme: string;
   readonly margin: number;
   readonly gap: number;
   readonly lineGap: number;
@@ -74,6 +83,7 @@ export class LayoutConfig {
     this.color = parseColor(options.color ?? '#000000');
     this.font = options.font ?? '';
     this.codeFont = options.codeFont ?? '';
+    this.codeTheme = options.codeTheme ?? '';
     this.margin = options.margin ?? 0.65;
     this.gap = options.gap ?? 0.35;
     this.lineGap = options.lineGap ?? 0.12;
@@ -287,7 +297,25 @@ export interface MarkupRendererOptions {
   artworks?: string[];
   /** Artwork modules bundled ahead of time, by name; an export carries them this way. */
   artworkModules?: Record<string, ArtworkModule>;
+  /** Folders with font files, `Family.woff2` (`.woff`, `.ttf`, `.otf`) and `Family-Bold`, `-Italic`, `-BoldItalic` variants. */
+  fonts?: string[];
+  /** Folders with effect modules, `name.js`/`.ts`, for `[[effect: name …]]`. */
+  effects?: string[];
+  /** Folders with chart modules, `type.js`/`.ts`, for `type=` of a chart. */
+  charts?: string[];
+  /** Folders with language profiles, `lang.json`, for the fences of listings. */
+  languages?: string[];
+  /** Folders with code themes, `name.json`, for `layout.codeTheme`. */
+  codeThemes?: string[];
+  effectModules?: Record<string, EffectModule>;
+  chartModules?: Record<string, ChartModule>;
 }
+
+/** Faces the player bundles or the browser has: never looked for in a deck's font folders. */
+const BUNDLED_FONTS = new Set([DEFAULT_TEXT_FONT, DEFAULT_CODE_FONT, DEFAULT_HANDWRITING_FONT]);
+const FONT_VARIANTS: Array<[suffix: string, weight: string, style: string]> = [['', '400', 'normal'], ['-Bold', '700', 'normal'], ['-Italic', '400', 'italic'], ['-BoldItalic', '700', 'italic']];
+const FONT_EXTENSIONS = ['woff2', 'woff', 'ttf', 'otf'];
+const MODULE_EXTENSIONS = ['js', 'mjs', 'ts'];
 
 /** Create engine objects for AST elements. Subclass `make` to customize. */
 export class MarkupRenderer {
@@ -298,11 +326,23 @@ export class MarkupRenderer {
   readonly paths: string[];
   readonly artworks: string[];
   readonly artworkModules: Record<string, ArtworkModule>;
+  readonly fonts: string[];
+  readonly effects: string[];
+  readonly charts: string[];
+  readonly languages: string[];
+  readonly codeThemes: string[];
+  readonly effectModules: Record<string, EffectModule>;
+  readonly chartModules: Record<string, ChartModule>;
   private readonly _parser = new MarkupParser();
   private readonly _sources = new Map<string, Promise<RasterSource>>();
   private readonly _located = new Map<string, Promise<string>>();
   private readonly _probed = new Map<string, Promise<boolean>>();
-  private readonly _artworkModules = new Map<string, Promise<ArtworkModule | null>>();
+  private readonly _modules = new Map<string, Promise<unknown>>();
+  private readonly _fonts = new Map<string, Promise<void>>();
+  private readonly _loadedEffects = new Map<string, EffectModule>();
+  private readonly _languages = new Map<string, Promise<void>>();
+  private _layoutFonts: Promise<void> | null = null;
+  private _codeTheme: Promise<CodeTheme | undefined> | null = null;
 
   constructor(options: MarkupRendererOptions = {}) {
     this.layout = options.layout ?? new LayoutConfig();
@@ -312,6 +352,148 @@ export class MarkupRenderer {
     this.paths = options.paths ?? [];
     this.artworks = options.artworks ?? [];
     this.artworkModules = options.artworkModules ?? {};
+    this.fonts = options.fonts ?? [];
+    this.effects = options.effects ?? [];
+    this.charts = options.charts ?? [];
+    this.languages = options.languages ?? [];
+    this.codeThemes = options.codeThemes ?? [];
+    this.effectModules = options.effectModules ?? {};
+    this.chartModules = options.chartModules ?? {};
+  }
+
+  /** The URL of `file` in the first of `folders` that has it, or null. */
+  private async _fileIn(file: string, folders: string[], kind: 'file' | 'module' | 'page' = 'file'): Promise<string | null> {
+    for (const folder of folders) {
+      const [url] = this._candidates(file, [folder]).slice(1);
+      if (!url) continue;
+      if (url.startsWith('data:')) return url;
+      // A bundled folder travels whole: what it lacks is on no server either.
+      if (this._bundled(folder)) continue;
+      if (await this._exists(url, kind)) return url;
+    }
+    return null;
+  }
+
+  /** Whether `folder` came along in the bundle (an export embedded at least one of its files). */
+  private _bundled(folder: string): boolean {
+    const prefix = folder.replace(/^\.\//, '');
+    return Object.keys(this.assets).some((key) => key.startsWith(prefix));
+  }
+
+  /** The module `name.js`, `.mjs` or `.ts` in the first of `folders` that has it, imported once; null when none has. */
+  private _moduleIn<T>(name: string, folders: string[]): Promise<T | null> {
+    const key = `${folders.join('|')}::${name}`;
+    let pending = this._modules.get(key);
+    if (!pending) {
+      pending = (async () => {
+        for (const extension of MODULE_EXTENSIONS) {
+          const url = await this._fileIn(`${name}.${extension}`, folders, 'module');
+          if (url && !url.startsWith('data:')) return (await import(/* @vite-ignore */ url)) as T;
+        }
+        return null;
+      })();
+      this._modules.set(key, pending);
+    }
+    return pending as Promise<T | null>;
+  }
+
+  /**
+   * Load a font family from the deck's font folders unless it is bundled or was loaded
+   * already: `Family.woff2` (or `.woff`, `.ttf`, `.otf`), and the `-Bold`, `-Italic` and
+   * `-BoldItalic` variants when the folder has them. A family no folder has is left to the
+   * browser, as a system font.
+   */
+  ensureFont(family: string | undefined): Promise<void> {
+    const clean = (family ?? '').replace(/^"|"$/g, '').trim();
+    if (!clean || BUNDLED_FONTS.has(clean) || typeof document === 'undefined' || typeof FontFace === 'undefined') return Promise.resolve();
+    const folders = [...this.fonts, ...this.paths];
+    if (!folders.length) return Promise.resolve();
+    let pending = this._fonts.get(clean);
+    if (!pending) {
+      pending = (async () => {
+        for (const [suffix, weight, style] of FONT_VARIANTS) {
+          for (const extension of FONT_EXTENSIONS) {
+            const url = await this._fileIn(`${clean}${suffix}.${extension}`, folders);
+            if (!url) continue;
+            try {
+              const face = new FontFace(clean, `url(${JSON.stringify(url)})`, { weight, style });
+              await face.load();
+              document.fonts.add(face);
+            } catch (error) {
+              console.warn(`[zoomdeck] could not load the font ${clean}${suffix} from ${url}:`, error);
+            }
+            break;
+          }
+        }
+      })();
+      this._fonts.set(clean, pending);
+    }
+    return pending;
+  }
+
+  /** The prose and code faces of the layout, loaded once before any text is laid out. */
+  layoutFonts(): Promise<void> {
+    this._layoutFonts ??= Promise.all([this.ensureFont(this.layout.font), this.ensureFont(this.layout.codeFont)]).then(() => undefined);
+    return this._layoutFonts;
+  }
+
+  /**
+   * An effect of the deck's own, by name, from the bundled modules or the effects folders;
+   * loaded ahead of playback, since effects are made when their step plays.
+   */
+  async effect(name: string): Promise<EffectModule | null> {
+    const bundled = this.effectModules[name];
+    const module = bundled ?? (await this._moduleIn<EffectModule>(name, [...this.effects, ...this.paths]));
+    if (module) this._loadedEffects.set(name, module);
+    return module;
+  }
+
+  /** The animation of a loaded effect of the deck's own, or null for a built-in name. */
+  customEffect(name: string, target: Mobject, options: EffectOptions): Animation | null {
+    const module = this._loadedEffects.get(name) ?? this.effectModules[name];
+    return module ? effectFromModule(module, target, options) : null;
+  }
+
+  /** A chart module of the deck's own, by type name, or null. */
+  chart(type: string): Promise<ChartModule | null> {
+    const bundled = this.chartModules[type];
+    return bundled ? Promise.resolve(bundled) : this._moduleIn<ChartModule>(type, [...this.charts, ...this.paths]);
+  }
+
+  /** Register the language profile `lang.json` of the deck's languages folders for a fence language the player does not know. */
+  language(lang: string): Promise<void> {
+    const key = lang.trim().toLowerCase();
+    if (knownLanguage(key)) return Promise.resolve();
+    let pending = this._languages.get(key);
+    if (!pending) {
+      pending = (async () => {
+        const url = await this._fileIn(`${key}.json`, [...this.languages, ...this.paths]);
+        if (!url) return;
+        try {
+          const profile = (await (await fetch(url)).json()) as Language & { aliases?: string[] };
+          registerLanguage(key, profile);
+        } catch (error) {
+          console.warn(`[zoomdeck] the language profile ${url} could not be read:`, error);
+        }
+      })();
+      this._languages.set(key, pending);
+    }
+    return pending;
+  }
+
+  /** The code theme `layout.codeTheme` names, `name.json` in the code-themes folders, loaded once; undefined for the default. */
+  codeTheme(): Promise<CodeTheme | undefined> {
+    this._codeTheme ??= (async () => {
+      const name = this.layout.codeTheme;
+      if (!name) return undefined;
+      const url = await this._fileIn(`${name}.json`, [...this.codeThemes, ...this.paths]);
+      if (!url) {
+        console.warn(`[zoomdeck] no code theme ${name}.json in the deck's code-themes folders`);
+        return undefined;
+      }
+      return (await (await fetch(url)).json()) as CodeTheme;
+    })();
+    return this._codeTheme;
   }
 
   /**
@@ -391,38 +573,15 @@ export class MarkupRenderer {
     const bundled = this.artworkModules[name];
     if (bundled) return artworkFromModule(bundled, options);
     const folders = [...this.artworks, ...this.paths];
-    const module = await this._artworkModule(name, folders);
+    const module = await this._moduleIn<ArtworkModule>(name, folders);
     if (module) return artworkFromModule(module, options);
-    for (const folder of folders) {
-      const [url] = this._candidates(`${name}.svg`, [folder]).slice(1);
-      if (url && (url.startsWith('data:') || (await this._exists(url)))) {
-        // The drawing keeps its own colors; `currentColor` in it follows `color=`, else the deck's text color.
-        return loadSvgMobject(url, { height: options.size, defaultColor: 'color' in options.attributes ? options.color : options.foreground });
-      }
-    }
+    const svg = await this._fileIn(`${name}.svg`, folders);
+    // The drawing keeps its own colors; `currentColor` in it follows `color=`, else the deck's text color.
+    if (svg) return loadSvgMobject(svg, { height: options.size, defaultColor: 'color' in options.attributes ? options.color : options.foreground });
     const where = folders.length ? ` or in ${folders.join(', ')}` : '';
     throw new MarkupError(`Unknown icon or artwork ${JSON.stringify(name)}: not a built-in icon (${[...ICON_KINDS].join(', ')}) and no ${name}.svg, ${name}.js or ${name}.ts in the deck's artworks folders${where}`, line);
   }
 
-  private _artworkModule(name: string, folders: string[]): Promise<ArtworkModule | null> {
-    const key = `${folders.join('|')}::${name}`;
-    let pending = this._artworkModules.get(key);
-    if (!pending) {
-      pending = (async () => {
-        for (const folder of folders) {
-          for (const extension of ['js', 'mjs', 'ts']) {
-            const [url] = this._candidates(`${name}.${extension}`, [folder]).slice(1);
-            if (url && !url.startsWith('data:') && (await this._exists(url, 'module'))) {
-              return (await import(/* @vite-ignore */ url)) as ArtworkModule;
-            }
-          }
-        }
-        return null;
-      })();
-      this._artworkModules.set(key, pending);
-    }
-    return pending;
-  }
 
   /** Resolve an asset path relative to the document. */
   resolveUrl(path: string): string {
@@ -617,8 +776,14 @@ export class MarkupRenderer {
       const borderColor = attrs.border_color ? parseColor(attrs.border_color) : undefined;
       const sketchy = sketchOptions(element, { color, strokeWidth: optional('stroke_width') ?? 2, fillColor: color, fillOpacity: optional('fill_opacity') ?? 0.85 }, 'solid');
       try {
-        obj = await buildChart(data, {
-          type: (attrs.type as ChartType | undefined) ?? 'bar',
+        const type = attrs.type ?? 'bar';
+        const custom = (CHART_TYPES as readonly string[]).includes(type) ? null : await this.chart(type);
+        if (!custom && !(CHART_TYPES as readonly string[]).includes(type)) {
+          throw new MarkupError(`Unknown chart type ${JSON.stringify(type)}: not ${CHART_TYPES.join(', ')} and no ${type}.js or ${type}.ts in the deck's charts folders`, element.line);
+        }
+        const draw = custom ? (chartData: typeof data, chartOptions: Parameters<typeof buildChart>[1], label: Parameters<typeof buildChart>[2]) => chartFromModule(custom, chartData, chartOptions, label) : buildChart;
+        obj = await draw(data, {
+          type: (CHART_TYPES as readonly string[]).includes(type) ? (type as ChartType) : 'bar',
           width: numberValue(attrs, 'width', element.line, 6) as number,
           height: numberValue(attrs, 'height', element.line, 3.5) as number,
           colors,
@@ -648,7 +813,7 @@ export class MarkupRenderer {
         ? await this.listItem(element.spans, element.list.marker, size, width, color, attrs.font)
         : await this.text(element.spans, size, width, color, attrs.font);
     } else if (element.kind === 'code') {
-      obj = this.code(element.source, attrs.lang ?? '', size, width, color);
+      obj = this.code(element.source, attrs.lang ?? '', size, width, color, await this.prepareCode(attrs.lang ?? ''));
     } else {
       throw new MarkupError(`Unsupported rendered element kind ${JSON.stringify(element.kind)}`, element.line);
     }
@@ -748,6 +913,8 @@ export class MarkupRenderer {
   /** Lay out styled prose with inline math within `maxWidth` logical units. */
   async text(spans: InlineSpan[], fontSize: number, maxWidth: number, defaultColor: string, font?: string): Promise<Mobject> {
     if (!spans.some((s) => s.content.trim())) return new Group();
+    await this.layoutFonts();
+    if (font) await this.ensureFont(font);
     // Span colors may be palette names; the canvas and MathJax need hex values.
     const resolved = spans.map((s) => (s.color ? { ...s, color: parseColor(s.color) } : s));
     return layoutParagraph(
@@ -773,10 +940,17 @@ export class MarkupRenderer {
   }
 
   /** Lay out a verbatim listing; it shrinks uniformly when wider than `maxWidth`. */
-  code(source: string, language: string, fontSize: number, maxWidth: number, defaultColor: string): Mobject {
+  code(source: string, language: string, fontSize: number, maxWidth: number, defaultColor: string, theme?: CodeTheme): Mobject {
     return layoutCode(source, language, {
-      fontSize, maxWidth, defaultColor, lineGap: this.layout.lineGap, fontFamily: this.layout.codeFontFamily,
+      fontSize, maxWidth, defaultColor, lineGap: this.layout.lineGap, fontFamily: this.layout.codeFontFamily, ...(theme ? { theme } : {}),
     });
+  }
+
+  /** What a listing needs before it is laid out: the code face, the language's profile, the deck's code theme. */
+  async prepareCode(language: string): Promise<CodeTheme | undefined> {
+    await this.layoutFonts();
+    await this.language(language);
+    return this.codeTheme();
   }
 
   /** Create an arrow or line between laid-out objects or fixed coordinates. */

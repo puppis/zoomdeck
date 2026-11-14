@@ -304,7 +304,9 @@ describe('phase 3 animation directives', () => {
     expect(() => parse('[[animate: #nope, step=1, dx=1]]')).toThrow(/Unknown animate target/);
     expect(() => parse('[[dot: #d x=0 y=0]]\n[[animate: #d, step=1]]')).toThrow(/needs a target property/);
     expect(() => parse('[[dot: #d x=0 y=0]]\n[[animate: #d, step=1, x=1, at=(0,0)]]')).toThrow(/at= replaces/);
-    expect(() => parse('[[dot: #d x=0 y=0]]\n[[effect: sparkle #d, step=1]]')).toThrow(/Unknown effect/);
+    // A name that is not built in is an effect of the deck's own, looked up in its effects folders when the deck is built.
+    expect(() => parse('[[dot: #d x=0 y=0]]\n[[effect: sparkle #d, step=1]]')).not.toThrow();
+    expect(() => parse('[[dot: #d x=0 y=0]]\n[[effect: 2fast #d, step=1]]')).toThrow(/Unknown effect/);
     expect(() => parse('[[dot: #d x=0 y=0]]\n[[animate: #d, step=1, dx=1, rate=bouncy]]')).toThrow(/Unknown rate/);
     expect(() => parse('::: {.group #g}\n[[dot: #d x=0 y=0]]\n:::\n[[animate: #d, step=1, dx=1]]')).toThrow(/group member/);
     expect(() => parse('[a]{#a1 x=0}\n\n[b]{#b1 x=0}\n[[transform: #a1 -> #b1, step=1]]')).toThrow(/must be hidden before/);

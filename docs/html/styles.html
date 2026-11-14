@@ -66,7 +66,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Advanced</h4>
-        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html">A deck inside a page</a></li><li><a href="reference.html">Reference</a></li></ul>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html">A deck inside a page</a></li><li><a href="extending.html">Extending a deck</a></li><li><a href="reference.html">Reference</a></li></ul>
       </section>
   </nav>
   <main id="content">
@@ -86,7 +86,10 @@ callout: color=ORANGE font_size=30
 [Look here]<span class="tk-attribute">{#c .callout x=</span><span class="tk-number">0</span><span class="tk-attribute"> y=</span><span class="tk-number">-2</span><span class="tk-attribute">}</span></code></pre>
 <p>A <strong>style</strong> is a named set of attributes. Styles are defined in <code>deck.json</code> under <code>styles</code>, as
 objects or attribute strings, or in a <code>::: styles</code> block at the top of the Markdown file (one
-<code>name: attributes</code> line each); the Markdown definition wins for the same name.</p>
+<code>name: attributes</code> line each); the Markdown definition wins for the same name. A style sheet
+kept apart from the deck is a <strong>theme</strong>, <code>themes/&lt;name&gt;.md</code> next to the Markdown, applied with
+<code>&quot;theme&quot;: &quot;lecture&quot;</code> in <code>deck.json</code> under the deck's own styles; see
+<a href="extending.html#themes">Extending a deck</a>.</p>
 <h2 id="classes">Classes<a class="anchor" href="#classes" aria-label="Link to this section">#</a></h2><p>Elements, includes and imports opt into styles with <code>.name</code> tokens in their attribute list. Several
 classes may be listed; later ones win.</p>
 <h2 id="roles">Roles<a class="anchor" href="#roles" aria-label="Link to this section">#</a></h2><p>Styles named after a <strong>role</strong> apply automatically to every element of that role:</p>

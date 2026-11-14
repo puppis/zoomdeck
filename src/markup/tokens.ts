@@ -12,7 +12,7 @@ export interface CodeToken {
   bold?: boolean;
 }
 
-interface Language {
+export interface Language {
   keywords?: string[];
   types?: string[];
   lineComment?: string[];
@@ -101,6 +101,20 @@ const ALIASES: Record<string, string> = {
   html: 'tags', xml: 'tags', svg: 'tags', xhtml: 'tags',
   txt: 'text', text: 'text', plain: 'text', '': 'text',
 };
+
+/** Whether a fence language name has a profile (or an alias to one) already. */
+export function knownLanguage(name: string): boolean {
+  const key = name.trim().toLowerCase();
+  return key === '' || key in ALIASES || key in LANGUAGES;
+}
+
+/** Add a language profile, as a deck's `languages/<name>.json` file defines it; `aliases` are other names for it. */
+export function registerLanguage(name: string, profile: Language & { aliases?: string[] }): void {
+  const key = name.trim().toLowerCase();
+  const { aliases, ...rest } = profile;
+  LANGUAGES[key] = rest;
+  for (const alias of aliases ?? []) ALIASES[alias.trim().toLowerCase()] = key;
+}
 
 /** Resolve a fence language name to one of the supported profiles. */
 export function languageFor(name: string): string {

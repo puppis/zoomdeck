@@ -1281,6 +1281,7 @@ Languages: python, javascript, typescript, c-like, bash, json, latex, html/svg, 
 [[animate: #ball, step=1, x=6.5, run_time=1.2, rate=ease_in_out]]
 [[animate: #card, step=2, angle=0.4, scale=1.3, color=ORANGE, opacity=0.6]]
 [[effect: indicate #before, step=3, color=GOLD_E]]
+[[effect: pulse #card, step=3]]
 [[transform: #before -> #after, step=4, run_time=1]]
 [[move_along: #ball, step=5, path=#orbit, run_time=2, rate=linear]]
 [[animate: #satellite, step=6, x=7.5, y=-3.6, angle=-0.3, run_time=1.5]]
@@ -1303,6 +1304,8 @@ Languages: python, javascript, typescript, c-like, bash, json, latex, html/svg, 
 
 [[effect: indicate #before, step=3, color=GOLD_E]]
 
+[[effect: pulse #card, step=3]]
+
 [[transform: #before -> #after, step=4, run_time=1]]
 
 [[move_along: #ball, step=5, path=#orbit, run_time=2, rate=linear]]
@@ -1313,7 +1316,7 @@ Languages: python, javascript, typescript, c-like, bash, json, latex, html/svg, 
 
 `animate` moves an anchor to `x`/`y` or `at=` and applies `angle`, `scale`, `opacity` and `color`; `effect` plays a named effect; `transform` morphs one element into a hidden one; `move_along` follows a shape. {#animations-key x=-9.35 y=-1.6 width=9.1 font_size=18}
 
-All take `step`, `run_time`, `lag` and `rate`; an included slide is animated by its ID, and `enter=`/`exit=` replace an element’s fades. Effects: indicate, wiggle, circumscribe, flash, focus, grow, shrink, write, create, uncreate, draw, wave. {#animations-more x=-9.35 y=-3.7 width=9.1 font_size=15 color=GRAY}
+All take `step`, `run_time`, `lag` and `rate`; an included slide is animated by its ID, and `enter=`/`exit=` replace an element’s fades. Effects: indicate, wiggle, circumscribe, flash, focus, grow, shrink, write, create, uncreate, draw, wave; `pulse` is the deck's own, a module in its `effects/` folder. {#animations-more x=-9.35 y=-3.7 width=9.1 font_size=15 color=GRAY}
 :::
 
 ::: slide {#satellite}

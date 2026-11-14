@@ -201,6 +201,25 @@ export class MarkupParser {
   }
 
   /** Parse `name: attributes` lines of a `::: styles` block. */
+  /**
+   * The styles of a theme file: its `::: styles` blocks, or, when it has none, every line of it
+   * as a style line (`heading: color=BLUE_E`). Comments between the blocks are ignored.
+   */
+  static parseStyles(source: string): StyleSheet {
+    const lines = source.replace(/<!--[\s\S]*?-->/g, (match) => '\n'.repeat((match.match(/\n/g) ?? []).length)).split(/\r?\n/);
+    const styles: StyleSheet = {};
+    let blocks = 0;
+    for (let index = 0; index < lines.length; index++) {
+      const opening = CONTAINER.exec(lines[index]);
+      if (!opening || !/^styles\s*$/.test(opening[1])) continue;
+      const end = MarkupParser._containerEnd(lines, index);
+      Object.assign(styles, MarkupParser._styles(lines.slice(index + 1, end), index + 2));
+      blocks += 1;
+      index = end;
+    }
+    return blocks ? styles : MarkupParser._styles(lines, 1);
+  }
+
   private static _styles(lines: string[], firstLine: number): StyleSheet {
     const result: StyleSheet = {};
     lines.forEach((text, offset) => {
@@ -310,7 +329,7 @@ export class MarkupParser {
           if (!('step' in attrs)) throw new MarkupError(`${kind} requires step=N`, line);
           items.push(new ActionSpec(kind, match[1], stepValue(attrs, 'step', line), attrs, line));
         } else if (kind === 'effect') {
-          const match = /^([a-z_]+)\s+#?([\w.-]+)(.*)$/s.exec(value);
+          const match = /^([\w-]+)\s+#?([\w.-]+)(.*)$/s.exec(value);
           if (!match) throw new MarkupError('Expected [[effect: name #id, step=N ...]]', line);
           const attrs = parseAttributes(match[3], line, { commas: true });
           if (!('step' in attrs)) throw new MarkupError('effect requires step=N', line);
@@ -744,8 +763,9 @@ export class ASTTransformer {
       for (const row of (item as TableSpec).rows) for (const cell of row) for (const s of cell) if (s.color) ASTTransformer._checkColor(s.color, item.line);
     }
     if (item.kind === 'chart') {
-      if ('type' in item.attributes && !CHART_TYPE_NAMES.has(item.attributes.type)) {
-        throw new MarkupError(`Chart type must be one of ${[...CHART_TYPE_NAMES].join(', ')}`, item.line);
+      // A built-in type, or a chart of the deck's own, found in its charts folders when the slide is built.
+      if ('type' in item.attributes && !CHART_TYPE_NAMES.has(item.attributes.type) && !IDENTIFIER.test(item.attributes.type)) {
+        throw new MarkupError(`Chart type must be one of ${[...CHART_TYPE_NAMES].join(', ')}, or the name of a chart module of the deck`, item.line);
       }
       for (const key of ['grid', 'legend', 'values', 'header']) {
         if (key in item.attributes && !['true', 'false'].includes(item.attributes[key])) throw new MarkupError(`${key} must be true or false`, item.line);
@@ -875,7 +895,8 @@ export class ASTTransformer {
         }
       }
     } else if (item.action === 'effect') {
-      if (!EFFECT_NAMES.has(attrs.name)) throw new MarkupError(`Unknown effect ${JSON.stringify(attrs.name)}`, item.line);
+      // A built-in effect, or one of the deck's own, found in its effects folders when the slide is built.
+      if (!EFFECT_NAMES.has(attrs.name) && !IDENTIFIER.test(attrs.name)) throw new MarkupError(`Unknown effect ${JSON.stringify(attrs.name)}`, item.line);
     } else if (item.action === 'transform') {
       const to = resolve(attrs.to, 'transform target') as ElementSpec;
       if (to === target) throw new MarkupError('transform needs two different elements', item.line);

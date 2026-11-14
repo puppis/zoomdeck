@@ -66,7 +66,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Advanced</h4>
-        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html">A deck inside a page</a></li><li><a href="reference.html">Reference</a></li></ul>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html">A deck inside a page</a></li><li><a href="extending.html">Extending a deck</a></li><li><a href="reference.html">Reference</a></li></ul>
       </section>
   </nav>
   <main id="content">
@@ -151,10 +151,12 @@ from there:</p>
 ├── assets/          images, videos, pages referenced from slides.md
 ├── parts/           optional: Markdown files spliced in with [[import: path.md]]
 ├── artworks/        optional: artworks of your own, name.svg or name.ts, for [[artwork: name]]
+├── fonts/, effects/, … optional: fonts, effects, chart types, languages, code themes, themes, slide classes
 ├── code-slides.ts   optional: Slide classes used by [[subslide: Name]]
 └── recordings/      talks recorded by the player, when the deck is served</code></pre>
 <p>Paths in <code>slides.md</code> resolve relative to the Markdown file, then in the folders <code>paths</code> names
-in <code>deck.json</code>, so figures shared between talks can stay in one place.</p>
+in <code>deck.json</code>, so figures shared between talks can stay in one place. The optional folders
+extend the player by name, one file each; <a href="extending.html">Extending a deck</a> lists them.</p>
 <h2 id="set-up-your-editor">Set up your editor<a class="anchor" href="#set-up-your-editor" aria-label="Link to this section">#</a></h2><p>Editing is most comfortable when the browser follows your typing. The <code>editors/</code> folder of the
 repository has ready-made setups for <strong>VS Code, Sublime Text, Emacs, Vim/Neovim and JetBrains
 IDEs</strong>: they save after a second of idle typing, bind the preview, the jump from a source line

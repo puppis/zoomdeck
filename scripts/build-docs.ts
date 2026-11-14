@@ -35,7 +35,7 @@ const NAV: Array<{ title: string; blurb: string; pages: string[] }> = [
   { title: 'Diagrams', blurb: 'Shapes, arrows, icons and enclosures, crisp or hand-drawn: a notebook to try them, then every kind in detail.', pages: ['diagrams', 'shapes', 'icons', 'enclosures', 'sketch'] },
   { title: 'Layout and style', blurb: 'Where things go and how they look: a notebook to try flow, anchors, constraints, groups and style sheets, then each in detail, and the deck.json configuration of a deck.', pages: ['layout', 'positioning', 'groups', 'styles', 'configuration'] },
   { title: 'Motion and interaction', blurb: 'What happens on each click: a notebook to try steps, animations, focus-only decorations and links, then fragments, animations, focus and live web pages in detail.', pages: ['motion', 'fragments', 'animations', 'focus', 'live-pages'] },
-  { title: 'Advanced', blurb: 'Slides written in TypeScript, a deck inside a page of your own, and the complete reference of the dialect.', pages: ['code-slides', 'embedding', 'reference'] },
+  { title: 'Advanced', blurb: 'Slides written in TypeScript, a deck inside a page of your own, the folders that extend the player, and the complete reference of the dialect.', pages: ['code-slides', 'embedding', 'extending', 'reference'] },
 ];
 
 /** Features a deck in the documentation has no use for unless a fence asks for them. */

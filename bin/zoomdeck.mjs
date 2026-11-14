@@ -97,26 +97,48 @@ export function resolveDeckPath(path) {
   return deckPath;
 }
 
+/** The kinds of library folders a deck has, with the configuration key and the standard folder name of each. */
+export const LIBRARY_KINDS = [
+  { key: 'paths', folder: null, modules: false },
+  { key: 'artworks', folder: 'artworks', modules: true },
+  { key: 'fonts', folder: 'fonts', modules: false },
+  { key: 'effects', folder: 'effects', modules: true },
+  { key: 'charts', folder: 'charts', modules: true },
+  { key: 'languages', folder: 'languages', modules: false },
+  { key: 'codeThemes', folder: 'code-themes', modules: false },
+  { key: 'themes', folder: 'themes', modules: false },
+  { key: 'slides', folder: 'slides', modules: true },
+];
+
 /**
- * The folders a deck.json names besides its own: `paths` (searched for imports, images, videos
- * and pages) and `artworks` (artworks of the deck's own), plus an `artworks/` folder next to
- * the Markdown when there is one; resolved against the deck.json, existing ones only.
+ * The folders a deck names besides its own: the `paths` searched for imports, images, videos
+ * and pages, and the library folders (artworks, fonts, effects, charts, languages, code themes,
+ * themes, slide classes) named in the configuration or standing next to the Markdown under
+ * their standard names; resolved against the deck.json, existing ones only. A bare Markdown
+ * file has its standard folders only.
  */
-export function deckFolders(configPath) {
+export function deckFolders(deckPath) {
   let config = {};
-  try {
-    config = JSON.parse(readFileSync(configPath, 'utf8'));
-  } catch {
-    return { paths: [], artworks: [], all: [] };
+  let dir = dirname(deckPath);
+  let markupDir = dir;
+  if (extname(deckPath).toLowerCase() === '.json') {
+    try {
+      config = JSON.parse(readFileSync(deckPath, 'utf8'));
+    } catch {
+      config = {};
+    }
+    if (typeof config.markup === 'string') markupDir = dirname(resolve(dir, config.markup));
   }
-  const dir = dirname(configPath);
-  const list = (names) => (Array.isArray(names) ? names : []).map((name) => resolve(dir, String(name))).filter((folder) => existsSync(folder));
-  const paths = list(config.paths);
-  const artworks = list(config.artworks);
-  const markupDir = typeof config.markup === 'string' ? dirname(resolve(dir, config.markup)) : dir;
-  const standard = join(markupDir, 'artworks');
-  if (existsSync(standard) && !artworks.includes(standard)) artworks.push(standard);
-  return { paths, artworks, all: [...paths, ...artworks] };
+  const result = { all: [] };
+  for (const { key, folder } of LIBRARY_KINDS) {
+    const named = Array.isArray(config[key]) ? config[key] : [];
+    const folders = named.map((name) => resolve(dir, String(name))).filter((candidate) => existsSync(candidate));
+    const standard = folder ? join(markupDir, folder) : null;
+    if (standard && existsSync(standard) && !folders.includes(standard)) folders.push(standard);
+    result[key] = folders;
+    result.all.push(...folders);
+  }
+  return result;
 }
 
 /** The kind of deck a file holds, by its extension; null for a file the command cannot serve. */
@@ -149,7 +171,7 @@ export async function startPreview(options) {
   if (!kind) throw new Error(`unsupported deck file ${deckPath}`);
   const deckDir = dirname(deckPath);
   // The deck's search and artwork folders are served and watched like its own folder.
-  const watchRoots = [deckDir, ...options.watch, ...(kind === 'json' ? deckFolders(deckPath).all : [])];
+  const watchRoots = [deckDir, ...options.watch, ...(kind === 'json' || kind === 'markdown' ? deckFolders(deckPath).all : [])];
   const reloadPlugin = {
     name: 'zoomdeck-reload',
     configureServer(server) {
@@ -244,7 +266,7 @@ async function collectAssets(deckDir) {
   return files;
 }
 
-const MIME = { '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.apng': 'image/apng', '.mp4': 'video/mp4', '.m4v': 'video/mp4', '.webm': 'video/webm', '.ogv': 'video/ogg', '.mov': 'video/quicktime', '.html': 'text/html' };
+const MIME = { '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.apng': 'image/apng', '.mp4': 'video/mp4', '.m4v': 'video/mp4', '.webm': 'video/webm', '.ogv': 'video/ogg', '.mov': 'video/quicktime', '.html': 'text/html', '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf', '.otf': 'font/otf', '.json': 'application/json' };
 
 async function build(options) {
   const deckPath = resolveDeckPath(options.positional[0] ?? usage('build needs a deck path'));
@@ -294,19 +316,24 @@ runDeck(await pdfDeck({
     const toKey = (path) => path.split(sep).join('/');
     // The search and artwork folders travel with the export as deck/paths/<i>/ and deck/artworks/<i>/,
     // and the player is told those folders relative to the Markdown, the way it names its own files.
-    const folders = kind === 'json' ? deckFolders(deckPath) : { paths: [], artworks: existsSync(join(markupDir, 'artworks')) ? [join(markupDir, 'artworks')] : [] };
-    const sources = [
-      { root: deckDir, key: (file) => toKey(relative(markupDir, file)), copyTo: (file) => join(outDir, 'deck', relative(deckDir, file)) },
-      ...folders.paths.map((folder, i) => ({ root: folder, key: (file) => toKey(relative(markupDir, join(deckDir, 'paths', String(i), relative(folder, file)))), copyTo: (file) => join(outDir, 'deck', 'paths', String(i), relative(folder, file)) })),
-      ...folders.artworks.map((folder, i) => ({ root: folder, key: (file) => toKey(relative(markupDir, join(deckDir, 'artworks', String(i), relative(folder, file)))), copyTo: (file) => join(outDir, 'deck', 'artworks', String(i), relative(folder, file)) })),
-    ];
-    const pathKeys = folders.paths.map((_, i) => toKey(relative(markupDir, join(deckDir, 'paths', String(i)))) + '/');
-    const artworkKeys = folders.artworks.map((_, i) => toKey(relative(markupDir, join(deckDir, 'artworks', String(i)))) + '/');
-    const artworkImports = [];
-    for (const [i, folder] of folders.artworks.entries()) {
-      for (const file of await collectAssets(folder)) {
-        if (!['.js', '.mjs', '.ts'].includes(extname(file).toLowerCase()) || dirname(file) !== folder) continue;
-        artworkImports.push({ name: basename(file, extname(file)), variable: `artwork_${i}_${artworkImports.length}`, path: toKey(file) });
+    // Every library folder of the deck travels as deck/<kind>/<i>/, named to the player relative to the
+    // Markdown; the modules among them (artworks, effects, charts, slide classes) are bundled by name.
+    const folders = deckFolders(deckPath);
+    const sources = [{ root: deckDir, key: (file) => toKey(relative(markupDir, file)), copyTo: (file) => join(outDir, 'deck', relative(deckDir, file)) }];
+    const folderKeys = {};
+    const moduleImports = {};
+    for (const { key: kind, modules } of LIBRARY_KINDS) {
+      folderKeys[kind] = [];
+      moduleImports[kind] = [];
+      for (const [i, folder] of (folders[kind] ?? []).entries()) {
+        const placed = join(deckDir, kind, String(i));
+        sources.push({ root: folder, key: (file) => toKey(relative(markupDir, join(placed, relative(folder, file)))), copyTo: (file) => join(outDir, 'deck', kind, String(i), relative(folder, file)) });
+        folderKeys[kind].push(toKey(relative(markupDir, placed)) + '/');
+        if (!modules) continue;
+        for (const file of await collectAssets(folder)) {
+          if (!['.js', '.mjs', '.ts'].includes(extname(file).toLowerCase()) || dirname(file) !== folder) continue;
+          moduleImports[kind].push({ name: basename(file, extname(file)), variable: `${kind}_${i}_${moduleImports[kind].length}`, path: toKey(file) });
+        }
       }
     }
     for (const { root, key, copyTo } of sources) {
@@ -330,14 +357,15 @@ runDeck(await pdfDeck({
       }
     }
     const classesModule = config.classes ?? config.imports;
+    const moduleMap = (kind) => `{ ${moduleImports[kind].map(({ name, variable }) => `${JSON.stringify(name)}: ${variable}`).join(', ')} }`;
     const importsLine = [
       classesModule ? `import * as slides from ${JSON.stringify(resolve(deckDir, classesModule).split(sep).join('/'))};` : 'const slides = undefined;',
-      ...artworkImports.map(({ variable, path }) => `import * as ${variable} from ${JSON.stringify(path)};`),
+      ...LIBRARY_KINDS.filter(({ modules }) => modules).flatMap(({ key }) => moduleImports[key].map(({ variable, path }) => `import * as ${variable} from ${JSON.stringify(path)};`)),
     ].join('\n');
     const markupBase = options.oneFile ? '' : `deck/${relative(deckDir, markupPath).split(sep).join('/')}`;
     entrySource = `import { runDeck, markupDeck } from ${JSON.stringify(sourceIndex)};
 ${importsLine}
-const config = ${JSON.stringify({ ...config, imports: undefined, classes: undefined, paths: undefined, artworks: undefined })};
+const config = ${JSON.stringify({ ...config, imports: undefined, classes: undefined, paths: undefined, artworks: undefined, fonts: undefined, effects: undefined, charts: undefined, languages: undefined, codeThemes: undefined, themes: undefined, slides: undefined })};
 const source = ${JSON.stringify(markdown)};
 const assets = ${JSON.stringify(assets)};
 const files = ${JSON.stringify(files)};
@@ -356,9 +384,20 @@ runDeck(markupDeck({
   styles: config.styles,
   showOutline: Boolean(config.showOutline) || ${options.showOutline},
   classes: slides,
-  paths: ${JSON.stringify(pathKeys)},
-  artworks: ${JSON.stringify(artworkKeys)},
-  artworkModules: { ${artworkImports.map(({ name, variable }) => `${JSON.stringify(name)}: ${variable}`).join(', ')} },
+  theme: config.theme,
+  paths: ${JSON.stringify(folderKeys.paths)},
+  artworks: ${JSON.stringify(folderKeys.artworks)},
+  fonts: ${JSON.stringify(folderKeys.fonts)},
+  effects: ${JSON.stringify(folderKeys.effects)},
+  charts: ${JSON.stringify(folderKeys.charts)},
+  languages: ${JSON.stringify(folderKeys.languages)},
+  codeThemes: ${JSON.stringify(folderKeys.codeThemes)},
+  themes: ${JSON.stringify(folderKeys.themes)},
+  slides: ${JSON.stringify(folderKeys.slides)},
+  artworkModules: ${moduleMap('artworks')},
+  effectModules: ${moduleMap('effects')},
+  chartModules: ${moduleMap('charts')},
+  slideModules: ${moduleMap('slides')},
 }));`;
   }
   const entryFile = join(stageDir, 'entry.ts');

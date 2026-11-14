@@ -66,7 +66,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Advanced</h4>
-        <ul><li><a href="code-slides.html" aria-current="page">Code-authored slides</a><ul class="subsections"><li><a href="#placing-a-code-authored-slide-in-a-markdown-deck">Placing a code-authored slide in a Markdown deck</a></li><li><a href="#the-slide-api">The Slide API</a></li><li><a href="#the-slidecontext-api">The SlideContext API</a></li><li><a href="#code-only-decks">Code-only decks</a></li><li><a href="#available-engine-objects">Available engine objects</a></li></ul></li><li><a href="embedding.html">A deck inside a page</a></li><li><a href="reference.html">Reference</a></li></ul>
+        <ul><li><a href="code-slides.html" aria-current="page">Code-authored slides</a><ul class="subsections"><li><a href="#placing-a-code-authored-slide-in-a-markdown-deck">Placing a code-authored slide in a Markdown deck</a></li><li><a href="#the-slide-api">The Slide API</a></li><li><a href="#the-slidecontext-api">The SlideContext API</a></li><li><a href="#code-only-decks">Code-only decks</a></li><li><a href="#available-engine-objects">Available engine objects</a></li></ul></li><li><a href="embedding.html">A deck inside a page</a></li><li><a href="extending.html">Extending a deck</a></li><li><a href="reference.html">Reference</a></li></ul>
       </section>
   </nav>
   <main id="content">
@@ -91,7 +91,9 @@ for (const button of document.querySelectorAll('.side-toggle')) {
     ctx.stop();
   }
 }</code></pre>
-<p><code>deck.json</code> names the module with <code>&quot;classes&quot;: &quot;code-slides.ts&quot;</code>. The class must be constructible
+<p><code>deck.json</code> names the module with <code>&quot;classes&quot;: &quot;code-slides.ts&quot;</code>; a <code>slides/</code> folder next to the
+Markdown, one <code>Name.ts</code> per class, is searched for the names that module lacks
+(<a href="extending.html#artworks-and-slide-classes">Extending a deck</a>). The class must be constructible
 without arguments and return a fresh slide; qualified names (<code>helpers.Orbit</code>) traverse
 namespaces. Each occurrence creates its own instance, with the same placement attributes as an
 include. A slide's natural canvas defaults to 16 × 9; pass <code>{ size: [20, 12] }</code> or

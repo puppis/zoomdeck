@@ -30,7 +30,9 @@ export class Orbit extends Slide {
 }
 ```
 
-`deck.json` names the module with `"classes": "code-slides.ts"`. The class must be constructible
+`deck.json` names the module with `"classes": "code-slides.ts"`; a `slides/` folder next to the
+Markdown, one `Name.ts` per class, is searched for the names that module lacks
+([Extending a deck](extending.html#artworks-and-slide-classes)). The class must be constructible
 without arguments and return a fresh slide; qualified names (`helpers.Orbit`) traverse
 namespaces. Each occurrence creates its own instance, with the same placement attributes as an
 include. A slide's natural canvas defaults to 16 × 9; pass `{ size: [20, 12] }` or

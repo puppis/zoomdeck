@@ -66,7 +66,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Advanced</h4>
-        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html">A deck inside a page</a></li><li><a href="reference.html">Reference</a></li></ul>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html">A deck inside a page</a></li><li><a href="extending.html">Extending a deck</a></li><li><a href="reference.html">Reference</a></li></ul>
       </section>
   </nav>
   <main id="content">
@@ -118,6 +118,14 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 <tr>
 <td><code>artworks</code></td>
 <td>folders with artworks of the deck's own, <code>name.svg</code> or <code>name.js</code>/<code>.ts</code>, for <code>[[artwork: name]]</code>; an <code>artworks/</code> folder next to the Markdown is searched anyway, then the <code>paths</code>; see <a href="icons.html#artworks-of-your-own">Icons</a></td>
+</tr>
+<tr>
+<td><code>fonts</code>, <code>effects</code>, <code>charts</code>, <code>languages</code>, <code>codeThemes</code>, <code>themes</code>, <code>slides</code></td>
+<td>folders with fonts, effect modules, chart modules, language profiles, code themes, themes and slide classes of the deck's own; the folder of the same name (<code>code-themes/</code> for <code>codeThemes</code>) next to the Markdown is searched anyway, then the <code>paths</code>; see <a href="extending.html">Extending a deck</a></td>
+</tr>
+<tr>
+<td><code>theme</code></td>
+<td>a theme, or a list of them, applied before <code>styles</code>: <code>themes/&lt;name&gt;.md</code> or <code>.json</code>, see <a href="extending.html#themes">Extending a deck</a></td>
 </tr>
 <tr>
 <td><code>background</code></td>
@@ -181,12 +189,17 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 <tr>
 <td><code>font</code></td>
 <td>Latin Modern Roman (bundled)</td>
-<td>prose font family; the LaTeX text face by default, so prose and formulas share one design</td>
+<td>prose font family; the LaTeX text face by default, so prose and formulas share one design; a family in the deck's <code>fonts/</code> folder is loaded from there</td>
 </tr>
 <tr>
 <td><code>codeFont</code></td>
 <td>Latin Modern Mono (bundled)</td>
 <td>inline code and listings; the LaTeX typewriter face, sized to pair with the text face</td>
+</tr>
+<tr>
+<td><code>codeTheme</code></td>
+<td>the deck's text color decides</td>
+<td>token colors of listings, <code>code-themes/&lt;name&gt;.json</code>, see <a href="extending.html#languages-and-code-themes">Extending a deck</a></td>
 </tr>
 <tr>
 <td><code>margin</code></td>

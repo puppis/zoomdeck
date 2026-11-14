@@ -49,7 +49,9 @@ sets a deck-wide look, and `tremble=` makes their rules vibrate like any vector 
 
 ## Charts
 
-A fenced block whose language is `chart` holds the data; its info string holds the options:
+A fenced block whose language is `chart` holds the data; its info string holds the options, among
+them `type`: `bar`, `line`, `pie`, or the name of a chart module of the deck's own in its
+`charts/` folder ([Extending a deck](extending.html#chart-types)):
 
 ````markdown
 ```chart {#visits x=4 y=0 width=7 height=3.5 type=line colors="RED_E TEAL_E"}

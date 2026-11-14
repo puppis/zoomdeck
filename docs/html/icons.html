@@ -66,7 +66,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Advanced</h4>
-        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html">A deck inside a page</a></li><li><a href="reference.html">Reference</a></li></ul>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html">A deck inside a page</a></li><li><a href="extending.html">Extending a deck</a></li><li><a href="reference.html">Reference</a></li></ul>
       </section>
   </nav>
   <main id="content">
@@ -205,7 +205,9 @@ drawn exactly like them, hand-drawn look included. A module may import <code>man
 <p>Compound figures belong here too: a module returns a <code>VGroup</code> of whatever shapes, labels and
 icons it likes, built from the directive's attributes, so a diagram vocabulary of your own
 (a traffic light, a gate, a server rack) is one file per symbol. Exports bundle the modules
-and copy or embed the SVG files; the tour's <code>examples/tour/artworks/</code> holds one of each.</p>
+and copy or embed the SVG files; the tour's <code>examples/tour/artworks/</code> holds one of each. The
+other folders a deck extends the player with, fonts, effects, chart types, languages, code
+themes, themes and slide classes, work the same way: <a href="extending.html">Extending a deck</a>.</p>
 <h2 id="from-code">From code<a class="anchor" href="#from-code" aria-label="Link to this section">#</a></h2><pre><code class="language-ts"><span class="tk-keyword">import</span> { makeIcon, ICON_NAMES, engine } <span class="tk-keyword">from</span> <span class="tk-string">'zoomdeck'</span>;
 
 <span class="tk-keyword">const</span> store = makeIcon(<span class="tk-string">'database'</span>, { size: <span class="tk-number">1.5</span>, color: engine.GOLD_E, fillColor: engine.GOLD_E, fillOpacity: <span class="tk-number">0.3</span> });

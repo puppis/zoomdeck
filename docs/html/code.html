@@ -66,7 +66,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Advanced</h4>
-        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html">A deck inside a page</a></li><li><a href="reference.html">Reference</a></li></ul>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html">A deck inside a page</a></li><li><a href="extending.html">Extending a deck</a></li><li><a href="reference.html">Reference</a></li></ul>
       </section>
   </nav>
   <main id="content">
@@ -127,6 +127,10 @@ A <code>::: {.element …}</code> container around the fence works as for other 
 <td>this dialect: containers, directives, attributes, math, code spans, headings</td>
 </tr>
 <tr>
+<td>a name in the deck's <code>languages/</code> folder</td>
+<td>the profile <code>languages/&lt;name&gt;.json</code> defines, see <a href="extending.html#languages-and-code-themes">Extending a deck</a></td>
+</tr>
+<tr>
 <td>anything else, or no name</td>
 <td>plain text</td>
 </tr>
@@ -135,7 +139,8 @@ A <code>::: {.element …}</code> container around the fence works as for other 
 <p>Token colors follow the slide's text color: light text on a dark background gets a dark-theme
 palette, dark text on a light background a light-theme one. Listings and inline code use the
 bundled Latin Modern Mono, the LaTeX typewriter face; <code>layout.codeFont</code> picks another monospace
-family.</p>
+family, from the deck's <code>fonts/</code> folder when it has it. <code>layout.codeTheme</code> names a color scheme
+of the deck's own, <code>code-themes/&lt;name&gt;.json</code>.</p>
 <blockquote>
 <p><strong>Tip</strong> To show markup that itself contains fences, open the outer block with four backticks.</p>
 </blockquote>

@@ -128,7 +128,9 @@ describe('markup for tables and charts', () => {
     expect(chart.source).toBe('A, 1\nB, 2');
     expect(chart.attributes.type).toBe('line');
     expect('lang' in chart.attributes).toBe(false);
-    expect(() => parse('```chart {#c type=donut}\nA, 1\n```')).toThrow(/Chart type must be one of/);
+    // A type that is not built in is a chart of the deck's own, looked up in its charts folders when the deck is rendered.
+    expect(element('```chart {#c type=donut}\nA, 1\n```', 'c').attributes.type).toBe('donut');
+    expect(() => parse('```chart {#c type="no way"}\nA, 1\n```')).toThrow(/Chart type must be one of/);
     expect(() => parse('```chart {#c colors="RED nope"}\nA, 1\n```')).toThrow(/Invalid color/);
     expect(() => parse('```chart {#c min=5 max=1}\nA, 1\n```')).toThrow(/max must exceed min/);
     expect(() => parse('```chart {#c}\n\n```')).toThrow(/needs rows of data/);

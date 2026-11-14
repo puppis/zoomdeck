@@ -36,11 +36,13 @@ A `::: {.element …}` container around the fence works as for other blocks.
 | `latex`, `tex` | commands, math, comments |
 | `html`, `xml`, `svg` | tags, attributes, strings, comments |
 | `markdown`, `md`, `slides` | this dialect: containers, directives, attributes, math, code spans, headings |
+| a name in the deck's `languages/` folder | the profile `languages/<name>.json` defines, see [Extending a deck](extending.html#languages-and-code-themes) |
 | anything else, or no name | plain text |
 
 Token colors follow the slide's text color: light text on a dark background gets a dark-theme
 palette, dark text on a light background a light-theme one. Listings and inline code use the
 bundled Latin Modern Mono, the LaTeX typewriter face; `layout.codeFont` picks another monospace
-family.
+family, from the deck's `fonts/` folder when it has it. `layout.codeTheme` names a color scheme
+of the deck's own, `code-themes/<name>.json`.
 
 > **Tip** To show markup that itself contains fences, open the outer block with four backticks.
