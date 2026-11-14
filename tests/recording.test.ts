@@ -145,6 +145,12 @@ describe('timelines', () => {
     expect(fixed.camera).toBe('none');
     expect(fixed.corner).toBe('top-left');
     expect(fixed.size).toBe(DEFAULT_RECORDING.size);
+    // The screen is filmed by itself while the deck is left unless said otherwise; the old hidden-page setting asked for the screen at the start of a recording.
+    expect(fixed.screenWhenAway).toBe(true);
+    expect(fixed.screenOnRecord).toBe(false);
+    expect(sanitizeRecording({ screenWhenHidden: true }).screenOnRecord).toBe(true);
+    expect(sanitizeRecording({ screenWhenHidden: true, screenOnRecord: false }).screenOnRecord).toBe(false);
+    expect(sanitizeRecording({ screenWhenAway: false }).screenWhenAway).toBe(false);
     expect(fixed.mirror).toBe(false);
     expect(fixed.microphone).toBeNull();
   });

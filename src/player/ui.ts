@@ -23,6 +23,7 @@ import { Recorder, initialEvents, type CapturedMedia } from './recorder';
 import { Playback } from './playback';
 import { exportMimeType, exportVideo, type ExportSource } from './export';
 import { PRINT_WIDTHS, printDeck, printPages, type PrintPages } from './print';
+import { zipFiles } from './zip';
 import { deleteRecording, describeMedia, download, listRecordings, loadTimeline, mediaFileName, recordingStoreAvailable, recordingUrl, saveFile, saveMedia, saveTimeline, type RecordingEntry } from './store';
 import { appendPart, formatTime, recordingName, stopRef, structureHash, type Corner, type PointerKind, type Timeline, type TimelineEvent, type UntimedEvent } from './timeline';
 
@@ -143,12 +144,19 @@ export class PlayerUI {
   private readonly _camera: HTMLVideoElement;
   private _cameraStream: MediaStream | null = null;
   private _cameraMode: CameraMode = 'off';
-  /** The screen share, while the presenter films the screen or holds it for the hidden-page mode of a recording. */
+  /** The screen share, while the presenter films the screen or holds it for the time spent away from the deck. */
   private _screenStream: MediaStream | null = null;
-  /** Whether the screen is what the recording films now (the Screen button pressed). */
+  /** Whether the screen is what the recording films now (the Screen button pressed, or the deck left). */
   private _screenFilming = false;
   /** The camera's mode before the screen took its place, to come back to when the filming stops. */
   private _cameraSuspended: CameraMode | null = null;
+  /** Whether the filming began by itself when the deck was left, so that coming back ends it. */
+  private _autoFilming = false;
+  /** Whether the deck was left while the screen was filmed by hand, so that coming back ends the filming too. */
+  private _awayWhileFilming = false;
+  /** Prompts of the browser open (its pickers for the screen and the camera), whose focus changes are no leave. */
+  private _prompting = 0;
+  private _awayTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly _liveDot: HTMLElement;
   private readonly _screenButton: HTMLButtonElement;
   /** Beside Screen while a share is held: opens the browser's picker again, for another screen or window. */
@@ -375,7 +383,10 @@ export class PlayerUI {
     });
     this._installPointerTools();
     this._keys.addEventListener('keydown', ((event: KeyboardEvent) => this._onKeyDown(event)) as EventListener, { signal: this._abort.signal });
-    document.addEventListener('visibilitychange', () => this._onVisibilityChange(), { signal: this._abort.signal });
+    // Leaving the deck for another tab, application or workspace, and coming back.
+    document.addEventListener('visibilitychange', () => this._checkAway(), { signal: this._abort.signal });
+    window.addEventListener('blur', () => this._checkAway(), { signal: this._abort.signal });
+    window.addEventListener('focus', () => this._checkAway(), { signal: this._abort.signal });
     if (deck.showOutline && this._features.has('outline')) this.toggleOutline();
     this._layoutCamera();
     this._updateSpotlight();
@@ -877,7 +888,13 @@ export class PlayerUI {
     try {
       // The picker opens on the kind of surface chosen last time (a whole screen at first) and leaves this tab out.
       const options = { video: { displaySurface: this._settings.recording.screenSurface, frameRate: { ideal: 15 } }, audio: false, selfBrowserSurface: 'exclude' };
-      const stream = await navigator.mediaDevices.getDisplayMedia(options as DisplayMediaStreamOptions);
+      this._prompting++;
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getDisplayMedia(options as DisplayMediaStreamOptions);
+      } finally {
+        this._promptEnded();
+      }
       this._releaseScreen();
       this._screenStream = stream;
       const surface = (stream.getVideoTracks()[0]?.getSettings() as { displaySurface?: string } | undefined)?.displaySurface;
@@ -924,6 +941,8 @@ export class PlayerUI {
   private async _setScreenFilming(on: boolean, picture = true): Promise<void> {
     if (on === this._screenFilming) return;
     this._screenFilming = on;
+    this._autoFilming = false;
+    this._awayWhileFilming = false;
     this._screenButton.setAttribute('aria-pressed', String(on));
     this.root.classList.toggle('screen-filming', on);
     this._updateScreenButton();
@@ -944,10 +963,45 @@ export class PlayerUI {
     if (picture) await this._recordPicture();
   }
 
-  /** The hidden-page mode: with the screen held for a recording, it is filmed whenever this page is hidden. */
-  private _onVisibilityChange(): void {
-    if (!this._recorder || !this._screenStream || !this._settings.recording.screenWhenHidden) return;
-    void this._setScreenFilming(document.hidden);
+  /**
+   * The deck was left or come back to (the page hidden or shown, the window out of focus or in):
+   * settle what that means a moment later, once the focus has stopped moving.
+   */
+  private _checkAway(): void {
+    if (this._awayTimer !== null) clearTimeout(this._awayTimer);
+    this._awayTimer = setTimeout(() => {
+      this._awayTimer = null;
+      this._applyAway();
+    }, 250);
+  }
+
+  /**
+   * While a share is held, leaving the deck films the screen by itself (the camera, if on, is
+   * set aside) and coming back stops the filming and brings the camera back, unless the
+   * setting says otherwise. A filming started by hand is left alone until the deck is left and
+   * come back to. The browser's own prompts take the focus too, so a check waits for them.
+   */
+  private _applyAway(): void {
+    if (this._playback || this._prompting || !this._settings.recording.screenWhenAway || !this._screenHeld()) return;
+    const away = document.hidden || !document.hasFocus();
+    if (away) {
+      if (this._screenFilming) {
+        this._awayWhileFilming = true;
+      } else {
+        void this._setScreenFilming(true);
+        this._autoFilming = true;
+      }
+    } else if (this._screenFilming && (this._autoFilming || this._awayWhileFilming)) {
+      void this._setScreenFilming(false);
+    }
+  }
+
+  /** A prompt of the browser closed: count it out once the focus has settled, then look where the deck stands. */
+  private _promptEnded(): void {
+    setTimeout(() => {
+      this._prompting--;
+      this._checkAway();
+    }, 500);
   }
 
   private _setCameraFull(on: boolean): void {
@@ -972,7 +1026,13 @@ export class PlayerUI {
       return false;
     }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: this._captureConstraints().video || true });
+      this._prompting++;
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: this._captureConstraints().video || true });
+      } finally {
+        this._promptEnded();
+      }
       this._setCameraStream(stream);
       return true;
     } catch (error) {
@@ -1093,8 +1153,8 @@ export class PlayerUI {
     } else {
       this.notice('This browser gives no access to a microphone here; recording the timeline only');
     }
-    // The hidden-page mode needs the screen from the start, while the click that started this still counts.
-    if (stream && this._settings.recording.screenWhenHidden && !this._screenStream) await this._acquireScreen();
+    // A share asked for at the start, while the click that started this still counts, so that leaving the deck films it.
+    if (stream && this._settings.recording.screenOnRecord && !this._screenStream) await this._acquireScreen();
     const screenTracks = this._screenFilming ? this._screenStream?.getVideoTracks() ?? [] : [];
     const videoTracks = screenTracks.length ? screenTracks : this._cameraStream?.getVideoTracks() ?? [];
     const recorder = new Recorder({ stream: stream && videoTracks.length ? new MediaStream([...stream.getAudioTracks(), ...videoTracks]) : stream, source: screenTracks.length ? 'screen' : 'camera' });
@@ -1135,7 +1195,7 @@ export class PlayerUI {
         : `the camera (${option(this._cameraSelect)}), on now ${this._cameraMode === 'full' ? 'full frame' : 'in a corner'}, for as long as it stays on`;
     const where = this._deck.base && recordingStoreAvailable()
       ? 'saves it in the recordings/ folder next to the deck'
-      : 'offers its files as downloads, to put in a recordings/ folder next to the deck';
+      : 'offers it as a zip file to download, to unzip into a recordings/ folder next to the deck';
     const dialog = el('dialog', { class: 'settings record' });
     const close = el('button', { class: 'close', 'aria-label': 'Close', text: '×' });
     // What to record: a new talk, or more of a saved one (only where the server keeps them).
@@ -1163,9 +1223,9 @@ export class PlayerUI {
       el('section', {},
         ...(continuable.length ? [el('div', { class: 'row' }, el('label', {}, 'Record ', what))] : []),
         el('p', { class: 'note', text: `The recording keeps your voice through the microphone (${option(this._micSelect)}), ${camera}, and every move on the deck: the stops, the ink, the whiteboard, the pointer and the camera switches. The slides themselves are not filmed; the talk plays back on the deck and exports as a video.` }),
-        el('p', { class: 'note', text: this._settings.recording.screenWhenHidden
-          ? 'The screen is filmed, in place of the camera, whenever this page is hidden, as when you switch to another application (the browser asks which screen first); the Screen button or S films it at any time.'
-          : 'The Screen button or S films the screen in place of the camera, for the time you spend in another application; the settings (Recording) can make that happen by itself while this page is hidden.' }),
+        el('p', { class: 'note', text: this._settings.recording.screenWhenAway
+          ? `The Screen button or S films the screen in place of the camera${this._settings.recording.screenOnRecord ? ' (the browser asks which screen when the recording starts)' : ', once the browser has asked which screen'}; while a share is held, leaving the deck for another tab, application or workspace films it by itself, and coming back returns to the camera.`
+          : 'The Screen button or S films the screen in place of the camera, for the time you spend in another application; the settings (Recording) can make that happen by itself whenever you leave the deck.' }),
         el('p', { class: 'note', text: `The header counts the time. Pause leaves a gap out of the talk; Stop (the same key or button) ends the recording and ${where}. A stopped talk can be continued later from this dialog or from the list of talks.` }),
         seam,
         el('div', { class: 'row' }, start, cancel)),
@@ -1258,17 +1318,26 @@ export class PlayerUI {
         this.notice(append ? `Continued recordings/${name}, now ${formatTime(timeline.duration)}` : `Saved as recordings/${name}`);
       } catch (error) {
         this.notice(`Could not save: ${(error as Error).message}`);
-        this._offerDownload(name, timeline, files);
+        await this._offerDownload(name, timeline, files);
       }
     } else {
-      this._offerDownload(name, timeline, files);
+      await this._offerDownload(name, timeline, files);
     }
   }
 
-  private _offerDownload(name: string, timeline: Timeline, files: Array<{ captured: CapturedMedia; number: number }>): void {
-    for (const file of files) download(file.captured.blob, mediaFileName(name, file.captured.type, file.number));
-    download(new Blob([JSON.stringify(timeline)], { type: 'application/json' }), `${name}.json`);
-    this.notice('Recording downloaded: put the files in a recordings/ folder next to the deck');
+  /** Offer the recording as one zip file to download: its media files and timeline; one by one only when too large for an archive. */
+  private async _offerDownload(name: string, timeline: Timeline, files: Array<{ captured: CapturedMedia; number: number }>): Promise<void> {
+    const entries = [
+      ...files.map((file) => ({ name: mediaFileName(name, file.captured.type, file.number), blob: file.captured.blob })),
+      { name: `${name}.json`, blob: new Blob([JSON.stringify(timeline)], { type: 'application/json' }) },
+    ];
+    try {
+      download(await zipFiles(entries), `${name}.zip`);
+      this.notice(`${name}.zip downloaded: unzip it into a recordings/ folder next to the deck`);
+    } catch {
+      for (const entry of entries) download(entry.blob, entry.name);
+      this.notice('Recording downloaded: put the files in a recordings/ folder next to the deck');
+    }
   }
 
   // ---------------------------------------------------------------------
@@ -1835,9 +1904,15 @@ export class PlayerUI {
       this._testVideo,
       el('div', { class: 'sound' }, el('div', { class: 'meter', role: 'meter', 'aria-label': 'Sound level' }, this._testLevel), this._listenButton),
       this._testStatus);
-    this._screenAutoToggle = el('input', { type: 'checkbox' });
-    this._screenAutoToggle.addEventListener('change', () => {
-      this._settings.recording.screenWhenHidden = this._screenAutoToggle.checked;
+    this._screenAwayToggle = el('input', { type: 'checkbox' });
+    this._screenAwayToggle.addEventListener('change', () => {
+      this._settings.recording.screenWhenAway = this._screenAwayToggle.checked;
+      saveSettings(this._settings);
+      this._checkAway();
+    });
+    this._screenAskToggle = el('input', { type: 'checkbox' });
+    this._screenAskToggle.addEventListener('change', () => {
+      this._settings.recording.screenOnRecord = this._screenAskToggle.checked;
       saveSettings(this._settings);
     });
     this._mirrorToggle = el('input', { type: 'checkbox' });
@@ -1867,7 +1942,8 @@ export class PlayerUI {
       el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Corner of the camera picture' }), this._cornerSelect),
       el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Size of the camera picture' }), this._pipSizeSelect),
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Mirror my own picture while presenting' }), this._mirrorToggle),
-      el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Film the screen while this page is hidden during a recording (the browser asks which screen when the recording starts)' }), this._screenAutoToggle),
+      el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'While a screen share is held, film it by itself whenever you leave the deck for another tab, application or workspace, and come back to the camera on return' }), this._screenAwayToggle),
+      el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Ask for the screen when a recording starts, so that a share is held from the start' }), this._screenAskToggle),
     );
     const resetRecording = el('button', { text: 'Restore the default recording settings' });
     resetRecording.addEventListener('click', () => {
@@ -1952,7 +2028,8 @@ export class PlayerUI {
   private _cameraSelect!: HTMLSelectElement;
   private _mirrorToggle!: HTMLInputElement;
   private _padNotesToggle!: HTMLInputElement;
-  private _screenAutoToggle!: HTMLInputElement;
+  private _screenAwayToggle!: HTMLInputElement;
+  private _screenAskToggle!: HTMLInputElement;
   private _antialiasToggle!: HTMLInputElement;
   private _resolutionSelect!: HTMLSelectElement;
   private _renderingNote!: HTMLElement;
@@ -2190,7 +2267,8 @@ export class PlayerUI {
     this._micSelect.value = recording.microphone ?? '';
     this._cameraSelect.value = recording.camera ?? '';
     this._mirrorToggle.checked = recording.mirror;
-    this._screenAutoToggle.checked = recording.screenWhenHidden;
+    this._screenAwayToggle.checked = recording.screenWhenAway;
+    this._screenAskToggle.checked = recording.screenOnRecord;
     this._antialiasToggle.checked = this._settings.rendering.antialias;
     this._resolutionSelect.value = String(this._settings.rendering.resolution);
     this._renderingChanged();
@@ -2198,7 +2276,7 @@ export class PlayerUI {
     this._pipSizeSelect.value = String(recording.size);
     this._recordingStatus.textContent = this._deck.base && recordingStoreAvailable()
       ? 'Recordings are saved in a recordings/ folder next to the deck.'
-      : 'Without the preview server a recording is offered as downloads (a media file and a timeline) to put in a recordings/ folder next to the deck.';
+      : 'Without the preview server a recording is offered as a zip file to download (its media files and timeline), to unzip into a recordings/ folder next to the deck.';
     this._pointerModeSelect.value = this._settings.pointerMode;
     for (const [action, select] of this._pointerSelects) select.value = this._settings.pointer[action] ?? 'off';
     const pen = this._settings.pen;

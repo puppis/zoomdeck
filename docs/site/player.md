@@ -50,9 +50,9 @@ The gear button (or the `,` key) opens the settings dialog, in six parts:
   (no key), one of Shift, Control, Alt, ⌘/Win or a pair of them, or "Off"; choosing keys already
   used by another gesture frees them from it.
 - **Pen**: how pressure and motion shape a stroke; see [The pen](#the-pen).
-- **Recording**: the microphone and camera, where the camera picture sits, and whether the screen
-  is filmed while the page is hidden; see
-  [Recording a talk](#recording-a-talk).
+- **Recording**: the microphone and camera, where the camera picture sits, whether a held screen
+  share is filmed by itself while you are away from the deck, and whether a recording asks for the
+  screen when it starts; see [Recording a talk](#recording-a-talk).
 - **Tablet**: pairing a companion tablet, the tablets connected and the trusted ones; see
   [A tablet as a drawing pad](#a-tablet-as-a-drawing-pad).
 - **Keyboard**: every action with its keys, in three groups: the keys while presenting, the keys
@@ -249,8 +249,9 @@ player warns when the deck changed since the talk was recorded.
 The header shows the running time while recording. **Pause** stops both the microphone and the
 clock, and resuming leaves the gap out of the talk. **Stop** saves the recording in a
 `recordings/` folder next to the deck when the deck is served by `zoomdeck serve` or the
-development page; otherwise the two files are offered as downloads, to put in such a folder by
-hand. When `ffmpeg` is installed, the server also rewrites the media file so that it carries its
+development page; otherwise the files are offered as one zip archive to download, to unzip into
+such a folder by hand (a recording too large for an archive, beyond four gigabytes, comes as
+separate files). When `ffmpeg` is installed, the server also rewrites the media file so that it carries its
 duration and can be seeked in any player. The recording is named after the date and time,
 `talk-2026-11-13-1030`.
 
@@ -265,10 +266,16 @@ applications). Stopping the filming keeps the share, so that the next `S` films 
 again without asking; the small arrow beside **Screen**, shown while a share is held, opens the
 picker again to film something else instead. Ending the share from the browser's own bar
 (Chrome's "Stop sharing", Firefox's and Safari's sharing indicators) works too, and the next `S`
-then asks again. With "Film the screen while this page is hidden" in the settings, a recording asks
-for the screen when it starts and films it by itself whenever the page is hidden, as when you
-switch to another application, and goes back to the deck when you return; the switch still works
-at any time. A filmed stretch is a further media file of the talk; in playback and in the exported
+then asks again.
+
+While a share is held, the deck films it by itself whenever you leave: switching to another tab,
+another application or another workspace starts the filming, setting the camera aside if it was
+on, and coming back to the deck stops it and brings the camera back as it was. A filming you
+started by hand is left alone until you leave and come back, which ends it too; the button and
+`S` still work at any time. The setting "film it by itself whenever you leave the deck" under
+**Recording** turns this off, and "Ask for the screen when a recording starts" makes a recording
+ask for the share as it starts, so that the first leave is filmed without a press of `S`. A filmed
+stretch is a further media file of the talk; in playback and in the exported
 video it fills the frame, whole, and the deck stands still meanwhile. Your voice goes on through
 the microphone, while the sound of other applications is not captured. The browser needs the
 system's permission to record the screen (macOS asks once), and screen files are larger than

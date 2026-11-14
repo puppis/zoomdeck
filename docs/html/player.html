@@ -255,9 +255,9 @@ an element's source in the editor (Alt by default). Each can be &quot;Plain&quot
 (no key), one of Shift, Control, Alt, ⌘/Win or a pair of them, or &quot;Off&quot;; choosing keys already
 used by another gesture frees them from it.</li>
 <li><strong>Pen</strong>: how pressure and motion shape a stroke; see <a href="#the-pen">The pen</a>.</li>
-<li><strong>Recording</strong>: the microphone and camera, where the camera picture sits, and whether the screen
-is filmed while the page is hidden; see
-<a href="#recording-a-talk">Recording a talk</a>.</li>
+<li><strong>Recording</strong>: the microphone and camera, where the camera picture sits, whether a held screen
+share is filmed by itself while you are away from the deck, and whether a recording asks for the
+screen when it starts; see <a href="#recording-a-talk">Recording a talk</a>.</li>
 <li><strong>Tablet</strong>: pairing a companion tablet, the tablets connected and the trusted ones; see
 <a href="#a-tablet-as-a-drawing-pad">A tablet as a drawing pad</a>.</li>
 <li><strong>Keyboard</strong>: every action with its keys, in three groups: the keys while presenting, the keys
@@ -469,8 +469,9 @@ player warns when the deck changed since the talk was recorded.</p>
 <p>The header shows the running time while recording. <strong>Pause</strong> stops both the microphone and the
 clock, and resuming leaves the gap out of the talk. <strong>Stop</strong> saves the recording in a
 <code>recordings/</code> folder next to the deck when the deck is served by <code>zoomdeck serve</code> or the
-development page; otherwise the two files are offered as downloads, to put in such a folder by
-hand. When <code>ffmpeg</code> is installed, the server also rewrites the media file so that it carries its
+development page; otherwise the files are offered as one zip archive to download, to unzip into
+such a folder by hand (a recording too large for an archive, beyond four gigabytes, comes as
+separate files). When <code>ffmpeg</code> is installed, the server also rewrites the media file so that it carries its
 duration and can be seeked in any player. The recording is named after the date and time,
 <code>talk-2026-11-13-1030</code>.</p>
 <p><strong>Filming the screen.</strong> A talk may leave the deck for a while: a demonstration in another
@@ -484,10 +485,15 @@ applications). Stopping the filming keeps the share, so that the next <code>S</c
 again without asking; the small arrow beside <strong>Screen</strong>, shown while a share is held, opens the
 picker again to film something else instead. Ending the share from the browser's own bar
 (Chrome's &quot;Stop sharing&quot;, Firefox's and Safari's sharing indicators) works too, and the next <code>S</code>
-then asks again. With &quot;Film the screen while this page is hidden&quot; in the settings, a recording asks
-for the screen when it starts and films it by itself whenever the page is hidden, as when you
-switch to another application, and goes back to the deck when you return; the switch still works
-at any time. A filmed stretch is a further media file of the talk; in playback and in the exported
+then asks again.</p>
+<p>While a share is held, the deck films it by itself whenever you leave: switching to another tab,
+another application or another workspace starts the filming, setting the camera aside if it was
+on, and coming back to the deck stops it and brings the camera back as it was. A filming you
+started by hand is left alone until you leave and come back, which ends it too; the button and
+<code>S</code> still work at any time. The setting &quot;film it by itself whenever you leave the deck&quot; under
+<strong>Recording</strong> turns this off, and &quot;Ask for the screen when a recording starts&quot; makes a recording
+ask for the share as it starts, so that the first leave is filmed without a press of <code>S</code>. A filmed
+stretch is a further media file of the talk; in playback and in the exported
 video it fills the frame, whole, and the deck stands still meanwhile. Your voice goes on through
 the microphone, while the sound of other applications is not captured. The browser needs the
 system's permission to record the screen (macOS asks once), and screen files are larger than
