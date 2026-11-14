@@ -70,7 +70,8 @@ comments.
 
 | Attribute | Default | Meaning |
 | --- | --- | --- |
-| `type` | `bar` | `bar` (grouped bars), `line` (lines with markers) or `pie` (the first series as slices) |
+| `type` | `bar` | `bar` (grouped bars), `line` (lines with markers) or `pie` (the first series as slices); any other name is a chart module of the deck's own |
+| `src` | the fence's rows | a CSV, TSV or JSON file with the rows, next to the Markdown or in the `paths` folders; the fence is then left empty ([Extending a deck](extending.html#chart-types)) |
 | `width`, `height` | 6, 3.5 | size of the plot area, or of the box a pie fits in; axis labels and the legend add to it |
 | `colors` | a built-in palette | series (or slice) colors, space- or comma-separated |
 | `fill_opacity` | 0.85 | opacity of bars and slices |

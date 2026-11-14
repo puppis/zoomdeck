@@ -81,8 +81,10 @@ describe('MarkupParser', () => {
     const document = new MarkupParser().parse('::: slide {#a transition=cut}\n[[include: #b transition=zoom]]\n:::\n::: slide {#b}\nx\n:::');
     expect(document.slides[0].attributes.transition).toBe('cut');
     expect((document.slides[0].items[0] as IncludeSpec).attributes.transition).toBe('zoom');
-    expect(() => new MarkupParser().parse('::: slide {#a transition=fade}\nx\n:::')).toThrow(/zoom or cut/);
-    expect(() => new MarkupParser().parse('::: slide {#a}\n[[include: #b transition=none]]\n:::\n::: slide {#b}\nx\n:::')).toThrow(/zoom or cut/);
+    // A name that is not zoom or cut is a camera transition of the deck's own, loaded from its transitions folders.
+    expect(new MarkupParser().parse('::: slide {#a transition=fade}\nx\n:::').slides[0].attributes.transition).toBe('fade');
+    expect(() => new MarkupParser().parse('::: slide {#a transition="no way"}\nx\n:::')).toThrow(/zoom, cut, or the name/);
+    expect(() => new MarkupParser().parse('::: slide {#a}\n[[include: #b transition="1 2"]]\n:::\n::: slide {#b}\nx\n:::')).toThrow(/zoom, cut, or the name/);
   });
 
   it('accepts href on elements, shapes, groups, connections and attachments', () => {
@@ -328,7 +330,9 @@ describe('phase 3 animation directives', () => {
   it('accepts enter and exit styles on elements and directives', () => {
     const steps = plan('[a]{#a1 x=0 step=1 enter=grow exit=shrink}\n[[hide: #a1 step=2]]\n[[show: #a1 step=3 enter=write]]');
     expect(steps.map((s) => s.changes[0].style)).toEqual(['grow', 'shrink', 'write']);
-    expect(() => parse('[a]{#a1 x=0 step=1 enter=teleport}')).toThrow(/Unknown enter style/);
+    // A style that is not built in is an effect of the deck's own, loaded from its effects folders when the deck is built.
+    expect(() => parse('[a]{#a1 x=0 step=1 enter=teleport}')).not.toThrow();
+    expect(() => parse('[a]{#a1 x=0 step=1 enter="tele port"}')).toThrow(/Unknown enter style/);
     expect(() => parse('[a]{#a1 x=0 step=1}\n[[hide: #a1 step=2 enter=grow]]')).toThrow(/hide directives take/);
   });
 });

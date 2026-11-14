@@ -24,8 +24,10 @@ tour/
 ├── effects/         an effect of the deck's own, pulse.ts, for [[effect: pulse ...]]
 └── assets/          images, an animated PNG, a video, an embeddable page
 
-Other folders extend the player the same way when a deck has them: `fonts/`, `charts/`,
-`languages/`, `code-themes/`, `themes/` and `slides/`, one file per name.
+The documentation links on every chapter slide come from one `::: snippet docs` block at the top
+of slides.md. Other folders extend the player the same way when a deck has them: `snippets/`,
+`directives/`, `fonts/`, `transitions/`, `charts/`, `languages/`, `code-themes/`, `themes/` and
+`slides/`, one file per name.
 ```
 
 Copy the folder, delete the chapters you do not need and start writing. `deck.json` can be as

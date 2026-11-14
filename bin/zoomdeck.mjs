@@ -108,6 +108,9 @@ export const LIBRARY_KINDS = [
   { key: 'codeThemes', folder: 'code-themes', modules: false },
   { key: 'themes', folder: 'themes', modules: false },
   { key: 'slides', folder: 'slides', modules: true },
+  { key: 'directives', folder: 'directives', modules: true },
+  { key: 'snippets', folder: 'snippets', modules: false },
+  { key: 'transitions', folder: 'transitions', modules: true },
 ];
 
 /**
@@ -266,7 +269,7 @@ async function collectAssets(deckDir) {
   return files;
 }
 
-const MIME = { '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.apng': 'image/apng', '.mp4': 'video/mp4', '.m4v': 'video/mp4', '.webm': 'video/webm', '.ogv': 'video/ogg', '.mov': 'video/quicktime', '.html': 'text/html', '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf', '.otf': 'font/otf', '.json': 'application/json' };
+const MIME = { '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.apng': 'image/apng', '.mp4': 'video/mp4', '.m4v': 'video/mp4', '.webm': 'video/webm', '.ogv': 'video/ogg', '.mov': 'video/quicktime', '.html': 'text/html', '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf', '.otf': 'font/otf', '.json': 'application/json', '.csv': 'text/csv', '.tsv': 'text/tab-separated-values', '.txt': 'text/plain' };
 
 async function build(options) {
   const deckPath = resolveDeckPath(options.positional[0] ?? usage('build needs a deck path'));
@@ -349,7 +352,8 @@ runDeck(await pdfDeck({
           if (mime) assets[key(file)] = `data:${mime};base64,${(await fs.readFile(file)).toString('base64')}`;
         } else {
           const recording = relative(root, file).split(sep).includes(RECORDINGS);
-          if (!recording && ['.json', '.ts', '.js', '.mjs'].includes(ext)) continue;
+          // Modules are bundled; the deck's configuration and an editor's project files stay behind. Other JSON (data, profiles, themes) travels.
+          if (!recording && (['.ts', '.js', '.mjs'].includes(ext) || file === deckPath || /^(tsconfig|package|jsconfig)[^/]*\.json$/.test(basename(file)))) continue;
           const target = copyTo(file);
           await fs.mkdir(dirname(target), { recursive: true });
           await fs.copyFile(file, target);
@@ -363,13 +367,13 @@ runDeck(await pdfDeck({
       ...LIBRARY_KINDS.filter(({ modules }) => modules).flatMap(({ key }) => moduleImports[key].map(({ variable, path }) => `import * as ${variable} from ${JSON.stringify(path)};`)),
     ].join('\n');
     const markupBase = options.oneFile ? '' : `deck/${relative(deckDir, markupPath).split(sep).join('/')}`;
-    entrySource = `import { runDeck, markupDeck } from ${JSON.stringify(sourceIndex)};
+    entrySource = `import { runDeck, loadMarkupDeck } from ${JSON.stringify(sourceIndex)};
 ${importsLine}
-const config = ${JSON.stringify({ ...config, imports: undefined, classes: undefined, paths: undefined, artworks: undefined, fonts: undefined, effects: undefined, charts: undefined, languages: undefined, codeThemes: undefined, themes: undefined, slides: undefined })};
+const config = ${JSON.stringify({ ...config, imports: undefined, classes: undefined, ...Object.fromEntries(LIBRARY_KINDS.map(({ key }) => [key, undefined])) })};
 const source = ${JSON.stringify(markdown)};
 const assets = ${JSON.stringify(assets)};
 const files = ${JSON.stringify(files)};
-runDeck(markupDeck({
+runDeck(await loadMarkupDeck({
   source,
   basePath: ${JSON.stringify(markupBase)} ? new URL(${JSON.stringify(markupBase)}, location.href).href : location.href,
   assets: Object.keys(assets).length ? assets : undefined,
@@ -394,10 +398,15 @@ runDeck(markupDeck({
   codeThemes: ${JSON.stringify(folderKeys.codeThemes)},
   themes: ${JSON.stringify(folderKeys.themes)},
   slides: ${JSON.stringify(folderKeys.slides)},
+  directives: ${JSON.stringify(folderKeys.directives)},
+  snippets: ${JSON.stringify(folderKeys.snippets)},
+  transitions: ${JSON.stringify(folderKeys.transitions)},
   artworkModules: ${moduleMap('artworks')},
   effectModules: ${moduleMap('effects')},
   chartModules: ${moduleMap('charts')},
   slideModules: ${moduleMap('slides')},
+  directiveModules: ${moduleMap('directives')},
+  transitionModules: ${moduleMap('transitions')},
 }));`;
   }
   const entryFile = join(stageDir, 'entry.ts');

@@ -12,7 +12,8 @@ import { sketch, sketchSeed, type FillStyle, type OutlineMobject, type SketchOpt
 import { artworkFromModule, makeIcon, type ArtworkModule, type ArtworkOptions, type IconName } from '../icons';
 import { ICON_KINDS } from './ast';
 import { effectFromModule, type EffectModule, type EffectOptions } from '../animations';
-import { chartFromModule, CHART_TYPES, type ChartModule } from '../charts';
+import { chartFromModule, chartDataFromJson, CHART_TYPES, type ChartModule } from '../charts';
+import { directiveFromModule, type DirectiveModule, type DirectiveOptions } from '../directives';
 import { knownLanguage, registerLanguage, type Language } from './tokens';
 import { DEFAULT_CODE_FONT, DEFAULT_HANDWRITING_FONT } from '../fonts';
 import type { CodeTheme } from './code';
@@ -307,6 +308,9 @@ export interface MarkupRendererOptions {
   languages?: string[];
   /** Folders with code themes, `name.json`, for `layout.codeTheme`. */
   codeThemes?: string[];
+  /** Folders with directive modules, `name.js`/`.ts`, for `[[name: …]]` the dialect does not know. */
+  directives?: string[];
+  directiveModules?: Record<string, DirectiveModule>;
   effectModules?: Record<string, EffectModule>;
   chartModules?: Record<string, ChartModule>;
 }
@@ -331,6 +335,8 @@ export class MarkupRenderer {
   readonly charts: string[];
   readonly languages: string[];
   readonly codeThemes: string[];
+  readonly directives: string[];
+  readonly directiveModules: Record<string, DirectiveModule>;
   readonly effectModules: Record<string, EffectModule>;
   readonly chartModules: Record<string, ChartModule>;
   private readonly _parser = new MarkupParser();
@@ -357,6 +363,8 @@ export class MarkupRenderer {
     this.charts = options.charts ?? [];
     this.languages = options.languages ?? [];
     this.codeThemes = options.codeThemes ?? [];
+    this.directives = options.directives ?? [];
+    this.directiveModules = options.directiveModules ?? {};
     this.effectModules = options.effectModules ?? {};
     this.chartModules = options.chartModules ?? {};
   }
@@ -583,6 +591,40 @@ export class MarkupRenderer {
   }
 
 
+  /**
+   * A directive of the deck's own, drawn by the module `name.js`/`.ts` of the directives folders
+   * (bundled ahead in an export), with the directive's attributes and the deck's style.
+   */
+  async directive(element: ElementSpec, fontSize: number, width: number, color: string): Promise<Mobject> {
+    const name = element.source;
+    const module = this.directiveModules[name] ?? (await this._moduleIn<DirectiveModule>(name, [...this.directives, ...this.paths]));
+    if (!module) {
+      throw new MarkupError(`Unknown directive ${JSON.stringify(name)}: not one of the dialect's and no ${name}.js or ${name}.ts in the deck's directives folders`, element.line);
+    }
+    const attrs = element.attributes;
+    const strokeWidth = Number(attrs.stroke_width ?? 2);
+    const fillColor = attrs.fill_color ? parseColor(attrs.fill_color) : color;
+    const fillOpacity = Number(attrs.fill_opacity ?? 0);
+    const options: DirectiveOptions = {
+      name, attributes: attrs, color, fontSize, width, foreground: this.layout.color, layout: this.layout,
+      sketch: sketchOptions(element, { color, strokeWidth, fillColor, fillOpacity }),
+      text: (markup, size = fontSize, maxWidth = width) => this.text(this._parser.parseInlineSpans(markup, element.line), size, maxWidth, color, attrs.font),
+      icon: (iconName, iconOptions = {}) => {
+        if (!ICON_KINDS.has(iconName)) throw new MarkupError(`[[${name}: …]] asks for an icon ${JSON.stringify(iconName)} that is not built in`, element.line);
+        return makeIcon(iconName as IconName, { size: 1, color, strokeWidth, fillColor, fillOpacity, ...iconOptions });
+      },
+      artwork: (artworkName, attributes = {}) => this.artwork(artworkName, {
+        size: 1, color, strokeWidth, fillColor, fillOpacity, attributes, foreground: this.layout.color,
+      }, element.line),
+    };
+    try {
+      return await directiveFromModule(module, options);
+    } catch (error) {
+      if (error instanceof MarkupError) throw error;
+      throw new MarkupError(`[[${name}: …]]: ${(error as Error).message}`, element.line);
+    }
+  }
+
   /** Resolve an asset path relative to the document. */
   resolveUrl(path: string): string {
     const preloaded = this.assets[path] ?? this.assets[path.replace(/^\.\//, '')];
@@ -742,6 +784,8 @@ export class MarkupRenderer {
         group.markupParts = [icon, label];
         obj = group;
       }
+    } else if (element.kind === 'custom') {
+      obj = await this.directive(element, size, width, color);
     } else if (element.kind === 'table') {
       const table = element as TableSpec;
       const optional = (key: string) => (key in attrs ? Number(attrs[key]) : undefined);
@@ -765,10 +809,23 @@ export class MarkupRenderer {
       }, (spans, fontSize, maxWidth) => this.text(spans, fontSize, maxWidth, color, attrs.font));
     } else if (element.kind === 'chart') {
       let data;
+      let rows = element.source;
+      if (attrs.src) {
+        // The rows come from a CSV (or TSV, or JSON) file next to the document or in its search folders.
+        const url = await this.locate(attrs.src);
+        try {
+          const response = await fetch(url);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          rows = await response.text();
+        } catch (error) {
+          throw new MarkupError(`Chart data ${attrs.src}: ${(error as Error).message}`, element.line);
+        }
+      }
       try {
-        data = parseChartData(element.source, 'header' in attrs ? attrs.header === 'true' : undefined);
+        const header = 'header' in attrs ? attrs.header === 'true' : undefined;
+        data = /^\s*[[{]/.test(rows) ? chartDataFromJson(JSON.parse(rows), header) : parseChartData(rows, header);
       } catch (error) {
-        throw new MarkupError(`Chart data: ${(error as Error).message}`, element.line);
+        throw new MarkupError(`Chart data${attrs.src ? ` ${attrs.src}` : ''}: ${(error as Error).message}`, element.line);
       }
       const optional = (key: string) => (key in attrs ? Number(attrs[key]) : undefined);
       const flag = (key: string) => (key in attrs ? attrs[key] === 'true' : undefined);

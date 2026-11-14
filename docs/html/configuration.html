@@ -120,12 +120,12 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 <td>folders with artworks of the deck's own, <code>name.svg</code> or <code>name.js</code>/<code>.ts</code>, for <code>[[artwork: name]]</code>; an <code>artworks/</code> folder next to the Markdown is searched anyway, then the <code>paths</code>; see <a href="icons.html#artworks-of-your-own">Icons</a></td>
 </tr>
 <tr>
-<td><code>fonts</code>, <code>effects</code>, <code>charts</code>, <code>languages</code>, <code>codeThemes</code>, <code>themes</code>, <code>slides</code></td>
-<td>folders with fonts, effect modules, chart modules, language profiles, code themes, themes and slide classes of the deck's own; the folder of the same name (<code>code-themes/</code> for <code>codeThemes</code>) next to the Markdown is searched anyway, then the <code>paths</code>; see <a href="extending.html">Extending a deck</a></td>
+<td><code>snippets</code>, <code>directives</code>, <code>fonts</code>, <code>effects</code>, <code>transitions</code>, <code>charts</code>, <code>languages</code>, <code>codeThemes</code>, <code>themes</code>, <code>slides</code></td>
+<td>folders with snippets, directive modules, fonts, effect modules, camera transitions, chart modules, language profiles, code themes, themes and slide classes of the deck's own; the folder of the same name (<code>code-themes/</code> for <code>codeThemes</code>) next to the Markdown is searched anyway, then the <code>paths</code>; see <a href="extending.html">Extending a deck</a></td>
 </tr>
 <tr>
 <td><code>theme</code></td>
-<td>a theme, or a list of them, applied before <code>styles</code>: <code>themes/&lt;name&gt;.md</code> or <code>.json</code>, see <a href="extending.html#themes">Extending a deck</a></td>
+<td>a theme, or a list of them, under the deck's own <code>styles</code>, <code>layout</code>, <code>presenter</code>, <code>background</code> and <code>viewport</code>: <code>themes/&lt;name&gt;.md</code> or <code>.json</code>, see <a href="extending.html#themes">Extending a deck</a></td>
 </tr>
 <tr>
 <td><code>background</code></td>
@@ -255,7 +255,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 <tr>
 <td><code>transition</code></td>
 <td><code>zoom</code></td>
-<td><code>cut</code> replaces the view at once between slides, like turning PDF pages; a slide's own <code>transition=</code> overrides it</td>
+<td><code>cut</code> replaces the view at once between slides, like turning PDF pages; the name of a module in the deck's <code>transitions/</code> folder moves the camera its own way; a slide's own <code>transition=</code> overrides it</td>
 </tr>
 <tr>
 <td><code>padding</code></td>

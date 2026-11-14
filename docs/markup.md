@@ -228,10 +228,13 @@ endpoint disappears.
 `[[artwork: name #id …]]` draws an artwork of the deck's own, `name.svg` or a `name.js`/`.ts` module
 in its `artworks/` folder (or the folders `artworks` and `paths` name in `deck.json`), with any
 attributes the module reads; `paths` are also searched for imports, images, videos and pages.
-The folders `fonts/`, `effects/`, `charts/`, `languages/`, `code-themes/`, `themes/` and `slides/`
-next to the Markdown extend the player the same way, by name: a font family, an effect name, a
-chart `type`, a fence language, `layout.codeTheme`, `theme` and `[[subslide: Name]]` that are not
-built in are looked up there (docs/site/extending.md).
+The folders `snippets/`, `directives/`, `fonts/`, `effects/`, `transitions/`, `charts/`,
+`languages/`, `code-themes/`, `themes/` and `slides/` next to the Markdown extend the player the
+same way, by name: `[[snippet: name …]]` expands markup with `{{placeholders}}`, any other
+`[[name: …]]` the dialect does not know is drawn by `directives/name.ts`, and a font family, an
+effect or enter/exit name, a `transition`, a chart `type` (or its `src=` data file), a fence
+language, `layout.codeTheme`, `theme` (styles, layout, presenter settings, background) and
+`[[subslide: Name]]` that are not built in are looked up there (docs/site/extending.md).
 `[[icon: name #id …]]` draws one of thirty-nine symbols built from geometry: people and machines
 (`user`, `users`, `client`, `desktop`, `phone`, `server`, `database`, `cloud`, `globe`), files
 (`document`, `folder`, `message`, `calendar`, `chart`), marks and places (`check`, `cross`,

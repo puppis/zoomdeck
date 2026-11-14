@@ -58,6 +58,9 @@ carry its own `run_time`, `lag` and `rate`.
 
 `write`, `create`, `draw` and `uncreate` suit vector content (formulas and shapes).
 
+Any other name is an effect of the deck's own, `effects/<name>.ts`, played on entry or exit
+([Extending a deck](extending.html#effects)).
+
 ## Automatic advancement
 
 `[[next: step=N]]` advances to the following stop automatically once step N (and the child

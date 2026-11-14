@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Extending a deck · Zoomdeck</title>
-<meta name="description" content="Folders next to the Markdown that add to the player by name, without touching it: fonts, effects, chart types, languages, code themes, themes, artworks and slide classes.">
+<meta name="description" content="Folders next to the Markdown that add to the player by name, without touching it: snippets, directives, fonts, effects, camera transitions, chart types and data, languages, code themes, themes, artworks and slide classes.">
 <link rel="stylesheet" href="docs.css">
 <script>
 // The side columns stay hidden or shown as the reader last left them, before the page paints.
@@ -66,18 +66,20 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Advanced</h4>
-        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html">A deck inside a page</a></li><li><a href="extending.html" aria-current="page">Extending a deck</a><ul class="subsections"><li><a href="#fonts">Fonts</a></li><li><a href="#effects">Effects</a></li><li><a href="#chart-types">Chart types</a></li><li><a href="#languages-and-code-themes">Languages and code themes</a></li><li><a href="#themes">Themes</a></li><li><a href="#artworks-and-slide-classes">Artworks and slide classes</a></li></ul></li><li><a href="reference.html">Reference</a></li></ul>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html">A deck inside a page</a></li><li><a href="extending.html" aria-current="page">Extending a deck</a><ul class="subsections"><li><a href="#snippets">Snippets</a></li><li><a href="#directives">Directives</a></li><li><a href="#fonts">Fonts</a></li><li><a href="#effects">Effects</a></li><li><a href="#camera-transitions">Camera transitions</a></li><li><a href="#chart-types">Chart types</a></li><li><a href="#languages-and-code-themes">Languages and code themes</a></li><li><a href="#themes">Themes</a></li><li><a href="#artworks-and-slide-classes">Artworks and slide classes</a></li></ul></li><li><a href="reference.html">Reference</a></li></ul>
       </section>
   </nav>
   <main id="content">
     <article>
       <h1>Extending a deck</h1>
-      <p class="lead">Folders next to the Markdown that add to the player by name, without touching it: fonts, effects, chart types, languages, code themes, themes, artworks and slide classes.</p>
+      <p class="lead">Folders next to the Markdown that add to the player by name, without touching it: snippets, directives, fonts, effects, camera transitions, chart types and data, languages, code themes, themes, artworks and slide classes.</p>
       <p><a class="try" href="tour.html#slide=animations">Open in the tour ↗</a></p>
 <p>A deck extends the player by putting files in folders next to its Markdown. Each folder holds
-one kind of thing, one file per name, and the name is what the Markdown says: <code>[[effect: pulse …]]</code>
-plays <code>effects/pulse.ts</code>, <code>type=donut</code> draws with <code>charts/donut.ts</code>, <code>```zig</code> colors with
-<code>languages/zig.json</code>, and <code>&quot;font&quot;: &quot;Inter&quot;</code> loads <code>fonts/Inter.woff2</code>. Nothing registers
+one kind of thing, one file per name, and the name is what the Markdown says: <code>[[snippet: card …]]</code>
+expands <code>snippets/card.md</code>, <code>[[gauge: …]]</code> draws with <code>directives/gauge.ts</code>, <code>[[effect: pulse …]]</code>
+plays <code>effects/pulse.ts</code>, <code>transition=swoop</code> moves the camera with <code>transitions/swoop.ts</code>,
+<code>type=donut</code> draws with <code>charts/donut.ts</code>, <code>```zig</code> colors with <code>languages/zig.json</code>, and
+<code>&quot;font&quot;: &quot;Inter&quot;</code> loads <code>fonts/Inter.woff2</code>. Nothing registers
 anything: a name that is not built in is looked up in the folders when the deck is built, and a
 name no folder has is an error that names the folders (or, for a font, a family left to the
 browser). The preview watches these folders, and the exports carry them: modules are bundled,
@@ -85,19 +87,66 @@ files copied into the folder export or embedded in the single file.</p>
 <pre><code class="language-text">talk/
 ├── slides.md
 ├── deck.json
+├── snippets/        card.md             [[snippet: card id=one title=&quot;…&quot;]]
+├── directives/      gauge.ts            [[gauge: #g level=<span class="tk-number">0.7</span>]]
 ├── fonts/           Inter.woff2, Inter-Bold.woff2, Inter-Italic.woff2, Inter-BoldItalic.woff2
-├── effects/         pulse.ts            [[effect: pulse #id, step=N]]
-├── charts/          donut.ts            ```chart {type=donut}
+├── effects/         pulse.ts            [[effect: pulse #id, step=N]], enter=pulse
+├── transitions/     swoop.ts            transition=swoop
+├── charts/          donut.ts            ```chart {type=donut src=data.csv}
 ├── languages/       zig.json            ```zig
 ├── code-themes/     sepia.json          &quot;layout&quot;: { &quot;codeTheme&quot;: &quot;sepia&quot; }
 ├── themes/          lecture.md          &quot;theme&quot;: &quot;lecture&quot;
 ├── artworks/        rocket.svg, gate.ts [[artwork: rocket]], [[artwork: gate]]
 └── slides/          Orbit.ts            [[subslide: Orbit]]</code></pre>
 <p>The standard folders are found on their own. <code>deck.json</code> names further ones under the same keys
-(<code>fonts</code>, <code>effects</code>, <code>charts</code>, <code>languages</code>, <code>codeThemes</code>, <code>themes</code>, <code>artworks</code>, <code>slides</code>), relative
-to itself, so a library shared between talks lives once: <code>&quot;effects&quot;: [&quot;../shared/effects&quot;]</code>. The
-<code>paths</code> folders are searched last for every kind. Modules may import <code>manim-web</code> and <code>zoomdeck</code>
-as <a href="code-slides.html">code-authored slides</a> do, and need no <code>node_modules</code> of their own.</p>
+(<code>snippets</code>, <code>directives</code>, <code>fonts</code>, <code>effects</code>, <code>transitions</code>, <code>charts</code>, <code>languages</code>, <code>codeThemes</code>,
+<code>themes</code>, <code>artworks</code>, <code>slides</code>), relative to itself, so a library shared between talks lives once:
+<code>&quot;effects&quot;: [&quot;../shared/effects&quot;]</code>. The <code>paths</code> folders are searched last for every kind. Modules
+may import <code>manim-web</code> and <code>zoomdeck</code> as <a href="code-slides.html">code-authored slides</a> do, and need no
+<code>node_modules</code> of their own.</p>
+<h2 id="snippets">Snippets<a class="anchor" href="#snippets" aria-label="Link to this section">#</a></h2><pre><code class="language-markdown"><span class="tk-directive">::: snippet card</span>
+<span class="tk-directive">::: slide </span><span class="tk-attribute">{}</span>#<span class="tk-attribute">{}{id}</span>} width=20}
+<span class="tk-type tk-bold">## </span><span class="tk-attribute tk-bold">{}{title}</span><span class="tk-bold">}</span>
+
+[<span class="tk-attribute">{}{note|A detail follows.}</span>}]<span class="tk-attribute">{}</span>#<span class="tk-attribute">{}{id}</span>}-note x=-9 y=-3 font_size=22 color=GRAY}
+
+<span class="tk-directive">[[include:</span> <span class="tk-attribute">#</span>{{id}}-detail <span class="tk-attribute">x=</span><span class="tk-number">4</span> <span class="tk-attribute">y=</span><span class="tk-number">-1</span> <span class="tk-attribute">width=</span><span class="tk-number">8</span> <span class="tk-attribute">preview=</span>true<span class="tk-directive">]]</span>
+<span class="tk-directive">:::</span>
+<span class="tk-directive">:::</span>
+
+<span class="tk-directive">[[snippet:</span> card <span class="tk-attribute">id=</span>intro <span class="tk-attribute">title=</span><span class="tk-string">&quot;Where we start&quot;</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[snippet:</span> card <span class="tk-attribute">id=</span>method <span class="tk-attribute">title=</span><span class="tk-string">&quot;How it works&quot;</span> <span class="tk-attribute">note=</span><span class="tk-string">&quot;Three steps, one slide each.&quot;</span><span class="tk-directive">]]</span></code></pre>
+<p>A snippet is markup written once and used many times: a <code>::: snippet name</code> block anywhere in
+the document (or an imported file), or the file <code>snippets/name.md</code>. <code>[[snippet: name key=value …]]</code>
+on a line of its own is replaced by the snippet's lines before anything is parsed, with every
+<code>{{key}}</code> filled from the attributes of the use; <code>{{key|default}}</code> has a value when the use gives
+none, and a key with neither is an error that names the snippet. A snippet may hold whole slides,
+as above, or a few elements inside one; it may use imports and other snippets, and the ids it
+needs come from its attributes, so two uses never collide. Errors inside a snippet name the block
+and its line. Snippets need no code: they are the way to repeat a slide skeleton, a framed child
+with its caption, or a footer.</p>
+<h2 id="directives">Directives<a class="anchor" href="#directives" aria-label="Link to this section">#</a></h2><pre><code class="language-ts"><span class="tk-comment">// directives/gauge.ts</span>
+<span class="tk-keyword">import</span> { Arc, Line, VGroup, <span class="tk-keyword">type</span> Mobject } <span class="tk-keyword">from</span> <span class="tk-string">'manim-web'</span>;
+<span class="tk-keyword">import</span> <span class="tk-keyword">type</span> { DirectiveOptions } <span class="tk-keyword">from</span> <span class="tk-string">'zoomdeck'</span>;
+
+<span class="tk-keyword">export</span> <span class="tk-keyword">default</span> <span class="tk-keyword">async</span> <span class="tk-keyword">function</span> gauge({ attributes, color, text }: DirectiveOptions): <span class="tk-type">Promise</span>&lt;Mobject[]&gt; {
+  <span class="tk-keyword">const</span> level = Number(attributes.level ?? <span class="tk-number">0.5</span>);
+  <span class="tk-keyword">const</span> dial = <span class="tk-keyword">new</span> Arc({ radius: <span class="tk-number">1</span>, startAngle: Math.PI, angle: -Math.PI, color });
+  <span class="tk-keyword">const</span> needle = <span class="tk-keyword">new</span> Line({ start: [<span class="tk-number">0</span>, <span class="tk-number">0</span>, <span class="tk-number">0</span>], end: [-Math.cos(Math.PI * level), Math.sin(Math.PI * level), <span class="tk-number">0</span>], color });
+  <span class="tk-keyword">const</span> label = <span class="tk-keyword">await</span> text(attributes.label ?? <span class="tk-string">`${Math.round(level * 100)} %`</span>, <span class="tk-number">20</span>);
+  label.nextTo(dial, [<span class="tk-number">0</span>, -<span class="tk-number">1</span>, <span class="tk-number">0</span>], <span class="tk-number">0.2</span>);
+  <span class="tk-keyword">return</span> [<span class="tk-keyword">new</span> VGroup(dial, needle), label];
+}</code></pre>
+<pre><code class="language-markdown"><span class="tk-directive">[[gauge:</span> <span class="tk-attribute">#load</span> <span class="tk-attribute">x=</span><span class="tk-number">4</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">level=</span><span class="tk-number">0.7</span> <span class="tk-attribute">label=</span><span class="tk-string">&quot;load&quot;</span> <span class="tk-attribute">step=</span><span class="tk-number">2</span><span class="tk-directive">]]</span></code></pre>
+<p>A directive of the deck's own is any <code>[[name: …]]</code> the dialect does not know: it is drawn by
+<code>directives/name.ts</code>, a module exporting a function (<code>default</code>, or <code>directive</code>) that receives the
+directive's attributes as written, the deck's typography (<code>fontSize</code>, <code>width</code>, <code>color</code>, <code>layout</code>,
+the hand-drawn options under <code>sketch</code>) and three helpers, <code>text</code> for inline markup in the deck's
+font, <code>icon</code> for a built-in icon and <code>artwork</code> for one of the deck's own, and returns a mobject or
+a list of them. The result is an element like any other: <code>x</code>, <code>y</code>, the relative positions, <code>step</code>,
+<code>enter</code>, <code>exit</code>, <code>class</code> and the animation directives all apply to its <code>#id</code>, and the attributes
+the module reads (<code>level</code>, <code>label</code>) are free. Where artworks are symbols, directives are the
+diagram vocabulary that needs data: a gauge, a timeline, a gate with its inputs.</p>
 <h2 id="fonts">Fonts<a class="anchor" href="#fonts" aria-label="Link to this section">#</a></h2><p><code>layout.font</code>, <code>layout.codeFont</code> and <code>font=</code> on an element name a family. A family that is not
 bundled is looked for in the fonts folders as <code>Family.woff2</code> (or <code>.woff</code>, <code>.ttf</code>, <code>.otf</code>), with
 the variants <code>Family-Bold</code>, <code>Family-Italic</code> and <code>Family-BoldItalic</code> when the folder has them, and
@@ -116,7 +165,28 @@ target and the directive's options (<code>color</code>, <code>scale</code>, and 
 <code>rate</code> as <code>rateFunc</code>) and returns an animation of the engine: one of its own classes, a
 <code>PropertyAnimation</code> as above, or a composition of built-in effects. <code>[[effect: pulse #id, step=N]]</code>
 plays it like a built-in; the name may use letters, digits, <code>_</code> and <code>-</code>, so <code>effects/fly-in.ts</code> is
-<code>[[effect: fly-in …]]</code>. Effects load when the deck is built, before any step plays.</p>
+<code>[[effect: fly-in …]]</code>. The same modules serve as <strong>enter and exit styles</strong>: <code>enter=fly-in</code> on an
+element, or on a <code>[[show: …]]</code>, plays the effect when the element appears, <code>exit=fly-in</code> when it
+leaves, so a deck defines how its things come and go once. Effects load when the deck is built,
+before any step plays.</p>
+<h2 id="camera-transitions">Camera transitions<a class="anchor" href="#camera-transitions" aria-label="Link to this section">#</a></h2><pre><code class="language-ts"><span class="tk-comment">// transitions/swoop.ts</span>
+<span class="tk-keyword">import</span> { smooth } <span class="tk-keyword">from</span> <span class="tk-string">'manim-web'</span>;
+<span class="tk-keyword">import</span> <span class="tk-keyword">type</span> { CameraState } <span class="tk-keyword">from</span> <span class="tk-string">'zoomdeck'</span>;
+
+<span class="tk-comment">// The camera widens on the way, as if lifting off before landing on the next slide.</span>
+<span class="tk-keyword">export</span> <span class="tk-keyword">default</span> <span class="tk-keyword">function</span> swoop(start: CameraState, target: CameraState, alpha: <span class="tk-type">number</span>): CameraState {
+  <span class="tk-keyword">const</span> t = smooth(alpha);
+  <span class="tk-keyword">const</span> lift = Math.sin(Math.PI * alpha) * Math.max(start.width, target.width) * <span class="tk-number">0.6</span>;
+  <span class="tk-keyword">return</span> {
+    center: [start.center[<span class="tk-number">0</span>] + (target.center[<span class="tk-number">0</span>] - start.center[<span class="tk-number">0</span>]) * t, start.center[<span class="tk-number">1</span>] + (target.center[<span class="tk-number">1</span>] - start.center[<span class="tk-number">1</span>]) * t, <span class="tk-number">0</span>],
+    width: start.width + (target.width - start.width) * t + lift,
+  };
+}</code></pre>
+<p><code>transition=</code> on a slide or an include, and <code>&quot;presenter&quot;: { &quot;transition&quot;: &quot;…&quot; }</code> for the whole
+deck, take <code>zoom</code>, <code>cut</code>, or the name of a module in <code>transitions/</code>: a function that receives the
+camera's start and target (center and width) and how far the move is, 0 to 1 linear in time, and
+returns where the camera is; it eases as it likes. The move keeps <code>transitionTime</code>, and a cut on
+either side still wins. Transitions load when the deck is built.</p>
 <h2 id="chart-types">Chart types<a class="anchor" href="#chart-types" aria-label="Link to this section">#</a></h2><pre><code class="language-ts"><span class="tk-comment">// charts/donut.ts</span>
 <span class="tk-keyword">import</span> { <span class="tk-keyword">type</span> ChartData, <span class="tk-keyword">type</span> ChartOptions, <span class="tk-keyword">type</span> LabelFactory, CHART_COLORS } <span class="tk-keyword">from</span> <span class="tk-string">'zoomdeck'</span>;
 <span class="tk-keyword">import</span> { Annulus, VGroup } <span class="tk-keyword">from</span> <span class="tk-string">'manim-web'</span>;
@@ -127,6 +197,12 @@ series, labels), the fence's options (<code>width</code>, <code>height</code>, <
 and the rest) and a label factory that makes text in the deck's font and color, and returns the
 drawing. <code>type=donut</code> on a chart fence selects it; the function may ignore options it has no use
 for. <a href="tables-charts.html#from-code">Tables and charts</a> has the data shape.</p>
+<p>The rows of any chart, built in or not, may come from a file instead of the fence: <code>src=data.csv</code>
+(or <code>.tsv</code>, or <code>.json</code>) names a file next to the Markdown or in the <code>paths</code> folders, and the fence
+stays empty. CSV is read as the fence would be, header row detected or forced with <code>header=</code>;
+JSON is <code>{ &quot;categories&quot;: [...], &quot;series&quot;: [{ &quot;name&quot;: &quot;…&quot;, &quot;values&quot;: [...] }] }</code>, the Chart.js
+shape <code>{ &quot;labels&quot;, &quot;datasets&quot;: [{ &quot;label&quot;, &quot;data&quot; }] }</code>, or an array of rows. The exports copy or
+embed the file, so data stays out of the slides and one chart module serves many talks.</p>
 <h2 id="languages-and-code-themes">Languages and code themes<a class="anchor" href="#languages-and-code-themes" aria-label="Link to this section">#</a></h2><pre><code class="language-json">// languages/zig.json
 { <span class="tk-attribute">&quot;keywords&quot;</span>: [<span class="tk-string">&quot;fn&quot;</span>, <span class="tk-string">&quot;pub&quot;</span>, <span class="tk-string">&quot;const&quot;</span>, <span class="tk-string">&quot;var&quot;</span>, <span class="tk-string">&quot;return&quot;</span>, <span class="tk-string">&quot;if&quot;</span>, <span class="tk-string">&quot;else&quot;</span>, <span class="tk-string">&quot;while&quot;</span>, <span class="tk-string">&quot;for&quot;</span>], <span class="tk-attribute">&quot;types&quot;</span>: [<span class="tk-string">&quot;u8&quot;</span>, <span class="tk-string">&quot;u32&quot;</span>, <span class="tk-string">&quot;i64&quot;</span>, <span class="tk-string">&quot;void&quot;</span>, <span class="tk-string">&quot;bool&quot;</span>],
   <span class="tk-attribute">&quot;lineComment&quot;</span>: [<span class="tk-string">&quot;//&quot;</span>], <span class="tk-attribute">&quot;strings&quot;</span>: [<span class="tk-string">&quot;\&quot;&quot;</span>], <span class="tk-attribute">&quot;aliases&quot;</span>: [<span class="tk-string">&quot;ziglang&quot;</span>] }</code></pre>
@@ -145,13 +221,21 @@ the color the deck's text color gives them.</p>
 heading: color=BLUE_E
 body: font_size=30
 footnote: font_size=18 color=GRAY
+layout: fontSize=30 headingSize=44 font=&quot;Inter&quot;
+presenter: transitionTime=1 pauseOnReturn=false
+deck: background=#0F172A viewport=16x9
 <span class="tk-directive">:::</span></code></pre>
-<p>A theme is a style sheet of its own: a Markdown file whose <code>::: styles</code> blocks (or every line,
-when it has no block) define <a href="styles.html">styles</a>, or a JSON file shaped like <code>styles</code> in
-<code>deck.json</code>. <code>&quot;theme&quot;: &quot;lecture&quot;</code> in <code>deck.json</code> applies <code>themes/lecture.md</code> under the deck's own
-<code>styles</code> and <code>::: styles</code> block, which win for the same name; a list <code>[&quot;lecture&quot;, &quot;wide&quot;]</code> applies
-several, in order. Since styles cover the roles (<code>heading</code>, <code>body</code>, <code>code</code>, <code>chart</code>, <code>table</code>, …)
-and any class, a theme restyles a deck without touching its slides.</p>
+<p>A theme is a deck's look kept apart from its slides: a Markdown file whose <code>::: styles</code> blocks (or
+every line, when it has no block) define <a href="styles.html">styles</a>, with three reserved names for the
+settings that are not styles: <code>layout:</code> takes the keys of <code>layout</code> in <code>deck.json</code>, <code>presenter:</code>
+those of <code>presenter</code>, and <code>deck:</code> takes <code>background=</code> and <code>viewport=16x9</code>. A JSON theme is either
+a <code>styles</code> map or <code>{ &quot;styles&quot;, &quot;layout&quot;, &quot;presenter&quot;, &quot;background&quot;, &quot;viewport&quot; }</code>. <code>&quot;theme&quot;: &quot;lecture&quot;</code> in <code>deck.json</code> applies <code>themes/lecture.md</code>; a list <code>[&quot;lecture&quot;, &quot;wide&quot;]</code> applies
+several, later ones over earlier. The deck's own <code>styles</code>, <code>layout</code>, <code>presenter</code>, <code>background</code> and
+<code>viewport</code> win over the theme key by key, and its <code>::: styles</code> block over everything. Since styles
+cover the roles (<code>heading</code>, <code>body</code>, <code>code</code>, <code>chart</code>, <code>table</code>, …) and any class, and the theme sets
+typography, timing and colors with them, a theme restyles a deck without touching its slides.
+Themes are read before the player starts, so a page of your own that names one uses
+<code>loadMarkupDeck</code> (<a href="embedding.html">Embedding</a>) rather than <code>markupDeck</code>.</p>
 <h2 id="artworks-and-slide-classes">Artworks and slide classes<a class="anchor" href="#artworks-and-slide-classes" aria-label="Link to this section">#</a></h2><p><a href="icons.html#artworks-of-your-own">Artworks</a> of the deck's own, <code>name.svg</code> or a module, live in
 <code>artworks/</code> and are placed with <code>[[artwork: name …]]</code>. Slide classes for <code>[[subslide: Name]]</code> are
 usually gathered in the module <code>classes</code> names; a <code>slides/</code> folder is the alternative, one
@@ -164,7 +248,7 @@ looked for there. The two mix freely, and an export bundles both.</p>
       <a class="next" href="reference.html">Reference →</a>
     </footer>
   </main>
-  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#fonts">Fonts</a></li><li><a href="#effects">Effects</a></li><li><a href="#chart-types">Chart types</a></li><li><a href="#languages-and-code-themes">Languages and code themes</a></li><li><a href="#themes">Themes</a></li><li><a href="#artworks-and-slide-classes">Artworks and slide classes</a></li></ul></nav>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#snippets">Snippets</a></li><li><a href="#directives">Directives</a></li><li><a href="#fonts">Fonts</a></li><li><a href="#effects">Effects</a></li><li><a href="#camera-transitions">Camera transitions</a></li><li><a href="#chart-types">Chart types</a></li><li><a href="#languages-and-code-themes">Languages and code themes</a></li><li><a href="#themes">Themes</a></li><li><a href="#artworks-and-slide-classes">Artworks and slide classes</a></li></ul></nav>
 </div>
 </body>
 </html>

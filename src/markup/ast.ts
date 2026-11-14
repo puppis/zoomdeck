@@ -205,6 +205,10 @@ export const BARE_FLAGS = new Set(['start_here', 'only_this', 'skip_return', 're
 export const IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_.-]*$/;
 export const CONTAINER = /^\s*:::\s*(.*?)\s*$/;
 export const DIRECTIVE = /^\s*\[\[(include|subslide|import|arrow|line|rectangle|circle|polyline|dot|ellipse|polygon|arc|icon|artwork|brace|box|blob|iframe|show|hide|animate|effect|transform|move_along|next|skip_next):\s*(.*?)\]\]\s*$/;
+/** A directive of the deck's own, `[[name: …]]` with any other name: drawn by `directives/name.ts`. */
+export const CUSTOM_DIRECTIVE = /^\s*\[\[([A-Za-z_][\w-]*):\s*(.*?)\]\]\s*$/;
+/** The name of an enter or exit style, an effect or a camera transition of the deck's own. */
+export const LIBRARY_NAME = /^[A-Za-z_][\w-]*$/;
 /** Names accepted by `rate=`; implemented in `animations.ts`. */
 export const RATE_NAMES = new Set(['smooth', 'linear', 'rush_into', 'rush_from', 'there_and_back', 'ease_in', 'ease_out', 'ease_in_out']);
 export const EFFECT_NAMES = new Set(['indicate', 'wiggle', 'circumscribe', 'flash', 'focus', 'grow', 'shrink', 'write', 'create', 'uncreate', 'draw', 'wave']);
@@ -272,7 +276,7 @@ export const TABLE_RULE_NAMES = new Set<string>(TABLE_RULES);
 /** Attributes of tables beyond the common element attributes. */
 export const TABLE_ATTRS = new Set(['header', 'padding', 'rules', 'border_color', 'stroke_width', 'fill_color', 'fill_opacity', 'header_color', 'header_opacity', 'stripe_opacity']);
 /** Attributes of chart fences beyond the common element attributes. */
-export const CHART_ATTRS = new Set(['type', 'header', 'colors', 'axis_color', 'border_color', 'stroke_width', 'fill_opacity', 'grid', 'legend', 'values', 'min', 'max']);
+export const CHART_ATTRS = new Set(['type', 'src', 'header', 'colors', 'axis_color', 'border_color', 'stroke_width', 'fill_opacity', 'grid', 'legend', 'values', 'min', 'max']);
 /** File extensions rendered as videos by the image syntax. */
 export const VIDEO_EXTENSIONS = /\.(mp4|m4v|webm|ogv|ogg|mov)(?:[?#].*)?$/i;
 export const BRACE_SIDES: Record<string, [number, number, number]> = { left: [-1, 0, 0], right: [1, 0, 0], top: [0, 1, 0], bottom: [0, -1, 0] };

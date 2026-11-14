@@ -5,6 +5,11 @@ callout: color=ORANGE font_size=30
 heading: color=BLUE_E
 :::
 
+<!-- The documentation link of every chapter, written once: [[snippet: docs id=NAME page=PAGE]] on a slide expands to the line below with its placeholders filled. -->
+::: snippet docs
+[Documentation ↗]{#{{id}}-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/{{page}}}
+:::
+
 ::: slide {#tour width=36}
 # Zoomdeck {x=-17.35 y=9.2}
 
@@ -82,7 +87,7 @@ Everything a slide can hold and everything the player does, one chapter per topi
 ::: slide {#feat-pdf width=20}
 ## 1 · A PDF, as it is
 
-[Documentation ↗]{#feat-pdf-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/features.html#a-pdf-as-it-is}
+[[snippet: docs id=feat-pdf page=features.html#a-pdf-as-it-is]]
 
 Zoomdeck opens a PDF directly: a paper, a poster, slides typeset elsewhere. Each page is a slide, the pages are visited first to last with a cut between them, the bookmarks of the document name them in the outline, and the text stays sharp at any zoom, since pages are drawn at the density of the screen. {x=-9.35 y=3.9 width=8.6 font_size=20}
 
@@ -101,7 +106,7 @@ The pen, the spotlight, recording and printing work on a PDF as on any deck. On 
 ::: slide {#feat-plain width=20}
 ## 2 · Plain slides, in a row
 
-[Documentation ↗]{#feat-plain-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/features.html#plain-slides-in-a-row}
+[[snippet: docs id=feat-plain page=features.html#plain-slides-in-a-row]]
 
 ```markdown {#feat-plain-source x=-9.35 y=3.9 width=9.1}
 ::: slide {#one}
@@ -141,7 +146,7 @@ Each slide keeps its steps, fragments and animations; a slide may still include 
 ::: slide {#feat-tree width=20}
 ## 3 · Slides as a tree
 
-[Documentation ↗]{#feat-tree-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/features.html#slides-as-a-tree}
+[[snippet: docs id=feat-tree page=features.html#slides-as-a-tree]]
 
 ```markdown {#feat-tree-source x=-9.35 y=3.9 width=9.1}
 ::: slide {#talk width=20}
@@ -194,7 +199,7 @@ The last stop; then the camera zooms back out. {x=-3.35 y=0.2 width=7 font_size=
 ::: slide {#feat-spotlight width=20}
 ## 4 · Spotlight and laser
 
-[Documentation ↗]{#feat-spotlight-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/features.html#spotlight-and-laser}
+[[snippet: docs id=feat-spotlight page=features.html#spotlight-and-laser]]
 
 Hold **Shift** while moving the pointer over this slide: a spotlight follows it. **L** switches between the spotlight and a laser dot, and Shift with the mouse wheel (or a two-finger scroll) changes the size; the settings (⚙, or the comma key) offer the same choices. Both work on any deck, a PDF included. {x=-9.35 y=3.9 width=18.7 font_size=20}
 
@@ -208,7 +213,7 @@ Shift + drag draws a highlight that fades; a plain drag never moves the presenta
 ::: slide {#feat-pen width=20}
 ## 5 · Pen, tablet and whiteboard
 
-[Documentation ↗]{#feat-pen-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/features.html#pen-tablet-and-whiteboard}
+[[snippet: docs id=feat-pen page=features.html#pen-tablet-and-whiteboard]]
 
 **D** turns the pen on: a drag draws on the slide in the chosen color, the keys **1** to **4** (or the dots in the footer) pick it, ⌘Z or Ctrl+Z takes a stroke back, and the strokes stay with the slide. Pressure comes through from a pen or an Apple Pencil. {x=-9.35 y=3.9 width=9 font_size=20}
 
@@ -226,7 +231,7 @@ A tablet or an iPad pairs with the player from the settings (Tablet) and becomes
 ::: slide {#feat-recording width=20}
 ## 6 · Camera, recording and video
 
-[Documentation ↗]{#feat-recording-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/features.html#camera-recording-and-video}
+[[snippet: docs id=feat-recording page=features.html#camera-recording-and-video]]
 
 The camera (**C**) shows you next to or over the slides, in a corner or full screen. A recording (**R**) keeps the whole talk on one clock: your voice, the camera and every move on the deck, strokes included; it plays back on the deck itself, where it stays navigable, as the **▶ Talk** button beside Record, and exports as a plain video file. A shared screen (**S**), another application say, is filmed as part of the talk; **P** prints the deck to a PDF. {x=-9.35 y=3.9 width=11.2 font_size=19}
 
@@ -248,7 +253,7 @@ Try it here: press R, speak, draw, turn the camera on with C, stop, then press �
 ::: slide {#feat-math width=20}
 ## 7 · Formulas, diagrams and motion
 
-[Documentation ↗]{#feat-math-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/features.html#formulas-diagrams-and-animation}
+[[snippet: docs id=feat-math page=features.html#formulas-diagrams-and-animation]]
 
 [$\displaystyle \int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}$]{#feat-gauss x=-8.6 y=2.6 font_size=36}
 
@@ -450,7 +455,7 @@ Larger decks: the order in which children are visited, splitting the markup into
 ::: slide {#tree width=20}
 ## Slides form a forest
 
-[Documentation ↗]{#tree-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/slides.html}
+[[snippet: docs id=tree page=slides.html]]
 
 ```markdown {#tree-source x=-9.35 y=3.9 width=9.1}
 ::: slide {#tree width=20}
@@ -492,7 +497,7 @@ Returning zooms back out to the parent. {x=-3.35 y=0.2 width=7 font_size=20}
 ::: slide {#prose width=20}
 ## Prose and inline styling
 
-[Documentation ↗]{#prose-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/text.html}
+[[snippet: docs id=prose page=text.html]]
 
 ```markdown {#prose-source x=-9.35 y=3.9 width=9.1}
 Paragraphs wrap to `width`. Use **bold**, *italic*,
@@ -541,7 +546,7 @@ Headings `#` to `######` set the size only; HTML comments are discarded. A `::: 
 ::: slide {#math width=20}
 ## Mathematics
 
-[Documentation ↗]{#math-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/math.html}
+[[snippet: docs id=math page=math.html]]
 
 ```markdown {#math-source x=-9.35 y=3.9 width=9.1}
 Inline math shares the baseline: $\int_0^1 x^2\,dx = \tfrac13$.
@@ -579,7 +584,7 @@ A `::: {.element …}` container positions, sizes or animates a formula; `\\text
 ::: slide {#images width=20}
 ## Images and animated images
 
-[Documentation ↗]{#images-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/images.html}
+[[snippet: docs id=images page=images.html]]
 
 ```markdown {#images-source x=-9.35 y=3.9 width=18.7}
 ![Vector artwork](assets/slides.svg){#svg x=-6 y=-1.1 width=4}
@@ -603,7 +608,7 @@ Raster files may be PNG, JPEG, GIF or WebP. A multi-frame APNG or GIF animates w
 ::: slide {#player width=20}
 ## The player
 
-[Documentation ↗]{#player-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/player.html}
+[[snippet: docs id=player page=player.html]]
 
 **Keys.** → or Space next · ← previous (plays the stop backwards) · Home first stop · A replay · F fullscreen · O outline · , settings. {#player-keys x=-9.35 y=3.9 width=9 font_size=20}
 
@@ -623,7 +628,7 @@ Every key and gesture can be changed in the settings (,), which also hold the pe
 ::: slide {#tablet width=20}
 ## Pen, whiteboard and tablet
 
-[Documentation ↗]{#tablet-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/player.html#the-pen}
+[[snippet: docs id=tablet page=player.html#the-pen]]
 
 [Trace the wave and the circle]{#tablet-cap-trace x=-9.35 y=3.9 anchor=left-baseline font_size=19 color=GRAY}
 
@@ -655,7 +660,7 @@ Without a tablet the same checks work with a mouse, whose strokes take their wid
 ::: slide {#recording width=20}
 ## Recording a talk
 
-[Documentation ↗]{#recording-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/player.html#recording-a-talk}
+[[snippet: docs id=recording page=player.html#recording-a-talk]]
 
 A recording keeps your voice, the camera while you have it on, and every move on the deck on one clock: stops, strokes, the whiteboard, the pointer and the camera switch. The slides are never filmed, so the talk plays back on the deck itself and exports as a video. {x=-9.35 y=3.9 width=11.2 font_size=19}
 
@@ -683,7 +688,7 @@ Try it on this very slide: record a few seconds, draw, turn the camera on with C
 ::: slide {#shapes width=20}
 ## Shapes and connections
 
-[Documentation ↗]{#shapes-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/shapes.html}
+[[snippet: docs id=shapes page=shapes.html]]
 
 ```markdown {#shapes-source x=-9.35 y=3.9 width=18.7}
 [[rectangle: #box x=-6.5 y=-1.5 width=3.4 height=1.8 corner_radius=0.3 color=BLUE_E fill_opacity=0.15]]
@@ -711,7 +716,7 @@ Arrows and lines join element IDs at their facing edges, or literal `(x,y)` poin
 ::: slide {#more-shapes width=20}
 ## More shapes, braces and boxes
 
-[Documentation ↗]{#more-shapes-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/shapes.html#attachments}
+[[snippet: docs id=more-shapes page=shapes.html#attachments]]
 
 ```markdown {#more-shapes-source x=-9.35 y=3.9 width=18.7}
 [[dot: #p x=-8.5 y=-1.5 color=GOLD_E]]
@@ -742,7 +747,7 @@ Point-defined shapes (`polygon`, `polyline`, `arc`) keep their coordinates unles
 ::: slide {#sketch width=20}
 ## Hand-drawn shapes
 
-[Documentation ↗]{#sketch-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/sketch.html}
+[[snippet: docs id=sketch page=sketch.html]]
 
 ```markdown {#sketch-source x=-9.35 y=3.9 width=18.7}
 [[rectangle: #hr x=-6.5 y=-1.5 width=3.4 height=1.8 color=BLUE_E fill_opacity=0.5 sketch=true]]
@@ -770,7 +775,7 @@ Point-defined shapes (`polygon`, `polyline`, `arc`) keep their coordinates unles
 ::: slide {#icons width=20}
 ## Icons for diagrams
 
-[Documentation ↗]{#icons-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/icons.html}
+[[snippet: docs id=icons page=icons.html]]
 
 ```markdown {#icons-source x=-9.35 y=3.9 width=18.7}
 [[icon: user #alice x=-7 y=-1.1 size=1.4 color=BLUE_E label="Alice"]]
@@ -807,7 +812,7 @@ People and machines (user, server, database, cloud…), files (document, folder,
 ::: slide {#enclosures width=20}
 ## Boxes and blobs around several elements
 
-[Documentation ↗]{#enclosures-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/enclosures.html}
+[[snippet: docs id=enclosures page=enclosures.html]]
 
 ```markdown {#enclosures-source x=-9.35 y=3.9 width=18.7}
 [[icon: server #web x=-3.5 y=-0.3 size=1.1 color=GREEN_E label="web" label_side=right]]
@@ -838,7 +843,7 @@ A `box` or `blob` lists the elements it surrounds before the first comma, then i
 ::: slide {#layout width=20}
 ## Positioning and relative layout
 
-[Documentation ↗]{#layout-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/positioning.html}
+[[snippet: docs id=layout page=positioning.html]]
 
 ```markdown {#layout-source x=-9.35 y=3.9 width=9.1}
 ### A heading {#h x=0.6 y=3.3}
@@ -876,7 +881,7 @@ For text, `x` is the left edge and `y` the first baseline; images, shapes and ch
 ::: slide {#anchors width=20}
 ## Anchors, offsets and timing
 
-[Documentation ↗]{#anchors-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/positioning.html#anchors}
+[[snippet: docs id=anchors page=positioning.html#anchors]]
 
 ```markdown {#anchors-source x=-9.35 y=3.9 width=18.7}
 ![](assets/tiles.png){#img x=-9.35 y=0.6 width=4 anchor=top-left}
@@ -907,7 +912,7 @@ For text, `x` is the left edge and `y` the first baseline; images, shapes and ch
 ::: slide {#styles width=20}
 ## Anchor expressions and styles
 
-[Documentation ↗]{#styles-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/styles.html}
+[[snippet: docs id=styles page=styles.html]]
 
 ```markdown {#styles-source x=-9.35 y=3.9 width=18.7}
 [[rectangle: #ref x=-6.5 y=-0.9 width=3 height=1.4 color=GRAY]]
@@ -946,7 +951,7 @@ Named styles come from `styles` in deck.json or a `::: styles` block: `.class` t
 ::: slide {#groups width=20}
 ## Groups
 
-[Documentation ↗]{#groups-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/groups.html}
+[[snippet: docs id=groups page=groups.html]]
 
 ```markdown {#groups-source x=-9.35 y=3.9 width=9.1 font_size=17}
 ::: {.group #automaton x=2 y=-0.5 step=1}
@@ -981,7 +986,7 @@ A `::: {.group #id}` container lays out its members in their own coordinates and
 ::: slide {#config width=20}
 ## deck.json and the command line
 
-[Documentation ↗]{#config-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/configuration.html}
+[[snippet: docs id=config page=configuration.html]]
 
 ```json {#deck-json x=-9.35 y=3.9 width=9.1}
 {
@@ -1012,7 +1017,7 @@ The `zoomdeck` command previews a deck with live reload and exports it as a fold
 ::: slide {#fragments width=20}
 ## Fragments and click steps
 
-[Documentation ↗]{#fragments-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/fragments.html}
+[[snippet: docs id=fragments page=fragments.html]]
 
 ```markdown {#fragments-source x=-9.35 y=3.9 width=9.1 font_size=16}
 [Visible on entry, hidden at step 3]{#hint x=0.6 y=1.7 hide=3}
@@ -1061,7 +1066,7 @@ The `zoomdeck` command previews a deck with live reload and exports it as a fold
 ::: slide {#focus width=20}
 [[rectangle: #paper x=0 y=0 width=20 height=11.25 fill_color="#E2E8F0" fill_opacity=1 stroke_width=0 focus_only=true]]
 
-[Documentation ↗]{#focus-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/focus.html}
+[[snippet: docs id=focus page=focus.html]]
 
 ## Decorations visible only in focus
 
@@ -1081,7 +1086,7 @@ Focus-only elements are static (no `step`, `hide` or `play`), are drawn behind t
 ::: slide {#children width=20}
 ## Children, visit order and placeholders
 
-[Documentation ↗]{#children-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/slides.html#visit-order}
+[[snippet: docs id=children page=slides.html#visit-order]]
 
 ```markdown {#children-source x=-9.35 y=3.9 width=9.1}
 [[include: #visited-second x=4.7 y=-1.3 width=6 step=2 skip_return=true]]
@@ -1120,7 +1125,7 @@ Mark one slide or include with `start_here=true` to open playback there. While e
 ::: slide {#imports width=20}
 ## Importing markup from files
 
-[Documentation ↗]{#imports-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/slides.html#splitting-a-deck-into-files}
+[[snippet: docs id=imports page=slides.html#splitting-a-deck-into-files]]
 
 ```markdown {#imports-source x=-9.35 y=3.9 width=9.1}
 <!-- slides.md -->
@@ -1150,7 +1155,7 @@ Mark one slide or include with `start_here=true` to open playback there. While e
 
 [[include: #appendix x=5 y=-1.4 width=5 preview=true]]
 
-`[[import: path.md]]` splices a file into the document before parsing: between slides it adds slides and style blocks, inside a slide it adds elements and directives. {#imports-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+`[[import: path.md]]` splices a file into the document before parsing: between slides it adds slides and style blocks, inside a slide it adds elements and directives. `[[snippet: name key=value]]` expands markup written once, in a `::: snippet` block or in `snippets/name.md`, filling its `{{placeholders}}`: this deck's documentation links are one such snippet. {#imports-key x=-9.35 y=-2.95 width=18.7 font_size=20}
 
 Paths are relative to the importing file, a file may import others, and errors name the file and line. {#imports-more x=-9.35 y=-4.6 width=18.7 font_size=16 color=GRAY}
 :::
@@ -1160,7 +1165,7 @@ Paths are relative to the importing file, a file may import others, and errors n
 ::: slide {#tables width=20}
 ## Tables and charts
 
-[Documentation ↗]{#tables-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/tables-charts.html}
+[[snippet: docs id=tables page=tables-charts.html]]
 
 ````markdown {#tables-source x=-9.35 y=3.9 width=9.1 font_size=16}
 ::: {.element #sales x=5 y=1.6 rules=rows stripe_opacity=0.08}
@@ -1198,7 +1203,7 @@ Table: `rules` (all, rows, cols, outer, none), `border_color`, `header_color`, `
 ::: slide {#code-slides width=20}
 ## Code-authored slides
 
-[Documentation ↗]{#code-slides-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/code-slides.html}
+[[snippet: docs id=code-slides page=code-slides.html]]
 
 ```markdown {#import-source x=-9.35 y=3.9 width=9.1}
 [[subslide: Orbit x=5 y=-0.6 width=8 step=1]]
@@ -1235,7 +1240,7 @@ export class Orbit extends Slide {
 ::: slide {#listings width=20}
 ## Code listings
 
-[Documentation ↗]{#listings-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/code.html}
+[[snippet: docs id=listings page=code.html]]
 
 ````markdown {#listings-source x=-9.35 y=3.9 width=9.1}
 ```python {#py x=0.6 y=3.9 width=9 step=1}
@@ -1269,7 +1274,7 @@ Languages: python, javascript, typescript, c-like, bash, json, latex, html/svg, 
 ::: slide {#animations width=20}
 ## Animations from markup
 
-[Documentation ↗]{#animations-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/animations.html}
+[[snippet: docs id=animations page=animations.html]]
 
 ```markdown {#animations-source x=-9.35 y=3.9 width=9.1 font_size=15}
 [[dot: #ball x=1.5 y=1.5 radius=0.3 color=GOLD_E]]
@@ -1328,7 +1333,7 @@ This slide's viewport was slid and tilted by `[[animate: #satellite ...]]` in it
 ::: slide {#media width=20}
 ## Video, live pages and going back
 
-[Documentation ↗]{#media-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/live-pages.html}
+[[snippet: docs id=media page=live-pages.html]]
 
 ```markdown {#media-source x=-9.35 y=3.9 width=18.7}
 ![A silent clip](assets/clip.mp4){#movie x=-5 y=-0.6 width=7.5 play=once step=1}

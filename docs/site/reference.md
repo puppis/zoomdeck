@@ -17,6 +17,7 @@ links to the page with the explanations and examples.
 | `[[include: #slide, placement, step, start_here, only_this, return_to_parent, skip_return, transition, preview]]` | a child slide placed in this one; `subslide: #id` is the same |
 | `[[subslide: ClassName, placement, step, …]]` | a code-authored child ([Code-authored slides](code-slides.html)) |
 | `[[import: path.md]]` | splices a Markdown file in, between slides or inside one |
+| `[[snippet: name key=value …]]`, `::: snippet name … :::` | expands markup defined once, in a block or in `snippets/name.md`, filling its `{{key}}` placeholders ([Extending a deck](extending.html#snippets)) |
 | `::: styles … :::` | style definitions, `name: attributes` per line, at the top of the file |
 | `::: {.element attrs} … :::` | attributes for one paragraph, heading, image, formula, table or listing |
 | `::: {.group #id attrs} … :::` | a group of elements in local coordinates |
@@ -38,7 +39,7 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
 | `![alt](path){attrs}` | image, animated image or video (`play=once|loop`, `muted`) |
 | ```` ```lang {attrs} ```` | code listing |
 | `\| a \| b \|` rows with a `\| --- \| --- \|` delimiter | table (attributes through a `::: {.element …}` container) |
-| ```` ```chart {attrs} ```` with rows of `label, v1, v2` | bar, line or pie chart |
+| ```` ```chart {attrs} ```` with rows of `label, v1, v2`, or `src=data.csv` | bar, line or pie chart, or a chart type of the deck's own; rows from the fence or from a CSV or JSON file |
 | `[[iframe: url, #id, width, height, poster, title, placement, step]]` | a live web page ([Live pages](live-pages.html)) |
 
 | Attribute | On | Meaning |
@@ -49,7 +50,7 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
 | `play`, `muted` | animated images, videos | `once`, `loop`; sound for videos |
 | `title`, `poster` | iframes | label and preview image |
 | `rules`, `header`, `padding`, `border_color`, `header_color`, `header_opacity`, `stripe_opacity` | tables | rules, header row, cell padding and shading |
-| `type`, `colors`, `axis_color`, `border_color`, `grid`, `legend`, `values`, `min`, `max`, `header` | charts | chart kind, palette, axes, gridlines, legend, value labels and axis bounds |
+| `type`, `src`, `colors`, `axis_color`, `border_color`, `grid`, `legend`, `values`, `min`, `max`, `header` | charts | chart kind (built in, or a module of the deck's `charts/` folder), data file, palette, axes, gridlines, legend, value labels and axis bounds |
 | `href` | every element, group, connection and attachment | URL opened when the element is clicked; `#slide=id` and `#step=N` move within the deck on a double-click |
 
 ## Diagrams
@@ -64,6 +65,7 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
 | `arc` | `#id x y radius angle [start_angle] …` |
 | `icon` | `[[icon: name #id size label label_side fill_color fill_opacity stroke_width …]]` (names under [Names](#names)) |
 | `artwork` | `[[artwork: name #id size label …]]`: `name.svg` or `name.js`/`.ts` from the deck's artworks folders, with any attributes the module reads ([Icons](icons.html#artworks-of-your-own)) |
+| any other name | `[[name: #id placement …]]`: a directive of the deck's own, drawn by `directives/name.ts` with the attributes it reads ([Extending a deck](extending.html#directives)) |
 | `arrow`, `line` | `[[arrow: #a -> #b, #id, label="…", color, stroke_width, step, hide]]` with `#id` or `(x,y)` endpoints |
 | `brace` | `[[brace: #target, #id, side, buff, label, font_size, font]]` |
 | `box`, `blob` | `[[box: #a #b …, #id, buff, corner_radius, fill_color, fill_opacity]]`, `[[blob: #a #b …, #id, buff, smoothness, fill_color, fill_opacity]]` |
@@ -103,7 +105,7 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
 | --- | --- |
 | `show`, `hide` | `[[show: #id step=N run_time lag enter]]`, `[[hide: #id step=N run_time lag exit]]` |
 | `animate` | `[[animate: #id, step=N, x y at dx dy anchor angle scale opacity color, run_time lag rate]]` |
-| `effect` | `[[effect: name #id, step=N, color, scale, run_time, lag, rate]]` |
+| `effect` | `[[effect: name #id, step=N, color, scale, run_time, lag, rate]]`; a name that is not built in is `effects/name.ts` |
 | `transform` | `[[transform: #a -> #b, step=N, run_time, lag, rate]]` |
 | `move_along` | `[[move_along: #id, step=N, path=#shape, rotate, run_time, lag, rate]]` |
 | `next`, `skip_next` | `[[next: step=N]]`, `[[skip_next: step=N]]` |
@@ -112,10 +114,10 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
 | --- | --- | --- |
 | `step`, `hide` | elements, children (`step`) | reveal and hide clicks; visit step for children |
 | `run_time`, `lag`, `rate` | fades and animations | duration, delay, rate function |
-| `enter`, `exit` | elements | `fade`, `grow`, `write`, `create`, `draw` / `fade`, `shrink`, `uncreate` |
+| `enter`, `exit` | elements | `fade`, `grow`, `write`, `create`, `draw` / `fade`, `shrink`, `uncreate`, or the name of an effect of the deck's own |
 | `tremble`, `tremble_amplitude`, `tremble_rate` | shapes, icons, connections, attachments, math, groups, tables, charts | `true`, `N` or `N-M`: vibration over a range of steps, its size and frequency |
 | `focus_only` | static elements | visible only while the slide is focused |
-| `start_here`, `only_this`, `return_to_parent`, `skip_return`, `transition`, `preview` | slides, includes, subslides | opening stop, partial preparation, zooming back to the parent after this child or leaving it straight for the next stop (by default only the last child returns), `zoom` or `cut`, content shown before the first visit; written bare, a flag means `=true` ([Slides and the forest](slides.html#flags)) |
+| `start_here`, `only_this`, `return_to_parent`, `skip_return`, `transition`, `preview` | slides, includes, subslides | opening stop, partial preparation, zooming back to the parent after this child or leaving it straight for the next stop (by default only the last child returns), `zoom`, `cut` or a camera transition of the deck's own, content shown before the first visit; written bare, a flag means `=true` ([Slides and the forest](slides.html#flags)) |
 
 ## Names
 

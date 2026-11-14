@@ -119,7 +119,7 @@ talk/
 ├── assets/          images, videos, pages referenced from slides.md
 ├── parts/           optional: Markdown files spliced in with [[import: path.md]]
 ├── artworks/        optional: artworks of your own, name.svg or name.ts, for [[artwork: name]]
-├── fonts/, effects/, … optional: fonts, effects, chart types, languages, code themes, themes, slide classes
+├── snippets/, directives/, fonts/, effects/, …  optional: markup used many times, directives, fonts, effects, camera transitions, chart types, languages, code themes, themes, slide classes
 ├── code-slides.ts   optional: Slide classes used by [[subslide: Name]]
 └── recordings/      talks recorded by the player, when the deck is served
 ```

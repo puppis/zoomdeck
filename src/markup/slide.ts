@@ -9,13 +9,14 @@ import { Slide, PlaceholderSlide, pageSequence, resolveSize, startingSlide, type
 import type { ArtworkModule } from '../icons';
 import type { EffectModule } from '../animations';
 import type { ChartModule } from '../charts';
+import type { DirectiveModule } from '../directives';
 import { LINKED_OBJECTS, SOURCE_OBJECTS } from '../links';
 import { RasterImage, RasterMovie } from '../raster';
 import { VideoClip, VideoPlay } from '../video';
 import { IframeHost } from './iframe';
 import { DelayedAnimation, type SlideContext } from '../runtime';
 import {
-  ATTACHMENTS, CONNECTIONS, EFFECT_NAMES, NEIGHBORS, TEXT_LIKE, VERTICAL_POSITION,
+  ATTACHMENTS, CONNECTIONS, EFFECT_NAMES, ENTER_STYLES, EXIT_STYLES, NEIGHBORS, TEXT_LIKE, VERTICAL_POSITION,
   ActionSpec, AnimationStep, ElementSpec, EventSpec, GroupSpec, CodeSlideSpec, IncludeSpec, MarkupDocument, MarkupError, NextSpec,
   SkipNextSpec, SlideItem, SlideSpec, StepChange, childKey, numberValue, parseAt, parseColor, parseTremble, positionOrder, positionTargets,
   stepValue,
@@ -100,12 +101,16 @@ export class MarkupSlide extends Slide {
   /** Lay out content and component previews once in this logical canvas. */
   override async build(ctx: SlideContext): Promise<void> {
     const layout = this.renderer.layout;
-    // Effects of the deck's own load now: they are made later, when their step plays, without waiting.
+    // Effects of the deck's own, played by name or as enter and exit styles, load now: they are
+    // made later, when their step plays, without waiting.
     for (const step of this.animationSteps) {
       for (const change of step.changes) {
-        if (change.action !== 'effect' || !change.name || EFFECT_NAMES.has(change.name)) continue;
-        if (!(await this.renderer.effect(change.name))) {
-          throw new MarkupError(`Unknown effect ${JSON.stringify(change.name)}: not ${[...EFFECT_NAMES].join(', ')} and no ${change.name}.js or ${change.name}.ts in the deck's effects folders`, this.spec.line);
+        const name = change.action === 'effect' ? change.name : change.action === 'show' || change.action === 'hide' ? change.style : undefined;
+        const builtIn = change.action === 'effect' ? EFFECT_NAMES : change.action === 'show' ? ENTER_STYLES : EXIT_STYLES;
+        if (!name || builtIn.has(name)) continue;
+        if (!(await this.renderer.effect(name))) {
+          const what = change.action === 'effect' ? 'effect' : change.action === 'show' ? 'enter style' : 'exit style';
+          throw new MarkupError(`Unknown ${what} ${JSON.stringify(name)}: not ${[...builtIn].join(', ')} and no ${name}.js or ${name}.ts in the deck's effects folders`, this.spec.line);
         }
       }
     }
@@ -282,7 +287,9 @@ export class MarkupSlide extends Slide {
         else if (obj instanceof VideoClip) obj.rewind();
         movies.push(change.target);
       }
-      return change.action === 'show' ? enterAnimation(change.style ?? 'fade', obj, options) : exitAnimation(change.style ?? 'fade', obj, options);
+      const style = change.style ?? 'fade';
+      const own = (change.action === 'show' ? ENTER_STYLES : EXIT_STYLES).has(style) ? null : this.renderer.customEffect(style, obj, options);
+      return own ?? (change.action === 'show' ? enterAnimation(style, obj, options) : exitAnimation(style, obj, options));
     }
     const obj = this._actionTarget(change.target);
     if (change.action === 'animate') return new PropertyAnimation(obj, this._propertyTargets(change, obj), options);
@@ -469,8 +476,8 @@ export class SlideBuilder {
     options: {
       namespace?: SlideNamespace | null; macros?: Record<string, string>; assets?: Record<string, string>; locate?: (line: number) => SourceLocation;
       paths?: string[]; artworks?: string[]; artworkModules?: Record<string, ArtworkModule>;
-      fonts?: string[]; effects?: string[]; charts?: string[]; languages?: string[]; codeThemes?: string[];
-      effectModules?: Record<string, EffectModule>; chartModules?: Record<string, ChartModule>;
+      fonts?: string[]; effects?: string[]; charts?: string[]; languages?: string[]; codeThemes?: string[]; directives?: string[];
+      effectModules?: Record<string, EffectModule>; chartModules?: Record<string, ChartModule>; directiveModules?: Record<string, DirectiveModule>;
     } = {},
   ): Slide {
     document = new ASTTransformer().validate(document);
@@ -478,7 +485,7 @@ export class SlideBuilder {
       layout: this.layout, basePath: document.basePath, macros: options.macros, assets: options.assets,
       paths: options.paths, artworks: options.artworks, artworkModules: options.artworkModules,
       fonts: options.fonts, effects: options.effects, charts: options.charts, languages: options.languages, codeThemes: options.codeThemes,
-      effectModules: options.effectModules, chartModules: options.chartModules,
+      directives: options.directives, effectModules: options.effectModules, chartModules: options.chartModules, directiveModules: options.directiveModules,
     });
     const locate = options.locate ?? ((line: number) => ({ file: '', line }));
     this.slides = new Map(

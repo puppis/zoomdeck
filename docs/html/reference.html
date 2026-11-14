@@ -102,6 +102,10 @@ links to the page with the explanations and examples.</p>
 <td>splices a Markdown file in, between slides or inside one</td>
 </tr>
 <tr>
+<td><code>[[snippet: name key=value …]]</code>, <code>::: snippet name … :::</code></td>
+<td>expands markup defined once, in a block or in <code>snippets/name.md</code>, filling its <code>{{key}}</code> placeholders (<a href="extending.html#snippets">Extending a deck</a>)</td>
+</tr>
+<tr>
 <td><code>::: styles … :::</code></td>
 <td>style definitions, <code>name: attributes</code> per line, at the top of the file</td>
 </tr>
@@ -159,8 +163,8 @@ commas; <code>(x,y)</code> tuples stay whole; <code>#id</code> sets the ID; <cod
 <td>table (attributes through a <code>::: {.element …}</code> container)</td>
 </tr>
 <tr>
-<td><code>```chart {attrs}</code> with rows of <code>label, v1, v2</code></td>
-<td>bar, line or pie chart</td>
+<td><code>```chart {attrs}</code> with rows of <code>label, v1, v2</code>, or <code>src=data.csv</code></td>
+<td>bar, line or pie chart, or a chart type of the deck's own; rows from the fence or from a CSV or JSON file</td>
 </tr>
 <tr>
 <td><code>[[iframe: url, #id, width, height, poster, title, placement, step]]</code></td>
@@ -208,9 +212,9 @@ commas; <code>(x,y)</code> tuples stay whole; <code>#id</code> sets the ID; <cod
 <td>rules, header row, cell padding and shading</td>
 </tr>
 <tr>
-<td><code>type</code>, <code>colors</code>, <code>axis_color</code>, <code>border_color</code>, <code>grid</code>, <code>legend</code>, <code>values</code>, <code>min</code>, <code>max</code>, <code>header</code></td>
+<td><code>type</code>, <code>src</code>, <code>colors</code>, <code>axis_color</code>, <code>border_color</code>, <code>grid</code>, <code>legend</code>, <code>values</code>, <code>min</code>, <code>max</code>, <code>header</code></td>
 <td>charts</td>
-<td>chart kind, palette, axes, gridlines, legend, value labels and axis bounds</td>
+<td>chart kind (built in, or a module of the deck's <code>charts/</code> folder), data file, palette, axes, gridlines, legend, value labels and axis bounds</td>
 </tr>
 <tr>
 <td><code>href</code></td>
@@ -251,6 +255,10 @@ commas; <code>(x,y)</code> tuples stay whole; <code>#id</code> sets the ID; <cod
 <tr>
 <td><code>artwork</code></td>
 <td><code>[[artwork: name #id size label …]]</code>: <code>name.svg</code> or <code>name.js</code>/<code>.ts</code> from the deck's artworks folders, with any attributes the module reads (<a href="icons.html#artworks-of-your-own">Icons</a>)</td>
+</tr>
+<tr>
+<td>any other name</td>
+<td><code>[[name: #id placement …]]</code>: a directive of the deck's own, drawn by <code>directives/name.ts</code> with the attributes it reads (<a href="extending.html#directives">Extending a deck</a>)</td>
 </tr>
 <tr>
 <td><code>arrow</code>, <code>line</code></td>
@@ -393,7 +401,7 @@ commas; <code>(x,y)</code> tuples stay whole; <code>#id</code> sets the ID; <cod
 </tr>
 <tr>
 <td><code>effect</code></td>
-<td><code>[[effect: name #id, step=N, color, scale, run_time, lag, rate]]</code></td>
+<td><code>[[effect: name #id, step=N, color, scale, run_time, lag, rate]]</code>; a name that is not built in is <code>effects/name.ts</code></td>
 </tr>
 <tr>
 <td><code>transform</code></td>
@@ -431,7 +439,7 @@ commas; <code>(x,y)</code> tuples stay whole; <code>#id</code> sets the ID; <cod
 <tr>
 <td><code>enter</code>, <code>exit</code></td>
 <td>elements</td>
-<td><code>fade</code>, <code>grow</code>, <code>write</code>, <code>create</code>, <code>draw</code> / <code>fade</code>, <code>shrink</code>, <code>uncreate</code></td>
+<td><code>fade</code>, <code>grow</code>, <code>write</code>, <code>create</code>, <code>draw</code> / <code>fade</code>, <code>shrink</code>, <code>uncreate</code>, or the name of an effect of the deck's own</td>
 </tr>
 <tr>
 <td><code>tremble</code>, <code>tremble_amplitude</code>, <code>tremble_rate</code></td>
@@ -446,7 +454,7 @@ commas; <code>(x,y)</code> tuples stay whole; <code>#id</code> sets the ID; <cod
 <tr>
 <td><code>start_here</code>, <code>only_this</code>, <code>return_to_parent</code>, <code>skip_return</code>, <code>transition</code>, <code>preview</code></td>
 <td>slides, includes, subslides</td>
-<td>opening stop, partial preparation, zooming back to the parent after this child or leaving it straight for the next stop (by default only the last child returns), <code>zoom</code> or <code>cut</code>, content shown before the first visit; written bare, a flag means <code>=true</code> (<a href="slides.html#flags">Slides and the forest</a>)</td>
+<td>opening stop, partial preparation, zooming back to the parent after this child or leaving it straight for the next stop (by default only the last child returns), <code>zoom</code>, <code>cut</code> or a camera transition of the deck's own, content shown before the first visit; written bare, a flag means <code>=true</code> (<a href="slides.html#flags">Slides and the forest</a>)</td>
 </tr>
 </tbody>
 </table>

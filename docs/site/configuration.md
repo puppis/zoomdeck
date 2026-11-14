@@ -31,8 +31,8 @@ description: Every key of deck.json, the layout and presenter options, and the c
 | `classes` | module exporting `Slide` classes for `[[subslide: Name]]` (`imports` is still accepted) |
 | `paths` | folders searched, after the Markdown file's own, for the files it names: imported Markdown, images, videos, pages; relative to this file, as in `["../shared", "figures"]` |
 | `artworks` | folders with artworks of the deck's own, `name.svg` or `name.js`/`.ts`, for `[[artwork: name]]`; an `artworks/` folder next to the Markdown is searched anyway, then the `paths`; see [Icons](icons.html#artworks-of-your-own) |
-| `fonts`, `effects`, `charts`, `languages`, `codeThemes`, `themes`, `slides` | folders with fonts, effect modules, chart modules, language profiles, code themes, themes and slide classes of the deck's own; the folder of the same name (`code-themes/` for `codeThemes`) next to the Markdown is searched anyway, then the `paths`; see [Extending a deck](extending.html) |
-| `theme` | a theme, or a list of them, applied before `styles`: `themes/<name>.md` or `.json`, see [Extending a deck](extending.html#themes) |
+| `snippets`, `directives`, `fonts`, `effects`, `transitions`, `charts`, `languages`, `codeThemes`, `themes`, `slides` | folders with snippets, directive modules, fonts, effect modules, camera transitions, chart modules, language profiles, code themes, themes and slide classes of the deck's own; the folder of the same name (`code-themes/` for `codeThemes`) next to the Markdown is searched anyway, then the `paths`; see [Extending a deck](extending.html) |
+| `theme` | a theme, or a list of them, under the deck's own `styles`, `layout`, `presenter`, `background` and `viewport`: `themes/<name>.md` or `.json`, see [Extending a deck](extending.html#themes) |
 | `background` | canvas background color (white by default) |
 | `viewport` | proportions the camera fits (the stage reveals surrounding canvas when it has room) |
 | `layout` | typography and spacing, below |
@@ -65,7 +65,7 @@ description: Every key of deck.json, the layout and presenter options, and the c
 | Key | Default | Meaning |
 | --- | --- | --- |
 | `transitionTime` | 0.7 | seconds of each camera move; 0 jumps |
-| `transition` | `zoom` | `cut` replaces the view at once between slides, like turning PDF pages; a slide's own `transition=` overrides it |
+| `transition` | `zoom` | `cut` replaces the view at once between slides, like turning PDF pages; the name of a module in the deck's `transitions/` folder moves the camera its own way; a slide's own `transition=` overrides it |
 | `padding` | 1 | camera width multiplier around a focused slide |
 | `pauseOnEntry` | true | stop after entering a slide, before its first step |
 | `pauseOnReturn` | true | stop after returning to a parent |

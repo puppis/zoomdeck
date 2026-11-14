@@ -83,7 +83,7 @@ them; `return_to_parent` on that child brings the camera back before it ([Flags]
 | `only_this=true` | slide, include | prepare only this subtree while editing; everything else becomes a placeholder |
 | `return_to_parent` | slide, include, subslide | zoom back to the parent after this child even when a sibling follows; `return_to_parent=false` is `skip_return` |
 | `skip_return` | slide, include, subslide | leave this child straight for the next stop even when it is the last one, without zooming back to the parent; `skip_return=false` is `return_to_parent` |
-| `transition=cut` | slide, include, subslide | enter and leave this slide without a camera animation; `transition=zoom` restores the zoom under a `cut` deck |
+| `transition=cut` | slide, include, subslide | enter and leave this slide without a camera animation; `transition=zoom` restores the zoom under a `cut` deck; any other name is a camera transition of the deck's own ([Extending a deck](extending.html#camera-transitions)) |
 | `preview=true` | slide, include, subslide | show the child's content before its first visit instead of fading it in on entry, as the tiles of the tour's front page do |
 
 A flag written bare means `=true`: `[[include: #proof skip_return]]`. By default a child returns
@@ -123,6 +123,8 @@ the same placement attributes as an include.
 ```
 
 `[[import: path.md]]` splices another Markdown file into the document before it is parsed.
+`[[snippet: name key=value …]]` does the same with a snippet, markup defined once with
+`{{placeholders}}` and used many times ([Extending a deck](extending.html#snippets)).
 Between slides the file contributes slides and `::: styles` blocks; inside a slide it contributes
 elements and directives, as if its lines were written there. Paths are relative to the importing
 file (so a file in `parts/` imports its neighbours by bare name), imported files may import

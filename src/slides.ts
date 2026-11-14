@@ -78,7 +78,8 @@ export interface SlideOptions {
 }
 
 /** Camera behaviour between slides: an animated zoom or an instant cut, as between PDF pages. */
-export type TransitionMode = 'zoom' | 'cut';
+/** `zoom`, `cut`, or the name of a camera transition of the deck's own (a module in its transitions folders). */
+export type TransitionMode = 'zoom' | 'cut' | (string & {});
 
 /**
  * A place in the deck's source: the document (a URL under the preview server, a path, or ''
@@ -106,7 +107,7 @@ function returnChoice(options: { returnToParent?: boolean | null; skipReturn?: b
 
 function checkTransition(mode: TransitionMode | null | undefined): TransitionMode | null {
   if (mode == null) return null;
-  if (!TRANSITION_MODES.includes(mode)) throw new Error('transition must be zoom or cut');
+  if (!TRANSITION_MODES.includes(mode) && !/^[A-Za-z_][\w-]*$/.test(mode)) throw new Error('transition must be zoom, cut, or the name of a camera transition');
   return mode;
 }
 

@@ -1,0 +1,165 @@
+import { afterEach, describe, expect, it } from 'vitest';
+import { Circle, Group, VGroup } from 'manim-web';
+import { expandImports, fillSnippet } from '../src/markup/imports';
+import { MarkupParser } from '../src/markup/parser';
+import { ElementSpec, MarkupError } from '../src/markup/ast';
+import { chartDataFromJson } from '../src/charts';
+import { applyTheme, loadMarkupDeck, markupDeck, parseTheme } from '../src/markup/deck';
+import { directiveFromModule, type DirectiveOptions } from '../src/directives';
+import { PresenterConfig, transitionFromModule } from '../src/runtime';
+import { LayoutConfig } from '../src/markup/renderer';
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { deckFolders } from '../bin/zoomdeck.mjs';
+
+describe('snippets', () => {
+  const load = async () => {
+    throw new Error('no imports here');
+  };
+
+  it('expand a block defined in place, filling placeholders from the use, with origins in the block', async () => {
+    const main = [
+      '::: snippet card',
+      '::: slide {#{{id}} width=20}',
+      '## {{title}}',
+      '[{{note|A note}}]{#{{id}}-note x=0 y=-2}',
+      ':::',
+      ':::',
+      '',
+      '[[snippet: card id=one title="First card"]]',
+      '[[snippet: card id=two title="Second card" note="Another note"]]',
+    ].join('\n');
+    const { source, origins } = await expandImports(main, { load });
+    const document = new MarkupParser().parse(source);
+    expect(document.slides.map((slide) => slide.id)).toEqual(['one', 'two']);
+    const lines = source.split('\n');
+    expect(lines.slice(0, 6).every((line) => line === '')).toBe(true);
+    const first = lines.findIndex((line) => line.startsWith('## First card'));
+    expect(origins[first]).toEqual({ file: '', line: 3 });
+    expect(source).toContain('[A note]{#one-note x=0 y=-2}');
+    expect(source).toContain('[Another note]{#two-note x=0 y=-2}');
+  });
+
+  it('come from the snippets folders otherwise, and name what is missing', async () => {
+    const snippet = async (name: string) => (name === 'frame' ? '[[rectangle: #{{id}} x={{x}} y=0 width=4 height=2]]' : null);
+    const { source, origins } = await expandImports('::: slide {#a}\n[[snippet: frame id=f x=3]]\n:::', { load, snippet });
+    expect(source).toContain('[[rectangle: #f x=3 y=0 width=4 height=2]]');
+    expect(origins[1]).toEqual({ file: 'snippets/frame.md', line: 1 });
+    await expect(expandImports('[[snippet: frame id=f]]', { load, snippet })).rejects.toThrow(/snippet frame needs x=/);
+    await expect(expandImports('[[snippet: nope id=f]]', { load, snippet })).rejects.toThrow(/unknown snippet nope/);
+    await expect(expandImports('::: snippet loop\n[[snippet: loop]]\n:::\n[[snippet: loop]]', { load })).rejects.toThrow(/uses itself/);
+    expect(fillSnippet('s', 'a {{ x | 1 }} b', {}, 'Line 1')).toBe('a 1 b');
+  });
+});
+
+describe('directives of the deck\'s own', () => {
+  it('are any [[name: …]] the dialect does not know, with free attributes', () => {
+    const document = new MarkupParser().parse('::: slide {#a}\n[[gauge: #g x=1 y=2 level=0.7 label="load"]]\n:::');
+    const item = document.slides[0].items.find((entry): entry is ElementSpec => entry instanceof ElementSpec && entry.kind === 'custom');
+    expect(item?.source).toBe('gauge');
+    expect(item?.attributes).toMatchObject({ id: 'g', x: '1', y: '2', level: '0.7', label: 'load' });
+    expect(() => new MarkupParser().parse('::: slide {#a}\n[[snippet: card id=x]]\n:::')).toThrow(/Unknown snippet/);
+  });
+
+  it('draw what their module returns, several parts grouped', async () => {
+    const options = { name: 'gauge', attributes: { level: '0.5' }, color: '#000', fontSize: 28, width: 10, foreground: '#000', layout: new LayoutConfig({}), sketch: null } as unknown as DirectiveOptions;
+    expect(await directiveFromModule({ default: () => new Circle() }, options)).toBeInstanceOf(Circle);
+    expect(await directiveFromModule({ directive: () => [new Circle(), new VGroup()] }, options)).toBeInstanceOf(Group);
+    await expect(directiveFromModule({}, options)).rejects.toThrow(/exports a function/);
+    await expect(directiveFromModule({ default: () => [] }, options)).rejects.toThrow(/drew nothing/);
+  });
+});
+
+describe('camera transitions of the deck\'s own', () => {
+  it('are kept by name in the presenter configuration, which accepts any name as the default', () => {
+    const config = new PresenterConfig({ transition: 'swoop', transitions: { swoop: (start) => start } });
+    expect(config.transition).toBe('swoop');
+    expect(Object.keys(config.transitions)).toEqual(['swoop']);
+    expect(() => new PresenterConfig({ transition: 'no way' })).toThrow(/zoom, cut, or the name/);
+    expect(transitionFromModule({ default: (_start, target) => target }, 'swoop')({ center: [0, 0, 0], width: 1 }, { center: [1, 1, 0], width: 2 }, 0.5)).toEqual({ center: [1, 1, 0], width: 2 });
+    expect(() => transitionFromModule({}, 'swoop')).toThrow(/exports a function/);
+  });
+});
+
+describe('chart data from files', () => {
+  it('is JSON in three shapes, or CSV rows', () => {
+    expect(chartDataFromJson({ categories: ['A', 'B'], series: [{ name: 's', values: [1, 2] }] })).toEqual({ categories: ['A', 'B'], series: [{ name: 's', values: [1, 2] }] });
+    expect(chartDataFromJson({ labels: ['A'], datasets: [{ label: 'd', data: ['3'] }] })).toEqual({ categories: ['A'], series: [{ name: 'd', values: [3] }] });
+    expect(chartDataFromJson([['Region', '2023'], ['North', 3], ['South', 4]])).toEqual({ categories: ['North', 'South'], series: [{ name: '2023', values: [3, 4] }] });
+    expect(() => chartDataFromJson({ nope: 1 })).toThrow(/JSON chart data/);
+    expect(() => chartDataFromJson({ categories: ['A'], series: [{ values: ['x'] }] })).toThrow(/not a number/);
+  });
+
+  it('is asked for with src= on a fence that has no rows', () => {
+    const parse = (text: string) => new MarkupParser().parse(`::: slide {#a}\n${text}\n:::`);
+    expect(() => parse('```chart {#c src=data.csv}\n```')).not.toThrow();
+    expect(() => parse('```chart {#c}\n```')).toThrow(/src= naming/);
+    expect(() => parse('```chart {#c src=data.csv}\nA, 1\n```')).toThrow(/not both/);
+  });
+});
+
+describe('themes', () => {
+  it('carry styles and, under reserved names, the layout, presenter settings, background and viewport', () => {
+    const theme = parseTheme('::: styles\nheading: color=BLUE_E\nlayout: fontSize=30 headingSize=44\npresenter: transitionTime=1.2 pauseOnReturn=false\ndeck: background=#0F172A viewport=4x3\n:::', 'md');
+    expect(theme.styles).toMatchObject({ heading: { color: 'BLUE_E' } });
+    expect(theme.layout).toEqual({ fontSize: 30, headingSize: 44 });
+    expect(theme.presenter).toEqual({ transitionTime: 1.2, pauseOnReturn: false });
+    expect(theme.background).toBe('#0F172A');
+    expect(theme.viewport).toEqual({ width: 4, height: 3 });
+    expect(parseTheme('{"footnote": "font_size=18"}', 'json')).toEqual({ styles: { footnote: 'font_size=18' } });
+    expect(parseTheme('{"layout": {"fontSize": 20}}', 'json')).toEqual({ layout: { fontSize: 20 } });
+    expect(() => parseTheme('deck: viewport=wide', 'md')).toThrow(/16x9/);
+  });
+
+  it('sit under the deck\'s own settings', () => {
+    const merged = applyTheme({ source: 'x', styles: { heading: 'color=RED' }, layout: { fontSize: 26 }, background: '#fff' }, {
+      styles: { heading: 'color=BLUE', body: 'font_size=30' }, layout: { fontSize: 30, headingSize: 44 }, presenter: { transitionTime: 1 }, background: '#000', viewport: { width: 4, height: 3 },
+    });
+    expect(merged.styles).toEqual({ heading: 'color=RED', body: 'font_size=30' });
+    expect(merged.layout).toEqual({ fontSize: 26, headingSize: 44 });
+    expect(merged.presenter).toEqual({ transitionTime: 1 });
+    expect(merged.background).toBe('#fff');
+    expect(merged.viewport).toEqual({ width: 4, height: 3 });
+    expect(merged.theme).toBeUndefined();
+  });
+
+  const originalFetch = globalThis.fetch;
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it('are loaded before the player starts, from the bundle or the themes folders', async () => {
+    const bundled = await loadMarkupDeck({
+      source: '::: slide {#a}\nx\n:::', basePath: 'x', theme: ['lecture', 'dark'], themes: ['themes/0/'],
+      files: { 'themes/0/lecture.md': 'layout: fontSize=30\npresenter: transitionTime=1.5' },
+      assets: { 'themes/0/dark.json': `data:application/json;base64,${Buffer.from('{"background": "#000", "presenter": {"transitionTime": 2}}').toString('base64')}` },
+    });
+    expect(bundled.background).toBe('#000');
+    expect(bundled.presenter.transitionTime).toBe(2);
+    globalThis.fetch = (async (url: string) => {
+      const found = url === 'https://x.org/talk/themes/lecture.md';
+      return { ok: found, headers: new Headers({ 'content-type': found ? 'text/markdown' : 'text/html' }), text: async () => 'deck: background=#123456' } as Response;
+    }) as typeof fetch;
+    const fetched = await loadMarkupDeck({ url: 'https://x.org/talk/slides.md', theme: 'lecture' });
+    expect(fetched.background).toBe('#123456');
+    await expect(loadMarkupDeck({ url: 'https://x.org/talk/slides.md', theme: 'missing' })).rejects.toThrow(/No theme missing/);
+    expect(() => markupDeck({ source: 'x', theme: 'lecture' })).toThrow(/loadMarkupDeck/);
+  });
+});
+
+describe('the command', () => {
+  it('finds the directives, snippets and transitions folders next to the Markdown', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'zoomdeck-extending-'));
+    try {
+      for (const folder of ['directives', 'snippets', 'transitions']) mkdirSync(join(dir, folder));
+      writeFileSync(join(dir, 'slides.md'), '::: slide {#a}\nx\n:::\n');
+      const folders = deckFolders(join(dir, 'slides.md'));
+      expect(folders.directives).toEqual([join(dir, 'directives')]);
+      expect(folders.snippets).toEqual([join(dir, 'snippets')]);
+      expect(folders.transitions).toEqual([join(dir, 'transitions')]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});

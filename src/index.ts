@@ -7,6 +7,7 @@ export {
   SlideContext,
   Presenter,
   PresenterConfig,
+  transitionFromModule,
   History,
   Clip,
   PlayOp,
@@ -16,6 +17,8 @@ export {
 } from './runtime';
 export type {
   PresenterConfigOptions,
+  CameraTransition,
+  TransitionModule,
   StopOptions,
   PlayOptions,
   CameraState,
@@ -66,7 +69,11 @@ export { PropertyAnimation, Tremble, makeEffect, effectFromModule, enterAnimatio
 export type { PropertyTargets, EffectOptions, AnimationTiming, RateFunction, TrembleOptions, EffectFactory, EffectModule } from './animations';
 export type { CodeToken, CodeTheme, TokenClass, CodeLayoutOptions } from './markup/code';
 export type { TextRun, MathPiece, MathFactory } from './markup/text';
-export { markupDeck, loadDeckConfig, resolveFolders } from './markup/deck';
+export { markupDeck, loadMarkupDeck, loadDeckConfig, resolveFolders, parseTheme, applyTheme } from './markup/deck';
+export type { ThemeParts } from './markup/deck';
+export { directiveFromModule } from './directives';
+export type { DirectiveOptions, DirectiveFactory, DirectiveModule } from './directives';
+export { fillSnippet, SNIPPET_DIRECTIVE } from './markup/imports';
 export { pdfDeck, loadPdfJs, PdfPage, PageImage, PAGE_IMAGES, pagePixels, pageNames, pageSize, BASE_PAGE_PIXELS, MAX_PAGE_PIXELS } from './pdfdeck';
 export type { PdfDeckOptions, PageImageOptions } from './pdfdeck';
 export { expandImports, importPath, describeOrigin, IMPORT_DIRECTIVE } from './markup/imports';
@@ -80,7 +87,7 @@ export type { IconName, IconOptions, IconPart, ArtworkOptions, ArtworkFactory, A
 export { blobMobject, blobOutline, blobField } from './blob';
 export type { Rect, BlobOptions } from './blob';
 export { pathMobject, smoothLoop, loopsMobject, circlePath, ellipsePath, rectPath, arcPath } from './paths';
-export { buildChart, chartFromModule, parseChartData, niceStep, valueAxis, CHART_TYPES, CHART_COLORS } from './charts';
+export { buildChart, chartFromModule, parseChartData, chartDataFromJson, niceStep, valueAxis, CHART_TYPES, CHART_COLORS } from './charts';
 export type { ChartData, ChartSeries, ChartOptions, ChartType, LabelFactory, ChartFactory, ChartModule } from './charts';
 export { buildTable, TABLE_RULES } from './markup/table';
 export type { TableOptions, TableRules, CellFactory } from './markup/table';

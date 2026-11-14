@@ -95,6 +95,34 @@ export function parseChartData(source: string, header?: boolean): ChartData {
   return { categories, series };
 }
 
+/**
+ * Chart data read from a JSON file: `{ categories, series: [{ name, values }] }`, the
+ * Chart.js shape `{ labels, datasets: [{ label, data }] }`, or an array of rows (a header row
+ * optional) as the fence would hold them.
+ */
+export function chartDataFromJson(json: unknown, header?: boolean): ChartData {
+  if (Array.isArray(json)) {
+    return parseChartData(json.map((row) => (Array.isArray(row) ? row : [row]).map((cell) => String(cell)).join(', ')).join('\n'), header);
+  }
+  const object = (json ?? {}) as Record<string, unknown>;
+  const categories = (object.categories ?? object.labels) as unknown[] | undefined;
+  const series = (object.series ?? object.datasets) as Array<Record<string, unknown>> | undefined;
+  if (!Array.isArray(categories) || !Array.isArray(series)) {
+    throw new Error('JSON chart data is { categories, series: [{ name, values }] }, { labels, datasets: [{ label, data }] }, or an array of rows');
+  }
+  return {
+    categories: categories.map((cell) => String(cell)),
+    series: series.map((entry, index) => {
+      const values = (entry.values ?? entry.data) as unknown[];
+      if (!Array.isArray(values)) throw new Error(`Series ${index + 1} has no values`);
+      return { name: String(entry.name ?? entry.label ?? ''), values: values.map((value, i) => {
+        if (!Number.isFinite(Number(value))) throw new Error(`Series ${index + 1}, value ${i + 1} is not a number`);
+        return Number(value);
+      }) };
+    }),
+  };
+}
+
 interface Resolved extends Required<Omit<ChartOptions, 'min' | 'max' | 'axisColor' | 'borderColor' | 'sketch' | 'legend'>> {
   min: number | undefined;
   max: number | undefined;

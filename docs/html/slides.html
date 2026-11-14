@@ -153,7 +153,7 @@ them; <code>return_to_parent</code> on that child brings the camera back before 
 <tr>
 <td><code>transition=cut</code></td>
 <td>slide, include, subslide</td>
-<td>enter and leave this slide without a camera animation; <code>transition=zoom</code> restores the zoom under a <code>cut</code> deck</td>
+<td>enter and leave this slide without a camera animation; <code>transition=zoom</code> restores the zoom under a <code>cut</code> deck; any other name is a camera transition of the deck's own (<a href="extending.html#camera-transitions">Extending a deck</a>)</td>
 </tr>
 <tr>
 <td><code>preview=true</code></td>
@@ -183,6 +183,8 @@ the same placement attributes as an include.</p>
 
 <span class="tk-directive">[[import:</span> parts/appendix.md<span class="tk-directive">]]</span></code></pre>
 <p><code>[[import: path.md]]</code> splices another Markdown file into the document before it is parsed.
+<code>[[snippet: name key=value …]]</code> does the same with a snippet, markup defined once with
+<code>{{placeholders}}</code> and used many times (<a href="extending.html#snippets">Extending a deck</a>).
 Between slides the file contributes slides and <code>::: styles</code> blocks; inside a slide it contributes
 elements and directives, as if its lines were written there. Paths are relative to the importing
 file (so a file in <code>parts/</code> imports its neighbours by bare name), imported files may import

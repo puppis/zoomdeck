@@ -119,6 +119,8 @@ carry its own <code>run_time</code>, <code>lag</code> and <code>rate</code>.</p>
 </tbody>
 </table>
 <p><code>write</code>, <code>create</code>, <code>draw</code> and <code>uncreate</code> suit vector content (formulas and shapes).</p>
+<p>Any other name is an effect of the deck's own, <code>effects/&lt;name&gt;.ts</code>, played on entry or exit
+(<a href="extending.html#effects">Extending a deck</a>).</p>
 <h2 id="automatic-advancement">Automatic advancement<a class="anchor" href="#automatic-advancement" aria-label="Link to this section">#</a></h2><p><code>[[next: step=N]]</code> advances to the following stop automatically once step N (and the child
 visits it triggers) has finished; <code>step=0</code> marks the slide's entry. Chains of <code>next</code> play without
 clicks; backward and outline jumps show the recorded states without starting playback.</p>

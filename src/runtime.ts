@@ -50,6 +50,8 @@ export interface PresenterConfigOptions {
   /** `zoom` (default) animates the camera between slides; `cut` replaces the view at once, like
    * turning a PDF page. A slide's own `transition` overrides it for the moves into and out of it. */
   transition?: TransitionMode;
+  /** Camera transitions of the deck's own, by name, for `transition=name`; filled as a Markdown deck loads. */
+  transitions?: Record<string, CameraTransition>;
   /** Camera width multiplier around a focused slide; at least one. */
   padding?: number;
   /** Accepted for compatibility with older deck configurations; the browser always shows the surroundings. */
@@ -80,6 +82,7 @@ export function commonAncestor(a: Slide, b: Slide): Slide | null {
 export class PresenterConfig {
   readonly transitionTime: number;
   readonly transition: TransitionMode;
+  readonly transitions: Record<string, CameraTransition>;
   readonly padding: number;
   readonly renderCanvas: readonly [number, number];
   readonly pauseOnEntry: boolean;
@@ -100,7 +103,10 @@ export class PresenterConfig {
       throw new Error('transitionTime must be finite and nonnegative');
     }
     this.transition = options.transition ?? 'zoom';
-    if (!TRANSITION_MODES.includes(this.transition)) throw new Error('transition must be zoom or cut');
+    if (!TRANSITION_MODES.includes(this.transition) && !/^[A-Za-z_][\w-]*$/.test(this.transition)) {
+      throw new Error('transition must be zoom, cut, or the name of a camera transition');
+    }
+    this.transitions = options.transitions ?? {};
     this.padding = positive(options.padding ?? 1, 'padding');
     if (this.padding < 1) throw new Error('padding must be at least one');
     const canvas = options.renderCanvas ?? [1.4, 1];
@@ -122,6 +128,24 @@ export class PresenterConfig {
 export interface CameraState {
   center: Vec3;
   width: number;
+}
+
+/**
+ * A camera transition of a deck's own: the camera's state `alpha` of the way (0 to 1, linear
+ * in time) from `start` to `target`; the function applies its own easing.
+ */
+export type CameraTransition = (start: CameraState, target: CameraState, alpha: number) => CameraState;
+
+/** A module in a transitions folder: `export default` the function, or a named `transition`. */
+export interface TransitionModule {
+  default?: CameraTransition;
+  transition?: CameraTransition;
+}
+
+export function transitionFromModule(module: TransitionModule, name: string): CameraTransition {
+  const transition = module.transition ?? (typeof module.default === 'function' ? module.default : null);
+  if (!transition) throw new Error(`The transition module ${name} exports a function (default or \`transition\`) that moves the camera`);
+  return transition;
 }
 
 export interface StopOptions {
@@ -325,6 +349,7 @@ export class FocusOp implements Op {
     readonly destination: SlideContext,
     readonly target: CameraState,
     readonly cameraTime: number,
+    readonly path: CameraTransition | null = null,
   ) {
     this.slide = destination.slide;
     this._gridOutTime = source.display.gridOpacity > 0 ? source.slide.fadeTime : 0;
@@ -352,8 +377,9 @@ export class FocusOp implements Op {
 
   interpolate(alpha: number): void {
     const elapsed = alpha * this.duration;
-    const t = this.cameraTime > 0 ? smooth(clamp01(elapsed / this.cameraTime)) : 1;
-    this.presenter.camera = {
+    const progress = this.cameraTime > 0 ? clamp01(elapsed / this.cameraTime) : 1;
+    const t = smooth(progress);
+    this.presenter.camera = this.path ? this.path(this._startCamera, this.target, progress) : {
       center: [
         lerp(this._startCamera.center[0], this.target.center[0], t),
         lerp(this._startCamera.center[1], this.target.center[1], t),
@@ -1026,6 +1052,12 @@ export class Presenter {
     return mode === 'cut' ? 0 : this.config.transitionTime;
   }
 
+  /** The camera transition of the deck's own that a move uses, when either slide or the deck names one; null for the built-in zoom. */
+  transitionPath(from: Slide, to: Slide): CameraTransition | null {
+    const named = [from.transition, to.transition, this.config.transition].find((mode) => mode && mode !== 'zoom' && mode !== 'cut');
+    return named ? this.config.transitions[named] ?? null : null;
+  }
+
   /** Record a clip boundary; options configure the following clip. */
   boundary(ctx: SlideContext, kind: ClipKind, { force = true, options = {} }: { force?: boolean; options?: StopOptions } = {}): void {
     if (!this.enabled(ctx.slide)) return;
@@ -1052,7 +1084,7 @@ export class Presenter {
         ctx.display.contentOpacity < 1 || ctx.display.backgrounds.length > 0 || this.focused.display.gridOpacity > 0;
       const time = this.transitionTime(this.focused.slide, ctx.slide);
       if (time > 0 || needsFade) {
-        this.history.record(new FocusOp(this, this.focused, ctx, target, time));
+        this.history.record(new FocusOp(this, this.focused, ctx, target, time, this.transitionPath(this.focused.slide, ctx.slide)));
       } else {
         this.camera = target;
       }

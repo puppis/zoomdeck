@@ -8,6 +8,7 @@ import type StateInline from 'markdown-it/lib/rules_inline/state_inline.mjs';
 import type Token from 'markdown-it/lib/token.mjs';
 import {
   ALIGNMENTS, ANIMATE_PROPS, ATTACHMENTS, BASELINE_ANCHORS, BRACE_SIDES, CONNECTIONS, CONTAINER, DIRECTIVE, EFFECT_NAMES, ELEMENT_ATTRS,
+  CUSTOM_DIRECTIVE, LIBRARY_NAME,
   ENCLOSURES, ENTER_STYLES, EXIT_STYLES, FILL_ATTRS, GEOMETRY, GROUP_ANCHORS, GROUP_ATTRS, HORIZONTAL_POSITION, ICON_KINDS, IDENTIFIER,
   LABEL_SIDES, LAYOUT, NEIGHBORS, POSITION_REFERENCES, RATE_NAMES, SHAPES, SKETCH_ATTRS, STROKE_ATTRS, TEXT_LIKE, TIMING_ATTRS, TREMBLE_ATTRS,
   VECTOR_KINDS, VERTICAL_POSITION, VIDEO_EXTENSIONS, FILL_STYLE_NAMES, CHART_ATTRS, CHART_TYPE_NAMES, TABLE_ATTRS, TABLE_RULE_NAMES,
@@ -359,6 +360,16 @@ export class MarkupParser {
         index += 1;
         continue;
       }
+      const custom = CUSTOM_DIRECTIVE.exec(lines[index]);
+      if (custom) {
+        // A directive of the deck's own, drawn by a module of its directives folders when the deck is built.
+        const [, name, value] = custom;
+        if (name === 'snippet') throw new MarkupError(`Unknown snippet: no ::: snippet block defines ${value.trim().split(/\s+/)[0]} and no snippets folder has it`, line);
+        const attrs = parseAttributes(value, line, { commas: true });
+        items.push(new ElementSpec(attrs.id ?? `${prefix}element-${items.length + 1}`, 'custom', [], attrs, name, line));
+        index += 1;
+        continue;
+      }
       const container = CONTAINER.exec(lines[index]);
       if (container) {
         const kind = /^\{\s*\.(element|group)(?:\s|\})/.exec(container[1])?.[1];
@@ -631,7 +642,8 @@ export class ASTTransformer {
           if (target.attributes.focus_only === 'true') throw new MarkupError('focus_only elements cannot have visibility events', item.line);
           if (scopeOf.get(item.target)) throw new MarkupError(`#${item.target} is a group member; show or hide its group instead`, item.line);
           const style = item.attributes.enter ?? item.attributes.exit;
-          if (style !== undefined && !(item.action === 'show' ? ENTER_STYLES : EXIT_STYLES).has(style)) {
+          // A style that is not built in is an effect of the deck's own, found in its effects folders when the deck is built.
+          if (style !== undefined && !(item.action === 'show' ? ENTER_STYLES : EXIT_STYLES).has(style) && !LIBRARY_NAME.test(style)) {
             throw new MarkupError(`Unknown ${item.action === 'show' ? 'enter' : 'exit'} style ${JSON.stringify(style)}`, item.line);
           }
         }
@@ -639,7 +651,7 @@ export class ASTTransformer {
       }
       for (const item of elements.values()) {
         for (const [key, styles] of [['enter', ENTER_STYLES], ['exit', EXIT_STYLES]] as const) {
-          if (key in item.attributes && !styles.has(item.attributes[key])) {
+          if (key in item.attributes && !styles.has(item.attributes[key]) && !LIBRARY_NAME.test(item.attributes[key])) {
             throw new MarkupError(`Unknown ${key} style ${JSON.stringify(item.attributes[key])}`, item.line);
           }
         }
@@ -693,7 +705,7 @@ export class ASTTransformer {
   /** Validate one element's kind-specific attributes; `scope` is the enclosing group ID or ''. */
   private _checkElement(item: ElementSpec, scope: string): void {
     const decoration = CONNECTIONS.has(item.kind) || ATTACHMENTS.has(item.kind);
-    if (!['text', 'image', 'math', 'code', 'group', 'iframe', 'icon', 'table', 'chart'].includes(item.kind) && !SHAPES.has(item.kind) && !decoration) {
+    if (!['text', 'image', 'math', 'code', 'group', 'iframe', 'icon', 'table', 'chart', 'custom'].includes(item.kind) && !SHAPES.has(item.kind) && !decoration) {
       throw new MarkupError(`Unknown element kind ${JSON.stringify(item.kind)}`, item.line);
     }
     let allowed: Set<string> | null;
@@ -716,6 +728,8 @@ export class ASTTransformer {
       for (const key of ['size', 'label', 'label_side', ...STROKE_ATTRS, ...FILL_ATTRS, ...SKETCH_ATTRS]) allowed.add(key);
       // An artwork of the deck's own reads its directive's attributes itself: any name is allowed.
       if (!ICON_KINDS.has(item.source)) allowed = null;
+    } else if (item.kind === 'custom') {
+      allowed = null;
     } else if (SHAPES.has(item.kind)) {
       allowed = new Set([...ELEMENT_ATTRS].filter((key) => !['font_size', 'width', 'height'].includes(key)));
       for (const key of [...STROKE_ATTRS, ...SKETCH_ATTRS]) allowed.add(key);
@@ -778,7 +792,8 @@ export class ASTTransformer {
       if ('min' in item.attributes && 'max' in item.attributes && Number(item.attributes.max) <= Number(item.attributes.min)) {
         throw new MarkupError('max must exceed min', item.line);
       }
-      if (!item.source.trim()) throw new MarkupError('A chart fence needs rows of data', item.line);
+      if (!item.source.trim() && !item.attributes.src) throw new MarkupError('A chart fence needs rows of data, or src= naming a CSV or JSON file', item.line);
+      if (item.source.trim() && item.attributes.src) throw new MarkupError('A chart takes its rows from the fence or from src=, not both', item.line);
     }
     if ('tremble' in item.attributes) {
       const range = parseTremble(item.attributes.tremble, stepValue(item.attributes, 'step', item.line), item.line);
@@ -826,7 +841,9 @@ export class ASTTransformer {
   }
 
   private static _checkTransition(attrs: Attributes, line: number): void {
-    if ('transition' in attrs && !['zoom', 'cut'].includes(attrs.transition)) throw new MarkupError('transition must be zoom or cut', line);
+    if ('transition' in attrs && !['zoom', 'cut'].includes(attrs.transition) && !LIBRARY_NAME.test(attrs.transition)) {
+      throw new MarkupError('transition must be zoom, cut, or the name of a camera transition of the deck', line);
+    }
   }
 
   /** Validate an include or import and register its parent link. */

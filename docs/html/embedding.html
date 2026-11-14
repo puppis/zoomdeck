@@ -89,7 +89,8 @@ whenever the box is resized.</p>
 });</code></pre>
 <p>The first argument is the element: give it a size with your own CSS (a height, or an
 <code>aspect-ratio</code>), since the player fills it. The second is the deck: the URL of a <code>deck.json</code>,
-of a Markdown file or of a PDF, or a deck definition made with <code>defineDeck</code>, <code>markupDeck</code> or
+of a Markdown file or of a PDF, or a deck definition made with <code>defineDeck</code>, <code>markupDeck</code> (or
+<code>loadMarkupDeck</code>, which also applies a <code>theme</code> before the player starts) or
 <code>pdfDeck</code>. A
 <code>deck.json</code> loads its slide classes through the browser's own <code>import</code>, so a bundler is not
 required for them. The options:</p>
