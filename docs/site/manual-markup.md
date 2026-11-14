@@ -140,11 +140,13 @@ the same attributes; the class comes from the module `classes` names in `deck.js
 [[pdf: assets/paper.pdf #pages x=0 y=-1 width=18 preview=true]]
 ```
 
-A PDF placed inside a slide: an include whose child is the document, its pages laid out in a
-row under a hidden slide that is never a stop. The file comes first, relative to the Markdown
+A PDF placed inside a slide: an include whose child is the document, a hidden slide of a page's
+size that is never a stop, with the pages stacked in it, the first shown and every next one
+appearing over the previous when it is visited. The file comes first, relative to the Markdown
 and then searched in the `paths` folders; `#id` is required and must not name a slide of the
-document; the other attributes are those of an include. The camera zooms into the first page,
-cuts from each page to the next, and zooms back out after the last; the outline lists the
+document; the other attributes are those of an include, `preview=true` showing the first page
+before the visit. The camera zooms into the first page, cuts from each page to the next, and
+zooms back out after the last, the slide then showing the last page; the outline lists the
 pages, by the document's bookmarks when it has them. The exports copy or embed the file.
 
 ### Flags of slides and children

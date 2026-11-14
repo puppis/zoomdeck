@@ -343,6 +343,11 @@ export interface PageSequenceOptions {
   name?: string;
   /** Distance between page centers, as a multiple of the largest page side; 3 by default. */
   spacing?: number;
+  /**
+   * Pages stacked at one place instead of a row, as a document is read: the first page shows
+   * from the start, every next one appears over the previous when it is visited.
+   */
+  stack?: boolean;
 }
 
 /**
@@ -359,13 +364,14 @@ export function pageSequence(pages: readonly Slide[], options: PageSequenceOptio
   const unit = Math.max(...pages.map((page) => Math.max(page.width, page.height)));
   const spacing = positive(options.spacing ?? 3, 'spacing') * unit;
   const root = new Slide(options.name ?? 'Pages', {
-    width: spacing * pages.length,
+    width: options.stack ? Math.max(...pages.map((page) => page.width)) : spacing * pages.length,
     height: Math.max(...pages.map((page) => page.height)),
     hidden: true,
   });
   pages.forEach((page, index) => {
-    page.preview = true;
-    root.addChild(page, { center: [(index - (pages.length - 1) / 2) * spacing, 0, 0], width: page.width, height: page.height });
+    page.preview = options.stack ? index === 0 : true;
+    const center: [number, number, number] = options.stack ? [0, 0, 0] : [(index - (pages.length - 1) / 2) * spacing, 0, 0];
+    root.addChild(page, { center, width: page.width, height: page.height });
   });
   return root;
 }

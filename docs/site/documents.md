@@ -43,13 +43,15 @@ to the page; the single-file export embeds it.
 :::
 ```
 
-`[[pdf: file #id …]]` places a PDF inside a slide, as a row of its pages: an include whose
-child is the document. It takes the placement of an include (`x`, `y`, `width` or `height`,
-`anchor`, `at`, the relative references, `step`, `preview`, the flags). The camera zooms into
-the first page, cuts from each page to the next, and zooms back out after the last; the pages
-appear in the outline under the slide, named by the document's bookmarks. The file is relative
-to the Markdown, then searched in the `paths` folders; exports copy or embed it. The tour's
-first chapter shows three pages this way.
+`[[pdf: file #id …]]` places a PDF inside a slide: an include whose child is the document,
+shown as a document is read, one page at a time. The child has the size of a page and takes the
+placement of an include (`x`, `y`, `width` or `height`, `anchor`, `at`, the relative references,
+`step`, `preview`, the flags); with `preview=true` the first page shows before the visit. The
+camera zooms into the first page, turns to each next page with a cut, the new page appearing
+over the previous one, and zooms back out after the last, the slide then showing the last page
+as a viewer would. The pages appear in the outline under the slide, named by the document's
+bookmarks. The file is relative to the Markdown, then searched in the `paths` folders; exports
+copy or embed it. The tour's first chapter shows three pages this way.
 
 ## A Markdown file of plain slides
 

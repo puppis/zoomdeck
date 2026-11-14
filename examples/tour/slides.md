@@ -91,14 +91,16 @@ Everything a slide can hold and everything the player does, one chapter per topi
 
 Zoomdeck opens a PDF directly: a paper, a poster, slides typeset elsewhere. Each page is a slide, the pages are visited first to last with a cut between them, the bookmarks of the document name them in the outline, and the text stays sharp at any zoom, since pages are drawn at the density of the screen. {x=-9.35 y=3.9 width=8.6 font_size=20}
 
-```bash {#feat-pdf-cmd x=-9.35 y=0.7 width=8.6}
+```bash {#feat-pdf-cmd x=-9.35 y=0.6 width=8.6}
 zoomdeck serve paper.pdf
 zoomdeck build paper.pdf -o out
 ```
 
-[[pdf: assets/slides.pdf #feat-paper x=0 y=-2.3 width=18.7 preview=true]]
+[[rectangle: #feat-pdf-frame x=4.3 y=-0.5 width=10.2 height=5.74 color=GRAY stroke_width=1]]
 
-Below, three pages of a PDF typeset with LaTeX, placed in this slide with `[[pdf: …]]`: the camera zooms into the first and cuts to the next. The player, the command and the desktop app open a whole file the same way. {x=-9.35 y=-4.5 width=18.7 font_size=18 color=GRAY}
+[[pdf: assets/slides.pdf #feat-paper x=4.3 y=-0.5 width=10.2 preview=true]]
+
+On the right, a PDF of three pages typeset with LaTeX, placed in this slide with `[[pdf: assets/slides.pdf]]`: the camera zooms into the first page and turns to the next ones with cuts. The player, the command and the desktop app open a whole file the same way. {x=-9.35 y=-4.5 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#feat-plain width=20}

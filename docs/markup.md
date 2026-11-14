@@ -51,8 +51,8 @@ every construct of this page live, each next to the listing that produced it; op
   `transition=zoom` restores the animation for one slide when `presenter.transition` is `cut` for
   the whole deck, and any other name is a camera transition of the deck's own.
 - Includes and subslides accept `.class` styles, `anchor=`, `at=` and `dx`/`dy` like elements.
-- `[[pdf: file.pdf #id …]]` places a PDF inside a slide: its pages become children in a row,
-  zoomed into once and then cut through one after the other (docs/site/documents.md).
+- `[[pdf: file.pdf #id …]]` places a PDF inside a slide as a document is read: a child of a
+  page's size, zoomed into once and then turned page by page with cuts (docs/site/documents.md).
 - `::: notes … :::` inside a slide, or `::: notes {step=N}`, holds the presenter's notes in
   Markdown; they are shown on the companion tablet under the picture of the current stop, never
   on the canvas, and `zoomdeck build --without-notes` leaves them out of an export.

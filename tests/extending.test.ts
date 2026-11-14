@@ -7,7 +7,7 @@ import { chartDataFromJson } from '../src/charts';
 import { applyTheme, loadMarkupDeck, markupDeck, parseTheme } from '../src/markup/deck';
 import { directiveFromModule, type DirectiveOptions } from '../src/directives';
 import { Presenter, PresenterConfig, transitionFromModule, type CameraTransition } from '../src/runtime';
-import { Slide } from '../src/slides';
+import { Slide, pageSequence } from '../src/slides';
 import { LayoutConfig } from '../src/markup/renderer';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -85,6 +85,20 @@ describe('a PDF inside a slide', () => {
     expect(() => new ASTTransformer().validate(document)).not.toThrow();
     expect(() => new MarkupParser().parse('::: slide {#a}\n[[pdf: assets/paper.pdf x=0]]\n:::')).toThrow(/explicit #id/);
     expect(() => new MarkupParser().parse('::: slide {#a}\n[[pdf: assets/paper.pdf #a x=0]]\n:::')).toThrow(/id of its own/);
+  });
+});
+
+describe('a stacked page sequence', () => {
+  it('has the size of a page, every page at its center, the first one shown ahead', () => {
+    const a = new Slide('a', { width: 16, height: 9 });
+    const b = new Slide('b', { width: 16, height: 9 });
+    const stack = pageSequence([a, b], { name: 'doc', stack: true });
+    expect(stack.hidden).toBe(true);
+    expect([stack.width, stack.height]).toEqual([16, 9]);
+    expect(a.preview).toBe(true);
+    expect(b.preview).toBe(false);
+    const row = pageSequence([new Slide('c', { width: 16, height: 9 }), new Slide('d', { width: 16, height: 9 })], { spacing: 1.15 });
+    expect(row.width).toBeCloseTo(2 * 1.15 * 16);
   });
 });
 

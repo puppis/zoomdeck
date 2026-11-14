@@ -356,11 +356,13 @@ and the relative references, plus:</p>
 the same attributes; the class comes from the module <code>classes</code> names in <code>deck.json</code> or from
 <code>slides/Name.ts</code>, and a dotted name (<code>helpers.Orbit</code>) walks namespaces.</p>
 <h3 id="pdf">[[pdf]]<a class="anchor" href="#pdf" aria-label="Link to this section">#</a></h3><pre><code class="language-markdown"><span class="tk-directive">[[pdf:</span> assets/paper.pdf <span class="tk-attribute">#pages</span> <span class="tk-attribute">x=</span><span class="tk-number">0</span> <span class="tk-attribute">y=</span><span class="tk-number">-1</span> <span class="tk-attribute">width=</span><span class="tk-number">18</span> <span class="tk-attribute">preview=</span>true<span class="tk-directive">]]</span></code></pre>
-<p>A PDF placed inside a slide: an include whose child is the document, its pages laid out in a
-row under a hidden slide that is never a stop. The file comes first, relative to the Markdown
+<p>A PDF placed inside a slide: an include whose child is the document, a hidden slide of a page's
+size that is never a stop, with the pages stacked in it, the first shown and every next one
+appearing over the previous when it is visited. The file comes first, relative to the Markdown
 and then searched in the <code>paths</code> folders; <code>#id</code> is required and must not name a slide of the
-document; the other attributes are those of an include. The camera zooms into the first page,
-cuts from each page to the next, and zooms back out after the last; the outline lists the
+document; the other attributes are those of an include, <code>preview=true</code> showing the first page
+before the visit. The camera zooms into the first page, cuts from each page to the next, and
+zooms back out after the last, the slide then showing the last page; the outline lists the
 pages, by the document's bookmarks when it has them. The exports copy or embed the file.</p>
 <h3 id="flags-of-slides-and-children">Flags of slides and children<a class="anchor" href="#flags-of-slides-and-children" aria-label="Link to this section">#</a></h3><p><code>start_here</code>, <code>only_this</code>, <code>skip_return</code>, <code>return_to_parent</code>, <code>preview</code> and <code>focus_only</code> may be
 written bare. <code>skip_return</code> and <code>return_to_parent</code> are two sides of one choice and cannot both

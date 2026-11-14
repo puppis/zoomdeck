@@ -412,7 +412,7 @@ export function markupDeck(options: MarkupDeckOptions): ResolvedDeck {
           }
         }
         try {
-          documents.set(slide.id, await pdfPages({ url }, { name: clean.split('/').pop() ?? clean, spacing: 1.15 }));
+          documents.set(slide.id, await pdfPages({ url }, { name: clean.split('/').pop() ?? clean, stack: true }));
         } catch (error) {
           throw new MarkupError(`Cannot open the PDF ${src} (${(error as Error).message})`, slide.line);
         }

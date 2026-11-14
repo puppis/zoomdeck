@@ -361,13 +361,13 @@ export function pdfUrl(url: string): string {
 }
 
 /**
- * The pages of a PDF as slides under a hidden root, laid out in a row: the shape of a deck
- * opened from a PDF, and of a document placed inside a slide with `[[pdf: file]]`, whose pages
- * the camera visits one after the other with cuts between them. `spacing` is the distance
- * between page centers as a multiple of the largest page side (three for a deck of its own,
- * where a padded view must never reach the next page; a tighter row for a child).
+ * The pages of a PDF as slides under a hidden root: in a row, the shape of a deck opened from a
+ * PDF (`spacing` is the distance between page centers as a multiple of the largest page side,
+ * three so that a padded view never reaches the next page), or stacked at one place (`stack`),
+ * the shape of a document placed inside a slide with `[[pdf: file]]`, where the first page shows
+ * and every next one appears over the previous as the camera cuts to it.
  */
-export async function pdfPages(source: PdfSource, options: { name?: string; spacing?: number } = {}): Promise<Slide> {
+export async function pdfPages(source: PdfSource, options: { name?: string; spacing?: number; stack?: boolean } = {}): Promise<Slide> {
   if (source.url === undefined && source.data === undefined) throw new Error('pdfPages requires url or data');
   const { getDocument } = await loadPdfJs();
   const url = source.url === undefined ? undefined : pdfUrl(source.url);
@@ -378,7 +378,7 @@ export async function pdfPages(source: PdfSource, options: { name?: string; spac
   for (let number = 1; number <= document.numPages; number++) {
     pages.push(new PdfPage(await document.getPage(number), number, names.get(number) ?? `Page ${number}`));
   }
-  return pageSequence(pages, { name: options.name ?? 'Document', spacing: options.spacing });
+  return pageSequence(pages, { name: options.name ?? 'Document', spacing: options.spacing, stack: options.stack });
 }
 
 export async function pdfDeck(options: PdfDeckOptions): Promise<ResolvedDeck> {
