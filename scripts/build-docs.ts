@@ -30,7 +30,7 @@ const NAV: Array<{ title: string; blurb: string; pages: string[] }> = [
   { title: 'Diagrams', blurb: 'Shapes, arrows, icons and enclosures, crisp or hand-drawn.', pages: ['shapes', 'icons', 'enclosures', 'sketch'] },
   { title: 'Layout and style', blurb: 'Where things go and how they look: flow, anchors, constraints, groups, style sheets, and the deck.json configuration of a deck.', pages: ['positioning', 'groups', 'styles', 'configuration'] },
   { title: 'Motion and interaction', blurb: 'What happens on each click: fragments, animations, focus-only decorations and live web pages.', pages: ['fragments', 'animations', 'focus', 'live-pages'] },
-  { title: 'Advanced', blurb: 'Slides written in TypeScript, and the complete reference of the dialect.', pages: ['code-slides', 'reference'] },
+  { title: 'Advanced', blurb: 'Slides written in TypeScript, a deck inside a page of your own, and the complete reference of the dialect.', pages: ['code-slides', 'embedding', 'reference'] },
 ];
 
 function escapeHtml(text: string): string {

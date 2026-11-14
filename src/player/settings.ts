@@ -107,6 +107,35 @@ export const ACTIONS: ActionInfo[] = [
   { name: 'closePlayback', label: 'Leave the playback', group: 'playback' },
 ];
 
+/**
+ * The player's optional features, which a page embedding a deck may leave out: each hides its
+ * controls and makes its keys inert. Navigation, the spotlight and the slides' links always work.
+ */
+export type Feature = 'outline' | 'pen' | 'whiteboard' | 'camera' | 'screen' | 'record' | 'print' | 'fullscreen' | 'settings';
+
+export const FEATURES: readonly Feature[] = ['outline', 'pen', 'whiteboard', 'camera', 'screen', 'record', 'print', 'fullscreen', 'settings'];
+
+/** The feature an action belongs to, or null for the actions that are always available. */
+export function featureOf(action: ActionName): Feature | null {
+  switch (action) {
+    case 'undo': case 'redo': case 'clear': case 'draw': case 'color1': case 'color2': case 'color3': case 'color4': return 'pen';
+    case 'whiteboard': case 'boardLeft': case 'boardRight': case 'boardUp': case 'boardDown': return 'whiteboard';
+    case 'camera': return 'camera';
+    case 'screen': return 'screen';
+    case 'record': return 'record';
+    case 'print': return 'print';
+    case 'fullscreen': case 'exit': return 'fullscreen';
+    case 'outline': return 'outline';
+    case 'settings': return 'settings';
+    default: return null;
+  }
+}
+
+/** The features left on by `flags`: all of them unless a flag says false. */
+export function enabledFeatures(flags: Partial<Record<Feature, boolean>> = {}): Set<Feature> {
+  return new Set(FEATURES.filter((feature) => flags[feature] !== false));
+}
+
 export const DEFAULT_BINDINGS: Record<ActionName, string[]> = {
   next: ['ArrowRight', 'Space'],
   previous: ['ArrowLeft'],

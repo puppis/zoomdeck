@@ -84,4 +84,5 @@ runDeck(markupDeck({ url: '/decks/lecture/slides.md', title: 'Lecture 1', showOu
 ```
 
 Bundle this with Vite (or any bundler that handles ES modules and assets) to obtain a page of
-your own layout around the player.
+your own layout around the player. For a deck that is one element of a larger page rather than
+the page itself, with a handle the page drives it with, see [A deck inside a page](embedding.html).

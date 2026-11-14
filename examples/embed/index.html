@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A deck inside a page</title>
+<style>
+  body { margin: 0; font: 17px/1.6 Georgia, serif; color: #222; background: #f6f3ec; }
+  main { max-width: 900px; margin: 0 auto; padding: 32px 20px 80px; }
+  h1 { font-size: 32px; }
+  p { max-width: 65ch; }
+  .deck { height: 480px; margin: 24px 0; border: 1px solid #c9c2b4; border-radius: 10px; overflow: hidden; resize: both; }
+  .deck.small { height: 300px; width: 60%; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0 24px; font: 14px system-ui, sans-serif; }
+  .controls button, .controls select { font: inherit; padding: 6px 12px; }
+  #log { font: 13px/1.5 ui-monospace, monospace; background: #fff; border: 1px solid #c9c2b4; padding: 10px; height: 110px; overflow: auto; }
+</style>
+</head>
+<body>
+<main>
+  <h1>A deck inside a page</h1>
+  <p>This page is not the player. The player is the box below, mounted with <code>mountDeck</code>;
+  the text around it keeps the page's own font, colors and scrolling, and the keys only reach the
+  deck after a click on it. Drag the corner of the box to resize it.</p>
+  <p>Arrow keys here should scroll the page, not move the deck, until the deck is clicked.</p>
+
+  <div class="deck" id="deck"></div>
+
+  <div class="controls">
+    <button id="prev">← Previous</button>
+    <button id="next">Next →</button>
+    <button id="home">First</button>
+    <button id="replay">Replay</button>
+    <select id="jump"><option value="">Jump to slide…</option></select>
+    <button id="draw">Pen</button>
+    <button id="board">Whiteboard</button>
+    <button id="full">Fullscreen</button>
+    <button id="destroy">Destroy</button>
+    <span id="where"></span>
+  </div>
+  <pre id="log"></pre>
+
+  <p>A second, smaller deck with most features turned off: only the slides, the spotlight and the keys.</p>
+  <div class="deck small" id="deck2"></div>
+
+  <p>Text after the decks, to show the page scrolls as usual.</p>
+</main>
+<script type="module">
+  import { mountDeck } from '/src/index.ts';
+  import { Demo as demo } from '/examples/tree-deck.ts';
+
+  const log = document.getElementById('log');
+  const say = (text) => { log.textContent += text + '\n'; log.scrollTop = log.scrollHeight; };
+
+  const deck = await mountDeck(document.getElementById('deck'), '/examples/guide/deck.json', { features: { camera: false, screen: false, record: false } });
+  window.deck = deck;
+  say(`mounted: ${deck.length} stops, ${deck.slides.length} slides`);
+  const jump = document.getElementById('jump');
+  for (const slide of deck.slides) {
+    if (slide.first < 0) continue;
+    const option = document.createElement('option');
+    option.value = slide.name;
+    option.textContent = `${'  '.repeat(slide.depth)}${slide.name}`;
+    jump.append(option);
+  }
+  jump.addEventListener('change', () => { if (jump.value) void deck.goTo(jump.value); });
+  deck.on('stop', (e) => { document.getElementById('where').textContent = `${e.index + 1} / ${e.total} · ${e.slide} (step ${e.step})`; say(`stop ${e.index + 1}: ${e.slide}`); });
+  deck.on('state', (e) => say(`state: ${e.state}`));
+  const click = (id, fn) => document.getElementById(id).addEventListener('click', fn);
+  click('prev', () => deck.previous());
+  click('next', () => deck.next());
+  click('home', () => deck.home());
+  click('replay', () => deck.replay());
+  click('draw', () => deck.toggleDrawing());
+  click('board', () => deck.toggleWhiteboard());
+  click('full', () => deck.fullscreen());
+  click('destroy', () => { deck.destroy(); say('destroyed'); });
+
+  const second = await mountDeck(document.getElementById('deck2'), demo, {
+    features: { outline: false, pen: false, whiteboard: false, camera: false, screen: false, record: false, print: false, settings: false },
+  });
+  window.deck2 = second;
+  say(`second deck: ${second.length} stops`);
+</script>
+</body>
+</html>

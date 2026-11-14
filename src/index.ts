@@ -28,8 +28,10 @@ export type {
 export { LocalScene, Display } from './display';
 export { defineDeck } from './deck';
 export type { DeckDefinition, ResolvedDeck, ViewportSize } from './deck';
-export { runDeck, resumedClip } from './player/boot';
-export type { RunDeckOptions, RunningDeck } from './player/boot';
+export { runDeck, resumedClip, mountDeck } from './player/boot';
+export type { RunDeckOptions, RunningDeck, MountDeckOptions, DeckHandle, DeckEvents, DeckSource } from './player/boot';
+export { FEATURES, featureOf, enabledFeatures } from './player/settings';
+export type { Feature } from './player/settings';
 export { Player } from './player/player';
 export { Stage } from './player/stage';
 export { LinkLayer } from './player/links';

@@ -1,16 +1,19 @@
-:root {
+/* The page the player owns (the standalone player); an embedded player leaves the page's own styles alone. */
+body.zd-page { margin: 0; height: 100vh; overflow: hidden; background: var(--background); }
+/* The player fills its host: the page in standalone mode, the element it was mounted in otherwise. */
+.zd-app {
   font: 14px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --background: #000;
   --foreground: #fff;
   --muted: color-mix(in srgb, var(--foreground) 68%, var(--background));
   --border: color-mix(in srgb, var(--foreground) 14%, var(--background));
   --hover: color-mix(in srgb, var(--foreground) 7%, var(--background));
-  color: var(--foreground);
-  background: var(--background);
+  display: flex; height: 100%; width: 100%; min-height: 0; overflow: hidden; position: relative;
+  background: var(--background); color: var(--foreground); text-align: left;
 }
-* { box-sizing: border-box; }
-body { margin: 0; height: 100vh; overflow: hidden; background: var(--background); }
-.zd-app { display: flex; height: 100vh; width: 100vw; background: var(--background); color: var(--foreground); }
+.zd-app, .zd-app *, .zd-app *::before, .zd-app *::after { box-sizing: border-box; }
+/* The stage takes the focus on a click so that the keys reach the deck; the ring is for keyboard users. */
+.zd-stage:focus:not(:focus-visible) { outline: none; }
 .zd-app button, .zd-app select {
   font: inherit; color: var(--foreground); background: var(--background);
   border: 1px solid var(--border); border-radius: 8px;

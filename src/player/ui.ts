@@ -10,8 +10,8 @@ import type { Stage } from './stage';
 import playerCss from './player.css?inline';
 import {
   ACTIONS, ACTION_GROUPS, CORNERS, DEFAULT_POINTER_BINDINGS, DEFAULT_RECORDING, DEFAULT_TIP_SIZE, MODIFIER_COMBOS, PIP_SIZES, POINTER_ACTIONS, TIP_SIZES,
-  type ActionInfo, type ActionName, type PlayerSettings, type PointerAction, type PointerMode,
-  actionFor, defaultSettings, describeCombo, describeModifiers, keyCombo, loadSettings, modifierCombo, pointerActionFor, saveSettings,
+  type ActionInfo, type ActionName, type Feature, type PlayerSettings, type PointerAction, type PointerMode,
+  actionFor, defaultSettings, describeCombo, describeModifiers, enabledFeatures, featureOf, keyCombo, loadSettings, modifierCombo, pointerActionFor, saveSettings,
 } from './settings';
 import {
   DEFAULT_PEN_STYLE, InkSurface, PEN_PRESETS, PEN_PRESET_LABELS, newStrokeId, type InkSample, type InkStroke, type InkTool, type PenPreset,
@@ -77,6 +77,14 @@ function el<K extends keyof HTMLElementTagNameMap>(
 export interface PlayerUIOptions {
   /** Query parameter / hash handling for deep links and preview reloads. */
   useLocation?: boolean;
+  /**
+   * The player is one element of a larger page rather than the page itself: it fills its host,
+   * leaves the document's title, colors and styles alone, and takes keys only while it has the
+   * focus (a click on the slides gives it). Defaults to false.
+   */
+  embedded?: boolean;
+  /** Features to leave out (`{ camera: false }`); each hides its controls and makes its keys inert. */
+  features?: Partial<Record<Feature, boolean>>;
 }
 
 /** Build the player page inside `host` and return the stage container. */
@@ -150,6 +158,8 @@ export class PlayerUI {
   // Recording a talk.
   private _recorder: Recorder | null = null;
   private _printButton: HTMLButtonElement;
+  private readonly _fullscreenButton: HTMLButtonElement;
+  private readonly _settingsButton: HTMLButtonElement;
   private _recordStream: MediaStream | null = null;
   /** The recording being continued, when the current one appends to an earlier talk. */
   private _appendTo: { name: string; timeline: Timeline } | null = null;
@@ -183,6 +193,11 @@ export class PlayerUI {
   private _padList!: HTMLElement;
   private _frameTimer: number | null = null;
   private readonly _useLocation: boolean;
+  private readonly _embedded: boolean;
+  private readonly _features: Set<Feature>;
+  /** Listeners on the document and the window, and timers, end with the player: `dispose` aborts them. */
+  private readonly _abort = new AbortController();
+  private _resizeObserver: ResizeObserver | null = null;
   private readonly _settings: PlayerSettings;
   private readonly _dialog: HTMLDialogElement;
   private readonly _shortcuts: HTMLElement;
@@ -191,17 +206,24 @@ export class PlayerUI {
   constructor(host: HTMLElement, deck: ResolvedDeck, options: PlayerUIOptions = {}) {
     this._deck = deck;
     this._useLocation = options.useLocation ?? true;
+    this._embedded = options.embedded ?? false;
+    this._features = enabledFeatures(options.features);
     this._settings = loadSettings();
     this._renderingAtLoad = JSON.stringify(this._settings.rendering);
     if (!document.getElementById('zd-player-style')) {
       document.head.append(el('style', { id: 'zd-player-style', text: playerCss }));
     }
-    document.title = deck.title;
-    const rootStyle = document.documentElement.style;
-    rootStyle.setProperty('--background', deck.background);
-    rootStyle.setProperty('--foreground', deck.foreground);
-    rootStyle.colorScheme = PlayerUI._isLight(deck.background) ? 'light' : 'dark';
-    document.body.style.background = deck.background;
+    const colorScheme = PlayerUI._isLight(deck.background) ? 'light' : 'dark';
+    if (!this._embedded) {
+      // The page is the player's: its title, colors and scrollbars follow the deck.
+      document.title = deck.title;
+      const rootStyle = document.documentElement.style;
+      rootStyle.setProperty('--background', deck.background);
+      rootStyle.setProperty('--foreground', deck.foreground);
+      rootStyle.colorScheme = colorScheme;
+      document.body.classList.add('zd-page');
+      document.body.style.background = deck.background;
+    }
 
     this._slides = el('nav', { class: 'slides', 'aria-label': 'Jump to slide' });
     const aside = el(
@@ -301,10 +323,10 @@ export class PlayerUI {
     this._pauseButton.addEventListener('click', () => this.pauseRecording());
     this._recordingsButton = el('button', { class: 'recordings-button', text: '▶ Talk', title: 'Play a recorded talk', hidden: '' });
     this._recordingsButton.addEventListener('click', () => this.openRecordings());
-    const fullscreen = el('button', { class: 'fullscreen', text: 'Fullscreen' });
+    this._fullscreenButton = el('button', { class: 'fullscreen', text: 'Fullscreen' });
     this._printButton = el('button', { class: 'print-button', text: 'Print', title: 'Print the deck to a PDF (P)' });
     this._printButton.addEventListener('click', () => this.openPrint());
-    const settingsButton = el('button', { class: 'settings-button', 'aria-label': 'Settings', title: 'Settings', text: '⚙' });
+    this._settingsButton = el('button', { class: 'settings-button', 'aria-label': 'Settings', title: 'Settings', text: '⚙' });
     this._dialog = this._buildSettingsDialog();
     this._progress = el('progress', { max: '1', value: '0', 'aria-label': 'Presentation progress' });
     const footer = el(
@@ -318,7 +340,7 @@ export class PlayerUI {
         this._boardButton,
       ),
       el('div', { class: 'group record-controls', role: 'group', 'aria-label': 'Camera and recording' }, this._cameraButton, this._screenButton, this._screenPickButton, this._recordButton, this._pauseButton, this._recordingsButton),
-      el('div', { class: 'group page-controls', role: 'group', 'aria-label': 'Page' }, this._printButton, fullscreen, settingsButton),
+      el('div', { class: 'group page-controls', role: 'group', 'aria-label': 'Page' }, this._printButton, this._fullscreenButton, this._settingsButton),
       // During a playback the bar takes the whole footer: nothing else can be used meanwhile.
       this._playbackBar,
       this._progress,
@@ -328,27 +350,90 @@ export class PlayerUI {
     for (const bar of [header, footer]) {
       bar.addEventListener('click', (event) => {
         const button = (event.target as HTMLElement).closest('button');
-        if (button && event.detail > 0) button.blur();
+        if (!button || event.detail === 0) return;
+        // Embedded, the keys reach the deck only while the focus is inside it, so the stage takes it over.
+        if (this._embedded) this.stageHost.focus({ preventScroll: true });
+        else button.blur();
       });
     }
     const main = el('main', {}, header, this.stageHost, footer);
     this.root = el('div', { class: 'zd-app outline-hidden' }, aside, main, this._dialog);
+    this.root.style.setProperty('--background', deck.background);
+    this.root.style.setProperty('--foreground', deck.foreground);
+    this.root.style.colorScheme = colorScheme;
+    this._applyFeatures(header, footer);
     host.replaceChildren(this.root);
 
     this._outlineToggle.addEventListener('click', () => this.toggleOutline());
-    fullscreen.addEventListener('click', () => void this.fullscreen());
-    settingsButton.addEventListener('click', () => this.openSettings());
+    this._fullscreenButton.addEventListener('click', () => void this.fullscreen());
+    this._settingsButton.addEventListener('click', () => this.openSettings());
     this._previous.addEventListener('click', () => void this._player?.previous());
     this._next.addEventListener('click', () => void this._player?.next());
     this._speed.addEventListener('change', () => {
       if (this._player) this._player.speed = Number(this._speed.value);
     });
     this._installPointerTools();
-    document.addEventListener('keydown', (event) => this._onKeyDown(event));
-    document.addEventListener('visibilitychange', () => this._onVisibilityChange());
-    if (deck.showOutline) this.toggleOutline();
+    this._keys.addEventListener('keydown', ((event: KeyboardEvent) => this._onKeyDown(event)) as EventListener, { signal: this._abort.signal });
+    document.addEventListener('visibilitychange', () => this._onVisibilityChange(), { signal: this._abort.signal });
+    if (deck.showOutline && this._features.has('outline')) this.toggleOutline();
     this._layoutCamera();
     this._updateSpotlight();
+  }
+
+  /** Where the keys are read: the whole page in standalone mode, the player itself when embedded. */
+  private get _keys(): EventTarget {
+    return this._embedded ? this.root : document;
+  }
+
+  /** Whether a feature is on; the actions of one left out do nothing. */
+  has(feature: Feature): boolean {
+    return this._features.has(feature);
+  }
+
+  /** Hide the controls of the features left out, and the groups that end up empty. */
+  private _applyFeatures(header: HTMLElement, footer: HTMLElement): void {
+    const off = (feature: Feature) => !this._features.has(feature);
+    this._outlineToggle.hidden = off('outline');
+    if (off('outline')) this.root.querySelector('aside')?.remove();
+    this._penColor.element.hidden = off('pen');
+    this._boardButton.hidden = off('whiteboard');
+    this._cameraButton.hidden = off('camera');
+    this._screenButton.hidden = off('screen');
+    if (off('screen')) this._screenPickButton.remove();
+    this._recordButton.hidden = off('record');
+    if (off('record')) {
+      this._pauseButton.remove();
+      this._recordingsButton.remove();
+    }
+    this._printButton.hidden = off('print');
+    this._fullscreenButton.hidden = off('fullscreen');
+    this._settingsButton.hidden = off('settings');
+    for (const group of footer.querySelectorAll<HTMLElement>('.group')) {
+      group.hidden = [...group.children].every((child) => (child as HTMLElement).hidden);
+    }
+    // The header keeps the breadcrumb and the state even when the outline, its only button, is left out.
+    header.classList.toggle('no-outline', off('outline'));
+  }
+
+  /**
+   * Take the player down: its listeners on the page, its observers, the camera and a recording in
+   * progress, and the elements it built. The deck's own objects (stage, player) are disposed by the caller.
+   */
+  dispose(): void {
+    this._abort.abort();
+    this._resizeObserver?.disconnect();
+    this._resizeObserver = null;
+    if (this._noticeTimer !== null) clearTimeout(this._noticeTimer);
+    if (this._frameTimer !== null) clearTimeout(this._frameTimer);
+    this._finishStroke();
+    if (this._recorder) void this.toggleRecording();
+    if (this._screenFilming) void this.toggleScreen(false);
+    if (this._cameraMode !== 'off') void this.toggleCamera('off');
+    this.closeRecording();
+    if (document.fullscreenElement === this.root) void document.exitFullscreen();
+    if (this._dialog.open) this._dialog.close();
+    if (!this._embedded) document.body.classList.remove('zd-page');
+    this.root.remove();
   }
 
   private _renderShortcuts(): void {
@@ -485,10 +570,11 @@ export class PlayerUI {
     });
     this._loading.hidden = true;
     if (typeof ResizeObserver !== 'undefined') {
-      new ResizeObserver(() => {
+      this._resizeObserver = new ResizeObserver(() => {
         this._layoutHighlights();
         this._requestFrame(400);
-      }).observe(this.stageHost);
+      });
+      this._resizeObserver.observe(this.stageHost);
     }
     this._layoutHighlights();
   }
@@ -539,6 +625,8 @@ export class PlayerUI {
   }
 
   private _runAction(action: ActionName): void {
+    const feature = featureOf(action);
+    if (feature && !this._features.has(feature)) return;
     const player = this._player;
     switch (action) {
       case 'next': void player?.next(); break;
@@ -685,7 +773,7 @@ export class PlayerUI {
 
   /** Show or hide the whiteboard: a blank page with its own strokes and history, kept while slides change. */
   toggleWhiteboard(on = !this._boardOn): void {
-    if (this._playback) return;
+    if (this._playback || !this._features.has('whiteboard')) return;
     this._setBoardShown(on);
     this._broadcast({ type: 'board', on, pan: { ...this._boardTarget } });
   }
@@ -2284,6 +2372,7 @@ export class PlayerUI {
   }
 
   private _drawingTool(pointerType?: string): InkTool | null {
+    if (!this._features.has('pen')) return null;
     const tool = this._activeTool();
     return tool === 'pen' ? (this._penReady(pointerType) ? 'pen' : null) : tool === 'pointer' ? 'highlighter' : null;
   }
@@ -2650,6 +2739,8 @@ export class PlayerUI {
       this._updateSpotlight();
     });
     stage.addEventListener('pointerdown', (event) => {
+      // A pointer on the slides brings the keys to the deck; drawing cancels the browser's own focus change.
+      if (this._embedded && !interactive(event)) stage.focus({ preventScroll: true });
       if (event.pointerType === 'touch') {
         this._touches.set(event.pointerId, { x: event.clientX, y: event.clientY });
         if (!interactive(event) && !this._playback) this._fingerErase(event);
@@ -2687,7 +2778,7 @@ export class PlayerUI {
       if (event.pointerType === 'pen') this._penSeen = performance.now();
       if (this._live && this._live.pointerId === event.pointerId) this._finishStroke();
     };
-    document.addEventListener('pointerup', release);
+    document.addEventListener('pointerup', release, { signal: this._abort.signal });
     stage.addEventListener('pointercancel', release);
     stage.addEventListener('contextmenu', (event) => {
       // Control + click is a context menu on macOS; keep it for the tools bound to Control.
@@ -2698,19 +2789,20 @@ export class PlayerUI {
       this._pointer = null;
       this._updateSpotlight();
     });
-    document.addEventListener('keydown', (event) => {
+    const signal = this._abort.signal;
+    this._keys.addEventListener('keydown', ((event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
       if (!modifierKeys.includes(event.key) || /^(INPUT|SELECT|TEXTAREA)$/.test(target.tagName) || target.isContentEditable) return;
       this._modifiers = modifierCombo(event);
       if (this._live && this._live.tool !== this._drawingTool()) this._finishStroke();
       this._updateSpotlight();
-    });
-    document.addEventListener('keyup', (event) => {
+    }) as EventListener, { signal });
+    this._keys.addEventListener('keyup', ((event: KeyboardEvent) => {
       if (!modifierKeys.includes(event.key)) return;
       this._modifiers = modifierCombo(event);
       if (this._live && this._live.tool !== this._drawingTool()) this._finishStroke();
       this._updateSpotlight();
-    });
+    }) as EventListener, { signal });
     stage.addEventListener('wheel', (event) => {
       if (this._playback) return;
       const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? stage.clientHeight : 1;
@@ -2727,8 +2819,8 @@ export class PlayerUI {
       this._radius *= Math.exp(-delta * 0.002);
       this._updateSpotlight();
     }, { passive: false });
-    window.addEventListener('blur', () => this._releaseSpotlight());
-    document.addEventListener('visibilitychange', () => { if (document.hidden) this._releaseSpotlight(); });
+    window.addEventListener('blur', () => this._releaseSpotlight(), { signal });
+    document.addEventListener('visibilitychange', () => { if (document.hidden) this._releaseSpotlight(); }, { signal });
   }
 
   // ---------------------------------------------------------------------

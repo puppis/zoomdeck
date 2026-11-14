@@ -42,7 +42,7 @@
       </section>
       <section>
         <h4>Advanced</h4>
-        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="reference.html">Reference</a></li></ul>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html">A deck inside a page</a></li><li><a href="reference.html">Reference</a></li></ul>
       </section>
   </nav>
   <main id="content">
@@ -116,7 +116,8 @@ deck and in the single file alike, since the browser does the rendering; see
 
 runDeck(markupDeck({ url: <span class="tk-string">'/decks/lecture/slides.md'</span>, title: <span class="tk-string">'Lecture 1'</span>, showOutline: <span class="tk-keyword">true</span> }));</code></pre>
 <p>Bundle this with Vite (or any bundler that handles ES modules and assets) to obtain a page of
-your own layout around the player.</p>
+your own layout around the player. For a deck that is one element of a larger page rather than
+the page itself, with a handle the page drives it with, see <a href="embedding.html">A deck inside a page</a>.</p>
 
     </article>
     <footer class="pager">

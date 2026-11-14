@@ -227,7 +227,22 @@ import { runDeck, markupDeck } from 'zoomdeck';
 runDeck(markupDeck({ url: '/decks/lecture/slides.md', title: 'Lecture 1' }));
 ```
 
-The runtime dependencies (`manim-web`, `three`, `markdown-it`, `gifuct-js`, `roughjs`) are installed with it
+A deck can also be one element of a larger page, in a box between paragraphs, driven from the
+page's own script, with the features the page has no use for left out:
+
+```ts
+import { mountDeck } from 'zoomdeck';
+
+const deck = await mountDeck(document.querySelector('#lecture'), '/decks/lecture/deck.json', {
+  features: { camera: false, screen: false, record: false },
+});
+deck.on('stop', ({ index, slide }) => console.log(index, slide));
+await deck.goTo('Results');
+```
+
+The player fills the element, leaves the page's title, styles and URL alone, and reads keys only
+while it has the focus; `examples/embed/index.html` shows it in use. The runtime dependencies
+(`manim-web`, `three`, `markdown-it`, `gifuct-js`, `roughjs`) are installed with it
 and left external, so your bundler resolves them once. The TypeScript sources remain available as
 `zoomdeck/source` for projects that prefer to compile them. Without a bundler, use the command
 line: `zoomdeck serve <deck>` for editing and `zoomdeck build <deck> -o <folder> [--one-file]` for

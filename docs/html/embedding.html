@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A deck inside a page · Zoomdeck</title>
+<meta name="description" content="Mounting the player in an element of a larger page, the handle that drives it from the page's own script, and the features it can leave out.">
+<link rel="stylesheet" href="docs.css">
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+</header>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Getting started</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Presenting</h4>
+        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li><li><a href="desktop.html">The desktop app</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="slides.html">Slides and the tree</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+      </section>
+      <section>
+        <h4>Diagrams</h4>
+        <ul><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li></ul>
+      </section>
+      <section>
+        <h4>Layout and style</h4>
+        <ul><li><a href="positioning.html">Positioning</a></li><li><a href="groups.html">Groups</a></li><li><a href="styles.html">Styles</a></li><li><a href="configuration.html">Configuration</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion and interaction</h4>
+        <ul><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Advanced</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html" aria-current="page">A deck inside a page</a><ul class="subsections"><li><a href="#mounting">Mounting</a></li><li><a href="#features">Features</a></li><li><a href="#driving-the-deck">Driving the deck</a></li><li><a href="#an-example">An example</a></li></ul></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>A deck inside a page</h1>
+      <p class="lead">Mounting the player in an element of a larger page, the handle that drives it from the page's own script, and the features it can leave out.</p>
+      <p>The player can be one element of a page of your own instead of the whole page: a lecture's notes
+with the deck in a box between two paragraphs, a course site with one deck per chapter, a
+documentation page that shows a figure live. <code>mountDeck</code> puts a deck inside an element, and
+returns a handle the page's own script drives it with. Nothing else about the page changes: its
+title, fonts, colors and scrolling stay yours, and the keys reach the deck only after a click on
+it. Everything the player does in a page of its own works in the box too, the pen, the whiteboard,
+the spotlight, fullscreen, the settings and the slides' own links included, at the same sharpness:
+the canvas follows the element's size and the screen's pixel density, and the text is redrawn
+whenever the box is resized.</p>
+<h2 id="mounting">Mounting<a class="anchor" href="#mounting" aria-label="Link to this section">#</a></h2><pre><code class="language-ts"><span class="tk-keyword">import</span> { mountDeck } <span class="tk-keyword">from</span> <span class="tk-string">'zoomdeck'</span>;
+
+<span class="tk-keyword">const</span> deck = <span class="tk-keyword">await</span> mountDeck(document.querySelector(<span class="tk-string">'#lecture'</span>), <span class="tk-string">'/decks/lecture/deck.json'</span>, {
+  features: { camera: <span class="tk-keyword">false</span>, screen: <span class="tk-keyword">false</span>, record: <span class="tk-keyword">false</span> },
+});</code></pre>
+<p>The first argument is the element: give it a size with your own CSS (a height, or an
+<code>aspect-ratio</code>), since the player fills it. The second is the deck: the URL of a <code>deck.json</code>,
+the URL of a Markdown file, or a deck definition made with <code>defineDeck</code> or <code>markupDeck</code>. A
+<code>deck.json</code> loads its slide classes through the browser's own <code>import</code>, so a bundler is not
+required for them. The options:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>features</code></td>
+<td>The features to leave out, as <code>{ camera: false }</code>. Each one hides its controls and makes its keys inert. See below.</td>
+</tr>
+<tr>
+<td><code>start</code></td>
+<td>The stop shown first: an index from 0, or the name of a slide. Otherwise the deck's own start.</td>
+</tr>
+<tr>
+<td><code>useLocation</code></td>
+<td>Follow <code>#step=</code> in the page's URL and write it on every stop, as the standalone player does. Off by default, so the page keeps its URL.</td>
+</tr>
+<tr>
+<td><code>log</code></td>
+<td>Progress messages in the console while the deck prepares. Off by default.</td>
+</tr>
+</tbody>
+</table>
+<p>The player keeps the deck's own colors inside its box and uses a light or a dark color scheme
+accordingly, whatever the page around it does. Several decks can share a page; each has its own
+handle, and each reads the keys only while it has the focus.</p>
+<h2 id="features">Features<a class="anchor" href="#features" aria-label="Link to this section">#</a></h2><p>A page that embeds a deck often has no use for a camera or a recorder, and may want nothing but
+the slides. These can be left out, one by one, and the footer shows only what is left:</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>What goes with it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>outline</code></td>
+<td>The slide outline and its ☰ button.</td>
+</tr>
+<tr>
+<td><code>pen</code></td>
+<td>The color swatches, drawing with the pen or the highlighter, undo, redo and clear.</td>
+</tr>
+<tr>
+<td><code>whiteboard</code></td>
+<td>The whiteboard and its scrolling keys.</td>
+</tr>
+<tr>
+<td><code>camera</code></td>
+<td>The camera in a corner or in full frame.</td>
+</tr>
+<tr>
+<td><code>screen</code></td>
+<td>Filming the screen.</td>
+</tr>
+<tr>
+<td><code>record</code></td>
+<td>Recording a talk and playing recorded talks back.</td>
+</tr>
+<tr>
+<td><code>print</code></td>
+<td>The PDF printout.</td>
+</tr>
+<tr>
+<td><code>fullscreen</code></td>
+<td>The Fullscreen button and its keys.</td>
+</tr>
+<tr>
+<td><code>settings</code></td>
+<td>The ⚙ button and the settings dialog.</td>
+</tr>
+</tbody>
+</table>
+<p>Navigation, the spotlight and laser, the slides' links and live pages are always there. The
+settings themselves (pen, keys, rendering) are shared with the standalone player in the same
+browser, so a key bound once holds everywhere; a page that hides the settings dialog keeps the
+defaults, or whatever the viewer set elsewhere.</p>
+<h2 id="driving-the-deck">Driving the deck<a class="anchor" href="#driving-the-deck" aria-label="Link to this section">#</a></h2><p>The handle exposes the deck's position and the player's actions, for buttons, a table of
+contents or a script of the page's own:</p>
+<pre><code class="language-ts">deck.length;                  <span class="tk-comment">// how many stops</span>
+deck.index;                   <span class="tk-comment">// the stop shown, from 0</span>
+deck.slides;                  <span class="tk-comment">// [{ name, key, depth, first }], in outline order</span>
+
+<span class="tk-keyword">await</span> deck.next();            <span class="tk-comment">// the next stop, played</span>
+<span class="tk-keyword">await</span> deck.previous();
+<span class="tk-keyword">await</span> deck.home();            <span class="tk-comment">// the first stop</span>
+<span class="tk-keyword">await</span> deck.replay();          <span class="tk-comment">// this stop again</span>
+<span class="tk-keyword">await</span> deck.goTo(<span class="tk-number">12</span>);          <span class="tk-comment">// a stop by index, shown settled</span>
+<span class="tk-keyword">await</span> deck.goTo(<span class="tk-string">'Results'</span>);   <span class="tk-comment">// the first stop of a slide, by name or Markdown id</span>
+<span class="tk-keyword">await</span> deck.goTo(<span class="tk-number">12</span>, <span class="tk-keyword">true</span>);    <span class="tk-comment">// played from its start rather than shown settled</span>
+deck.speed = <span class="tk-number">1.5</span>;
+
+deck.toggleDrawing();         <span class="tk-comment">// or toggleDrawing(true) / (false)</span>
+deck.toggleWhiteboard();
+deck.toggleOutline();
+<span class="tk-keyword">await</span> deck.fullscreen();      <span class="tk-comment">// the box alone goes fullscreen</span>
+
+<span class="tk-keyword">const</span> off = deck.on(<span class="tk-string">'stop'</span>, ({ index, slide, step, total }) =&gt; { <span class="tk-comment">/* the deck moved */</span> });
+deck.on(<span class="tk-string">'state'</span>, ({ state }) =&gt; { <span class="tk-comment">/* paused, playing, looping, finished */</span> });
+off();                        <span class="tk-comment">// stop listening</span>
+
+deck.destroy();               <span class="tk-comment">// take the deck out of the page and free its resources</span></code></pre>
+<p>A <code>goTo</code> with a slide name that does not exist rejects, so a typo in a table of contents shows up
+in the console. The underlying objects remain reachable as <code>deck.player</code>, <code>deck.ui</code>, <code>deck.stage</code>
+and <code>deck.navigation</code> for anything the handle does not cover. A page that is itself written as a
+single-page application calls <code>destroy()</code> when it removes the element, which releases the canvas
+and the listeners.</p>
+<h2 id="an-example">An example<a class="anchor" href="#an-example" aria-label="Link to this section">#</a></h2><p>The checkout has a page that does all of this: <code>examples/embed/index.html</code>, served by the
+development server at <code>/examples/embed/index.html</code>. It mounts the guide in a resizable box
+between paragraphs, with buttons and a slide menu of its own below it, and a second, smaller deck
+with most features left out.</p>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="code-slides.html">← Code-authored slides</a>
+      <a class="next" href="reference.html">Reference →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#mounting">Mounting</a></li><li><a href="#features">Features</a></li><li><a href="#driving-the-deck">Driving the deck</a></li><li><a href="#an-example">An example</a></li></ul></nav>
+</div>
+</body>
+</html>
