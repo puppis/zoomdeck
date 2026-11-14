@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagrams · Zoomdeck</title>
+<meta name="description" content="Shapes, arrows, icons, boxes and blobs, crisp or hand-drawn, built up one cell at a time.">
+<link rel="stylesheet" href="docs.css">
+<script type="module" src="zoomdeck/zoomdeck.js"></script>
+<script>
+// The side columns stay hidden or shown as the reader last left them, before the page paints.
+try { for (const side of ['nav', 'outline']) if (localStorage.getItem('zoomdeck-docs-' + side) === 'hidden') document.documentElement.classList.add(side + '-hidden'); } catch (e) {}
+</script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+  <span class="sides">
+    <button class="side-toggle" data-side="nav" title="Show or hide the table of contents">Contents</button>
+    <button class="side-toggle" data-side="outline" title="Show or hide the outline of this page">On this page</button>
+  </span>
+</header>
+<script>
+for (const button of document.querySelectorAll('.side-toggle')) {
+  const side = button.dataset.side;
+  const sync = () => button.setAttribute('aria-pressed', String(!document.documentElement.classList.contains(side + '-hidden')));
+  button.addEventListener('click', () => {
+    const hidden = document.documentElement.classList.toggle(side + '-hidden');
+    try { localStorage.setItem('zoomdeck-docs-' + side, hidden ? 'hidden' : 'shown'); } catch (e) {}
+    sync();
+  });
+  sync();
+}
+</script>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Features overview</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="features.html">A quick tour</a></li></ul>
+      </section>
+      <section>
+        <h4>Getting started</h4>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Presenting</h4>
+        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="first-deck.html">Your first deck, stage by stage</a></li><li><a href="content.html">The content of a slide</a></li><li><a href="documents.html">PDFs, flat decks and forests</a></li><li><a href="slides.html">Slides and the forest</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+      </section>
+      <section>
+        <h4>Diagrams</h4>
+        <ul><li><a href="diagrams.html" aria-current="page">Diagrams</a><ul class="subsections"><li><a href="#shapes">Shapes</a></li><li><a href="#arrows-and-lines">Arrows and lines</a></li><li><a href="#icons">Icons</a></li><li><a href="#boxes-braces-and-blobs">Boxes, braces and blobs</a></li><li><a href="#hand-drawn">Hand-drawn</a></li><li><a href="#where-to-go-next">Where to go next</a></li></ul></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li></ul>
+      </section>
+      <section>
+        <h4>Layout and style</h4>
+        <ul><li><a href="layout.html">Layout and style</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="groups.html">Groups</a></li><li><a href="styles.html">Styles</a></li><li><a href="configuration.html">Configuration</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion and interaction</h4>
+        <ul><li><a href="motion.html">Motion and interaction</a></li><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Advanced</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html">A deck inside a page</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>Diagrams</h1>
+      <p class="lead">Shapes, arrows, icons, boxes and blobs, crisp or hand-drawn, built up one cell at a time.</p>
+      <a class="try" href="lite/lab/index.html?path=diagrams.ipynb">Open in JupyterLite ↗</a>
+<p>Every cell below holds the Markdown of one deck and nothing else; the deck plays under it. Open the notebook live (&quot;Open in JupyterLite&quot; above), change a cell, run it again, and watch the deck follow. The first cell loads the helper; from then on a cell that starts with <code>%%deck</code> is a deck.</p>
+<p>Diagrams are directives in double brackets: a shape, an arrow between two elements, an icon, an enclosure around several of them. Each cell adds one kind.</p>
+
+<div class="cell"><pre class="cell-input"><code><span class="tk-keyword">import</span> zoomdeck_nb</code></pre></div>
+<h2 id="shapes">Shapes<a class="anchor" href="#shapes" aria-label="Link to this section">#</a></h2><p>A shape directive names the kind, gives it an <code>#id</code>, a position and a size, then its colours. Shapes are placed by their centre.</p>
+
+<div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
+</span><span class="tk-directive">::: slide </span><span class="tk-attribute">{#shapes width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">Shapes</span>
+
+<span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#box</span> <span class="tk-attribute">x=</span><span class="tk-number">-6</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">width=</span><span class="tk-number">3.4</span> <span class="tk-attribute">height=</span><span class="tk-number">1.8</span> <span class="tk-attribute">corner_radius=</span><span class="tk-number">0.3</span> <span class="tk-attribute">color=</span>BLUE <span class="tk-attribute">fill_color=</span>BLUE <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.15</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[circle:</span> <span class="tk-attribute">#disk</span> <span class="tk-attribute">x=</span><span class="tk-number">-1</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">radius=</span><span class="tk-number">0.9</span> <span class="tk-attribute">color=</span>GREEN <span class="tk-attribute">stroke_width=</span><span class="tk-number">4</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[ellipse:</span> <span class="tk-attribute">#e</span> <span class="tk-attribute">x=</span><span class="tk-number">3.5</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">width=</span><span class="tk-number">3.4</span> <span class="tk-attribute">height=</span><span class="tk-number">1.6</span> <span class="tk-attribute">color=</span>TEAL <span class="tk-attribute">fill_color=</span>TEAL <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.2</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[polygon:</span> <span class="tk-attribute">#tri</span> <span class="tk-attribute">points=</span><span class="tk-string">&quot;(-7,-4) (-5,-2) (-4,-4)&quot;</span> <span class="tk-attribute">color=</span>ORANGE <span class="tk-attribute">fill_color=</span>ORANGE <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.3</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[arc:</span> <span class="tk-attribute">#a</span> <span class="tk-attribute">x=</span><span class="tk-number">0</span> <span class="tk-attribute">y=</span><span class="tk-number">-3</span> <span class="tk-attribute">radius=</span><span class="tk-number">1.4</span> <span class="tk-attribute">start_angle=</span><span class="tk-number">0</span> <span class="tk-attribute">angle=</span><span class="tk-number">2.4</span> <span class="tk-attribute">color=</span>RED <span class="tk-attribute">stroke_width=</span><span class="tk-number">4</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[polyline:</span> <span class="tk-attribute">#zigzag</span> <span class="tk-attribute">points=</span><span class="tk-string">&quot;(3,-4.2) (5,-2.3) (7,-3.8) (9,-2)&quot;</span> <span class="tk-attribute">color=</span>ORANGE <span class="tk-attribute">stroke_width=</span><span class="tk-number">3</span><span class="tk-directive">]]</span>
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
+<zoom-deck without="camera record screen"><script type="text/markdown">
+::: slide {#shapes width=20}
+## Shapes
+
+[[rectangle: #box x=-6 y=0 width=3.4 height=1.8 corner_radius=0.3 color=BLUE fill_color=BLUE fill_opacity=0.15]]
+
+[[circle: #disk x=-1 y=0 radius=0.9 color=GREEN stroke_width=4]]
+
+[[ellipse: #e x=3.5 y=0 width=3.4 height=1.6 color=TEAL fill_color=TEAL fill_opacity=0.2]]
+
+[[polygon: #tri points="(-7,-4) (-5,-2) (-4,-4)" color=ORANGE fill_color=ORANGE fill_opacity=0.3]]
+
+[[arc: #a x=0 y=-3 radius=1.4 start_angle=0 angle=2.4 color=RED stroke_width=4]]
+
+[[polyline: #zigzag points="(3,-4.2) (5,-2.3) (7,-3.8) (9,-2)" color=ORANGE stroke_width=3]]
+:::
+</script></zoom-deck></div></div>
+<h2 id="arrows-and-lines">Arrows and lines<a class="anchor" href="#arrows-and-lines" aria-label="Link to this section">#</a></h2><p>An arrow or a line joins two endpoints: elements by <code>#id</code>, or points in parentheses. A label sits along it, and <code>step=</code> makes it appear on a click.</p>
+
+<div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
+</span><span class="tk-directive">::: slide </span><span class="tk-attribute">{#arrows width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">Arrows and lines</span>
+
+<span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#box</span> <span class="tk-attribute">x=</span><span class="tk-number">-6</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">width=</span><span class="tk-number">3.4</span> <span class="tk-attribute">height=</span><span class="tk-number">1.8</span> <span class="tk-attribute">corner_radius=</span><span class="tk-number">0.3</span> <span class="tk-attribute">color=</span>BLUE <span class="tk-attribute">fill_color=</span>BLUE <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.15</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[circle:</span> <span class="tk-attribute">#disk</span> <span class="tk-attribute">x=</span><span class="tk-number">2</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">radius=</span><span class="tk-number">0.9</span> <span class="tk-attribute">color=</span>GREEN <span class="tk-attribute">stroke_width=</span><span class="tk-number">4</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#box</span> -&gt; <span class="tk-attribute">#disk</span>, <span class="tk-attribute">#edge</span>, <span class="tk-attribute">label=</span><span class="tk-string">&quot;**labelled** $\to$&quot;</span>, <span class="tk-attribute">color=</span>GOLD_E<span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[line:</span> <span class="tk-attribute">#disk</span> -&gt; (<span class="tk-number">6</span>,<span class="tk-number">-3.5</span>), <span class="tk-attribute">#drop</span>, <span class="tk-attribute">color=</span>GRAY, <span class="tk-attribute">stroke_width=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[arrow:</span> (<span class="tk-number">-8.8</span>,<span class="tk-number">-3.5</span>) -&gt; <span class="tk-attribute">#box</span>, <span class="tk-attribute">#pointer</span>, <span class="tk-attribute">color=</span>RED, <span class="tk-attribute">step=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
+<zoom-deck without="camera record screen"><script type="text/markdown">
+::: slide {#arrows width=20}
+## Arrows and lines
+
+[[rectangle: #box x=-6 y=0 width=3.4 height=1.8 corner_radius=0.3 color=BLUE fill_color=BLUE fill_opacity=0.15]]
+
+[[circle: #disk x=2 y=0 radius=0.9 color=GREEN stroke_width=4]]
+
+[[arrow: #box -> #disk, #edge, label="**labelled** $\to$", color=GOLD_E]]
+
+[[line: #disk -> (6,-3.5), #drop, color=GRAY, stroke_width=2]]
+
+[[arrow: (-8.8,-3.5) -> #box, #pointer, color=RED, step=1]]
+:::
+</script></zoom-deck></div></div>
+<h2 id="icons">Icons<a class="anchor" href="#icons" aria-label="Link to this section">#</a></h2><p>Icons come from a built-in set (<code>user</code>, <code>server</code>, <code>database</code>, <code>cloud</code>, <code>document</code> and more); a label sits beside them, and they take the same colours and arrows as shapes.</p>
+
+<div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
+</span><span class="tk-directive">::: slide </span><span class="tk-attribute">{#icons width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">Icons</span>
+
+<span class="tk-directive">[[icon:</span> user <span class="tk-attribute">#alice</span> <span class="tk-attribute">x=</span><span class="tk-number">-7</span> <span class="tk-attribute">y=</span><span class="tk-number">-0.5</span> <span class="tk-attribute">size=</span><span class="tk-number">1.4</span> <span class="tk-attribute">color=</span>BLUE_E <span class="tk-attribute">label=</span><span class="tk-string">&quot;Alice&quot;</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[icon:</span> server <span class="tk-attribute">#api</span> <span class="tk-attribute">right-of:#alice</span> <span class="tk-attribute">buff=</span><span class="tk-number">3</span> <span class="tk-attribute">size=</span><span class="tk-number">1.4</span> <span class="tk-attribute">color=</span>GREEN_E <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.25</span> <span class="tk-attribute">label=</span><span class="tk-string">&quot;api&quot;</span> <span class="tk-attribute">label_side=</span>above<span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[icon:</span> database <span class="tk-attribute">#db</span> <span class="tk-attribute">right-of:#api</span> <span class="tk-attribute">buff=</span><span class="tk-number">3</span> <span class="tk-attribute">size=</span><span class="tk-number">1.4</span> <span class="tk-attribute">color=</span>GOLD_E <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.3</span> <span class="tk-attribute">label=</span><span class="tk-string">&quot;orders&quot;</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[icon:</span> cloud <span class="tk-attribute">#cdn</span> <span class="tk-attribute">right-of:#db</span> <span class="tk-attribute">buff=</span><span class="tk-number">2</span> <span class="tk-attribute">size=</span><span class="tk-number">1.4</span> <span class="tk-attribute">color=</span>TEAL_E <span class="tk-attribute">label=</span><span class="tk-string">&quot;cdn&quot;</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#alice</span> -&gt; <span class="tk-attribute">#api</span>, <span class="tk-attribute">#req</span>, <span class="tk-attribute">label=</span><span class="tk-string">&quot;HTTPS&quot;</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#api</span> -&gt; <span class="tk-attribute">#db</span>, <span class="tk-attribute">#sql</span>, <span class="tk-attribute">label=</span><span class="tk-string">&quot;SQL&quot;</span>, <span class="tk-attribute">step=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
+<zoom-deck without="camera record screen"><script type="text/markdown">
+::: slide {#icons width=20}
+## Icons
+
+[[icon: user #alice x=-7 y=-0.5 size=1.4 color=BLUE_E label="Alice"]]
+
+[[icon: server #api right-of:#alice buff=3 size=1.4 color=GREEN_E fill_opacity=0.25 label="api" label_side=above]]
+
+[[icon: database #db right-of:#api buff=3 size=1.4 color=GOLD_E fill_opacity=0.3 label="orders"]]
+
+[[icon: cloud #cdn right-of:#db buff=2 size=1.4 color=TEAL_E label="cdn"]]
+
+[[arrow: #alice -> #api, #req, label="HTTPS"]]
+
+[[arrow: #api -> #db, #sql, label="SQL", step=1]]
+:::
+</script></zoom-deck></div></div>
+<h2 id="boxes-braces-and-blobs">Boxes, braces and blobs<a class="anchor" href="#boxes-braces-and-blobs" aria-label="Link to this section">#</a></h2><p>An enclosure lists the elements it surrounds before the first comma, then its own <code>#id</code>: a <code>box</code> is their joint rectangle grown by <code>buff</code>, a <code>blob</code> a smooth curve around them, a <code>brace</code> sits on one side of one element.</p>
+
+<div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
+</span><span class="tk-directive">::: slide </span><span class="tk-attribute">{#enclosures width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">Boxes, braces and blobs</span>
+
+<span class="tk-directive">[[icon:</span> server <span class="tk-attribute">#web</span> <span class="tk-attribute">x=</span><span class="tk-number">-6.5</span> <span class="tk-attribute">y=</span><span class="tk-number">0.3</span> <span class="tk-attribute">size=</span><span class="tk-number">1.1</span> <span class="tk-attribute">color=</span>GREEN_E <span class="tk-attribute">label=</span><span class="tk-string">&quot;web&quot;</span> <span class="tk-attribute">label_side=</span>right<span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[icon:</span> server <span class="tk-attribute">#worker</span> <span class="tk-attribute">x=</span><span class="tk-number">-6.5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.7</span> <span class="tk-attribute">size=</span><span class="tk-number">1.1</span> <span class="tk-attribute">color=</span>GREEN_E <span class="tk-attribute">label=</span><span class="tk-string">&quot;worker&quot;</span> <span class="tk-attribute">label_side=</span>right<span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[icon:</span> database <span class="tk-attribute">#store</span> <span class="tk-attribute">x=</span><span class="tk-number">-1.5</span> <span class="tk-attribute">y=</span><span class="tk-number">-0.7</span> <span class="tk-attribute">size=</span><span class="tk-number">1.1</span> <span class="tk-attribute">color=</span>GOLD_E <span class="tk-attribute">label=</span><span class="tk-string">&quot;store&quot;</span> <span class="tk-attribute">label_side=</span>right<span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[box:</span> <span class="tk-attribute">#web</span> <span class="tk-attribute">#worker</span>, <span class="tk-attribute">#tier</span>, <span class="tk-attribute">buff=</span><span class="tk-number">0.3</span>, <span class="tk-attribute">corner_radius=</span><span class="tk-number">0.2</span>, <span class="tk-attribute">color=</span>GRAY, <span class="tk-attribute">step=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[blob:</span> <span class="tk-attribute">#web</span> <span class="tk-attribute">#worker</span> <span class="tk-attribute">#store</span>, <span class="tk-attribute">#backend</span>, <span class="tk-attribute">buff=</span><span class="tk-number">0.45</span>, <span class="tk-attribute">smoothness=</span><span class="tk-number">0.7</span>, <span class="tk-attribute">color=</span>GREEN_E, <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.08</span>, <span class="tk-attribute">step=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[brace:</span> <span class="tk-attribute">#store</span>, <span class="tk-attribute">#bs</span>, <span class="tk-attribute">side=</span>bottom, <span class="tk-attribute">label=</span><span class="tk-string">&quot;the data&quot;</span>, <span class="tk-attribute">color=</span>GRAY, <span class="tk-attribute">step=</span><span class="tk-number">3</span><span class="tk-directive">]]</span>
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
+<zoom-deck without="camera record screen"><script type="text/markdown">
+::: slide {#enclosures width=20}
+## Boxes, braces and blobs
+
+[[icon: server #web x=-6.5 y=0.3 size=1.1 color=GREEN_E label="web" label_side=right]]
+
+[[icon: server #worker x=-6.5 y=-1.7 size=1.1 color=GREEN_E label="worker" label_side=right]]
+
+[[icon: database #store x=-1.5 y=-0.7 size=1.1 color=GOLD_E label="store" label_side=right]]
+
+[[box: #web #worker, #tier, buff=0.3, corner_radius=0.2, color=GRAY, step=1]]
+
+[[blob: #web #worker #store, #backend, buff=0.45, smoothness=0.7, color=GREEN_E, fill_opacity=0.08, step=2]]
+
+[[brace: #store, #bs, side=bottom, label="the data", color=GRAY, step=3]]
+:::
+</script></zoom-deck></div></div>
+<h2 id="hand-drawn">Hand-drawn<a class="anchor" href="#hand-drawn" aria-label="Link to this section">#</a></h2><p><code>sketch=true</code> draws a shape, an icon, an arrow or an enclosure as if by hand: a wobbly outline and a hatched or solid fill. A <code>::: styles</code> block turns it on for whole kinds at once.</p>
+
+<div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
+</span><span class="tk-directive">::: styles</span>
+shape: sketch=true roughness=1.2
+connection: sketch=true
+attachment: sketch=true
+<span class="tk-directive">:::</span>
+
+<span class="tk-directive">::: slide </span><span class="tk-attribute">{#sketchy width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">Hand-drawn</span>
+
+<span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#hr</span> <span class="tk-attribute">x=</span><span class="tk-number">-6.5</span> <span class="tk-attribute">y=</span><span class="tk-number">-0.5</span> <span class="tk-attribute">width=</span><span class="tk-number">3.4</span> <span class="tk-attribute">height=</span><span class="tk-number">1.8</span> <span class="tk-attribute">color=</span>BLUE_E <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.5</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[circle:</span> <span class="tk-attribute">#hc</span> <span class="tk-attribute">right-of:#hr</span> <span class="tk-attribute">buff=</span><span class="tk-number">1.5</span> <span class="tk-attribute">radius=</span><span class="tk-number">0.9</span> <span class="tk-attribute">color=</span>GREEN_E <span class="tk-attribute">fill_opacity=</span><span class="tk-number">0.6</span> <span class="tk-attribute">fill_style=</span>cross-hatch<span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[polygon:</span> <span class="tk-attribute">#hp</span> <span class="tk-attribute">points=</span><span class="tk-string">&quot;(1.5,-1.4) (3,0.5) (4.5,-1.4)&quot;</span> <span class="tk-attribute">color=</span>ORANGE <span class="tk-attribute">fill_opacity=</span><span class="tk-number">1</span> <span class="tk-attribute">fill_style=</span>solid <span class="tk-attribute">roughness=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#hr</span> -&gt; <span class="tk-attribute">#hc</span>, <span class="tk-attribute">#ha</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[brace:</span> <span class="tk-attribute">#hp</span>, <span class="tk-attribute">#hb</span>, <span class="tk-attribute">side=</span>bottom, <span class="tk-attribute">label=</span><span class="tk-string">&quot;by hand&quot;</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#exact</span> <span class="tk-attribute">x=</span><span class="tk-number">7</span> <span class="tk-attribute">y=</span><span class="tk-number">-0.5</span> <span class="tk-attribute">width=</span><span class="tk-number">2.4</span> <span class="tk-attribute">height=</span><span class="tk-number">1.4</span> <span class="tk-attribute">color=</span>GRAY <span class="tk-attribute">sketch=</span>false<span class="tk-directive">]]</span>
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
+<zoom-deck without="camera record screen"><script type="text/markdown">
+::: styles
+shape: sketch=true roughness=1.2
+connection: sketch=true
+attachment: sketch=true
+:::
+
+::: slide {#sketchy width=20}
+## Hand-drawn
+
+[[rectangle: #hr x=-6.5 y=-0.5 width=3.4 height=1.8 color=BLUE_E fill_opacity=0.5]]
+
+[[circle: #hc right-of:#hr buff=1.5 radius=0.9 color=GREEN_E fill_opacity=0.6 fill_style=cross-hatch]]
+
+[[polygon: #hp points="(1.5,-1.4) (3,0.5) (4.5,-1.4)" color=ORANGE fill_opacity=1 fill_style=solid roughness=2]]
+
+[[arrow: #hr -> #hc, #ha]]
+
+[[brace: #hp, #hb, side=bottom, label="by hand"]]
+
+[[rectangle: #exact x=7 y=-0.5 width=2.4 height=1.4 color=GRAY sketch=false]]
+:::
+</script></zoom-deck></div></div>
+<h2 id="where-to-go-next">Where to go next<a class="anchor" href="#where-to-go-next" aria-label="Link to this section">#</a></h2><p><a href="shapes.html">Shapes and arrows</a>, <a href="icons.html">Icons</a>, <a href="enclosures.html">Boxes and blobs</a> and <a href="sketch.html">Hand-drawn shapes</a> list every kind and attribute.</p>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="tables-charts.html">← Tables and charts</a>
+      <a class="next" href="shapes.html">Shapes, connections and attachments →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#shapes">Shapes</a></li><li><a href="#arrows-and-lines">Arrows and lines</a></li><li><a href="#icons">Icons</a></li><li><a href="#boxes-braces-and-blobs">Boxes, braces and blobs</a></li><li><a href="#hand-drawn">Hand-drawn</a></li><li><a href="#where-to-go-next">Where to go next</a></li></ul></nav>
+</div>
+</body>
+</html>

@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The content of a slide · Zoomdeck</title>
+<meta name="description" content="Prose and inline styling, headings and lists, formulas, listings, tables and images, one cell at a time.">
+<link rel="stylesheet" href="docs.css">
+<script type="module" src="zoomdeck/zoomdeck.js"></script>
+<script>
+// The side columns stay hidden or shown as the reader last left them, before the page paints.
+try { for (const side of ['nav', 'outline']) if (localStorage.getItem('zoomdeck-docs-' + side) === 'hidden') document.documentElement.classList.add(side + '-hidden'); } catch (e) {}
+</script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+  <span class="sides">
+    <button class="side-toggle" data-side="nav" title="Show or hide the table of contents">Contents</button>
+    <button class="side-toggle" data-side="outline" title="Show or hide the outline of this page">On this page</button>
+  </span>
+</header>
+<script>
+for (const button of document.querySelectorAll('.side-toggle')) {
+  const side = button.dataset.side;
+  const sync = () => button.setAttribute('aria-pressed', String(!document.documentElement.classList.contains(side + '-hidden')));
+  button.addEventListener('click', () => {
+    const hidden = document.documentElement.classList.toggle(side + '-hidden');
+    try { localStorage.setItem('zoomdeck-docs-' + side, hidden ? 'hidden' : 'shown'); } catch (e) {}
+    sync();
+  });
+  sync();
+}
+</script>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Features overview</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="features.html">A quick tour</a></li></ul>
+      </section>
+      <section>
+        <h4>Getting started</h4>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Presenting</h4>
+        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="first-deck.html">Your first deck, stage by stage</a></li><li><a href="content.html" aria-current="page">The content of a slide</a><ul class="subsections"><li><a href="#prose">Prose</a></li><li><a href="#headings-and-lists">Headings and lists</a></li><li><a href="#formulas">Formulas</a></li><li><a href="#listings">Listings</a></li><li><a href="#tables">Tables</a></li><li><a href="#images">Images</a></li><li><a href="#where-to-go-next">Where to go next</a></li></ul></li><li><a href="documents.html">PDFs, flat decks and forests</a></li><li><a href="slides.html">Slides and the forest</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+      </section>
+      <section>
+        <h4>Diagrams</h4>
+        <ul><li><a href="diagrams.html">Diagrams</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li></ul>
+      </section>
+      <section>
+        <h4>Layout and style</h4>
+        <ul><li><a href="layout.html">Layout and style</a></li><li><a href="positioning.html">Positioning</a></li><li><a href="groups.html">Groups</a></li><li><a href="styles.html">Styles</a></li><li><a href="configuration.html">Configuration</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion and interaction</h4>
+        <ul><li><a href="motion.html">Motion and interaction</a></li><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Advanced</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html">A deck inside a page</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>The content of a slide</h1>
+      <p class="lead">Prose and inline styling, headings and lists, formulas, listings, tables and images, one cell at a time.</p>
+      <a class="try" href="lite/lab/index.html?path=content.ipynb">Open in JupyterLite ↗</a>
+<p>Every cell below holds the Markdown of one deck and nothing else; the deck plays under it. Open the notebook live (&quot;Open in JupyterLite&quot; above), change a cell, run it again, and watch the deck follow. The first cell loads the helper; from then on a cell that starts with <code>%%deck</code> is a deck.</p>
+<p>This notebook is about what a slide can hold. Each cell adds one kind of content; the pages that follow it in the sidebar give every detail.</p>
+
+<div class="cell"><pre class="cell-input"><code><span class="tk-keyword">import</span> zoomdeck_nb</code></pre></div>
+<h2 id="prose">Prose<a class="anchor" href="#prose" aria-label="Link to this section">#</a></h2><p>A slide holds Markdown prose: paragraphs, emphasis, inline code and inline math, coloured spans in braces. Text flows from the top left of the canvas and wraps to the slide's width; <code>{#id x= y= width=}</code> after a paragraph places it instead.</p>
+
+<div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
+</span><span class="tk-directive">::: slide </span><span class="tk-attribute">{#prose width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">Prose</span>
+
+Paragraphs wrap to the canvas. Use <span class="tk-bold">**bold**</span>, *italic*, *<span class="tk-bold">**both**</span>*, <span class="tk-type">`inline code`</span> and inline math <span class="tk-string">$e^{i\pi} + 1 = 0$</span>.
+
+[Coloured spans]<span class="tk-attribute">{color=ORANGE}</span> take palette names, [CSS colours]<span class="tk-attribute">{style=</span><span class="tk-string">&quot;color:#4ADE80&quot;</span><span class="tk-attribute">}</span> or hex values, and [nest <span class="tk-bold">**emphasis**</span> and <span class="tk-string">$\sqrt{2}$</span>]<span class="tk-attribute">{color=TEAL}</span>.
+
+A paragraph placed by hand sits where its attributes say. <span class="tk-attribute">{#aside x=</span><span class="tk-number">2</span><span class="tk-attribute"> y=</span><span class="tk-number">-2</span><span class="tk-attribute"> width=</span><span class="tk-number">7</span><span class="tk-attribute"> font_size=</span><span class="tk-number">20</span><span class="tk-attribute"> color=GRAY}</span>
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
+<zoom-deck without="camera record screen"><script type="text/markdown">
+::: slide {#prose width=20}
+## Prose
+
+Paragraphs wrap to the canvas. Use **bold**, *italic*, ***both***, `inline code` and inline math $e^{i\pi} + 1 = 0$.
+
+[Coloured spans]{color=ORANGE} take palette names, [CSS colours]{style="color:#4ADE80"} or hex values, and [nest **emphasis** and $\sqrt{2}$]{color=TEAL}.
+
+A paragraph placed by hand sits where its attributes say. {#aside x=2 y=-2 width=7 font_size=20 color=GRAY}
+:::
+</script></zoom-deck></div></div>
+<h2 id="headings-and-lists">Headings and lists<a class="anchor" href="#headings-and-lists" aria-label="Link to this section">#</a></h2><p>Headings set the size only (<code>#</code> to <code>######</code>); nesting between slides comes from includes, never from headings. Lists nest and wrap with a hanging indent.</p>
+
+<div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
+</span><span class="tk-directive">::: slide </span><span class="tk-attribute">{#lists width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">A heading</span>
+
+<span class="tk-type tk-bold">### </span><span class="tk-bold">A smaller one </span><span class="tk-attribute tk-bold">{color=TEAL}</span>
+
+- Bullet items are prose with a marker
+  - Nested items indent
+    1. Numbered lists nest too
+    2. And count on
+- Links like [this one](https://puppis.github.io/zoomdeck/) are clickable
+
+First line.\\
+Second line after an explicit break.
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
+<zoom-deck without="camera record screen"><script type="text/markdown">
+::: slide {#lists width=20}
+## A heading
+
+### A smaller one {color=TEAL}
+
+- Bullet items are prose with a marker
+  - Nested items indent
+    1. Numbered lists nest too
+    2. And count on
+- Links like [this one](https://puppis.github.io/zoomdeck/) are clickable
+
+First line.\\
+Second line after an explicit break.
+:::
+</script></zoom-deck></div></div>
+<h2 id="formulas">Formulas<a class="anchor" href="#formulas" aria-label="Link to this section">#</a></h2><p>Inline math shares the baseline of its line; a <code>$$</code> block is a display formula, centred. A formula may be an element of its own, with a position, a size and a step.</p>
+
+<div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
+</span><span class="tk-directive">::: slide </span><span class="tk-attribute">{#math width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">Formulas</span>
+
+Inline math shares the baseline: <span class="tk-string">$\int_0^1 x^2\,dx = \tfrac13$</span>, and so does <span class="tk-string">$\binom{n}{k}$</span>.
+
+<span class="tk-string">$$</span>
+\sum_<span class="tk-attribute">{k=</span><span class="tk-number">0</span><span class="tk-attribute">}</span>^<span class="tk-attribute">{n}</span> \binom<span class="tk-attribute">{n}{k}</span> = 2^n
+<span class="tk-string">$$</span>
+
+<span class="tk-directive">::: </span><span class="tk-attribute">{.element #pythagoras x=</span><span class="tk-number">0.6</span><span class="tk-attribute"> y=</span><span class="tk-number">-2.6</span><span class="tk-attribute"> font_size=</span><span class="tk-number">34</span><span class="tk-attribute"> step=</span><span class="tk-number">1</span><span class="tk-attribute">}</span>
+<span class="tk-string">$$ \textcolor{Orange}{a}^2 + {\color{Cerulean} b^2} = c^2 $$</span>
+<span class="tk-directive">:::</span>
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
+<zoom-deck without="camera record screen"><script type="text/markdown">
+::: slide {#math width=20}
+## Formulas
+
+Inline math shares the baseline: $\int_0^1 x^2\,dx = \tfrac13$, and so does $\binom{n}{k}$.
+
+$$
+\sum_{k=0}^{n} \binom{n}{k} = 2^n
+$$
+
+::: {.element #pythagoras x=0.6 y=-2.6 font_size=34 step=1}
+$$ \textcolor{Orange}{a}^2 + {\color{Cerulean} b^2} = c^2 $$
+:::
+:::
+</script></zoom-deck></div></div>
+<h2 id="listings">Listings<a class="anchor" href="#listings" aria-label="Link to this section">#</a></h2><p>A fenced block is a code listing, highlighted by language, placed like any element with attributes after the language.</p>
+
+<div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
+</span><span class="tk-directive">::: slide </span><span class="tk-attribute">{#code width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">A listing</span>
+
+<span class="tk-directive">```</span><span class="tk-type">python </span><span class="tk-attribute">{#fib x=</span><span class="tk-number">-9</span><span class="tk-attribute"> y=</span><span class="tk-number">3</span><span class="tk-attribute"> width=</span><span class="tk-number">9</span><span class="tk-attribute">}</span>
+def fib(n):
+    a, b = 0, 1
+    for _ in range(n):
+        a, b = b, a + b
+    return a
+<span class="tk-directive">```</span>
+
+The listing on the left is placed at <span class="tk-type">`x=-9 y=3`</span>, nine units wide; its language picks the colours. <span class="tk-attribute">{#note x=</span><span class="tk-number">1</span><span class="tk-attribute"> y=</span><span class="tk-number">3</span><span class="tk-attribute"> width=</span><span class="tk-number">8</span><span class="tk-attribute"> font_size=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
+<zoom-deck without="camera record screen"><script type="text/markdown">
+::: slide {#code width=20}
+## A listing
+
+```python {#fib x=-9 y=3 width=9}
+def fib(n):
+    a, b = 0, 1
+    for _ in range(n):
+        a, b = b, a + b
+    return a
+```
+
+The listing on the left is placed at `x=-9 y=3`, nine units wide; its language picks the colours. {#note x=1 y=3 width=8 font_size=20}
+:::
+</script></zoom-deck></div></div>
+<h2 id="tables">Tables<a class="anchor" href="#tables" aria-label="Link to this section">#</a></h2><p>A Markdown table becomes a table element; the alignment row sets the columns, <code>rules=</code> and <code>stripe_opacity=</code> its look, and cells may hold emphasis and math.</p>
+
+<div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
+</span><span class="tk-directive">::: slide </span><span class="tk-attribute">{#tables width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">A table</span>
+
+<span class="tk-directive">::: </span><span class="tk-attribute">{.element #sales x=</span><span class="tk-number">0.6</span><span class="tk-attribute"> y=</span><span class="tk-number">1.6</span><span class="tk-attribute"> rules=rows stripe_opacity=</span><span class="tk-number">0.08</span><span class="tk-attribute">}</span>
+| Region | 2023 | 2024 |
+| :--- | ---: | ---: |
+| North | 3.2 | <span class="tk-bold">**5.0**</span> |
+| South | 2.1 | <span class="tk-string">$\pi$</span> |
+| East | 1.4 | 1.9 |
+<span class="tk-directive">:::</span>
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
+<zoom-deck without="camera record screen"><script type="text/markdown">
+::: slide {#tables width=20}
+## A table
+
+::: {.element #sales x=0.6 y=1.6 rules=rows stripe_opacity=0.08}
+| Region | 2023 | 2024 |
+| :--- | ---: | ---: |
+| North | 3.2 | **5.0** |
+| South | 2.1 | $\pi$ |
+| East | 1.4 | 1.9 |
+:::
+:::
+</script></zoom-deck></div></div>
+<h2 id="images">Images<a class="anchor" href="#images" aria-label="Link to this section">#</a></h2><p>An image is Markdown's <code>![alt](url)</code> with a size; SVG, PNG, JPEG and animated PNG or GIF all work, and a video is an image with a <code>.mp4</code> or <code>.webm</code> source. Here the picture comes from the documentation site.</p>
+
+<div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
+</span><span class="tk-directive">::: slide </span><span class="tk-attribute">{#images width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">An image</span>
+
+![An orbit](<span class="tk-string">https://puppis.github.io/zoomdeck/live/orbit.png</span>)<span class="tk-attribute">{#orbit x=</span><span class="tk-number">-6</span><span class="tk-attribute"> y=</span><span class="tk-number">-0.6</span><span class="tk-attribute"> width=</span><span class="tk-number">5</span><span class="tk-attribute">}</span>
+
+Images are placed by their centre; <span class="tk-type">`width`</span> or <span class="tk-type">`height`</span> sizes them, the other follows the picture's proportions. <span class="tk-attribute">{#cap x=</span><span class="tk-number">0</span><span class="tk-attribute"> y=</span><span class="tk-number">1.2</span><span class="tk-attribute"> width=</span><span class="tk-number">8</span><span class="tk-attribute"> font_size=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
+<zoom-deck without="camera record screen"><script type="text/markdown">
+::: slide {#images width=20}
+## An image
+
+![An orbit](https://puppis.github.io/zoomdeck/live/orbit.png){#orbit x=-6 y=-0.6 width=5}
+
+Images are placed by their centre; `width` or `height` sizes them, the other follows the picture's proportions. {#cap x=0 y=1.2 width=8 font_size=20}
+:::
+</script></zoom-deck></div></div>
+<h2 id="where-to-go-next">Where to go next<a class="anchor" href="#where-to-go-next" aria-label="Link to this section">#</a></h2><p><a href="text.html">Text and styling</a>, <a href="math.html">Formulas</a>, <a href="images.html">Images and video</a>, <a href="code.html">Code listings</a> and <a href="tables-charts.html">Tables and charts</a> give every attribute; <a href="slides.html">Slides and the forest</a> has the includes that nest slides.</p>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="first-deck.html">← Your first deck, stage by stage</a>
+      <a class="next" href="documents.html">PDFs, flat decks and forests →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#prose">Prose</a></li><li><a href="#headings-and-lists">Headings and lists</a></li><li><a href="#formulas">Formulas</a></li><li><a href="#listings">Listings</a></li><li><a href="#tables">Tables</a></li><li><a href="#images">Images</a></li><li><a href="#where-to-go-next">Where to go next</a></li></ul></nav>
+</div>
+</body>
+</html>

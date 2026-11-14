@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Layout and style · Zoomdeck</title>
+<meta name="description" content="Where things go and how they look: flow and positions, anchors, relative constraints, groups and style sheets.">
+<link rel="stylesheet" href="docs.css">
+<script type="module" src="zoomdeck/zoomdeck.js"></script>
+<script>
+// The side columns stay hidden or shown as the reader last left them, before the page paints.
+try { for (const side of ['nav', 'outline']) if (localStorage.getItem('zoomdeck-docs-' + side) === 'hidden') document.documentElement.classList.add(side + '-hidden'); } catch (e) {}
+</script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="top">
+  <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
+  <a class="brand" href="index.html">Zoomdeck</a>
+  <span class="tagline">zooming presentations in the browser</span>
+  <span class="sides">
+    <button class="side-toggle" data-side="nav" title="Show or hide the table of contents">Contents</button>
+    <button class="side-toggle" data-side="outline" title="Show or hide the outline of this page">On this page</button>
+  </span>
+</header>
+<script>
+for (const button of document.querySelectorAll('.side-toggle')) {
+  const side = button.dataset.side;
+  const sync = () => button.setAttribute('aria-pressed', String(!document.documentElement.classList.contains(side + '-hidden')));
+  button.addEventListener('click', () => {
+    const hidden = document.documentElement.classList.toggle(side + '-hidden');
+    try { localStorage.setItem('zoomdeck-docs-' + side, hidden ? 'hidden' : 'shown'); } catch (e) {}
+    sync();
+  });
+  sync();
+}
+</script>
+<div class="shell">
+  <nav class="sidebar" aria-label="Documentation">
+      <section>
+        <h4>Features overview</h4>
+        <ul><li><a href="index.html">Zoomdeck</a></li><li><a href="features.html">A quick tour</a></li></ul>
+      </section>
+      <section>
+        <h4>Getting started</h4>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+      </section>
+      <section>
+        <h4>Presenting</h4>
+        <ul><li><a href="player.html">The player</a></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
+      </section>
+      <section>
+        <h4>Writing slides</h4>
+        <ul><li><a href="first-deck.html">Your first deck, stage by stage</a></li><li><a href="content.html">The content of a slide</a></li><li><a href="documents.html">PDFs, flat decks and forests</a></li><li><a href="slides.html">Slides and the forest</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+      </section>
+      <section>
+        <h4>Diagrams</h4>
+        <ul><li><a href="diagrams.html">Diagrams</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="icons.html">Icons</a></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li></ul>
+      </section>
+      <section>
+        <h4>Layout and style</h4>
+        <ul><li><a href="layout.html" aria-current="page">Layout and style</a><ul class="subsections"><li><a href="#flow-and-positions">Flow and positions</a></li><li><a href="#anchors">Anchors</a></li><li><a href="#relative-constraints">Relative constraints</a></li><li><a href="#groups">Groups</a></li><li><a href="#styles">Styles</a></li><li><a href="#where-to-go-next">Where to go next</a></li></ul></li><li><a href="positioning.html">Positioning</a></li><li><a href="groups.html">Groups</a></li><li><a href="styles.html">Styles</a></li><li><a href="configuration.html">Configuration</a></li></ul>
+      </section>
+      <section>
+        <h4>Motion and interaction</h4>
+        <ul><li><a href="motion.html">Motion and interaction</a></li><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li><li><a href="live-pages.html">Live pages</a></li></ul>
+      </section>
+      <section>
+        <h4>Advanced</h4>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html">A deck inside a page</a></li><li><a href="reference.html">Reference</a></li></ul>
+      </section>
+  </nav>
+  <main id="content">
+    <article>
+      <h1>Layout and style</h1>
+      <p class="lead">Where things go and how they look: flow and positions, anchors, relative constraints, groups and style sheets.</p>
+      <a class="try" href="lite/lab/index.html?path=layout.ipynb">Open in JupyterLite ↗</a>
+<p>Every cell below holds the Markdown of one deck and nothing else; the deck plays under it. Open the notebook live (&quot;Open in JupyterLite&quot; above), change a cell, run it again, and watch the deck follow. The first cell loads the helper; from then on a cell that starts with <code>%%deck</code> is a deck.</p>
+<p>This notebook is about placing things on a slide and giving them a common look. Coordinates are the slide's own: the origin at the centre of the canvas, <code>x</code> to the right, <code>y</code> up, one unit the same at every zoom.</p>
+
+<div class="cell"><pre class="cell-input"><code><span class="tk-keyword">import</span> zoomdeck_nb</code></pre></div>
+<h2 id="flow-and-positions">Flow and positions<a class="anchor" href="#flow-and-positions" aria-label="Link to this section">#</a></h2><p>Without attributes, elements flow from the top left. <code>x</code>, <code>y</code> place an element instead: text by its left edge and first baseline, shapes and images by their centre.</p>
+
+<div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
+</span><span class="tk-directive">::: slide </span><span class="tk-attribute">{#positions width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">Flow and positions</span>
+
+This paragraph flows at the top.
+
+So does this one, under it.
+
+[Placed at x=2, y=-1]<span class="tk-attribute">{#p x=</span><span class="tk-number">2</span><span class="tk-attribute"> y=</span><span class="tk-number">-1</span><span class="tk-attribute"> font_size=</span><span class="tk-number">24</span><span class="tk-attribute">}</span>
+
+<span class="tk-directive">[[dot:</span> <span class="tk-attribute">#origin</span> <span class="tk-attribute">x=</span><span class="tk-number">0</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">color=</span>RED<span class="tk-directive">]]</span>
+
+[the origin]<span class="tk-attribute">{at=#origin.right anchor=left-baseline dx=</span><span class="tk-number">0.2</span><span class="tk-attribute"> font_size=</span><span class="tk-number">16</span><span class="tk-attribute"> color=GRAY}</span>
+
+<span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#r</span> <span class="tk-attribute">x=</span><span class="tk-number">-6</span> <span class="tk-attribute">y=</span><span class="tk-number">-3</span> <span class="tk-attribute">width=</span><span class="tk-number">3</span> <span class="tk-attribute">height=</span><span class="tk-number">1.4</span> <span class="tk-attribute">color=</span>BLUE<span class="tk-directive">]]</span>
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
+<zoom-deck without="camera record screen"><script type="text/markdown">
+::: slide {#positions width=20}
+## Flow and positions
+
+This paragraph flows at the top.
+
+So does this one, under it.
+
+[Placed at x=2, y=-1]{#p x=2 y=-1 font_size=24}
+
+[[dot: #origin x=0 y=0 color=RED]]
+
+[the origin]{at=#origin.right anchor=left-baseline dx=0.2 font_size=16 color=GRAY}
+
+[[rectangle: #r x=-6 y=-3 width=3 height=1.4 color=BLUE]]
+:::
+</script></zoom-deck></div></div>
+<h2 id="anchors">Anchors<a class="anchor" href="#anchors" aria-label="Link to this section">#</a></h2><p><code>anchor=</code> chooses which point of an element the position refers to: <code>top-left</code>, <code>bottom-right</code>, <code>center</code>, <code>right-baseline</code> and so on, so that things align on edges rather than on their defaults.</p>
+
+<div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
+</span><span class="tk-directive">::: slide </span><span class="tk-attribute">{#anchors width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">Anchors</span>
+
+<span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#frame</span> <span class="tk-attribute">x=</span><span class="tk-number">0</span> <span class="tk-attribute">y=</span><span class="tk-number">-0.5</span> <span class="tk-attribute">width=</span><span class="tk-number">16</span> <span class="tk-attribute">height=</span><span class="tk-number">6</span> <span class="tk-attribute">color=</span>GRAY <span class="tk-attribute">stroke_width=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
+
+[Top left of the frame]<span class="tk-attribute">{#tl x=</span><span class="tk-number">-8</span><span class="tk-attribute"> y=</span><span class="tk-number">2.5</span><span class="tk-attribute"> anchor=top-left font_size=</span><span class="tk-number">22</span><span class="tk-attribute">}</span>
+
+[Ends at the right edge]<span class="tk-attribute">{#rb x=</span><span class="tk-number">8</span><span class="tk-attribute"> y=</span><span class="tk-number">-3</span><span class="tk-attribute"> anchor=bottom-right font_size=</span><span class="tk-number">22</span><span class="tk-attribute">}</span>
+
+<span class="tk-directive">[[circle:</span> <span class="tk-attribute">#c</span> <span class="tk-attribute">x=</span><span class="tk-number">8</span> <span class="tk-attribute">y=</span><span class="tk-number">2.5</span> <span class="tk-attribute">radius=</span><span class="tk-number">0.6</span> <span class="tk-attribute">color=</span>TEAL <span class="tk-attribute">anchor=</span>top-right<span class="tk-directive">]]</span>
+
+[Centred]<span class="tk-attribute">{#cc x=</span><span class="tk-number">0</span><span class="tk-attribute"> y=</span><span class="tk-number">-0.5</span><span class="tk-attribute"> anchor=center font_size=</span><span class="tk-number">30</span><span class="tk-attribute"> color=TEAL}</span>
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
+<zoom-deck without="camera record screen"><script type="text/markdown">
+::: slide {#anchors width=20}
+## Anchors
+
+[[rectangle: #frame x=0 y=-0.5 width=16 height=6 color=GRAY stroke_width=1]]
+
+[Top left of the frame]{#tl x=-8 y=2.5 anchor=top-left font_size=22}
+
+[Ends at the right edge]{#rb x=8 y=-3 anchor=bottom-right font_size=22}
+
+[[circle: #c x=8 y=2.5 radius=0.6 color=TEAL anchor=top-right]]
+
+[Centred]{#cc x=0 y=-0.5 anchor=center font_size=30 color=TEAL}
+:::
+</script></zoom-deck></div></div>
+<h2 id="relative-constraints">Relative constraints<a class="anchor" href="#relative-constraints" aria-label="Link to this section">#</a></h2><p>An element can be placed relative to another: <code>below:#id</code>, <code>right-of:#id</code>, <code>left-aligned:#id</code>, <code>baseline-aligned:#id</code>, with <code>buff</code> as the distance; <code>at=</code> puts one of its points on a point of another element.</p>
+
+<div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
+</span><span class="tk-directive">::: slide </span><span class="tk-attribute">{#relative width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">Relative constraints</span>
+
+<span class="tk-type tk-bold">### </span><span class="tk-bold">A heading </span><span class="tk-attribute tk-bold">{#h x=</span><span class="tk-number tk-bold">-8</span><span class="tk-attribute tk-bold"> y=</span><span class="tk-number tk-bold">3</span><span class="tk-attribute tk-bold">}</span>
+
+[Below it, left-aligned]<span class="tk-attribute">{#p below:#h left-aligned:#h buff=</span><span class="tk-number">0.3</span><span class="tk-attribute">}</span>
+
+[A side note]<span class="tk-attribute">{#note right-of:#p buff=</span><span class="tk-number">0.5</span><span class="tk-attribute"> font_size=</span><span class="tk-number">18</span><span class="tk-attribute"> color=GRAY}</span>
+
+[Big]<span class="tk-attribute">{#big x=</span><span class="tk-number">-8</span><span class="tk-attribute"> y=</span><span class="tk-number">-1.5</span><span class="tk-attribute"> font_size=</span><span class="tk-number">48</span><span class="tk-attribute">}</span>
+
+[shares the baseline]<span class="tk-attribute">{x=</span><span class="tk-number">-5.5</span><span class="tk-attribute"> baseline-aligned:#big}</span>
+
+<span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#ref</span> <span class="tk-attribute">x=</span><span class="tk-number">4</span> <span class="tk-attribute">y=</span><span class="tk-number">-2.5</span> <span class="tk-attribute">width=</span><span class="tk-number">3</span> <span class="tk-attribute">height=</span><span class="tk-number">1.6</span> <span class="tk-attribute">color=</span>BLUE<span class="tk-directive">]]</span>
+
+[My top left at its bottom right]<span class="tk-attribute">{#tl at=top-left:#ref.bottom-right dx=</span><span class="tk-number">0.2</span><span class="tk-attribute"> font_size=</span><span class="tk-number">16</span><span class="tk-attribute">}</span>
+
+<span class="tk-directive">[[dot:</span> <span class="tk-attribute">#d</span> <span class="tk-attribute">at=#ref.top</span> <span class="tk-attribute">color=</span>RED<span class="tk-directive">]]</span>
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
+<zoom-deck without="camera record screen"><script type="text/markdown">
+::: slide {#relative width=20}
+## Relative constraints
+
+### A heading {#h x=-8 y=3}
+
+[Below it, left-aligned]{#p below:#h left-aligned:#h buff=0.3}
+
+[A side note]{#note right-of:#p buff=0.5 font_size=18 color=GRAY}
+
+[Big]{#big x=-8 y=-1.5 font_size=48}
+
+[shares the baseline]{x=-5.5 baseline-aligned:#big}
+
+[[rectangle: #ref x=4 y=-2.5 width=3 height=1.6 color=BLUE]]
+
+[My top left at its bottom right]{#tl at=top-left:#ref.bottom-right dx=0.2 font_size=16}
+
+[[dot: #d at=#ref.top color=RED]]
+:::
+</script></zoom-deck></div></div>
+<h2 id="groups">Groups<a class="anchor" href="#groups" aria-label="Link to this section">#</a></h2><p>A <code>::: {.group #id}</code> container places several elements together, with coordinates of their own inside it; the group is then one element for positions, steps and enclosures.</p>
+
+<div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
+</span><span class="tk-directive">::: slide </span><span class="tk-attribute">{#groups width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">Groups</span>
+
+<span class="tk-directive">::: </span><span class="tk-attribute">{.group #automaton x=</span><span class="tk-number">-3</span><span class="tk-attribute"> y=</span><span class="tk-number">0.5</span><span class="tk-attribute"> step=</span><span class="tk-number">1</span><span class="tk-attribute">}</span>
+<span class="tk-directive">[[circle:</span> <span class="tk-attribute">#q0</span> <span class="tk-attribute">x=</span><span class="tk-number">0</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">radius=</span><span class="tk-number">0.6</span> <span class="tk-attribute">color=</span>BLUE<span class="tk-directive">]]</span>
+[<span class="tk-string">$q_0$</span>]<span class="tk-attribute">{at=#q0.center anchor=center}</span>
+<span class="tk-directive">[[circle:</span> <span class="tk-attribute">#q1</span> <span class="tk-attribute">x=</span><span class="tk-number">3</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">radius=</span><span class="tk-number">0.6</span> <span class="tk-attribute">color=</span>BLUE<span class="tk-directive">]]</span>
+[<span class="tk-string">$q_1$</span>]<span class="tk-attribute">{at=#q1.center anchor=center}</span>
+<span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#q0</span> -&gt; <span class="tk-attribute">#q1</span>, <span class="tk-attribute">#t</span>, <span class="tk-attribute">label=</span><span class="tk-string">&quot;$a$&quot;</span><span class="tk-directive">]]</span>
+<span class="tk-directive">:::</span>
+
+<span class="tk-directive">[[box:</span> <span class="tk-attribute">#automaton</span>, <span class="tk-attribute">#gbox</span>, <span class="tk-attribute">buff=</span><span class="tk-number">0.3</span>, <span class="tk-attribute">color=</span>GREEN, <span class="tk-attribute">step=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
+
+<span class="tk-directive">::: </span><span class="tk-attribute">{.group #legend below:#automaton left-aligned:#automaton buff=</span><span class="tk-number">0.9</span><span class="tk-attribute">}</span>
+<span class="tk-directive">[[dot:</span> <span class="tk-attribute">#k1</span> <span class="tk-attribute">x=</span><span class="tk-number">0</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">color=</span>BLUE<span class="tk-directive">]]</span>
+[a state]<span class="tk-attribute">{at=#k1.right anchor=left-baseline dx=</span><span class="tk-number">0.2</span><span class="tk-attribute">}</span>
+<span class="tk-directive">:::</span>
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
+<zoom-deck without="camera record screen"><script type="text/markdown">
+::: slide {#groups width=20}
+## Groups
+
+::: {.group #automaton x=-3 y=0.5 step=1}
+[[circle: #q0 x=0 y=0 radius=0.6 color=BLUE]]
+[$q_0$]{at=#q0.center anchor=center}
+[[circle: #q1 x=3 y=0 radius=0.6 color=BLUE]]
+[$q_1$]{at=#q1.center anchor=center}
+[[arrow: #q0 -> #q1, #t, label="$a$"]]
+:::
+
+[[box: #automaton, #gbox, buff=0.3, color=GREEN, step=2]]
+
+::: {.group #legend below:#automaton left-aligned:#automaton buff=0.9}
+[[dot: #k1 x=0 y=0 color=BLUE]]
+[a state]{at=#k1.right anchor=left-baseline dx=0.2}
+:::
+:::
+</script></zoom-deck></div></div>
+<h2 id="styles">Styles<a class="anchor" href="#styles" aria-label="Link to this section">#</a></h2><p>A <code>::: styles</code> block names styles once: by role (<code>heading</code>, <code>body</code>, <code>shape</code>, <code>icon</code>), or by a <code>.class</code> that elements pick up. The same block can live in <code>deck.json</code> for a whole deck.</p>
+
+<div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
+</span><span class="tk-directive">::: styles</span>
+heading: color=BLUE_E
+callout: color=ORANGE font_size=30
+footnote: font_size=16 color=GRAY
+<span class="tk-directive">:::</span>
+
+<span class="tk-directive">::: slide </span><span class="tk-attribute">{#styles width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">A styled heading</span>
+
+Body text as usual. <span class="tk-attribute">{#body x=</span><span class="tk-number">-8</span><span class="tk-attribute"> y=</span><span class="tk-number">2</span><span class="tk-attribute">}</span>
+
+[Look here]<span class="tk-attribute">{#c .callout below:#body left-aligned:#body buff=</span><span class="tk-number">0.6</span><span class="tk-attribute">}</span>
+
+[A side remark in the footnote style]<span class="tk-attribute">{.footnote below:#c left-aligned:#c buff=</span><span class="tk-number">0.6</span><span class="tk-attribute">}</span>
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
+<zoom-deck without="camera record screen"><script type="text/markdown">
+::: styles
+heading: color=BLUE_E
+callout: color=ORANGE font_size=30
+footnote: font_size=16 color=GRAY
+:::
+
+::: slide {#styles width=20}
+## A styled heading
+
+Body text as usual. {#body x=-8 y=2}
+
+[Look here]{#c .callout below:#body left-aligned:#body buff=0.6}
+
+[A side remark in the footnote style]{.footnote below:#c left-aligned:#c buff=0.6}
+:::
+</script></zoom-deck></div></div>
+<h2 id="where-to-go-next">Where to go next<a class="anchor" href="#where-to-go-next" aria-label="Link to this section">#</a></h2><p><a href="positioning.html">Positioning</a>, <a href="groups.html">Groups</a>, <a href="styles.html">Styles</a> and <a href="configuration.html">Configuration</a> have every constraint, anchor and key.</p>
+
+    </article>
+    <footer class="pager">
+      <a class="prev" href="sketch.html">← Hand-drawn shapes</a>
+      <a class="next" href="positioning.html">Positioning →</a>
+    </footer>
+  </main>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#flow-and-positions">Flow and positions</a></li><li><a href="#anchors">Anchors</a></li><li><a href="#relative-constraints">Relative constraints</a></li><li><a href="#groups">Groups</a></li><li><a href="#styles">Styles</a></li><li><a href="#where-to-go-next">Where to go next</a></li></ul></nav>
+</div>
+</body>
+</html>

@@ -1,5 +1,5 @@
 ---
-title: Features overview
+title: A quick tour
 description: The main things Zoomdeck does, each shown live on this page with the markup that produces it. Click a deck to give it the keys, then use the arrows.
 ---
 

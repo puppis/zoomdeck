@@ -3,7 +3,10 @@
     "contents": [
       "../site/zoomdeck_nb.py",
       "../site/first-deck.ipynb",
-      "wheels/zoomdeck_nb-0.1.0-py3-none-any.whl"
+      "../site/content.ipynb",
+      "../site/diagrams.ipynb",
+      "../site/layout.ipynb",
+      "../site/motion.ipynb"
     ]
   }
 }

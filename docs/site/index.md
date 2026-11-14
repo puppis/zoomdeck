@@ -27,7 +27,7 @@ feature with the markup that produces it next to the result. **Source:**
 
 ## Start here
 
-1. **[Features overview](features.html)**: the main things Zoomdeck does, each shown live on the
+1. **[A quick tour](features.html)**: the main things Zoomdeck does, each shown live on the
    page next to the markup that produces it: a PDF opened as it is, plain slides, a tree of
    slides, the spotlight, the pen and the whiteboard, the camera and recordings, formulas,
    diagrams and animations.
