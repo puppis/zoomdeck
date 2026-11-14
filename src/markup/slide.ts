@@ -492,6 +492,8 @@ export class SlideBuilder {
       paths?: string[]; artworks?: string[]; artworkModules?: Record<string, ArtworkModule>;
       fonts?: string[]; effects?: string[]; charts?: string[]; languages?: string[]; codeThemes?: string[]; directives?: string[];
       effectModules?: Record<string, EffectModule>; chartModules?: Record<string, ChartModule>; directiveModules?: Record<string, DirectiveModule>;
+      /** The documents `[[pdf: file #id]]` placed, loaded ahead, by id. */
+      documents?: Map<string, Slide>;
     } = {},
   ): Slide {
     document = new ASTTransformer().validate(document);
@@ -506,7 +508,7 @@ export class SlideBuilder {
       document.slides.map((slide) => [
         slide.id,
         slide.placeholder
-          ? new PlaceholderSlide(slide.id, { label: `#${slide.id}\nNot defined`, size: renderer.layout.defaultSlideSize })
+          ? options.documents?.get(slide.id) ?? new PlaceholderSlide(slide.id, { label: slide.attributes.src ? `${slide.attributes.src}\nPDF not loaded` : `#${slide.id}\nNot defined`, size: renderer.layout.defaultSlideSize })
           : new MarkupSlide(slide, { renderer, locate }),
       ]),
     );

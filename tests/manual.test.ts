@@ -48,7 +48,7 @@ describe('the markup manual', () => {
   });
 
   it('names every directive and container', () => {
-    for (const kind of ['include', 'subslide', 'import', 'arrow', 'line', 'icon', 'artwork', 'brace', 'box', 'blob', 'iframe', 'show', 'hide', 'animate', 'effect', 'transform', 'move_along', 'next', 'skip_next', 'snippet']) {
+    for (const kind of ['include', 'subslide', 'import', 'pdf', 'arrow', 'line', 'icon', 'artwork', 'brace', 'box', 'blob', 'iframe', 'show', 'hide', 'animate', 'effect', 'transform', 'move_along', 'next', 'skip_next', 'snippet']) {
       expect(manual, `[[${kind}]]`).toMatch(new RegExp(`\\[\\[${kind}[:\\]]`));
     }
     for (const container of ['::: slide', '::: styles', '::: snippet', '::: notes', '::: {.element', '::: {.group']) expect(manual).toContain(container);

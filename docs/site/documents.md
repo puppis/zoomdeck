@@ -33,6 +33,24 @@ long document never holds every page at full resolution. The pen, the whiteboard
 recording and printing work on a PDF as on any deck. The exported folder copies the file next
 to the page; the single-file export embeds it.
 
+## A PDF inside a slide
+
+```markdown
+::: slide {#paper width=20}
+## The paper, page by page
+
+[[pdf: assets/paper.pdf #pages x=0 y=-1 width=18 preview=true]]
+:::
+```
+
+`[[pdf: file #id …]]` places a PDF inside a slide, as a row of its pages: an include whose
+child is the document. It takes the placement of an include (`x`, `y`, `width` or `height`,
+`anchor`, `at`, the relative references, `step`, `preview`, the flags). The camera zooms into
+the first page, cuts from each page to the next, and zooms back out after the last; the pages
+appear in the outline under the slide, named by the document's bookmarks. The file is relative
+to the Markdown, then searched in the `paths` folders; exports copy or embed it. The tour's
+first chapter shows three pages this way.
+
 ## A Markdown file of plain slides
 
 A Markdown file may simply list slides, one `::: slide` container after another, including none

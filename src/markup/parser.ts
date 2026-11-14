@@ -331,6 +331,14 @@ export class MarkupParser {
           const attrs = parseAttributes(match[2], line, { commas: true });
           if (!('id' in attrs)) throw new MarkupError(`${kind === 'icon' ? 'Icons' : 'Artworks'} require an explicit #id`, line);
           items.push(new ElementSpec(attrs.id, 'icon', [], attrs, match[1], line));
+        } else if (kind === 'pdf') {
+          // A PDF placed inside the slide: its pages become children, visited with cuts between them.
+          const match = /^(\S+)\s+(.*)$/s.exec(value.trim());
+          if (!match || match[1].startsWith('#')) throw new MarkupError('Expected [[pdf: file.pdf #id x=… y=… width=…]]', line);
+          const attrs = parseAttributes(match[2], line, { commas: true });
+          if (!('id' in attrs)) throw new MarkupError('A PDF child requires an explicit #id', line);
+          const { id, ...placement } = attrs;
+          items.push(new IncludeSpec(id, { ...placement, src: match[1] }, line));
         } else if (kind === 'import') {
           throw new MarkupError('File imports are resolved before parsing: load the document through markupDeck or expandImports', line);
         } else if (kind === 'subslide' && !value.trim().startsWith('#')) {
@@ -598,7 +606,7 @@ export class ASTTransformer {
     for (const slide of document.slides) {
       if (!IDENTIFIER.test(slide.id) || slides.has(slide.id)) throw new MarkupError(`Invalid or duplicate slide ID ${JSON.stringify(slide.id)}`, slide.line);
       slides.set(slide.id, slide);
-      this._checkAttrs(slide.attributes, new Set(['id', 'title', 'width', 'height', 'only_this', 'start_here', 'skip_return', 'return_to_parent', 'transition', 'preview']), slide.line);
+      this._checkAttrs(slide.attributes, new Set(['id', 'title', 'width', 'height', 'only_this', 'start_here', 'skip_return', 'return_to_parent', 'transition', 'preview', ...(slide.placeholder ? ['src'] : [])]), slide.line);
       ASTTransformer._checkFlags(slide.attributes, slide.line);
       ASTTransformer._checkTransition(slide.attributes, slide.line);
     }
@@ -882,7 +890,7 @@ export class ASTTransformer {
 
   /** Validate an include or import and register its parent link. */
   private _checkChild(item: IncludeSpec | CodeSlideSpec, slide: SlideSpec, slides: Map<string, SlideSpec>, parents: Map<string, string>): void {
-    this._checkAttrs(item.attributes, new Set([...LAYOUT, 'step', 'only_this', 'start_here', 'skip_return', 'return_to_parent', 'transition', 'preview']), item.line);
+    this._checkAttrs(item.attributes, new Set([...LAYOUT, 'step', 'only_this', 'start_here', 'skip_return', 'return_to_parent', 'transition', 'preview', ...(item instanceof IncludeSpec && 'src' in item.attributes ? ['src'] : [])]), item.line);
     ASTTransformer._checkFlags(item.attributes, item.line);
     ASTTransformer._checkTransition(item.attributes, item.line);
     if ('anchor' in item.attributes) ASTTransformer._checkAnchorFor(item, item.attributes.anchor, item.line);
@@ -895,7 +903,14 @@ export class ASTTransformer {
     }
     if (!slides.has(item.target)) {
       if (!IDENTIFIER.test(item.target)) throw new MarkupError(`Invalid slide reference #${item.target}`, item.line);
-      slides.set(item.target, new SlideSpec(item.target, [], { id: item.target }, item.line, true));
+      // A PDF child stands for its document: a placeholder that carries the file, filled when the deck loads.
+      slides.set(item.target, new SlideSpec(item.target, [], { id: item.target, ...('src' in item.attributes ? { src: item.attributes.src } : {}) }, item.line, true));
+    } else if ('src' in item.attributes) {
+      // Validated again (the slide builder does so), the child's own placeholder is already there.
+      const existing = slides.get(item.target) as SlideSpec;
+      if (!existing.placeholder || existing.attributes.src !== item.attributes.src) {
+        throw new MarkupError(`#${item.target} is a slide of the document; a PDF child needs an id of its own`, item.line);
+      }
     }
     if (parents.has(item.target)) {
       throw new MarkupError(`Slide #${item.target} is included more than once; use a fresh slide ID`, item.line);

@@ -15,6 +15,8 @@ import type { ChartModule } from '../charts';
 import { CodeSlideSpec, IncludeSpec } from './ast';
 import type { DirectiveModule } from '../directives';
 import { transitionFromModule, type TransitionModule } from '../runtime';
+import { pdfPages } from '../pdfdeck';
+import type { Slide } from '../slides';
 
 /** What a Markdown deck is made with: the source or URL, the settings of `deck.json`, preloaded files and assets, and the library folders and modules. */
 export interface MarkupDeckOptions {
@@ -387,6 +389,34 @@ export function markupDeck(options: MarkupDeckOptions): ResolvedDeck {
         if (!module) throw new MarkupError(`Unknown transition ${JSON.stringify(name)}: not zoom or cut and no ${name}.js or ${name}.ts in the deck's transitions folders`);
         transitions[name] = transitionFromModule(module, name);
       }
+      // The documents placed with [[pdf: file]] load now, their pages as slides under a hidden root.
+      const documents = new Map<string, Slide>();
+      for (const slide of document.slides) {
+        const src = slide.placeholder ? slide.attributes.src : undefined;
+        if (!src) continue;
+        const clean = src.replace(/^\.\//, '');
+        const preloaded = (options.assets ?? {})[src] ?? (options.assets ?? {})[clean];
+        let url = preloaded ?? new URL(src, base).href;
+        if (!preloaded && typeof fetch !== 'undefined') {
+          // The document's own folder first, then the search folders.
+          for (const candidate of [url, ...paths.map((folder) => new URL(folder + clean, base).href)]) {
+            try {
+              const response = await fetch(candidate, { method: 'HEAD' });
+              if (response.ok && !(response.headers.get('content-type') ?? '').includes('text/html')) {
+                url = candidate;
+                break;
+              }
+            } catch {
+              /* the next candidate */
+            }
+          }
+        }
+        try {
+          documents.set(slide.id, await pdfPages({ url }, { name: clean.split('/').pop() ?? clean, spacing: 1.15 }));
+        } catch (error) {
+          throw new MarkupError(`Cannot open the PDF ${src} (${(error as Error).message})`, slide.line);
+        }
+      }
       // Slides and stops remember the document (a URL under the preview server) and line they came from.
       const main = options.url !== undefined ? new URL(options.url, typeof location !== 'undefined' ? location.href : undefined).href : '';
       const locate = (line: number): SourceLocation => {
@@ -406,6 +436,7 @@ export function markupDeck(options: MarkupDeckOptions): ResolvedDeck {
         paths, artworks: folders.artworks, artworkModules: options.artworkModules,
         fonts: folders.fonts, effects: folders.effects, charts: folders.charts, languages: folders.languages, codeThemes: folders.codeThemes,
         directives: folders.directives, effectModules: options.effectModules, chartModules: options.chartModules, directiveModules: options.directiveModules,
+        documents,
       });
     },
   };

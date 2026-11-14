@@ -185,6 +185,8 @@ export type OriginMobject = Mobject & { markupOrigin?: [number, number] };
 
 /** Composite objects name the parts a blob should flow around separately (group members, an icon and its label). */
 export type PartsMobject = Mobject & { markupParts?: Mobject[] };
+/** A composite whose connections and endpoints address one part (an icon under its label). */
+export type BodyMobject = Mobject & { markupBody?: Mobject };
 
 /** The rectangles a blob encloses for an object: its parts' rectangles, else its own bounding box. */
 export function enclosedRects(obj: Mobject): Rect[] {
@@ -262,7 +264,19 @@ export function placeRelative(
   }
   if (!Object.keys(attrs).some((key) => POSITION_REFERENCES.has(key))) return;
   for (const [key, direction] of Object.entries(NEIGHBORS)) {
-    if (key in attrs) obj.nextTo(objects.get(attrs[key].slice(1)) as Mobject, direction, Number(attrs.buff ?? gap));
+    if (!(key in attrs)) continue;
+    const reference = objects.get(attrs[key].slice(1)) as Mobject;
+    obj.nextTo(reference, direction, Number(attrs.buff ?? gap));
+    // Icons line up by their symbols, not by the boxes their labels make: a label above one and below
+    // the other would otherwise stagger them, and an arrow between them would slant.
+    const mine = (obj as BodyMobject).markupBody;
+    const theirs = (reference as BodyMobject).markupBody;
+    if (mine && theirs) {
+      const axis = direction[0] !== 0 ? 1 : 0;
+      const delta: [number, number, number] = [0, 0, 0];
+      delta[axis] = theirs.getCenter()[axis] - mine.getCenter()[axis];
+      obj.shift(delta);
+    }
   }
   for (const [key, direction] of Object.entries(ALIGNMENTS)) {
     if (key in attrs) obj.alignTo(objects.get(attrs[key].slice(1)) as Mobject, direction);
@@ -782,8 +796,9 @@ export class MarkupRenderer {
         const side = attrs.label_side ?? 'below';
         const direction = { below: [0, -1, 0], above: [0, 1, 0], left: [-1, 0, 0], right: [1, 0, 0] }[side] as [number, number, number];
         label.nextTo(icon, direction, 0.15);
-        const group = new Group(icon, label) as PartsMobject;
+        const group = new Group(icon, label) as PartsMobject & BodyMobject;
         group.markupParts = [icon, label];
+        group.markupBody = icon;
         obj = group;
       }
     } else if (element.kind === 'custom') {
@@ -1015,8 +1030,10 @@ export class MarkupRenderer {
   /** Create an arrow or line between laid-out objects or fixed coordinates. */
   async connection(element: ElementSpec, objects: Map<string, Mobject>): Promise<Mobject> {
     const [start, end] = ['from', 'to'].map((key) => endpoint(element.attributes[key], element.line));
-    const source = typeof start === 'string' ? (objects.get(start) as Mobject) : null;
-    const target = typeof end === 'string' ? (objects.get(end) as Mobject) : null;
+    // An arrow to a labeled icon aims at the icon itself, not at the box of icon and label together.
+    const body = (obj: Mobject | undefined): Mobject | null => (obj ? (obj as BodyMobject).markupBody ?? obj : null);
+    const source = typeof start === 'string' ? body(objects.get(start)) : null;
+    const target = typeof end === 'string' ? body(objects.get(end)) : null;
     let a = source ? source.getCenter() : (start as [number, number, number]);
     let b = target ? target.getCenter() : (end as [number, number, number]);
     const direction: [number, number, number] = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];

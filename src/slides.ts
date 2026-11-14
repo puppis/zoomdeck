@@ -341,6 +341,8 @@ export function* walk(root: Slide): Generator<Slide> {
 export interface PageSequenceOptions {
   /** Name of the hidden root in code that lists the tree; never shown. */
   name?: string;
+  /** Distance between page centers, as a multiple of the largest page side; 3 by default. */
+  spacing?: number;
 }
 
 /**
@@ -353,9 +355,9 @@ export interface PageSequenceOptions {
 export function pageSequence(pages: readonly Slide[], options: PageSequenceOptions = {}): Slide {
   if (!pages.length) throw new Error('A sequence of pages needs at least one page');
   for (const page of pages) if (page.parent !== null) throw new Error('A page of a sequence cannot have a parent already');
-  // Three times the largest page between centers: a view padded around a page of any proportions never reaches the next.
+  // Three times the largest page between centers by default: a view padded around a page of any proportions never reaches the next.
   const unit = Math.max(...pages.map((page) => Math.max(page.width, page.height)));
-  const spacing = 3 * unit;
+  const spacing = positive(options.spacing ?? 3, 'spacing') * unit;
   const root = new Slide(options.name ?? 'Pages', {
     width: spacing * pages.length,
     height: Math.max(...pages.map((page) => page.height)),

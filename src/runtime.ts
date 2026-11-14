@@ -1057,7 +1057,12 @@ export class Presenter {
    */
   transitionMode(from: Slide, to: Slide): TransitionMode {
     if (to.transition) return to.transition;
-    if (to.parent?.hidden && commonAncestor(from, to) !== to) return 'cut';
+    if (to.parent?.hidden) {
+      // The roots of the deck: a cut from anywhere outside the root's own tree. The pages of a
+      // document placed inside a slide: a cut from one page to the next, a zoom in from the slide.
+      const common = commonAncestor(from, to);
+      if (to.parent.parent === null ? common !== to : common === to.parent) return 'cut';
+    }
     return this.config.transition;
   }
 

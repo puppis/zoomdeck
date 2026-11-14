@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { Circle, Group, VGroup } from 'manim-web';
 import { expandImports, fillSnippet } from '../src/markup/imports';
-import { MarkupParser } from '../src/markup/parser';
-import { ElementSpec, MarkupError } from '../src/markup/ast';
+import { ASTTransformer, MarkupParser } from '../src/markup/parser';
+import { ElementSpec, IncludeSpec, MarkupError } from '../src/markup/ast';
 import { chartDataFromJson } from '../src/charts';
 import { applyTheme, loadMarkupDeck, markupDeck, parseTheme } from '../src/markup/deck';
 import { directiveFromModule, type DirectiveOptions } from '../src/directives';
@@ -72,6 +72,22 @@ describe('directives of the deck\'s own', () => {
   });
 });
 
+describe('a PDF inside a slide', () => {
+  it('is an include of a placeholder that carries the file', () => {
+    const document = new MarkupParser().parse('::: slide {#a}\n[[pdf: assets/paper.pdf #pages x=0 y=-1 width=18 preview]]\n:::');
+    const include = document.slides[0].items.find((item) => item instanceof IncludeSpec) as IncludeSpec;
+    expect(include.target).toBe('pages');
+    expect(include.attributes).toMatchObject({ src: 'assets/paper.pdf', width: '18', preview: 'true' });
+    const pages = document.slides.find((slide) => slide.id === 'pages');
+    expect(pages?.placeholder).toBe(true);
+    expect(pages?.attributes.src).toBe('assets/paper.pdf');
+    // A document validated once validates again (the slide builder does so).
+    expect(() => new ASTTransformer().validate(document)).not.toThrow();
+    expect(() => new MarkupParser().parse('::: slide {#a}\n[[pdf: assets/paper.pdf x=0]]\n:::')).toThrow(/explicit #id/);
+    expect(() => new MarkupParser().parse('::: slide {#a}\n[[pdf: assets/paper.pdf #a x=0]]\n:::')).toThrow(/id of its own/);
+  });
+});
+
 describe('camera transitions of the deck\'s own', () => {
   it('are kept by name in the presenter configuration, which accepts any name as the default', () => {
     const config = new PresenterConfig({ transition: 'swoop', transitions: { swoop: (start) => start } });
@@ -115,6 +131,17 @@ describe('camera transitions of the deck\'s own', () => {
     expect(presenter.transitionMode(leaf, three)).toBe('swoop');
     expect(presenter.transitionMode(leaf, one)).toBe('cut');
     expect(presenter.transitionMode(one, leaf)).toBe('swoop');
+    // A document inside a slide: a zoom into its first page, cuts between its pages, a zoom back out.
+    const holder = new Slide('holder');
+    const pages = new Slide('pages', { hidden: true });
+    const p1 = new Slide('p1');
+    const p2 = new Slide('p2');
+    pages.addChild(p1, { center: [0, 0, 0], width: 4 });
+    pages.addChild(p2, { center: [5, 0, 0], width: 4 });
+    holder.addChild(pages, { center: [0, 0, 0], width: 8 });
+    expect(presenter.transitionMode(holder, p1)).toBe('swoop');
+    expect(presenter.transitionMode(p1, p2)).toBe('cut');
+    expect(presenter.transitionMode(p2, holder)).toBe('swoop');
   });
 });
 

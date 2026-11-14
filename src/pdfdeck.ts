@@ -349,6 +349,38 @@ function deckFolder(url: string | undefined): string | undefined {
  * cuts between them, named after the document's bookmarks where it has them. The document is
  * read here, so the deck knows its title and the proportions of its first page.
  */
+/** What `pdfPages` opens: a URL (a `data:` URL included) or the file's bytes. */
+export interface PdfSource {
+  url?: string;
+  data?: ArrayBuffer | Uint8Array;
+}
+
+/** The absolute URL of a PDF, as pdf.js takes it; a `data:` URL as it is. */
+export function pdfUrl(url: string): string {
+  return url.startsWith('data:') ? url : new URL(url, typeof location !== 'undefined' ? location.href : undefined).href;
+}
+
+/**
+ * The pages of a PDF as slides under a hidden root, laid out in a row: the shape of a deck
+ * opened from a PDF, and of a document placed inside a slide with `[[pdf: file]]`, whose pages
+ * the camera visits one after the other with cuts between them. `spacing` is the distance
+ * between page centers as a multiple of the largest page side (three for a deck of its own,
+ * where a padded view must never reach the next page; a tighter row for a child).
+ */
+export async function pdfPages(source: PdfSource, options: { name?: string; spacing?: number } = {}): Promise<Slide> {
+  if (source.url === undefined && source.data === undefined) throw new Error('pdfPages requires url or data');
+  const { getDocument } = await loadPdfJs();
+  const url = source.url === undefined ? undefined : pdfUrl(source.url);
+  const data = source.data instanceof Uint8Array ? source.data : source.data ? new Uint8Array(source.data) : undefined;
+  const document = await getDocument(url !== undefined ? { url } : { data }).promise;
+  const names = await pageNames(document);
+  const pages: Slide[] = [];
+  for (let number = 1; number <= document.numPages; number++) {
+    pages.push(new PdfPage(await document.getPage(number), number, names.get(number) ?? `Page ${number}`));
+  }
+  return pageSequence(pages, { name: options.name ?? 'Document', spacing: options.spacing });
+}
+
 export async function pdfDeck(options: PdfDeckOptions): Promise<ResolvedDeck> {
   if (options.url === undefined && options.data === undefined) throw new Error('pdfDeck requires url or data');
   if (options.url !== undefined && options.data !== undefined) throw new Error('Set either url or data, not both');

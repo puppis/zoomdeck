@@ -226,7 +226,7 @@ export const BARE_FLAGS = new Set(['start_here', 'only_this', 'skip_return', 're
 
 export const IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_.-]*$/;
 export const CONTAINER = /^\s*:::\s*(.*?)\s*$/;
-export const DIRECTIVE = /^\s*\[\[(include|subslide|import|arrow|line|rectangle|circle|polyline|dot|ellipse|polygon|arc|icon|artwork|brace|box|blob|iframe|show|hide|animate|effect|transform|move_along|next|skip_next):\s*(.*?)\]\]\s*$/;
+export const DIRECTIVE = /^\s*\[\[(include|subslide|import|pdf|arrow|line|rectangle|circle|polyline|dot|ellipse|polygon|arc|icon|artwork|brace|box|blob|iframe|show|hide|animate|effect|transform|move_along|next|skip_next):\s*(.*?)\]\]\s*$/;
 /** A directive of the deck's own, `[[name: …]]` with any other name: drawn by `directives/name.ts`. */
 export const CUSTOM_DIRECTIVE = /^\s*\[\[([A-Za-z_][\w-]*):\s*(.*?)\]\]\s*$/;
 /** The name of an enter or exit style, an effect or a camera transition of the deck's own. */

@@ -816,7 +816,6 @@ import from <code>zoomdeck</code>, and the engine as <code>manim-web</code>.</p>
 <p>Width and height of a page in PDF points, as displayed (its rotation applied).</p>
 <pre><code class="language-typescript"><span class="tk-keyword">function</span> pageSize(page: Pick&lt;PDFPageProxy, <span class="tk-string">'getViewport'</span>&gt;): [<span class="tk-type">number</span>, <span class="tk-type">number</span>]</code></pre>
 <h3 id="pdfdeck">pdfDeck<a class="anchor" href="#pdfdeck" aria-label="Link to this section">#</a></h3><p class="api-kind">function</p>
-<p>Open a PDF as a deck: its pages become a flat sequence of slides, visited first to last with cuts between them, named after the document's bookmarks where it has them. The document is read here, so the deck knows its title and the proportions of its first page.</p>
 <pre><code class="language-typescript"><span class="tk-keyword">async</span> <span class="tk-keyword">function</span> pdfDeck(options: PdfDeckOptions): <span class="tk-type">Promise</span>&lt;ResolvedDeck&gt;</code></pre>
 <h3 id="pdfdeckoptions">PdfDeckOptions<a class="anchor" href="#pdfdeckoptions" aria-label="Link to this section">#</a></h3><p class="api-kind">interface</p>
 <p>How a PDF becomes a deck: its URL or data, its title and whether the outline opens.</p>
@@ -896,6 +895,36 @@ import from <code>zoomdeck</code>, and the engine as <code>manim-web</code>.</p>
 </tr>
 </tbody>
 </table>
+<h3 id="pdfpages">pdfPages<a class="anchor" href="#pdfpages" aria-label="Link to this section">#</a></h3><p class="api-kind">function</p>
+<p>The pages of a PDF as slides under a hidden root, laid out in a row: the shape of a deck opened from a PDF, and of a document placed inside a slide with <code>[[pdf: file]]</code>, whose pages the camera visits one after the other with cuts between them. <code>spacing</code> is the distance between page centers as a multiple of the largest page side (three for a deck of its own, where a padded view must never reach the next page; a tighter row for a child).</p>
+<pre><code class="language-typescript"><span class="tk-keyword">async</span> <span class="tk-keyword">function</span> pdfPages(source: PdfSource, options: { name?: <span class="tk-type">string</span>; spacing?: <span class="tk-type">number</span> } = {}): <span class="tk-type">Promise</span>&lt;Slide&gt;</code></pre>
+<h3 id="pdfsource">PdfSource<a class="anchor" href="#pdfsource" aria-label="Link to this section">#</a></h3><p class="api-kind">interface</p>
+<p>What <code>pdfPages</code> opens: a URL (a <code>data:</code> URL included) or the file's bytes.</p>
+<pre><code class="language-typescript"><span class="tk-keyword">interface</span> PdfSource</code></pre>
+<table>
+<thead>
+<tr>
+<th>Member</th>
+<th>Signature</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>url</code></td>
+<td><code>url?: string;</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>data</code></td>
+<td><code>data?: ArrayBuffer | Uint8Array;</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="pdfurl">pdfUrl<a class="anchor" href="#pdfurl" aria-label="Link to this section">#</a></h3><p class="api-kind">function</p>
+<p>The absolute URL of a PDF, as pdf.js takes it; a <code>data:</code> URL as it is.</p>
+<pre><code class="language-typescript"><span class="tk-keyword">function</span> pdfUrl(url: <span class="tk-type">string</span>): <span class="tk-type">string</span></code></pre>
 <h2 id="running-a-deck">Running a deck<a class="anchor" href="#running-a-deck" aria-label="Link to this section">#</a></h2><p>The player in a page: mounting a deck into an element, running one as the page, the custom element and its events.</p>
 <p class="api-module">from <code>src/player/boot.ts</code></p>
 <h3 id="deckevents">DeckEvents<a class="anchor" href="#deckevents" aria-label="Link to this section">#</a></h3><p class="api-kind">interface</p>
@@ -1253,6 +1282,11 @@ import from <code>zoomdeck</code>, and the engine as <code>manim-web</code>.</p>
 <td><code>name</code></td>
 <td><code>name?: string;</code></td>
 <td>Name of the hidden root in code that lists the tree; never shown.</td>
+</tr>
+<tr>
+<td><code>spacing</code></td>
+<td><code>spacing?: number;</code></td>
+<td>Distance between page centers, as a multiple of the largest page side; 3 by default.</td>
 </tr>
 </tbody>
 </table>
@@ -3720,7 +3754,7 @@ import from <code>zoomdeck</code>, and the engine as <code>manim-web</code>.</p>
 </tr>
 <tr>
 <td><code>build</code></td>
-<td><code>build( document: MarkupDocument, options: { namespace?: SlideNamespace | null; macros?: Record&lt;string, string&gt;; assets?: Record&lt;string, string&gt;; locate?: (line: number) =&gt; SourceLocation; paths?: string[]; artworks?: string[]; artworkModules?: Record&lt;string, ArtworkModule&gt;; fonts?: string[]; effects?: string[]; charts?: string[]; languages?: string[]; codeThemes?: string[]; directives?: string[]; effectModules?: Record&lt;string, EffectModule&gt;; chartModules?: Record&lt;string, ChartModule&gt;; directiveModules?: Record&lt;string, DirectiveModule&gt;; } = {}, ): Slide</code></td>
+<td><code>build( document: MarkupDocument, options: { namespace?: SlideNamespace | null; macros?: Record&lt;string, string&gt;; assets?: Record&lt;string, string&gt;; locate?: (line: number) =&gt; SourceLocation; paths?: string[]; artworks?: string[]; artworkModules?: Record&lt;string, ArtworkModule&gt;; fonts?: string[]; effects?: string[]; charts?: string[]; languages?: string[]; codeThemes?: string[]; directives?: string[]; effectModules?: Record&lt;string, EffectModule&gt;; chartModules?: Record&lt;string, ChartModule&gt;; directiveModules?: Record&lt;string, DirectiveModule&gt;; documents?: Map&lt;string, Slide&gt;; } = {}, ): Slide</code></td>
 <td>Link markup slides and instantiate fresh imports from <code>namespace</code>. <code>locate</code> maps a line of the parsed document to the file and line it was written in, for editor jumps.</td>
 </tr>
 </tbody>

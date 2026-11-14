@@ -134,12 +134,25 @@ A child may be included once in the whole deck. A `[[subslide: Name]]` with a cl
 the same attributes; the class comes from the module `classes` names in `deck.json` or from
 `slides/Name.ts`, and a dotted name (`helpers.Orbit`) walks namespaces.
 
+### [[pdf]]
+
+```markdown
+[[pdf: assets/paper.pdf #pages x=0 y=-1 width=18 preview=true]]
+```
+
+A PDF placed inside a slide: an include whose child is the document, its pages laid out in a
+row under a hidden slide that is never a stop. The file comes first, relative to the Markdown
+and then searched in the `paths` folders; `#id` is required and must not name a slide of the
+document; the other attributes are those of an include. The camera zooms into the first page,
+cuts from each page to the next, and zooms back out after the last; the outline lists the
+pages, by the document's bookmarks when it has them. The exports copy or embed the file.
+
 ### Flags of slides and children
 
 `start_here`, `only_this`, `skip_return`, `return_to_parent`, `preview` and `focus_only` may be
 written bare. `skip_return` and `return_to_parent` are two sides of one choice and cannot both
-be given. `start_here` may be true on at most one slide of the deck, counting includes and
-code-authored children.
+be given. At most one slide of the deck may say `start_here`, whether on the slide itself, on the
+include that places it, or on a code-authored child.
 
 ### ::: styles
 

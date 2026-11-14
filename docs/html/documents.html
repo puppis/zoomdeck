@@ -6,7 +6,7 @@
 <title>PDFs, flat decks and forests · Zoomdeck</title>
 <meta name="description" content="A PDF opened as it is, a Markdown file of plain slides read page after page, and the forest of slides that every deck is, each shown live.">
 <link rel="stylesheet" href="docs.css">
-<script type="module" src="zoomdeck/zoomdeck.js?v=CRBbfT5f"></script>
+<script type="module" src="zoomdeck/zoomdeck.js?v=gRhysRQT"></script>
 <script>
 // The side columns stay hidden or shown as the reader last left them, before the page paints.
 try { for (const side of ['nav', 'outline']) if (localStorage.getItem('zoomdeck-docs-' + side) === 'hidden') document.documentElement.classList.add(side + '-hidden'); } catch (e) {}
@@ -125,7 +125,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="first-deck.html">Your first deck, stage by stage</a></li><li><a href="content.html">The content of a slide</a></li><li><a href="documents.html" aria-current="page">PDFs, flat decks and forests</a><ul class="subsections"><li><a href="#a-pdf">A PDF</a></li><li><a href="#a-markdown-file-of-plain-slides">A Markdown file of plain slides</a></li><li><a href="#forests-and-trees">Forests and trees</a></li></ul></li><li><a href="slides.html">Slides and the forest</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+        <ul><li><a href="first-deck.html">Your first deck, stage by stage</a></li><li><a href="content.html">The content of a slide</a></li><li><a href="documents.html" aria-current="page">PDFs, flat decks and forests</a><ul class="subsections"><li><a href="#a-pdf">A PDF</a></li><li><a href="#a-pdf-inside-a-slide">A PDF inside a slide</a></li><li><a href="#a-markdown-file-of-plain-slides">A Markdown file of plain slides</a></li><li><a href="#forests-and-trees">Forests and trees</a></li></ul></li><li><a href="slides.html">Slides and the forest</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
       </section>
       <section>
         <h4>Diagrams</h4>
@@ -175,6 +175,18 @@ small picture once out of view, so the text of a page stays as sharp as the deck
 long document never holds every page at full resolution. The pen, the whiteboard, the spotlight,
 recording and printing work on a PDF as on any deck. The exported folder copies the file next
 to the page; the single-file export embeds it.</p>
+<h2 id="a-pdf-inside-a-slide">A PDF inside a slide<a class="anchor" href="#a-pdf-inside-a-slide" aria-label="Link to this section">#</a></h2><pre><code class="language-markdown"><span class="tk-directive">::: slide </span><span class="tk-attribute">{#paper width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">The paper, page by page</span>
+
+<span class="tk-directive">[[pdf:</span> assets/paper.pdf <span class="tk-attribute">#pages</span> <span class="tk-attribute">x=</span><span class="tk-number">0</span> <span class="tk-attribute">y=</span><span class="tk-number">-1</span> <span class="tk-attribute">width=</span><span class="tk-number">18</span> <span class="tk-attribute">preview=</span>true<span class="tk-directive">]]</span>
+<span class="tk-directive">:::</span></code></pre>
+<p><code>[[pdf: file #id …]]</code> places a PDF inside a slide, as a row of its pages: an include whose
+child is the document. It takes the placement of an include (<code>x</code>, <code>y</code>, <code>width</code> or <code>height</code>,
+<code>anchor</code>, <code>at</code>, the relative references, <code>step</code>, <code>preview</code>, the flags). The camera zooms into
+the first page, cuts from each page to the next, and zooms back out after the last; the pages
+appear in the outline under the slide, named by the document's bookmarks. The file is relative
+to the Markdown, then searched in the <code>paths</code> folders; exports copy or embed it. The tour's
+first chapter shows three pages this way.</p>
 <h2 id="a-markdown-file-of-plain-slides">A Markdown file of plain slides<a class="anchor" href="#a-markdown-file-of-plain-slides" aria-label="Link to this section">#</a></h2><p>A Markdown file may simply list slides, one <code>::: slide</code> container after another, including none
 of them. They are then visited in the order they are written, with a cut from each to the next,
 like the pages of the PDF above, and the deck ends on the last one. Each slide is an ordinary
@@ -325,7 +337,7 @@ a tree.</p>
       <a class="next" href="slides.html">Slides and the forest →</a>
     </footer>
   </main>
-  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#a-pdf">A PDF</a></li><li><a href="#a-markdown-file-of-plain-slides">A Markdown file of plain slides</a></li><li><a href="#forests-and-trees">Forests and trees</a></li></ul></nav>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#a-pdf">A PDF</a></li><li><a href="#a-pdf-inside-a-slide">A PDF inside a slide</a></li><li><a href="#a-markdown-file-of-plain-slides">A Markdown file of plain slides</a></li><li><a href="#forests-and-trees">Forests and trees</a></li></ul></nav>
 </div>
 </body>
 </html>

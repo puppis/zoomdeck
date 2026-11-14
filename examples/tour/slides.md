@@ -10,78 +10,78 @@ heading: color=BLUE_E
 [Documentation ↗]{#{{id}}-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/{{page}}}
 :::
 
-::: slide {#tour width=36}
-# Zoomdeck {x=-17.35 y=9.2}
+::: slide {#tour width=44}
+# Zoomdeck {x=-21.35 y=11.4}
 
-Zoomdeck makes zooming presentations: a forest of slides written in Markdown, most often a single tree, with formulas, images, diagrams and animations, that the browser plays by zooming into each slide and back out; the places where it pauses are its stops. The first seven chapters show what it does; the six sections that follow cover the dialect and the player in full, each chapter next to the markup that produces it. Press → to follow the slides in order, pick a slide from the outline (O), or click a chapter to jump to it. {x=-17.35 y=8.1 width=27 font_size=24}
+Zoomdeck makes zooming presentations: a forest of slides written in Markdown, most often a single tree, with formulas, images, diagrams and animations, that the browser plays by zooming into each slide and back out; the places where it pauses are its stops. The first seven chapters show what it does; the six sections that follow cover the dialect and the player in full, each chapter next to the markup that produces it. Press → to follow the slides in order, pick a slide from the outline (O), or click a chapter to jump to it. {x=-21.35 y=10.2 width=34 font_size=28}
 
-[Documentation ↗]{#doc-link x=17.35 y=9.2 anchor=right-baseline font_size=26 color=BLUE_E href=https://puppis.github.io/zoomdeck/}
+[Documentation ↗]{#doc-link x=21.35 y=11.4 anchor=right-baseline font_size=26 color=BLUE_E href=https://puppis.github.io/zoomdeck/}
 
-[Source on GitHub ↗]{#github-link x=17.35 y=8.2 anchor=right-baseline font_size=26 color=BLUE_E href=https://github.com/puppis/zoomdeck}
+[Source on GitHub ↗]{#github-link x=21.35 y=10.4 anchor=right-baseline font_size=26 color=BLUE_E href=https://github.com/puppis/zoomdeck}
 
-[1 · A PDF, as it is]{#root-cap-feat-pdf x=-13.2 y=4.65 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-pdf}
-[[include: #feat-pdf x=-13.2 y=1.9 width=8.6 skip_return=true preview=true]]
-[[rectangle: #root-hit-feat-pdf x=-13.2 y=1.9 width=8.6 height=4.84 opacity=0 href=#slide=feat-pdf]]
+[1 · A PDF, as it is]{#root-cap-feat-pdf x=-16.5 y=5.35 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-pdf}
+[[include: #feat-pdf x=-16.5 y=2.6 width=8.6 skip_return=true preview=true]]
+[[rectangle: #root-hit-feat-pdf x=-16.5 y=2.6 width=8.6 height=4.84 opacity=0 href=#slide=feat-pdf]]
 
-[2 · Plain slides, in a row]{#root-cap-feat-plain x=-4.4 y=4.65 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-plain}
-[[include: #feat-plain x=-4.4 y=1.9 width=8.6 skip_return=true preview=true]]
-[[rectangle: #root-hit-feat-plain x=-4.4 y=1.9 width=8.6 height=4.84 opacity=0 href=#slide=feat-plain]]
+[2 · Plain slides, in a row]{#root-cap-feat-plain x=-5.5 y=5.35 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-plain}
+[[include: #feat-plain x=-5.5 y=2.6 width=8.6 skip_return=true preview=true]]
+[[rectangle: #root-hit-feat-plain x=-5.5 y=2.6 width=8.6 height=4.84 opacity=0 href=#slide=feat-plain]]
 
-[3 · Slides as a tree]{#root-cap-feat-tree x=4.4 y=4.65 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-tree}
-[[include: #feat-tree x=4.4 y=1.9 width=8.6 skip_return=true preview=true]]
-[[rectangle: #root-hit-feat-tree x=4.4 y=1.9 width=8.6 height=4.84 opacity=0 href=#slide=feat-tree]]
+[3 · Slides as a tree]{#root-cap-feat-tree x=5.5 y=5.35 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-tree}
+[[include: #feat-tree x=5.5 y=2.6 width=8.6 skip_return=true preview=true]]
+[[rectangle: #root-hit-feat-tree x=5.5 y=2.6 width=8.6 height=4.84 opacity=0 href=#slide=feat-tree]]
 
-[4 · Spotlight and laser]{#root-cap-feat-spotlight x=13.2 y=4.65 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-spotlight}
-[[include: #feat-spotlight x=13.2 y=1.9 width=8.6 skip_return=true preview=true]]
-[[rectangle: #root-hit-feat-spotlight x=13.2 y=1.9 width=8.6 height=4.84 opacity=0 href=#slide=feat-spotlight]]
+[4 · Spotlight and laser]{#root-cap-feat-spotlight x=16.5 y=5.35 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-spotlight}
+[[include: #feat-spotlight x=16.5 y=2.6 width=8.6 skip_return=true preview=true]]
+[[rectangle: #root-hit-feat-spotlight x=16.5 y=2.6 width=8.6 height=4.84 opacity=0 href=#slide=feat-spotlight]]
 
-[5 · Pen, tablet and whiteboard]{#root-cap-feat-pen x=-13.2 y=-2.15 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-pen}
-[[include: #feat-pen x=-13.2 y=-4.9 width=8.6 skip_return=true preview=true]]
-[[rectangle: #root-hit-feat-pen x=-13.2 y=-4.9 width=8.6 height=4.84 opacity=0 href=#slide=feat-pen]]
+[5 · Pen, tablet and whiteboard]{#root-cap-feat-pen x=-16.5 y=-2.25 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-pen}
+[[include: #feat-pen x=-16.5 y=-5.0 width=8.6 skip_return=true preview=true]]
+[[rectangle: #root-hit-feat-pen x=-16.5 y=-5.0 width=8.6 height=4.84 opacity=0 href=#slide=feat-pen]]
 
-[6 · Camera, recording and video]{#root-cap-feat-recording x=-4.4 y=-2.15 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-recording}
-[[include: #feat-recording x=-4.4 y=-4.9 width=8.6 skip_return=true preview=true]]
-[[rectangle: #root-hit-feat-recording x=-4.4 y=-4.9 width=8.6 height=4.84 opacity=0 href=#slide=feat-recording]]
+[6 · Camera, recording and video]{#root-cap-feat-recording x=-5.5 y=-2.25 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-recording}
+[[include: #feat-recording x=-5.5 y=-5.0 width=8.6 skip_return=true preview=true]]
+[[rectangle: #root-hit-feat-recording x=-5.5 y=-5.0 width=8.6 height=4.84 opacity=0 href=#slide=feat-recording]]
 
-[7 · Formulas, diagrams and motion]{#root-cap-feat-math x=4.4 y=-2.15 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-math}
-[[include: #feat-math x=4.4 y=-4.9 width=8.6 skip_return=true preview=true]]
-[[rectangle: #root-hit-feat-math x=4.4 y=-4.9 width=8.6 height=4.84 opacity=0 href=#slide=feat-math]]
+[7 · Formulas, diagrams and motion]{#root-cap-feat-math x=5.5 y=-2.25 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-math}
+[[include: #feat-math x=5.5 y=-5.0 width=8.6 skip_return=true preview=true]]
+[[rectangle: #root-hit-feat-math x=5.5 y=-5.0 width=8.6 height=4.84 opacity=0 href=#slide=feat-math]]
 
-[The dialect and the player, in six sections]{#root-cap-sections x=13.2 y=-2.15 anchor=bottom font_size=22 color=BLUE_E href=#slide=sections}
-[[include: #sections x=13.2 y=-4.9 width=8.6 preview=true]]
-[[rectangle: #root-hit-sections x=13.2 y=-4.9 width=8.6 height=4.84 opacity=0 href=#slide=sections]]
+[The dialect and the player, in six sections]{#root-cap-sections x=16.5 y=-2.25 anchor=bottom font_size=22 color=BLUE_E href=#slide=sections}
+[[include: #sections x=16.5 y=-5.0 width=8.6 preview=true]]
+[[rectangle: #root-hit-sections x=16.5 y=-5.0 width=8.6 height=4.84 opacity=0 href=#slide=sections]]
 :::
 
 ::: slide {#sections width=36}
 ## The dialect and the player, in six sections {x=-17.35 y=9.2}
 
-Everything a slide can hold and everything the player does, one chapter per topic, each showing the listing that produces it. {x=-17.35 y=8.1 width=25 font_size=26}
+Everything a slide can hold and everything the player does, one chapter per topic, each showing the listing that produces it. {x=-17.35 y=8.1 width=27 font_size=28}
 
 [Back to the overview]{#sections-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=tour}
 
 [1 · Slides and content]{#sections-cap-sec-content x=-12 y=5.5 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-content}
-[[include: #sec-content x=-12 y=2.2 width=10 skip_return=true preview=true]]
-[[rectangle: #sections-hit-sec-content x=-12 y=2.2 width=10 height=5.625 opacity=0 href=#slide=sec-content]]
+[[include: #sec-content x=-12 y=2.2 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sections-hit-sec-content x=-12 y=2.2 width=9.4 height=5.2875 opacity=0 href=#slide=sec-content]]
 
 [2 · Presenting]{#sections-cap-sec-presenting x=0 y=5.5 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-presenting}
-[[include: #sec-presenting x=0 y=2.2 width=10 skip_return=true preview=true]]
-[[rectangle: #sections-hit-sec-presenting x=0 y=2.2 width=10 height=5.625 opacity=0 href=#slide=sec-presenting]]
+[[include: #sec-presenting x=0 y=2.2 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sections-hit-sec-presenting x=0 y=2.2 width=9.4 height=5.2875 opacity=0 href=#slide=sec-presenting]]
 
 [3 · Diagrams]{#sections-cap-sec-diagrams x=12 y=5.5 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-diagrams}
-[[include: #sec-diagrams x=12 y=2.2 width=10 skip_return=true preview=true]]
-[[rectangle: #sections-hit-sec-diagrams x=12 y=2.2 width=10 height=5.625 opacity=0 href=#slide=sec-diagrams]]
+[[include: #sec-diagrams x=12 y=2.2 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sections-hit-sec-diagrams x=12 y=2.2 width=9.4 height=5.2875 opacity=0 href=#slide=sec-diagrams]]
 
 [4 · Layout and style]{#sections-cap-sec-layout x=-12 y=-2.1 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-layout}
-[[include: #sec-layout x=-12 y=-5.4 width=10 skip_return=true preview=true]]
-[[rectangle: #sections-hit-sec-layout x=-12 y=-5.4 width=10 height=5.625 opacity=0 href=#slide=sec-layout]]
+[[include: #sec-layout x=-12 y=-5.4 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sections-hit-sec-layout x=-12 y=-5.4 width=9.4 height=5.2875 opacity=0 href=#slide=sec-layout]]
 
 [5 · Motion and interaction]{#sections-cap-sec-motion x=0 y=-2.1 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-motion}
-[[include: #sec-motion x=0 y=-5.4 width=10 skip_return=true preview=true]]
-[[rectangle: #sections-hit-sec-motion x=0 y=-5.4 width=10 height=5.625 opacity=0 href=#slide=sec-motion]]
+[[include: #sec-motion x=0 y=-5.4 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sections-hit-sec-motion x=0 y=-5.4 width=9.4 height=5.2875 opacity=0 href=#slide=sec-motion]]
 
 [6 · Forests, files and code]{#sections-cap-sec-structure x=12 y=-2.1 anchor=bottom font_size=24 color=BLUE_E href=#slide=sec-structure}
-[[include: #sec-structure x=12 y=-5.4 width=10 preview=true]]
-[[rectangle: #sections-hit-sec-structure x=12 y=-5.4 width=10 height=5.625 opacity=0 href=#slide=sec-structure]]
+[[include: #sec-structure x=12 y=-5.4 width=9.4 preview=true]]
+[[rectangle: #sections-hit-sec-structure x=12 y=-5.4 width=9.4 height=5.2875 opacity=0 href=#slide=sec-structure]]
 :::
 
 ::: slide {#feat-pdf width=20}
@@ -91,16 +91,14 @@ Everything a slide can hold and everything the player does, one chapter per topi
 
 Zoomdeck opens a PDF directly: a paper, a poster, slides typeset elsewhere. Each page is a slide, the pages are visited first to last with a cut between them, the bookmarks of the document name them in the outline, and the text stays sharp at any zoom, since pages are drawn at the density of the screen. {x=-9.35 y=3.9 width=8.6 font_size=20}
 
-```bash {#feat-pdf-cmd x=-9.35 y=0.6 width=8.6}
+```bash {#feat-pdf-cmd x=-9.35 y=0.7 width=8.6}
 zoomdeck serve paper.pdf
 zoomdeck build paper.pdf -o out
 ```
 
-[[rectangle: #feat-pdf-frame x=4.3 y=-0.5 width=10.2 height=5.74 color=GRAY stroke_width=1]]
+[[pdf: assets/slides.pdf #feat-paper x=0 y=-2.3 width=18.7 preview=true]]
 
-[[subslide: PaperPage x=4.3 y=-0.5 width=10.2 preview=true]]
-
-The pen, the spotlight, recording and printing work on a PDF as on any deck. On the right, the first page of a PDF typeset with LaTeX, drawn inside this slide; the player, the `zoomdeck` command and the desktop app open the whole file. {x=-9.35 y=-4.5 width=18.7 font_size=16 color=GRAY}
+Below, three pages of a PDF typeset with LaTeX, placed in this slide with `[[pdf: …]]`: the camera zooms into the first and cuts to the next. The player, the command and the desktop app open a whole file the same way. {x=-9.35 y=-4.5 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#feat-plain width=20}
@@ -122,25 +120,37 @@ The pen, the spotlight, recording and printing work on a PDF as on any deck. On 
 :::
 ```
 
-[[rectangle: #feat-plain-r1 x=1.7 y=1.2 width=2.6 height=1.6 color=GRAY]]
-[[rectangle: #feat-plain-r2 x=5.0 y=1.2 width=2.6 height=1.6 color=GRAY]]
-[[rectangle: #feat-plain-r3 x=8.3 y=1.2 width=2.6 height=1.6 color=GRAY]]
+[[rectangle: #feat-plain-r1 x=1.7 y=1.2 width=2.6 height=1.46 color=GRAY]]
+[[rectangle: #feat-plain-r2 x=5.0 y=1.2 width=2.6 height=1.46 color=GRAY]]
+[[rectangle: #feat-plain-r3 x=8.3 y=1.2 width=2.6 height=1.46 color=GRAY]]
 
-[One]{#feat-plain-t1 x=1.7 y=1.2 anchor=center font_size=28}
+[[include: #feat-one x=1.7 y=1.2 width=2.6 preview=true]]
 
-[Two]{#feat-plain-t2 x=5.0 y=1.2 anchor=center font_size=28}
+[[include: #feat-two x=5.0 y=1.2 width=2.6 transition=cut preview=true]]
 
-[Three]{#feat-plain-t3 x=8.3 y=1.2 anchor=center font_size=28}
+[[include: #feat-three x=8.3 y=1.2 width=2.6 transition=cut preview=true]]
 
 [[arrow: #feat-plain-r1 -> #feat-plain-r2, #feat-plain-a1, label="cut", color=GRAY]]
 
 [[arrow: #feat-plain-r2 -> #feat-plain-r3, #feat-plain-a2, label="cut", color=GRAY]]
 
-[Visited first to last; the player cuts from each to the next.]{#feat-plain-cap x=0.6 y=-0.9 width=9 font_size=18 color=GRAY}
+[Press → : the camera zooms into the first slide, cuts to the next two, and zooms back out.]{#feat-plain-cap x=0.6 y=-0.9 width=9 font_size=18 color=GRAY}
 
-A deck of your own is a Markdown file of `::: slide` containers. Slides that no other slide includes are roots, visited in order with a cut from one to the next, like the pages of a document. {#feat-plain-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+A deck of your own is a Markdown file of `::: slide` containers. Slides that no other slide includes are roots, visited in order with a cut from one to the next, like the pages of a document. {#feat-plain-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-A slide still shows its content click by click, and may include children of its own, which zoom as usual. {#feat-plain-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+A slide still shows its content click by click, and may include children of its own, which zoom as usual. {#feat-plain-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
+:::
+
+::: slide {#feat-one width=8}
+# One
+:::
+
+::: slide {#feat-two width=8}
+# Two
+:::
+
+::: slide {#feat-three width=8}
+# Three
 :::
 
 ::: slide {#feat-tree width=20}
@@ -207,7 +217,7 @@ Hold **Shift** while moving the pointer over this slide: a spotlight follows it.
 
 [$\displaystyle \frac{\partial L}{\partial \dot q} - \frac{\partial L}{\partial q} = 0$]{#feat-spot-eq x=1 y=-0.6 font_size=32}
 
-Shift + drag draws a highlight that fades; a plain drag never moves the presentation. {x=-9.35 y=-4.5 width=18.7 font_size=16 color=GRAY}
+Shift + drag draws a highlight that fades; a plain drag never moves the presentation. {x=-9.35 y=-4.4 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#feat-pen width=20}
@@ -225,7 +235,7 @@ Shift + drag draws a highlight that fades; a plain drag never moves the presenta
 
 [a tablet as a drawing pad]{#feat-pen-tablet-cap at=bottom:#feat-pen-tablet.top dy=0.15 font_size=15 color=GRAY}
 
-A tablet or an iPad pairs with the player from the settings (Tablet) and becomes a drawing pad: you write on it, the audience sees the slide, with pressure, palm rejection and erasing with a finger. {x=-9.35 y=-4.5 width=18.7 font_size=16 color=GRAY}
+A tablet or an iPad pairs with the player from the settings (Tablet) and becomes a drawing pad: you write on it, the audience sees the slide, with pressure, palm rejection and erasing with a finger; the presenter's `::: notes` of each slide appear under its picture there. {x=-9.35 y=-4.4 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#feat-recording width=20}
@@ -257,199 +267,205 @@ Try it here: press R, speak, draw, turn the camera on with C, stop, then press �
 
 [$\displaystyle \int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}$]{#feat-gauss x=-8.6 y=2.6 font_size=36}
 
-[[box: #feat-gauss, #feat-gbox, buff=0.3, corner_radius=0.15, color=TEAL]]
-
-[Gaussian integral]{#feat-glabel x=-8.6 y=-0.3 font_size=22 color=TEAL}
+[Gaussian integral]{#feat-glabel at=top:#feat-gauss.bottom dy=-1.3 anchor=center font_size=22 color=TEAL}
 
 [[arrow: #feat-glabel -> #feat-gauss, #feat-why]]
 
-[[rectangle: #feat-hr x=2.4 y=2.4 width=3.2 height=1.7 color=BLUE_E fill_opacity=0.5 sketch=true]]
+[[artwork: rocket #feat-art x=1.9 y=2.4 size=1.8 color=BLUE_E]]
 
-[[circle: #feat-hc right-of:#feat-hr buff=1.4 radius=0.85 color=GREEN_E fill_opacity=0.6 fill_style=cross-hatch sketch=true]]
+[[box: #feat-art, #feat-abox, buff=0.35, corner_radius=0.2, color=TEAL, step=1, hide=2]]
+
+[[blob: #feat-art, #feat-ablob, buff=0.45, color=ORANGE, step=2]]
+
+[an artwork of the deck's own, boxed, then blobbed]{#feat-art-cap at=top:#feat-art.bottom dy=-0.9 anchor=center font_size=16 color=GRAY}
+
+[[rectangle: #feat-hr x=5.4 y=2.4 width=2.4 height=1.4 color=BLUE_E fill_opacity=0.5 sketch=true]]
+
+[[circle: #feat-hc right-of:#feat-hr buff=1.1 radius=0.7 color=GREEN_E fill_opacity=0.6 fill_style=cross-hatch sketch=true]]
 
 [[arrow: #feat-hr -> #feat-hc, #feat-ha, sketch=true]]
 
-[[blob: #feat-hr #feat-hc, #feat-cloud, buff=0.45, color=ORANGE]]
-
-[hand-drawn shapes, with a blob around them]{#feat-sketch-cap x=0.6 y=0.3 width=9 font_size=16 color=GRAY}
+[hand-drawn shapes]{#feat-sketch-cap x=6.8 y=0.6 anchor=center font_size=16 color=GRAY}
 
 [A point moves]{#feat-mover x=-8.6 y=-2.6 font_size=26}
 
-[[animate: #feat-mover, dx=4.5, step=1]]
+[[dot: #feat-dot x=-5.2 y=-2.45 radius=0.16 color=GOLD_E]]
+
+[[animate: #feat-dot, dx=3, step=3, run_time=1]]
 
 [Before]{#feat-before x=0.6 y=-2.6 font_size=26}
 
-[After]{#feat-after x=0.6 y=-2.6 font_size=26 color=TEAL step=2}
+[After]{#feat-after x=0.6 y=-2.6 font_size=26 color=TEAL step=4}
 
-[[transform: #feat-before -> #feat-after, step=2]]
+[[transform: #feat-before -> #feat-after, step=4]]
 
-[Written by hand]{#feat-written x=4.4 y=-2.6 font=Zeyada font_size=40 enter=write step=3}
+[Written by hand]{#feat-written x=4.4 y=-2.6 font=Zeyada font_size=40 enter=write step=5}
 
-Formulas are LaTeX, rendered by MathJax and zoomable like everything else. Diagrams are directives: arrows, boxes and blobs around elements, icons, any of them hand-drawn with `sketch=true`. Animations come with the same directives, one step per click: here a move, a morph, and a line written in the handwriting face. {#feat-math-key x=-9.35 y=-4.3 width=18.7 font_size=16 color=GRAY}
+Formulas are LaTeX, rendered by MathJax and zoomable like everything else. Diagrams are directives: arrows, boxes and blobs around elements, icons, any of them hand-drawn with `sketch=true`. Animations come with the same directives, one step per click: here a box and a blob around an artwork, a move, a morph, and a line written in the handwriting face. {#feat-math-key x=-9.35 y=-4.3 width=18.7 font_size=16 color=GRAY}
 :::
 
 ::: slide {#sec-content width=36}
 ## 1 · Slides and content {x=-17.35 y=9.2}
 
-A deck is a forest of slides, and a slide holds prose, formulas, images, listings, tables and charts. These chapters cover everything a slide can contain. {x=-17.35 y=8.1 width=25 font_size=26}
+A deck is a forest of slides, and a slide holds prose, formulas, images, listings, tables and charts. These chapters cover everything a slide can contain. {x=-17.35 y=8.1 width=27 font_size=28}
 
 [Documentation: Slides and content ↗]{#sec-content-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/slides.html}
 
 [Back to the overview]{#sec-content-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=tour}
 
 [Slides form a forest]{#sec-content-cap-tree x=-12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=tree}
-[[include: #tree x=-12 y=2.9 width=10 skip_return=true preview=true]]
-[[rectangle: #sec-content-hit-tree x=-12 y=2.9 width=10 height=5.625 opacity=0 href=#slide=tree]]
+[[include: #tree x=-12 y=2.9 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sec-content-hit-tree x=-12 y=2.9 width=9.4 height=5.2875 opacity=0 href=#slide=tree]]
 
 [Prose and inline styling]{#sec-content-cap-prose x=0 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=prose}
-[[include: #prose x=0 y=2.9 width=10 skip_return=true preview=true]]
-[[rectangle: #sec-content-hit-prose x=0 y=2.9 width=10 height=5.625 opacity=0 href=#slide=prose]]
+[[include: #prose x=0 y=2.9 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sec-content-hit-prose x=0 y=2.9 width=9.4 height=5.2875 opacity=0 href=#slide=prose]]
 
 [Mathematics]{#sec-content-cap-math x=12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=math}
-[[include: #math x=12 y=2.9 width=10 skip_return=true preview=true]]
-[[rectangle: #sec-content-hit-math x=12 y=2.9 width=10 height=5.625 opacity=0 href=#slide=math]]
+[[include: #math x=12 y=2.9 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sec-content-hit-math x=12 y=2.9 width=9.4 height=5.2875 opacity=0 href=#slide=math]]
 
 [Images and animated images]{#sec-content-cap-images x=-12 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=images}
-[[include: #images x=-12 y=-4.6 width=10 skip_return=true preview=true]]
-[[rectangle: #sec-content-hit-images x=-12 y=-4.6 width=10 height=5.625 opacity=0 href=#slide=images]]
+[[include: #images x=-12 y=-4.6 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sec-content-hit-images x=-12 y=-4.6 width=9.4 height=5.2875 opacity=0 href=#slide=images]]
 
 [Code listings]{#sec-content-cap-listings x=0 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=listings}
-[[include: #listings x=0 y=-4.6 width=10 skip_return=true preview=true]]
-[[rectangle: #sec-content-hit-listings x=0 y=-4.6 width=10 height=5.625 opacity=0 href=#slide=listings]]
+[[include: #listings x=0 y=-4.6 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sec-content-hit-listings x=0 y=-4.6 width=9.4 height=5.2875 opacity=0 href=#slide=listings]]
 
 [Tables and charts]{#sec-content-cap-tables x=12 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=tables}
-[[include: #tables x=12 y=-4.6 width=10 preview=true]]
-[[rectangle: #sec-content-hit-tables x=12 y=-4.6 width=10 height=5.625 opacity=0 href=#slide=tables]]
+[[include: #tables x=12 y=-4.6 width=9.4 preview=true]]
+[[rectangle: #sec-content-hit-tables x=12 y=-4.6 width=9.4 height=5.2875 opacity=0 href=#slide=tables]]
 :::
 
 ::: slide {#sec-presenting width=36}
 ## 2 · Presenting {x=-17.35 y=9.2}
 
-Playing a deck: keys, the spotlight and laser, the pen and the whiteboard, the camera, links and the PDF printout in the player; a page to try a pen or a tablet; and recording a talk that plays back on the deck or exports as a video. {x=-17.35 y=8.1 width=25 font_size=26}
+Playing a deck: keys, the spotlight and laser, the pen and the whiteboard, the camera, links and the PDF printout in the player; a page to try a pen or a tablet; and recording a talk that plays back on the deck or exports as a video. {x=-17.35 y=8.1 width=27 font_size=28}
 
 [Documentation: Presenting ↗]{#sec-presenting-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/player.html}
 
 [Back to the overview]{#sec-presenting-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=tour}
 
 [The player]{#sec-presenting-cap-player x=-12 y=2.6999999999999997 anchor=bottom font_size=24 color=BLUE_E href=#slide=player}
-[[include: #player x=-12 y=-0.6 width=10 skip_return=true preview=true]]
-[[rectangle: #sec-presenting-hit-player x=-12 y=-0.6 width=10 height=5.625 opacity=0 href=#slide=player]]
+[[include: #player x=-12 y=-0.6 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sec-presenting-hit-player x=-12 y=-0.6 width=9.4 height=5.2875 opacity=0 href=#slide=player]]
 
 [Pen, whiteboard and tablet]{#sec-presenting-cap-tablet x=0 y=2.6999999999999997 anchor=bottom font_size=24 color=BLUE_E href=#slide=tablet}
-[[include: #tablet x=0 y=-0.6 width=10 skip_return=true preview=true]]
-[[rectangle: #sec-presenting-hit-tablet x=0 y=-0.6 width=10 height=5.625 opacity=0 href=#slide=tablet]]
+[[include: #tablet x=0 y=-0.6 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sec-presenting-hit-tablet x=0 y=-0.6 width=9.4 height=5.2875 opacity=0 href=#slide=tablet]]
 
 [Recording a talk]{#sec-presenting-cap-recording x=12 y=2.6999999999999997 anchor=bottom font_size=24 color=BLUE_E href=#slide=recording}
-[[include: #recording x=12 y=-0.6 width=10 preview=true]]
-[[rectangle: #sec-presenting-hit-recording x=12 y=-0.6 width=10 height=5.625 opacity=0 href=#slide=recording]]
+[[include: #recording x=12 y=-0.6 width=9.4 preview=true]]
+[[rectangle: #sec-presenting-hit-recording x=12 y=-0.6 width=9.4 height=5.2875 opacity=0 href=#slide=recording]]
 :::
 
 ::: slide {#sec-diagrams width=36}
 ## 3 · Diagrams {x=-17.35 y=9.2}
 
-Shapes, arrows and lines, braces and boxes, icons and blobs, drawn crisply or by hand: the building blocks of diagrams. {x=-17.35 y=8.1 width=25 font_size=26}
+Shapes, arrows and lines, braces and boxes, icons and blobs, drawn crisply or by hand: the building blocks of diagrams. {x=-17.35 y=8.1 width=27 font_size=28}
 
 [Documentation: Diagrams ↗]{#sec-diagrams-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/shapes.html}
 
 [Back to the overview]{#sec-diagrams-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=tour}
 
 [Shapes and connections]{#sec-diagrams-cap-shapes x=-12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=shapes}
-[[include: #shapes x=-12 y=2.9 width=10 skip_return=true preview=true]]
-[[rectangle: #sec-diagrams-hit-shapes x=-12 y=2.9 width=10 height=5.625 opacity=0 href=#slide=shapes]]
+[[include: #shapes x=-12 y=2.9 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sec-diagrams-hit-shapes x=-12 y=2.9 width=9.4 height=5.2875 opacity=0 href=#slide=shapes]]
 
 [More shapes, braces and boxes]{#sec-diagrams-cap-more-shapes x=0 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=more-shapes}
-[[include: #more-shapes x=0 y=2.9 width=10 skip_return=true preview=true]]
-[[rectangle: #sec-diagrams-hit-more-shapes x=0 y=2.9 width=10 height=5.625 opacity=0 href=#slide=more-shapes]]
+[[include: #more-shapes x=0 y=2.9 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sec-diagrams-hit-more-shapes x=0 y=2.9 width=9.4 height=5.2875 opacity=0 href=#slide=more-shapes]]
 
 [Hand-drawn shapes]{#sec-diagrams-cap-sketch x=12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=sketch}
-[[include: #sketch x=12 y=2.9 width=10 skip_return=true preview=true]]
-[[rectangle: #sec-diagrams-hit-sketch x=12 y=2.9 width=10 height=5.625 opacity=0 href=#slide=sketch]]
+[[include: #sketch x=12 y=2.9 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sec-diagrams-hit-sketch x=12 y=2.9 width=9.4 height=5.2875 opacity=0 href=#slide=sketch]]
 
 [Icons for diagrams]{#sec-diagrams-cap-icons x=-6 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=icons}
-[[include: #icons x=-6 y=-4.6 width=10 skip_return=true preview=true]]
-[[rectangle: #sec-diagrams-hit-icons x=-6 y=-4.6 width=10 height=5.625 opacity=0 href=#slide=icons]]
+[[include: #icons x=-6 y=-4.6 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sec-diagrams-hit-icons x=-6 y=-4.6 width=9.4 height=5.2875 opacity=0 href=#slide=icons]]
 
 [Boxes and blobs]{#sec-diagrams-cap-enclosures x=6 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=enclosures}
-[[include: #enclosures x=6 y=-4.6 width=10 preview=true]]
-[[rectangle: #sec-diagrams-hit-enclosures x=6 y=-4.6 width=10 height=5.625 opacity=0 href=#slide=enclosures]]
+[[include: #enclosures x=6 y=-4.6 width=9.4 preview=true]]
+[[rectangle: #sec-diagrams-hit-enclosures x=6 y=-4.6 width=9.4 height=5.2875 opacity=0 href=#slide=enclosures]]
 :::
 
 ::: slide {#sec-layout width=36}
 ## 4 · Layout and style {x=-17.35 y=9.2}
 
-Where elements go and how they look: the vertical flow, coordinates and anchors, relative constraints, groups, style sheets, and the deck.json file that sets the deck's title, proportions, fonts and colors. {x=-17.35 y=8.1 width=25 font_size=26}
+Where elements go and how they look: the vertical flow, coordinates and anchors, relative constraints, groups, style sheets, and the deck.json file that sets the deck's title, proportions, fonts and colors. {x=-17.35 y=8.1 width=27 font_size=28}
 
 [Documentation: Layout and style ↗]{#sec-layout-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/positioning.html}
 
 [Back to the overview]{#sec-layout-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=tour}
 
 [Positioning and relative layout]{#sec-layout-cap-layout x=-12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=layout}
-[[include: #layout x=-12 y=2.9 width=10 skip_return=true preview=true]]
-[[rectangle: #sec-layout-hit-layout x=-12 y=2.9 width=10 height=5.625 opacity=0 href=#slide=layout]]
+[[include: #layout x=-12 y=2.9 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sec-layout-hit-layout x=-12 y=2.9 width=9.4 height=5.2875 opacity=0 href=#slide=layout]]
 
 [Anchors, offsets and timing]{#sec-layout-cap-anchors x=0 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=anchors}
-[[include: #anchors x=0 y=2.9 width=10 skip_return=true preview=true]]
-[[rectangle: #sec-layout-hit-anchors x=0 y=2.9 width=10 height=5.625 opacity=0 href=#slide=anchors]]
+[[include: #anchors x=0 y=2.9 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sec-layout-hit-anchors x=0 y=2.9 width=9.4 height=5.2875 opacity=0 href=#slide=anchors]]
 
 [Anchor expressions and styles]{#sec-layout-cap-styles x=12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=styles}
-[[include: #styles x=12 y=2.9 width=10 skip_return=true preview=true]]
-[[rectangle: #sec-layout-hit-styles x=12 y=2.9 width=10 height=5.625 opacity=0 href=#slide=styles]]
+[[include: #styles x=12 y=2.9 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sec-layout-hit-styles x=12 y=2.9 width=9.4 height=5.2875 opacity=0 href=#slide=styles]]
 
 [Groups]{#sec-layout-cap-groups x=-6 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=groups}
-[[include: #groups x=-6 y=-4.6 width=10 skip_return=true preview=true]]
-[[rectangle: #sec-layout-hit-groups x=-6 y=-4.6 width=10 height=5.625 opacity=0 href=#slide=groups]]
+[[include: #groups x=-6 y=-4.6 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sec-layout-hit-groups x=-6 y=-4.6 width=9.4 height=5.2875 opacity=0 href=#slide=groups]]
 
 [deck.json and the command line]{#sec-layout-cap-config x=6 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=config}
-[[include: #config x=6 y=-4.6 width=10 preview=true]]
-[[rectangle: #sec-layout-hit-config x=6 y=-4.6 width=10 height=5.625 opacity=0 href=#slide=config]]
+[[include: #config x=6 y=-4.6 width=9.4 preview=true]]
+[[rectangle: #sec-layout-hit-config x=6 y=-4.6 width=9.4 height=5.2875 opacity=0 href=#slide=config]]
 :::
 
 ::: slide {#sec-motion width=36}
 ## 5 · Motion and interaction {x=-17.35 y=9.2}
 
-What happens on each click: fragments that appear and disappear, decorations seen only in focus, animations, video, live pages and going back. {x=-17.35 y=8.1 width=25 font_size=26}
+What happens on each click: fragments that appear and disappear, decorations seen only in focus, animations, video, live pages and going back. {x=-17.35 y=8.1 width=27 font_size=28}
 
 [Documentation: Motion and interaction ↗]{#sec-motion-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/fragments.html}
 
 [Back to the overview]{#sec-motion-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=tour}
 
 [Fragments and click steps]{#sec-motion-cap-fragments x=-12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=fragments}
-[[include: #fragments x=-12 y=2.9 width=10 skip_return=true preview=true]]
-[[rectangle: #sec-motion-hit-fragments x=-12 y=2.9 width=10 height=5.625 opacity=0 href=#slide=fragments]]
+[[include: #fragments x=-12 y=2.9 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sec-motion-hit-fragments x=-12 y=2.9 width=9.4 height=5.2875 opacity=0 href=#slide=fragments]]
 
 [Decorations visible only in focus]{#sec-motion-cap-focus x=0 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=focus}
-[[include: #focus x=0 y=2.9 width=10 skip_return=true preview=true]]
-[[rectangle: #sec-motion-hit-focus x=0 y=2.9 width=10 height=5.625 opacity=0 href=#slide=focus]]
+[[include: #focus x=0 y=2.9 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sec-motion-hit-focus x=0 y=2.9 width=9.4 height=5.2875 opacity=0 href=#slide=focus]]
 
 [Animations from markup]{#sec-motion-cap-animations x=12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=animations}
-[[include: #animations x=12 y=2.9 width=10 skip_return=true preview=true]]
-[[rectangle: #sec-motion-hit-animations x=12 y=2.9 width=10 height=5.625 opacity=0 href=#slide=animations]]
+[[include: #animations x=12 y=2.9 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sec-motion-hit-animations x=12 y=2.9 width=9.4 height=5.2875 opacity=0 href=#slide=animations]]
 
 [Video, live pages and going back]{#sec-motion-cap-media x=0 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=media}
-[[include: #media x=0 y=-4.6 width=10 preview=true]]
-[[rectangle: #sec-motion-hit-media x=0 y=-4.6 width=10 height=5.625 opacity=0 href=#slide=media]]
+[[include: #media x=0 y=-4.6 width=9.4 preview=true]]
+[[rectangle: #sec-motion-hit-media x=0 y=-4.6 width=9.4 height=5.2875 opacity=0 href=#slide=media]]
 :::
 
 ::: slide {#sec-structure width=36}
 ## 6 · Forests, files and code {x=-17.35 y=9.2}
 
-Larger decks: the order in which children are visited, splitting the markup into files, and slides written in TypeScript. {x=-17.35 y=8.1 width=25 font_size=26}
+Larger decks: the order in which children are visited, splitting the markup into files, and slides written in TypeScript. {x=-17.35 y=8.1 width=27 font_size=28}
 
 [Documentation: Forests, files and code ↗]{#sec-structure-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/slides.html#visit-order}
 
 [Back to the overview]{#sec-structure-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=tour}
 
 [Children, visit order and placeholders]{#sec-structure-cap-children x=-12 y=2.6999999999999997 anchor=bottom font_size=24 color=BLUE_E href=#slide=children}
-[[include: #children x=-12 y=-0.6 width=10 skip_return=true preview=true]]
-[[rectangle: #sec-structure-hit-children x=-12 y=-0.6 width=10 height=5.625 opacity=0 href=#slide=children]]
+[[include: #children x=-12 y=-0.6 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sec-structure-hit-children x=-12 y=-0.6 width=9.4 height=5.2875 opacity=0 href=#slide=children]]
 
 [Importing markup from files]{#sec-structure-cap-imports x=0 y=2.6999999999999997 anchor=bottom font_size=24 color=BLUE_E href=#slide=imports}
-[[include: #imports x=0 y=-0.6 width=10 skip_return=true preview=true]]
-[[rectangle: #sec-structure-hit-imports x=0 y=-0.6 width=10 height=5.625 opacity=0 href=#slide=imports]]
+[[include: #imports x=0 y=-0.6 width=9.4 skip_return=true preview=true]]
+[[rectangle: #sec-structure-hit-imports x=0 y=-0.6 width=9.4 height=5.2875 opacity=0 href=#slide=imports]]
 
 [Code-authored slides]{#sec-structure-cap-code-slides x=12 y=2.6999999999999997 anchor=bottom font_size=24 color=BLUE_E href=#slide=code-slides}
-[[include: #code-slides x=12 y=-0.6 width=10 preview=true]]
-[[rectangle: #sec-structure-hit-code-slides x=12 y=-0.6 width=10 height=5.625 opacity=0 href=#slide=code-slides]]
+[[include: #code-slides x=12 y=-0.6 width=9.4 preview=true]]
+[[rectangle: #sec-structure-hit-code-slides x=12 y=-0.6 width=9.4 height=5.2875 opacity=0 href=#slide=code-slides]]
 :::
 
 ::: slide {#tree width=20}
@@ -576,9 +592,9 @@ $$ \textcolor{Orange}{a}^2 + {\color{Cerulean} b^2} = c^2 $$
 
 Macros from deck.json: $\N \subset \R$. {x=0.6 y=-1.8 width=9}
 
-Single dollars give inline math and `$$` lines a display formula; LaTeX renders through MathJax, with the `macros` of deck.json at hand. {#math-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+Single dollars give inline math and `$$` lines a display formula; LaTeX renders through MathJax, with the `macros` of deck.json at hand. {#math-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-A `::: {.element …}` container positions, sizes or animates a formula; `\textcolor` and `\color` accept dvipsnames and CSS colors. {#math-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+A `::: {.element …}` container positions, sizes or animates a formula; `\textcolor` and `\color` accept dvipsnames and CSS colors. {#math-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#images width=20}
@@ -600,9 +616,9 @@ A `::: {.element …}` container positions, sizes or animates a formula; `\textc
 
 ![Loops until the next click](assets/orbit.png){#loop right-of:#once buff=1.5 width=3 play=loop step=2 hide=3}
 
-Images are centered on `x`, `y` and sized by `width`; SVG files keep their nested transforms and styles. {#images-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+Images are centered on `x`, `y` and sized by `width`; SVG files keep their nested transforms and styles. {#images-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-Raster files may be PNG, JPEG, GIF or WebP. A multi-frame APNG or GIF animates with `play=once` (one pass, as a stop of its own) or `play=loop` (until the next click). {#images-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+Raster files may be PNG, JPEG, GIF or WebP. A multi-frame APNG or GIF animates with `play=once` (one pass, as a stop of its own) or `play=loop` (until the next click). {#images-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#player width=20}
@@ -716,9 +732,9 @@ Try it on this very slide: record a few seconds, draw, turn the camera on with C
 
 [[line: #disk -> (1,-3.1), #drop, color=GRAY]]
 
-Shapes need an `#id`; `color`, `stroke_width`, `fill_color` and `fill_opacity` style them, and every positioning attribute places them. {#shapes-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+Shapes need an `#id`; `color`, `stroke_width`, `fill_color` and `fill_opacity` style them, and every positioning attribute places them. {#shapes-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-Arrows and lines join element IDs at their facing edges, or literal `(x,y)` points; labels take inline styling and math. `href=` makes any element a clickable link (try the circle). {#shapes-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+Arrows and lines join element IDs at their facing edges, or literal `(x,y)` points; labels take inline styling and math. `href=` makes any element a clickable link (try the circle). {#shapes-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#more-shapes width=20}
@@ -747,9 +763,9 @@ Arrows and lines join element IDs at their facing edges, or literal `(x,y)` poin
 
 [[box: #tri, #bx, buff=0.2, corner_radius=0.1, color=GREEN_E, step=1]]
 
-Point-defined shapes (`polygon`, `polyline`, `arc`) keep their coordinates unless positioned; a `brace` or `box` is attached to an element after layout and has its own `step`. {#more-shapes-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+Point-defined shapes (`polygon`, `polyline`, `arc`) keep their coordinates unless positioned; a `brace` or `box` is attached to an element after layout and has its own `step`. {#more-shapes-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-`opacity` applies to any element and survives its fades; `corner_radius`, `buff` and `side` shape an attachment. {#more-shapes-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+`opacity` applies to any element and survives its fades; `corner_radius`, `buff` and `side` shape an attachment. {#more-shapes-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#sketch width=20}
@@ -758,26 +774,26 @@ Point-defined shapes (`polygon`, `polyline`, `arc`) keep their coordinates unles
 [[snippet: docs id=sketch page=sketch.html]]
 
 ```markdown {#sketch-source x=-9.35 y=3.9 width=18.7}
-[[rectangle: #hr x=-6.5 y=-1.5 width=3.4 height=1.8 color=BLUE_E fill_opacity=0.5 sketch=true]]
+[[rectangle: #hr x=-6.5 y=-0.9 width=3.4 height=1.8 color=BLUE_E fill_opacity=0.5 sketch=true]]
 [[circle: #hc right-of:#hr buff=1.5 radius=0.9 color=GREEN_E fill_opacity=0.6 fill_style=cross-hatch sketch=true]]
-[[polygon: #hp points="(1,-2.4) (2.5,-0.5) (4,-2.4)" color=ORANGE fill_opacity=1 fill_style=solid roughness=2 sketch=true]]
+[[polygon: #hp points="(1,-1.8) (2.5,0.1) (4,-1.8)" color=ORANGE fill_opacity=1 fill_style=solid roughness=2 sketch=true]]
 [[arrow: #hr -> #hc, #ha, sketch=true]]
 [[brace: #hp, #hb, side=bottom, label="by hand", sketch=true]]
 ```
 
-[[rectangle: #hr x=-6.5 y=-1.5 width=3.4 height=1.8 color=BLUE_E fill_opacity=0.5 sketch=true]]
+[[rectangle: #hr x=-6.5 y=-0.9 width=3.4 height=1.8 color=BLUE_E fill_opacity=0.5 sketch=true]]
 
 [[circle: #hc right-of:#hr buff=1.5 radius=0.9 color=GREEN_E fill_opacity=0.6 fill_style=cross-hatch sketch=true]]
 
-[[polygon: #hp points="(1,-2.4) (2.5,-0.5) (4,-2.4)" color=ORANGE fill_opacity=1 fill_style=solid roughness=2 sketch=true]]
+[[polygon: #hp points="(1,-1.8) (2.5,0.1) (4,-1.8)" color=ORANGE fill_opacity=1 fill_style=solid roughness=2 sketch=true]]
 
 [[arrow: #hr -> #hc, #ha, sketch=true]]
 
 [[brace: #hp, #hb, side=bottom, label="by hand", sketch=true]]
 
-`sketch=true` draws a shape, icon, connection or attachment as if by hand: a wobbly outline and a hatched or solid fill. {#sketch-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+`sketch=true` draws a shape, icon, connection or attachment as if by hand: a wobbly outline and a hatched or solid fill. {#sketch-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-`fill_style`, `roughness`, `bowing`, `hachure_angle`, `hachure_gap`, `fill_weight` and `seed` tune the hand; a `shape: sketch=true` style sketches a whole deck. {#sketch-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+`fill_style`, `roughness`, `bowing`, `hachure_angle`, `hachure_gap`, `fill_weight` and `seed` tune the hand; a `shape: sketch=true` style sketches a whole deck. {#sketch-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#icons width=20}
@@ -812,9 +828,9 @@ Point-defined shapes (`polygon`, `polyline`, `arc`) keep their coordinates unles
 
 [[artwork: rocket #rocket right-of:#light buff=0.8 size=1.4 color=BLUE_E label="an SVG"]]
 
-`[[icon: name #id …]]` draws one of 39 built-in symbols; `size` sets its height, `label` and `label_side` caption it. `[[artwork: name …]]` draws one of the deck's own: an SVG, or a module drawing with the engine, in its `artworks/` folder. {#icons-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+`[[icon: name #id …]]` draws one of 39 built-in symbols; `size` sets its height, `label` and `label_side` caption it. `[[artwork: name …]]` draws one of the deck's own: an SVG, or a module drawing with the engine, in its `artworks/` folder. {#icons-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-People and machines (user, server, database, cloud…), files (document, folder, message…), marks (check, question, warning, pin…) and actions (download, search, trash, gear…). Icons are positioned, connected, enclosed, animated and sketched like shapes. {#icons-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+People and machines (user, server, database, cloud…), files (document, folder, message…), marks (check, question, warning, pin…) and actions (download, search, trash, gear…). Icons are positioned, connected, enclosed, animated and sketched like shapes. {#icons-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#enclosures width=20}
@@ -843,9 +859,9 @@ People and machines (user, server, database, cloud…), files (document, folder,
 
 [[blob: #store, #attention, buff=0.3, color=RED, sketch=true, step=3, tremble=3]]
 
-A `box` or `blob` lists the elements it surrounds before the first comma, then its own `#id`: the box grows their joint rectangle by `buff`, the blob is a smooth curve at distance `buff` from every member. {#enclosures-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+A `box` or `blob` lists the elements it surrounds before the first comma, then its own `#id`: the box grows their joint rectangle by `buff`, the blob is a smooth curve at distance `buff` from every member. {#enclosures-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-`smoothness` (0 to 1) decides how softly neighbors merge. `tremble=3` makes vector geometry vibrate from step 3 on (`N-M` for a range, `true` from its appearance) and pairs well with `sketch=true`. {#enclosures-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+`smoothness` (0 to 1) decides how softly neighbors merge. `tremble=3` makes vector geometry vibrate from step 3 on (`N-M` for a range, `true` from its appearance) and pairs well with `sketch=true`. {#enclosures-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#layout width=20}
@@ -881,9 +897,9 @@ A `box` or `blob` lists the elements it surrounds before the first comma, then i
 
 [[dot: #mark x=5 y=-1.6 color=ORANGE]]
 
-For text, `x` is the left edge and `y` the first baseline; images, shapes and child viewports use their center, unless `anchor=` says otherwise. {#layout-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+For text, `x` is the left edge and `y` the first baseline; images, shapes and child viewports use their center, unless `anchor=` says otherwise. {#layout-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-`below`, `above`, `left-of`, `right-of` (with `buff`), the `*-aligned` references and `baseline-aligned` place an element against another; elements without coordinates flow downward from the top-left margin. {#layout-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+`below`, `above`, `left-of`, `right-of` (with `buff`), the `*-aligned` references and `baseline-aligned` place an element against another; elements without coordinates flow downward from the top-left margin. {#layout-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#anchors width=20}
@@ -912,9 +928,9 @@ For text, `x` is the left edge and `y` the first baseline; images, shapes and ch
 
 [Starts 0.5 s later]{#later below:#slow left-aligned:#slow step=1 lag=0.5 color=GREEN_E}
 
-`anchor` names the point that `x`, `y` position: `center`, `top`, `bottom`, `left`, `right`, the four corners, and `left-baseline` or `right-baseline` for text (the red dot marks the image's anchor). {#anchors-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+`anchor` names the point that `x`, `y` position: `center`, `top`, `bottom`, `left`, `right`, the four corners, and `left-baseline` or `right-baseline` for text (the red dot marks the image's anchor). {#anchors-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-`dx`/`dy` nudge any placement. `run_time` and `lag` time an element's own fades; elements sharing a step play in one click. {#anchors-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+`dx`/`dy` nudge any placement. `run_time` and `lag` time an element's own fades; elements sharing a step play in one click. {#anchors-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#styles width=20}
@@ -951,9 +967,9 @@ heading: color=BLUE_E
 
 [Styled by .callout]{#co .callout at=#cp.top anchor=bottom dy=0.3}
 
-`at=` puts one anchor of an element on an anchor of another (`#id.anchor`, center by default) or on a point; `anchor:` before the target, or `anchor=`, chooses the element's own point. {#styles-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+`at=` puts one anchor of an element on an anchor of another (`#id.anchor`, center by default) or on a point; `anchor:` before the target, or `anchor=`, chooses the element's own point. {#styles-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-Named styles come from `styles` in deck.json or a `::: styles` block: `.class` tokens apply them, and roles such as `heading`, `body`, `code` or `shape` apply by themselves (every heading of this deck is blue because of the block above). {#styles-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+Named styles come from `styles` in deck.json or a `::: styles` block: `.class` tokens apply them, and roles such as `heading`, `body`, `code` or `shape` apply by themselves (every heading of this deck is blue because of the block above). {#styles-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#groups width=20}
@@ -986,9 +1002,9 @@ Named styles come from `styles` in deck.json or a `::: styles` block: `.class` t
 
 [[box: #automaton, #gbox, buff=0.3, color=GREEN_E, step=2]]
 
-A `::: {.group #id}` container lays out its members in their own coordinates and behaves as one element: `x`, `y` place its center, or with `anchor=origin` its local origin (the red dot), and it fades in and out as a whole. {#groups-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+A `::: {.group #id}` container lays out its members in their own coordinates and behaves as one element: `x`, `y` place its center, or with `anchor=origin` its local origin (the red dot), and it fades in and out as a whole. {#groups-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-`anchor=` picks a bounding-box point instead of the origin; relative constraints and `at=` work on the group, and braces, boxes, blobs and arrows attach to it. Members reference only other members. {#groups-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+`anchor=` picks a bounding-box point instead of the origin; relative constraints and `at=` work on the group, and braces, boxes, blobs and arrows attach to it. Members reference only other members. {#groups-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#config width=20}
@@ -1017,9 +1033,9 @@ zoomdeck build examples/tour/deck.json \
   -o build/tour --one-file
 ```
 
-`deck.json` names the Markdown file and sets the title, the viewport proportions, `layout` (fonts and sizes), `presenter` (transitions and pauses), LaTeX `macros`, `styles` and the `classes` module of code-authored slides; every key has a default. {#config-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+`deck.json` names the Markdown file and sets the title, the viewport proportions, `layout` (fonts and sizes), `presenter` (transitions and pauses), LaTeX `macros`, `styles` and the `classes` module of code-authored slides; every key has a default. {#config-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-The `zoomdeck` command previews a deck with live reload and exports it as a folder or as one file; the editor integrations described in the documentation bind both to shortcuts. {#config-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+The `zoomdeck` command previews a deck with live reload and exports it as a folder or as one file; the editor integrations described in the documentation bind both to shortcuts. {#config-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#fragments width=20}
@@ -1066,9 +1082,9 @@ The `zoomdeck` command previews a deck with live reload and exports it as a fold
 
 [Step 6 follows step 4 directly]{#six x=0.6 y=-2.3 step=6 color=RED}
 
-`step=N` fades an element in and `hide=M` fades it out; `[[show: #id step=N]]` and `[[hide: #id step=N]]` change an element again at a later step. All changes sharing a number play together, then the deck pauses. {#fragments-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+`step=N` fades an element in and `hide=M` fades it out; `[[show: #id step=N]]` and `[[hide: #id step=N]]` change an element again at a later step. All changes sharing a number play together, then the deck pauses. {#fragments-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-`[[next: step=N]]` advances automatically after N; `[[skip_next: step=N]]` drops the following event, be it a step, a child visit or the return to the parent. {#fragments-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+`[[next: step=N]]` advances automatically after N; `[[skip_next: step=N]]` drops the following event, be it a step, a child visit or the return to the parent. {#fragments-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#focus width=20}
@@ -1086,9 +1102,9 @@ The `zoomdeck` command previews a deck with live reload and exports it as a fold
 
 [This caption fades in with focus and out when the camera leaves]{#caption x=-9.35 y=-0.6 width=18.7 focus_only=true color=TEAL_E}
 
-Look at this slide from its parent: the panel and the caption are gone while this ordinary text stays. {#focus-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+Look at this slide from its parent: the panel and the caption are gone while this ordinary text stays. {#focus-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-Focus-only elements are static (no `step`, `hide` or `play`), are drawn behind the slide's content and still work as positioning anchors. {#focus-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+Focus-only elements are static (no `step`, `hide` or `play`), are drawn behind the slide's content and still work as positioning anchors. {#focus-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#children width=20}
@@ -1113,9 +1129,9 @@ Focus-only elements are static (no `step`, `hide` or `play`), are drawn behind t
 
 [[include: #missing x=7.3 y=2.6 width=4]]
 
-An include with `step` interleaves the child visit with the parent's fragments; without `step` it is visited in source order after the numbered steps. An undefined slide, here `#missing`, is a red placeholder, skipped in playback. {#children-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+An include with `step` interleaves the child visit with the parent's fragments; without `step` it is visited in source order after the numbered steps. An undefined slide, here `#missing`, is a red placeholder, skipped in playback. {#children-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-The camera leaves a child for the next sibling and zooms back to the parent only after the last one: `return_to_parent` brings it back earlier (here, for step 2), `skip_return` not at all. `transition=cut` cuts into the child instead of zooming, like a PDF page; the way back follows the parent. {#children-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+The camera leaves a child for the next sibling and zooms back to the parent only after the last one: `return_to_parent` brings it back earlier (here, for step 2), `skip_return` not at all. `transition=cut` cuts into the child instead of zooming, like a PDF page; the way back follows the parent. {#children-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#visited-first}
@@ -1165,7 +1181,7 @@ Mark one slide or include with `start_here=true` to open playback there. While e
 
 `[[import: path.md]]` splices a file in before parsing: between slides it adds slides and style blocks, inside a slide it adds elements. `[[snippet: name key=value]]` expands markup written once, a `::: snippet` block or `snippets/name.md`, filling its `{{placeholders}}`. {#imports-key x=-9.35 y=-3.45 width=18.7 font_size=20}
 
-Paths are relative to the importing file, a file may import others, and errors name the file and line; the documentation links of this deck are one snippet, defined at the top of slides.md. {#imports-more x=-9.35 y=-4.65 width=18.7 font_size=16 color=GRAY}
+Paths are relative to the importing file, a file may import others, and errors name the file and line. {#imports-more x=-9.35 y=-4.65 width=18.7 font_size=16 color=GRAY}
 :::
 
 [[import: parts/appendix.md]]
@@ -1240,9 +1256,9 @@ export class Orbit extends Slide {
 
 [[subslide: Orbit x=5 y=-0.6 width=8 step=1]]
 
-`[[subslide: Name …]]` instantiates a `Slide` subclass exported by the module named in deck.json (`"classes": "code-slides.ts"`), with the placement attributes of an include. {#code-slides-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+`[[subslide: Name …]]` instantiates a `Slide` subclass exported by the module named in deck.json (`"classes": "code-slides.ts"`), with the placement attributes of an include. {#code-slides-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-`build` runs once to create objects; `construct` plays animations and stops like any other slide, with the whole engine at hand. {#code-slides-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+`build` runs once to create objects; `construct` plays animations and stops like any other slide, with the whole engine at hand. {#code-slides-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#listings width=20}
@@ -1274,9 +1290,9 @@ def visit(slide):
 { "markup": "slides.md", "layout": { "codeSize": 18 } }
 ```
 
-A fence names its language and takes the usual attributes: `#id`, `x`/`y`, `width` (the block shrinks to fit), `font_size`, `color`, `step`/`hide` and relative placement. {#listings-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+A fence names its language and takes the usual attributes: `#id`, `x`/`y`, `width` (the block shrinks to fit), `font_size`, `color`, `step`/`hide` and relative placement. {#listings-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-Languages: python, the C family (javascript, typescript, java, c, rust, go and more), shell, json, latex, html/xml/svg and markdown; a deck adds its own in `languages/`, and any other name is shown as plain text. Lines never wrap. {#listings-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+Languages: python, the C family (javascript, typescript, java, c, rust, go and more), shell, json, latex, html/xml/svg and markdown; a deck adds its own in `languages/`, and any other name is shown as plain text. Lines never wrap. {#listings-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#animations width=20}
@@ -1353,7 +1369,7 @@ This slide's viewport was slid and tilted by `[[animate: #satellite ...]]` in it
 
 [[iframe: assets/embedded.html, #page, x=5 y=-0.6, width=8, height=4.5, step=2, poster=assets/page.png]]
 
-A video uses the image syntax: `play=once` plays one pass as a stop of its own, `play=loop` keeps looping until the next click, `muted=false` turns the sound on. An `[[iframe]]` shows its `poster` until the camera rests on its slide, then the live page. {#media-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+A video uses the image syntax: `play=once` plays one pass as a stop of its own, `play=loop` keeps looping until the next click, `muted=false` turns the sound on. An `[[iframe]]` shows its `poster` until the camera rests on its slide, then the live page. {#media-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-Click outside a live page to give the keys back to the deck. Pressing ← plays the current stop backwards (videos and loops jump instead). {#media-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+Click outside a live page to give the keys back to the deck. Pressing ← plays the current stop backwards (videos and loops jump instead). {#media-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
