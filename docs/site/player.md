@@ -17,7 +17,7 @@ description: Keyboard and pointer controls, the pen and its pressure styles, the
 | ⌘⇧Z / Ctrl+Shift+Z / Ctrl+Y | redo a stroke |
 | Delete, Backspace | clear all strokes on this slide |
 | D | drawing on or off: while on, a plain drag draws and the pointer shows the pen in its color |
-| 1 … 7 | pen color (Default, Black, White, Red, Yellow, Green, Blue); drawing turns on with it |
+| 1 … 4 | pen color (Default, Red, Blue, Green): drawing on in that color, or off again when it is the color in use |
 | L | switch the pointer tool between spotlight and laser |
 | W | show or hide the whiteboard; while it is shown the arrows scroll it |
 | C | camera: in a corner, then full frame, then off |
@@ -29,8 +29,8 @@ description: Keyboard and pointer controls, the pen and its pressure styles, the
 | O | toggle the slide outline |
 | , | open the settings |
 
-The footer has four groups: the previous/next buttons with the stop counter; the pen color and
-tip and the Whiteboard button; the Camera, Screen, Record, Pause and Talk buttons; and, at the
+The footer has four groups: the previous/next buttons with the stop counter; the pen colors and
+the Whiteboard button; the Camera, Screen, Record, Pause and Talk buttons; and, at the
 right, Print, Fullscreen and the settings gear. A progress bar runs along its top edge. Camera,
 Screen and Record turn red while they are at work. The header shows the breadcrumb of the current
 slide and the state: the player's (Playing, Paused, Rewinding), then whatever is on, as in
@@ -73,11 +73,12 @@ With the default gestures:
   off: while on, the pointer over the slides is a pencil in the pen's color, the header says Pen,
   and links and live pages under the pointer are inert, so that a stroke can cross them; while
   off, the mouse only clicks and follows links, so that nothing is drawn by accident. Showing the
-  whiteboard turns drawing on for as long as it is shown, and hiding it brings back what was before. The keys `1` to `7`
-  pick the color (Default, Black, White, Red, Yellow, Green, Blue) and turn drawing on, as does a
-  click on a swatch, which is how the color is changed in fullscreen. Color and tip size are in
-  the footer, where "Default" is the deck's text color. A stylus always draws, whatever the
-  drawing switch says.
+  whiteboard turns drawing on for as long as it is shown, and hiding it brings back what was before.
+  The four colors in the footer (Default, which is the deck's text color, Red, Blue and Green)
+  are toggle buttons for drawing: a color turns drawing on in that color, another color changes
+  it, and the color in use, shown pressed with a pencil on it, turns drawing off again. The keys
+  `1` to `4` do the same, which is how the color is changed in fullscreen. The tip size is in the
+  Pen section of the settings. A stylus always draws, whatever the drawing switch says.
 - Hold **Shift** for a spotlight that follows the pointer, or a red laser dot: the `L` key (or the
   Pointer setting) switches between the two. Shift + scroll resizes either; **Shift + drag** draws a
   highlighter stroke.
@@ -101,8 +102,7 @@ the current slide's strokes (or on the whiteboard's while it is shown). Links an
 working while drawing is off: clicking one opens it, and a stylus drag over one still draws; while
 drawing is on they are inert. On a touch screen a finger never draws, so a resting palm leaves no marks;
 drawing takes a pen, a stylus or the mouse. A **fingertip rubbed over a stroke erases it**, and
-undo brings it back where it was; two fingers scroll the whiteboard. The colors in the footer are
-swatches, the first being the deck's own text color.
+undo brings it back where it was; two fingers scroll the whiteboard.
 
 ## The pen
 
@@ -116,6 +116,7 @@ The **Pen** section of the settings holds the look:
 
 | Setting | Effect |
 | --- | --- |
+| Tip size | the width of a stroke at medium pressure: 1, 3, 6 or 10 px |
 | Preset | Ballpoint (light pressure effect), Fountain pen (strong, tapered), Marker (constant width), Brush (strongest); moving a slider makes it Custom |
 | Pencil width | width of a pencil stroke relative to the tip size, 0.2 to 1.5 (0.6 by default: a pencil draws finer than a mouse at the same tip); mouse strokes are not affected |
 | Pencil pressure | how much a real pressure sensor counts, 0.2 to 1.5 (0.6 by default, so a pencil draws about as light as a mouse); mouse strokes are not affected |
@@ -129,7 +130,7 @@ Pencil strokes use half the steadying, since a pressure pen reports dense and pr
 the line is extended with the browser's prediction of the pen's next positions so it stays under
 the tip, and fast strokes are drawn along a smooth curve through the samples, so quick handwriting
 keeps round curves. Changing a setting redraws the strokes already on screen, so you can tune the look
-against a line you just drew. Color and tip size stay in the footer; the tip size is the width at medium pressure.
+against a line you just drew. The color stays in the footer.
 The highlighter always has a constant width.
 
 ## The whiteboard

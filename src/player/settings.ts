@@ -48,7 +48,7 @@ export function sanitizeRecording(value: unknown): RecordingSettings {
 export type ActionName =
   | 'next' | 'previous' | 'home' | 'replay' | 'fullscreen' | 'outline' | 'undo' | 'redo' | 'clear' | 'settings' | 'exit' | 'pointer' | 'whiteboard'
   | 'edit' | 'camera' | 'screen' | 'record' | 'print' | 'draw'
-  | 'color1' | 'color2' | 'color3' | 'color4' | 'color5' | 'color6' | 'color7';
+  | 'color1' | 'color2' | 'color3' | 'color4';
 
 export interface ActionInfo {
   name: ActionName;
@@ -65,13 +65,10 @@ export const ACTIONS: ActionInfo[] = [
   { name: 'redo', label: 'Redo a stroke' },
   { name: 'clear', label: 'Clear all strokes on this slide' },
   { name: 'draw', label: 'Drawing on or off: while on, a plain drag draws, the pointer is a pencil in the pen\'s color and links are inert' },
-  { name: 'color1', label: 'Pen color 1: Default (the deck\'s text color); also turns drawing on' },
-  { name: 'color2', label: 'Pen color 2: Black' },
-  { name: 'color3', label: 'Pen color 3: White' },
-  { name: 'color4', label: 'Pen color 4: Red' },
-  { name: 'color5', label: 'Pen color 5: Yellow' },
-  { name: 'color6', label: 'Pen color 6: Green' },
-  { name: 'color7', label: 'Pen color 7: Blue' },
+  { name: 'color1', label: 'Pen color 1, Default (the deck\'s text color): drawing on in it, or off when it is the color in use' },
+  { name: 'color2', label: 'Pen color 2, Red: drawing on in it, or off when it is the color in use' },
+  { name: 'color3', label: 'Pen color 3, Blue: drawing on in it, or off when it is the color in use' },
+  { name: 'color4', label: 'Pen color 4, Green: drawing on in it, or off when it is the color in use' },
   { name: 'pointer', label: 'Switch between spotlight and laser' },
   { name: 'whiteboard', label: 'Show or hide the whiteboard' },
   { name: 'camera', label: 'Camera: in a corner, then full frame, then off' },
@@ -98,9 +95,6 @@ export const DEFAULT_BINDINGS: Record<ActionName, string[]> = {
   color2: ['2'],
   color3: ['3'],
   color4: ['4'],
-  color5: ['5'],
-  color6: ['6'],
-  color7: ['7'],
   pointer: ['l'],
   whiteboard: ['w'],
   camera: ['c'],
@@ -174,6 +168,10 @@ export const DEFAULT_POINTER_BINDINGS: PointerBindings = { pen: '', pointer: 'Sh
 
 export type PointerMode = 'spotlight' | 'laser';
 
+/** The pen tip sizes offered, in screen pixels. */
+export const TIP_SIZES: readonly number[] = [1, 3, 6, 10];
+export const DEFAULT_TIP_SIZE = 3;
+
 export interface PlayerSettings {
   bindings: Record<ActionName, string[]>;
   pointer: PointerBindings;
@@ -183,6 +181,8 @@ export interface PlayerSettings {
   reversePlayback: boolean | null;
   /** How pressure and motion shape pen strokes. */
   pen: PenStyle;
+  /** The width of a pen stroke at medium pressure, in screen pixels: one of TIP_SIZES. */
+  tipSize: number;
   /** Antialiasing and pixel ratio of the stage. */
   rendering: RenderingSettings;
   /** Devices and camera layout of a recording. */
@@ -251,6 +251,7 @@ export function defaultSettings(): PlayerSettings {
     pointerMode: 'spotlight',
     reversePlayback: null,
     pen: { ...DEFAULT_PEN_STYLE },
+    tipSize: DEFAULT_TIP_SIZE,
     recording: { ...DEFAULT_RECORDING },
   };
 }
@@ -278,6 +279,7 @@ export function loadSettings(): PlayerSettings {
     if (saved?.pointerMode === 'spotlight' || saved?.pointerMode === 'laser') settings.pointerMode = saved.pointerMode;
     if (typeof saved?.reversePlayback === 'boolean') settings.reversePlayback = saved.reversePlayback;
     if (saved?.pen) settings.pen = sanitizePenStyle(saved.pen);
+    if (typeof saved?.tipSize === 'number' && TIP_SIZES.includes(saved.tipSize)) settings.tipSize = saved.tipSize;
     if (saved?.recording) settings.recording = sanitizeRecording(saved.recording);
     if (saved?.rendering) settings.rendering = sanitizeRendering(saved.rendering);
   } catch {

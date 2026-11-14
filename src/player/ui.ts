@@ -9,7 +9,7 @@ import type { Player } from './player';
 import type { Stage } from './stage';
 import playerCss from './player.css?inline';
 import {
-  ACTIONS, CORNERS, DEFAULT_POINTER_BINDINGS, DEFAULT_RECORDING, MODIFIER_COMBOS, PIP_SIZES, POINTER_ACTIONS,
+  ACTIONS, CORNERS, DEFAULT_POINTER_BINDINGS, DEFAULT_RECORDING, DEFAULT_TIP_SIZE, MODIFIER_COMBOS, PIP_SIZES, POINTER_ACTIONS, TIP_SIZES,
   type ActionName, type PlayerSettings, type PointerAction, type PointerMode,
   actionFor, defaultSettings, describeCombo, describeModifiers, keyCombo, loadSettings, modifierCombo, pointerActionFor, saveSettings,
 } from './settings';
@@ -91,7 +91,7 @@ export class PlayerUI {
   private _drawingOn = false;
   /** What drawing was before the whiteboard turned it on, to come back to when the whiteboard goes. */
   private _drawingBeforeBoard = false;
-  private readonly _penSize: HTMLSelectElement;
+  private _tipSelect!: HTMLSelectElement;
   private readonly _speed: HTMLSelectElement;
   private readonly _spotlight: HTMLElement;
   private readonly _highlights: SVGSVGElement;
@@ -265,19 +265,8 @@ export class PlayerUI {
 
     this._previous = el('button', { class: 'previous', 'aria-label': 'Previous stop', title: 'Previous stop (←)', text: '←' });
     this._next = el('button', { class: 'next', 'aria-label': 'Next stop', title: 'Next stop (→)', text: '→' });
-    this._penColor = new Swatches(deck.foreground, () => {
-      this._finishStroke();
-      this._updatePenCursor();
-      // Choosing a color means meaning to draw.
-      if (!this._drawingOn) this.toggleDrawing(true);
-    });
+    this._penColor = new Swatches(deck.foreground, (value) => this._pickColor(value), { toggle: true });
     this._updatePenCursor();
-    this._penSize = el('select', { 'aria-label': 'Pen tip size', title: 'Pen tip size' });
-    for (const size of ['1', '3', '6', '10']) {
-      const option = el('option', { value: size, text: `${size} px` });
-      if (size === '3') option.selected = true;
-      this._penSize.append(option);
-    }
     this._speed = el('select', { class: 'speed-select', 'aria-label': 'Playback speed' });
     for (const speed of ['0.5', '1', '1.5', '2']) {
       const option = el('option', { value: speed, text: `${speed}×` });
@@ -312,8 +301,7 @@ export class PlayerUI {
       el(
         'div',
         { class: 'group pen-controls', role: 'group', 'aria-label': 'Drawing' },
-        el('label', {}, 'Pen ', this._penColor.element),
-        el('label', {}, 'Tip ', this._penSize),
+        this._penColor.element,
         this._boardButton,
       ),
       el('div', { class: 'group record-controls', role: 'group', 'aria-label': 'Camera and recording' }, this._cameraButton, this._screenButton, this._screenPickButton, this._recordButton, this._pauseButton, this._recordingsButton),
@@ -342,10 +330,6 @@ export class PlayerUI {
     this._speed.addEventListener('change', () => {
       if (this._player) this._player.speed = Number(this._speed.value);
     });
-    this._penSize.addEventListener('change', () => {
-      this._finishStroke();
-      this._penSize.blur();
-    });
     this._installPointerTools();
     document.addEventListener('keydown', (event) => this._onKeyDown(event));
     document.addEventListener('visibilitychange', () => this._onVisibilityChange());
@@ -365,7 +349,7 @@ export class PlayerUI {
     const advance = held('advance');
     const edit = this._editSource ? held('edit') : null;
     const gestures = [
-      pen === null ? null : `${pen || 'Plain '}drag: draw with the pen while drawing is on (${keys('draw')} toggles it, the whiteboard turns it on; ${keys('color1')}–${keys('color7')} pick the color and turn it on; a stylus always draws)`,
+      pen === null ? null : `${pen || 'Plain '}drag: draw with the pen while drawing is on (${keys('draw')} toggles it, the whiteboard turns it on; ${keys('color1')}–${keys('color4')} are the colors, which turn it on, and off again for the color in use; a stylus always draws)`,
       pointer === null ? null : `${pointer ? `Hold ${pointer.slice(0, -3)}` : 'Hover'}: spotlight or laser (${keys('pointer')} switches)`,
       pointer === null ? null : `${pointer || 'Plain '}drag: highlight · ${pointer || ''}scroll: resize`,
       advance === null ? null : `${advance || 'Plain '}click: next stop`,
@@ -563,7 +547,7 @@ export class PlayerUI {
       case 'redo': this.redoStroke(); break;
       case 'clear': this.clearStrokes(); break;
       case 'draw': this.toggleDrawing(); break;
-      case 'color1': case 'color2': case 'color3': case 'color4': case 'color5': case 'color6': case 'color7':
+      case 'color1': case 'color2': case 'color3': case 'color4':
         this.pickPenColor(Number(action.slice(5)));
         break;
       case 'settings': this.openSettings(); break;
@@ -1670,7 +1654,15 @@ export class PlayerUI {
       else this._settings.pen = { ...this._settings.pen, preset };
       this._penChanged();
     });
+    this._tipSelect = el('select', { 'aria-label': 'Tip size' });
+    for (const size of TIP_SIZES) this._tipSelect.append(el('option', { value: String(size), text: `${size} px` }));
+    this._tipSelect.addEventListener('change', () => {
+      this._finishStroke();
+      this._settings.tipSize = Number(this._tipSelect.value);
+      saveSettings(this._settings);
+    });
     const penRows = el('div', { class: 'bindings' });
+    penRows.append(el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Tip size (the width at medium pressure)' }), this._tipSelect));
     penRows.append(el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Preset' }), this._penPreset));
     const ranges: Array<['thinning' | 'smoothing' | 'streamline' | 'pencilPressure' | 'pencilWidth', string, number, number]> = [
       ['pencilWidth', 'Pencil width, relative to the tip size (mouse strokes unaffected)', 0.2, 1.5],
@@ -1704,6 +1696,7 @@ export class PlayerUI {
     const resetPen = el('button', { text: 'Restore the default pen' });
     resetPen.addEventListener('click', () => {
       this._settings.pen = { ...DEFAULT_PEN_STYLE };
+      this._settings.tipSize = DEFAULT_TIP_SIZE;
       this._penChanged();
     });
 
@@ -1791,7 +1784,7 @@ export class PlayerUI {
       el('header', {}, el('h2', { text: 'Settings' }), close),
       el('section', {},
         el('h3', { text: 'Pointer' }),
-        el('p', { class: 'note', text: 'Each gesture is the mouse used with the chosen keys held. Scrolling while the spotlight or laser is shown resizes it; pen color and tip size are in the bar at the bottom. Strokes belong to the slide they were drawn on and clear when you move to another slide; the whiteboard keeps its own.' }),
+        el('p', { class: 'note', text: 'Each gesture is the mouse used with the chosen keys held. Scrolling while the spotlight or laser is shown resizes it. The pen colors are in the bar at the bottom, where the color in use is pressed while drawing is on; the tip size is under Pen below. Strokes belong to the slide they were drawn on and clear when you move to another slide; the whiteboard keeps its own.' }),
         gestures,
         resetPointer,
       ),
@@ -2093,6 +2086,7 @@ export class PlayerUI {
     this._pointerModeSelect.value = this._settings.pointerMode;
     for (const [action, select] of this._pointerSelects) select.value = this._settings.pointer[action] ?? 'off';
     const pen = this._settings.pen;
+    this._tipSelect.value = String(this._settings.tipSize);
     this._penPreset.value = pen.preset;
     for (const [key, range] of this._penRanges) range.value = String(pen[key]);
     for (const [key, toggle] of this._penToggles) toggle.checked = pen[key];
@@ -2282,6 +2276,7 @@ export class PlayerUI {
     }
     this._drawingOn = on;
     if (!on) this._finishStroke();
+    this._penColor.setActive(on);
     this.stageHost.classList.toggle('drawing-on', on);
     if (on) this.stageHost.classList.remove('over-link');
     this._updatePenCursor();
@@ -2289,11 +2284,26 @@ export class PlayerUI {
     this._renderState();
   }
 
-  /** Choose the pen color by its place in the footer's swatches (1 is the deck's own color); drawing turns on with it. */
+  /**
+   * The keys 1 to 4 are the footer's color swatches (1 is the deck's own color): a color turns
+   * drawing on in that color, and the color in use turns drawing off again.
+   */
   pickPenColor(index: number): void {
     const entry = PEN_COLORS[index - 1];
-    if (!entry || this._playback) return;
-    this._penColor.select(entry[0]);
+    if (entry) this._pickColor(entry[0]);
+  }
+
+  /** A click on a swatch: the color in use while drawing is on toggles drawing off; any other turns it on in that color. */
+  private _pickColor(value: string): void {
+    if (this._playback) return;
+    if (this._drawingOn && value === this._penColor.value) {
+      this.toggleDrawing(false);
+      return;
+    }
+    this._finishStroke();
+    this._penColor.select(value);
+    this._updatePenCursor();
+    this.toggleDrawing(true);
   }
 
   /**
@@ -2338,7 +2348,7 @@ export class PlayerUI {
       id: newStrokeId(this._pad?.id ?? 'local'),
       tool,
       color: tool === 'pen' ? (this._penColor.value === 'foreground' ? this._deck.foreground : this._penColor.value) : HIGHLIGHTER_COLOR,
-      size: (tool === 'pen' ? Number(this._penSize.value) : highlighterWidth) / scale,
+      size: (tool === 'pen' ? this._settings.tipSize : highlighterWidth) / scale,
       pressure: event.pointerType === 'pen' && event.pressure > 0,
       samples: [this._sample(event, surface)],
     };
