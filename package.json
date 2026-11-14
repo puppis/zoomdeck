@@ -1,6 +1,6 @@
 {
   "name": "zoomdeck",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Zooming presentations written in Markdown and played entirely in the browser: a tree of slides visited in pre-order with a zooming camera.",
   "keywords": [
     "presentation",
