@@ -71,6 +71,9 @@ export interface PresenterConfigOptions {
   revealOnEntry?: boolean;
 }
 
+/** Draw orders a slide may hand to its members before the next slide's band begins. */
+const ORDER_BAND = 1_000_000;
+
 /** The nearest slide that is `a` or above it and `b` or above it; null when they belong to different trees. */
 export function commonAncestor(a: Slide, b: Slide): Slide | null {
   const above = new Set<Slide>();
@@ -1311,14 +1314,18 @@ export class Presenter {
    * scaling, opacity multipliers and draw order.
    */
   prepareRender(rendererWidth: number, rendererHeight: number, view: { min: Vec3; max: Vec3 }, cameraWidth: number): void {
-    let order = 0;
-    const next = () => order++;
+    // Draw orders are stable: each slide owns a band of them, in the order the tree is walked, so
+    // that a later sibling always draws over an earlier one (the pages of a document stacked in a
+    // slide, say) whichever of the two changed last; a display numbers its members within its band.
+    let index = 0;
     for (const ctx of this.contexts.values()) {
       const bounds = ctx.transform.boundsOfCanvas(ctx.width * 2, ctx.height * 2);
       const outside =
         bounds.max[0] < view.min[0] || bounds.min[0] > view.max[0] || bounds.max[1] < view.min[1] || bounds.min[1] > view.max[1];
       ctx.display.setCulled(outside);
-      ctx.display.prepareRender(rendererWidth, rendererHeight, cameraWidth, next);
+      let order = index * ORDER_BAND;
+      ctx.display.prepareRender(rendererWidth, rendererHeight, cameraWidth, () => order++);
+      index += 1;
     }
   }
 }
