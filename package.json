@@ -181,12 +181,21 @@
   },
   "overrides": {
     "app-builder-lib": {
-      "minimatch": "^11.0.1"
-    },
-    "@electron/universal": {
       "minimatch": "^11.0.1",
-      "dir-compare": {
-        "minimatch": "^3.1.5"
+      "@electron/asar": {
+        "minimatch": "^3.0.4"
+      },
+      "electron-builder-squirrel-windows": {
+        "minimatch": "^3.1.1"
+      },
+      "ejs": {
+        "minimatch": "^5.0.1"
+      },
+      "@electron/universal": {
+        "minimatch": "^11.0.1",
+        "dir-compare": {
+          "minimatch": "^3.0.5"
+        }
       }
     }
   }
