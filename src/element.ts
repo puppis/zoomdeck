@@ -11,7 +11,10 @@
  * `without` leaves features out, `start` names the first stop, `title` the deck, `outline`
  * opens the outline, `use-location` lets the deck write `#step=` in the page's URL (for a page
  * that is one deck). The element is sized by the page; without a size it is as wide as its
- * container and 16:9. A deck written inside the element, and a PDF, take the page's own colours
+ * container and, once the deck is shown, exactly as tall as the player needs for a stage of
+ * the deck's own proportions under its header and footer, so that the slides fill the stage
+ * with no room around them (a `height` in the element's style is kept instead). A deck written
+ * inside the element, and a PDF, take the page's own colours
  * (the element's background and text colour, so a dark page shows a dark deck, and the deck
  * follows when the colour scheme changes) unless `background` and `foreground` say otherwise;
  * a `deck.json` keeps its own.
@@ -75,6 +78,7 @@ export class ZoomDeckElement extends HTMLElement {
   private _source: string | null = null;
   private _generation = 0;
   private _settled = true;
+  private _sizer: ResizeObserver | null = null;
 
   connectedCallback(): void {
     ensureStyle();
@@ -87,6 +91,39 @@ export class ZoomDeckElement extends HTMLElement {
     this.handle?.destroy();
     this.handle = null;
     this._followScheme(false);
+    this._sizer?.disconnect();
+    this._sizer = null;
+  }
+
+  /**
+   * Keep the element as tall as a stage of the deck's proportions plus the player's header and
+   * footer, following the element's width (and the footer, which wraps when narrow), unless
+   * the page gave the element a height of its own.
+   */
+  private _fitHeight(handle: DeckHandle): void {
+    this._sizer?.disconnect();
+    this._sizer = null;
+    if (this.style.height || typeof ResizeObserver === 'undefined') return;
+    const header = this.querySelector('.zd-app header') as HTMLElement | null;
+    const footer = this.querySelector('.zd-app footer') as HTMLElement | null;
+    const aside = this.querySelector('.zd-app aside') as HTMLElement | null;
+    const fit = () => {
+      if (this.handle !== handle) return;
+      // The stage is what remains beside the outline, when it is open.
+      const asideWidth = aside && getComputedStyle(aside).display !== 'none' ? aside.offsetWidth : 0;
+      const width = this.clientWidth - asideWidth;
+      if (width <= 0) return;
+      const chrome = (header?.offsetHeight ?? 0) + (footer?.offsetHeight ?? 0);
+      const height = Math.round(width / handle.stage.viewportAspect + chrome);
+      if (Math.abs(height - this.offsetHeight) < 1) return;
+      this.style.aspectRatio = 'auto';
+      this.style.height = `${height}px`;
+    };
+    this._sizer = new ResizeObserver(fit);
+    this._sizer.observe(this);
+    if (footer) this._sizer.observe(footer);
+    if (aside) this._sizer.observe(aside);
+    fit();
   }
 
   /** While the deck wears the page's colours, a change of colour scheme mounts it again in the new ones. */
@@ -137,6 +174,13 @@ export class ZoomDeckElement extends HTMLElement {
   private async _mount(generation: number): Promise<DeckHandle | null> {
     this.handle?.destroy();
     this.handle = null;
+    if (this._sizer) {
+      // The height was ours: let the next deck choose again.
+      this._sizer.disconnect();
+      this._sizer = null;
+      this.style.height = '';
+      this.style.aspectRatio = '';
+    }
     const src = this.getAttribute('src');
     const source = src ? null : this.source;
     if (!src && source === null) {
@@ -177,6 +221,7 @@ export class ZoomDeckElement extends HTMLElement {
     }
     this.handle = handle;
     this._settled = true;
+    this._fitHeight(handle);
     this.dispatchEvent(new CustomEvent('deck', { detail: handle }));
     return handle;
   }

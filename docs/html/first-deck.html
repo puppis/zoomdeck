@@ -7,6 +7,10 @@
 <meta name="description" content="A notebook that builds a deck one cell at a time, in Markdown alone, each cell shown by the player; open it live to change the cells.">
 <link rel="stylesheet" href="docs.css">
 <script type="module" src="zoomdeck/zoomdeck.js"></script>
+<script>
+// The side columns stay hidden or shown as the reader last left them, before the page paints.
+try { for (const side of ['nav', 'outline']) if (localStorage.getItem('zoomdeck-docs-' + side) === 'hidden') document.documentElement.classList.add(side + '-hidden'); } catch (e) {}
+</script>
 </head>
 <body>
 <a class="skip" href="#content">Skip to content</a>
@@ -14,7 +18,23 @@
   <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
   <a class="brand" href="index.html">Zoomdeck</a>
   <span class="tagline">zooming presentations in the browser</span>
+  <span class="sides">
+    <button class="side-toggle" data-side="nav" title="Show or hide the table of contents">Contents</button>
+    <button class="side-toggle" data-side="outline" title="Show or hide the outline of this page">On this page</button>
+  </span>
 </header>
+<script>
+for (const button of document.querySelectorAll('.side-toggle')) {
+  const side = button.dataset.side;
+  const sync = () => button.setAttribute('aria-pressed', String(!document.documentElement.classList.contains(side + '-hidden')));
+  button.addEventListener('click', () => {
+    const hidden = document.documentElement.classList.toggle(side + '-hidden');
+    try { localStorage.setItem('zoomdeck-docs-' + side, hidden ? 'hidden' : 'shown'); } catch (e) {}
+    sync();
+  });
+  sync();
+}
+</script>
 <div class="shell">
   <nav class="sidebar" aria-label="Documentation">
       <section>
@@ -208,10 +228,10 @@ Plain prose, **bold**, *italic*, `code`, and a formula: $e^{i\pi} + 1 = 0$.
 [Written by hand]{#hand x=-7 y=-3 font_size=28 enter=write step=4}
 :::
 </script></zoom-deck></div></div>
-<h2 id="a-pdf">A PDF<a class="anchor" href="#a-pdf" aria-label="Link to this section">#</a></h2><p>A PDF is a deck too: <code>%deck</code> with its address shows it, page after page.</p>
+<h2 id="a-pdf">A PDF<a class="anchor" href="#a-pdf" aria-label="Link to this section">#</a></h2><p>A PDF is a deck too: <code>%deck</code> with its address shows it, page after page, here three slides typeset with LaTeX.</p>
 
-<div class="cell"><pre class="cell-input"><code>%deck https://puppis.github.io/zoomdeck/live/paper.pdf <span class="tk-attribute">--without</span> camera,record,screen,print</code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
-<zoom-deck src="https://puppis.github.io/zoomdeck/live/paper.pdf" without="camera record screen print"></zoom-deck></div></div>
+<div class="cell"><pre class="cell-input"><code>%deck https://puppis.github.io/zoomdeck/live/slides.pdf <span class="tk-attribute">--without</span> camera,record,screen,print</code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
+<zoom-deck src="https://puppis.github.io/zoomdeck/live/slides.pdf" without="camera record screen print"></zoom-deck></div></div>
 <h2 id="where-to-go-next">Where to go next<a class="anchor" href="#where-to-go-next" aria-label="Link to this section">#</a></h2><p>Save the deck as a <code>slides.md</code> file and open it with <code>zoomdeck serve slides.md</code> (<a href="getting-started.html">Getting started</a>); <a href="slides.html">Slides and the forest</a> has the includes and the visit order, and the pages that follow it the rest of the dialect. The decks of this notebook are written in Markdown alone; the player that shows them is TypeScript, and later notebooks show how a deck is read into slides and how to write slides, or drive the player, from TypeScript.</p>
 
     </article>

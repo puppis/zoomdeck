@@ -6,6 +6,10 @@
 <title>Slides and the forest · Zoomdeck</title>
 <meta name="description" content="Slide containers, canvas sizes, includes, visit order, start and preview flags, placeholders.">
 <link rel="stylesheet" href="docs.css">
+<script>
+// The side columns stay hidden or shown as the reader last left them, before the page paints.
+try { for (const side of ['nav', 'outline']) if (localStorage.getItem('zoomdeck-docs-' + side) === 'hidden') document.documentElement.classList.add(side + '-hidden'); } catch (e) {}
+</script>
 </head>
 <body>
 <a class="skip" href="#content">Skip to content</a>
@@ -13,7 +17,23 @@
   <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
   <a class="brand" href="index.html">Zoomdeck</a>
   <span class="tagline">zooming presentations in the browser</span>
+  <span class="sides">
+    <button class="side-toggle" data-side="nav" title="Show or hide the table of contents">Contents</button>
+    <button class="side-toggle" data-side="outline" title="Show or hide the outline of this page">On this page</button>
+  </span>
 </header>
+<script>
+for (const button of document.querySelectorAll('.side-toggle')) {
+  const side = button.dataset.side;
+  const sync = () => button.setAttribute('aria-pressed', String(!document.documentElement.classList.contains(side + '-hidden')));
+  button.addEventListener('click', () => {
+    const hidden = document.documentElement.classList.toggle(side + '-hidden');
+    try { localStorage.setItem('zoomdeck-docs-' + side, hidden ? 'hidden' : 'shown'); } catch (e) {}
+    sync();
+  });
+  sync();
+}
+</script>
 <div class="shell">
   <nav class="sidebar" aria-label="Documentation">
       <section>

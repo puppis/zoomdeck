@@ -15,7 +15,7 @@ slide, the pages are visited first to last with a cut between them, the bookmark
 the outline, and the text stays sharp at any zoom because pages are drawn at the density of the
 screen. The pen, the spotlight, recording and printing work on a PDF as on any deck.
 
-```zoomdeck src=live/paper.pdf without="camera record screen print"
+```zoomdeck src=live/slides.pdf without="camera record screen print"
 ```
 
 ```bash
@@ -86,15 +86,16 @@ The last stop; then the camera zooms back out.
 
 ## Spotlight and laser
 
-Hold the pointer button (or the key bound to it, **Space** by default) to dim everything but a
-circle around the pointer; the setting next to it turns the spotlight into a laser dot. Both
-work on any deck, including a PDF, and are recorded with a talk. Try it on the deck below.
+Hold **Shift** while moving the pointer to dim everything but a circle around it; the `L` key
+(or the Pointer setting) turns the spotlight into a red laser dot, Shift + scroll resizes
+either, and Shift + drag draws a highlight. Both work on any deck, including a PDF, and are
+recorded with a talk. Try it on the deck below.
 
 ```zoomdeck code=hidden
 ::: slide {#spot width=20}
 ## Spotlight and laser
 
-Press and hold **Space** while moving the pointer over this slide: a spotlight follows it. The settings (⚙) switch it to a laser and set its size.
+Hold **Shift** while moving the pointer over this slide: a spotlight follows it. **L** switches between the spotlight and a laser dot, and Shift with the mouse wheel (or a two-finger scroll) changes the size; the settings (⚙, or the comma key) offer the same choices.
 
 [Where does this term come from?]{#q x=-6 y=-1 font_size=26}
 
@@ -104,17 +105,17 @@ Press and hold **Space** while moving the pointer over this slide: a spotlight f
 
 ## Pen, tablet and whiteboard
 
-**P** turns the pen on: a drag draws on the slide in the chosen color, with pressure from a pen
-or an Apple Pencil, and the strokes stay with the slide. A tablet or an iPad pairs with the
-player as a drawing pad (Settings → Tablet), so you write on it and the audience sees the slide:
-pressure, palm rejection, erasing with a finger. **W** opens the whiteboard, an infinite canvas
-of its own that keeps what you wrote and comes back when you need it again.
+**D** turns the pen on: a drag draws on the slide in the chosen color (keys 1 to 4), with
+pressure from a pen or an Apple Pencil, and the strokes stay with the slide. A tablet or an iPad
+pairs with the player as a drawing pad (Settings → Tablet), so you write on it and the audience
+sees the slide: pressure, palm rejection, erasing with a finger. **W** opens the whiteboard, an
+infinite canvas of its own that keeps what you wrote and comes back when you need it again.
 
 ```zoomdeck code=hidden
 ::: slide {#ink width=20}
 ## Pen and whiteboard
 
-Press **P** and draw on this slide; the colors in the footer choose the pen. Press **W** for the whiteboard, an infinite canvas that scrolls with the arrows and keeps your notes.
+Press **D** and draw on this slide; the keys **1** to **4** (or the dots in the footer) pick the color, and ⌘Z or Ctrl+Z takes a stroke back. Press **W** for the whiteboard, an infinite canvas that scrolls with the arrows and keeps your notes.
 
 [Annotate this: $x^2 + y^2 = r^2$]{#note x=-6 y=-1.5 font_size=30}
 :::
@@ -122,17 +123,17 @@ Press **P** and draw on this slide; the colors in the footer choose the pen. Pre
 
 ## Camera, recording and video
 
-The camera shows you next to or over the slides, as a picture in a corner or full screen. A
-recording keeps the whole talk: your voice, the camera and every move on the deck, strokes
-included; it plays back on the deck itself, where it stays navigable, and exports as a plain
-video file. A shared screen (another application, say) can be filmed as part of the talk. The
-deck below has these controls on; each asks the browser for permission the first time.
+The camera (C) shows you next to or over the slides, as a picture in a corner or full screen.
+A recording (R) keeps the whole talk: your voice, the camera and every move on the deck,
+strokes included; it plays back on the deck itself, where it stays navigable, and exports as a
+plain video file. A shared screen (S), another application say, can be filmed as part of the
+talk. The deck below has these controls on; each asks the browser for permission the first time.
 
 ```zoomdeck without=none code=hidden
 ::: slide {#rec width=20}
 ## Camera and recording
 
-The **Camera** button shows the camera, **Record** starts a talk (voice, camera and the deck), **Screen** films a window or a screen. A recorded talk appears under the Record button, plays back on the deck and exports as a video.
+The **Camera** button (C) shows the camera, **Record** (R) starts a talk (voice, camera and the deck), **Screen** (S) films a window or a screen. A recorded talk appears beside the Record button as a **▶ Talk** button, plays back on the deck and exports as a video; **Print** (P) writes the deck to a PDF.
 :::
 ```
 

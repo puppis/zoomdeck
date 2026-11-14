@@ -17,7 +17,15 @@ a:hover { text-decoration: underline; }
 .top .brand { font-weight: 700; font-size: 18px; color: var(--fg); }
 .top .tagline { color: var(--muted); font-size: 14px; }
 .top .menu { display: none; font-size: 20px; background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--fg); padding: 2px 8px; cursor: pointer; }
-.shell { display: grid; grid-template-columns: 240px minmax(0, 1fr) 220px; gap: 32px; max-width: 1300px; margin: 0 auto; padding: 0 20px; }
+.shell { display: grid; grid-template-columns: 210px minmax(0, 1fr) 180px; gap: 24px; max-width: 1480px; margin: 0 auto; padding: 0 20px; }
+/* Either side column folds away, from the buttons in the top bar, and the content takes the room. */
+html.nav-hidden .shell { grid-template-columns: minmax(0, 1fr) 180px; }
+html.outline-hidden .shell { grid-template-columns: 210px minmax(0, 1fr); }
+html.nav-hidden.outline-hidden .shell { grid-template-columns: minmax(0, 1fr); }
+html.nav-hidden .sidebar, html.outline-hidden .outline { display: none; }
+.top .sides { margin-left: auto; display: flex; gap: 6px; }
+.top .side-toggle { font: inherit; font-size: 13px; padding: 3px 10px; border: 1px solid var(--border); border-radius: 999px; background: none; color: var(--muted); cursor: pointer; }
+.top .side-toggle[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
 .sidebar { position: sticky; top: 57px; align-self: start; height: calc(100vh - 57px); overflow-y: auto; padding: 20px 0 40px; border-right: 1px solid var(--border); }
 .sidebar h4, .outline h4 { margin: 18px 0 6px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .sidebar ul, .outline ul { list-style: none; margin: 0; padding: 0; }
@@ -38,7 +46,7 @@ a:hover { text-decoration: underline; }
 .outline { position: sticky; top: 57px; align-self: start; padding: 20px 0; font-size: 14px; }
 .outline li a { display: block; padding: 3px 0; color: var(--muted); }
 .outline li a:hover { color: var(--accent); }
-main { padding: 24px 0 60px; min-width: 0; }
+.shell > main { padding: 24px 0 60px; min-width: 0; }
 article h1 { font-size: 34px; line-height: 1.2; margin: 10px 0 6px; }
 article .lead { font-size: 18px; color: var(--muted); margin-top: 0; }
 article h2 { font-size: 24px; margin: 40px 0 10px; padding-top: 10px; border-top: 1px solid var(--border); }
@@ -69,25 +77,25 @@ article img { max-width: 100%; border-radius: 8px; border: 1px solid var(--borde
 .cards a strong { display: block; color: var(--accent); margin-bottom: 4px; }
 .cards a span { font-size: 14px; color: var(--muted); }
 .try { display: inline-block; margin: 6px 0 18px; padding: 6px 12px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 14px; }
-@media (max-width: 1100px) { .shell { grid-template-columns: 240px minmax(0, 1fr); } .outline { display: none; } }
+@media (max-width: 1100px) { .shell, html.nav-hidden .shell { grid-template-columns: 210px minmax(0, 1fr); } html.nav-hidden .shell { grid-template-columns: minmax(0, 1fr); } .outline, .top .side-toggle[data-side="outline"] { display: none; } }
 @media (max-width: 760px) {
   .shell { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .top .menu { display: inline-block; }
   .sidebar { display: none; position: fixed; top: 57px; left: 0; right: 0; bottom: 0; background: var(--bg); padding: 10px 20px; border-right: 0; z-index: 4; }
   body.nav-open .sidebar { display: block; }
 }
-/* Live decks: the player in the page, its markup beside it. */
-figure.live { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 14px; align-items: start; margin: 18px 0 24px; }
-figure.live.no-code { grid-template-columns: minmax(0, 1fr); }
-figure.live zoom-deck { border: 1px solid var(--border); border-radius: 8px; }
-figure.live pre.markup { margin: 0; max-height: 420px; overflow: auto; font-size: 12.5px; }
-figure.live figcaption { grid-column: 1 / -1; font-size: 14px; color: var(--muted); }
-@media (max-width: 900px) { figure.live { grid-template-columns: minmax(0, 1fr); } }
+/* Live decks: the player in the page, as wide as the text column, its markup folded under it. */
+figure.live { margin: 18px 0 28px; }
+figure.live zoom-deck { border: 1px solid var(--border); }
+figure.live details.markup { margin: 8px 0 0; }
+figure.live details.markup summary { cursor: pointer; font-size: 13px; color: var(--muted); }
+figure.live details.markup pre { margin: 6px 0 0; max-height: 360px; overflow: auto; font-size: 12.5px; }
+figure.live figcaption { font-size: 14px; color: var(--muted); margin-top: 6px; }
 /* Notebook pages: code cells and their outputs. */
 .cell { margin: 14px 0 24px; }
 .cell pre.cell-input { margin: 0 0 8px; border-left: 4px solid var(--accent); }
 .cell .cell-output, .cell pre.cell-output { margin: 0; }
-.cell .cell-output zoom-deck { border: 1px solid var(--border); border-radius: 8px; max-width: 960px; }
+.cell .cell-output zoom-deck { border: 1px solid var(--border); }
 .cell pre.cell-stream { background: var(--sidebar-bg); color: var(--fg); }
 .cell pre.cell-error { background: var(--warn); color: var(--fg); }
 .cell .cell-magic { color: var(--tk-comment); }

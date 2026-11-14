@@ -84,7 +84,7 @@ function fenceAttributes(info: string): Record<string, string> {
  * takes `src=path` (a PDF, a Markdown file or a deck.json instead of the fence's own text),
  * `without="…"` (features to leave out; the camera, the recorder and the screen unless said
  * otherwise, `without=none` keeps them all), `height=…`, `start=…`, `title=…`, `code=hidden`
- * and `caption="…"`.
+ * or `code=closed` (the markup folded under the deck) and `caption="…"`.
  */
 function liveDeck(info: string, source: string): string {
   const attrs = fenceAttributes(info.replace(/^zoomdeck\s*/, ''));
@@ -99,9 +99,10 @@ function liveDeck(info: string, source: string): string {
   const markup = source.replace(/\n$/, '');
   const inline = attrs.src ? '' : `<script type="text/markdown">\n${markup.replace(/<\/script/gi, '<\\/script')}\n</script>`;
   const showCode = !attrs.src && attrs.code !== 'hidden';
-  const code = showCode ? `<pre class="markup"><code>${highlight(markup, 'markdown')}</code></pre>` : '';
+  // The markup follows the deck, folded away on request, never beside it: the deck keeps the whole width.
+  const code = showCode ? `<details class="markup"${attrs.code === 'closed' ? '' : ' open'}><summary>The markup</summary><pre><code>${highlight(markup, 'markdown')}</code></pre></details>` : '';
   const caption = attrs.caption ? `<figcaption>${escapeHtml(attrs.caption)}</figcaption>` : '';
-  return `<figure class="live${showCode ? '' : ' no-code'}">\n<zoom-deck ${element.join(' ')}>${inline}</zoom-deck>\n${code}${caption}\n</figure>\n`;
+  return `<figure class="live">\n<zoom-deck ${element.join(' ')}>${inline}</zoom-deck>\n${code}${caption}\n</figure>\n`;
 }
 
 /** A Markdown renderer with heading anchors (collected into `headings`), admonitions and live decks. */
@@ -266,6 +267,10 @@ function layout(page: Page, pages: Map<string, Page>, order: string[]): string {
 <title>${page.name === 'index' ? 'Zoomdeck' : `${escapeHtml(page.title)} · Zoomdeck`}</title>
 <meta name="description" content="${escapeHtml(page.description)}">
 <link rel="stylesheet" href="docs.css">${player}
+<script>
+// The side columns stay hidden or shown as the reader last left them, before the page paints.
+try { for (const side of ['nav', 'outline']) if (localStorage.getItem('zoomdeck-docs-' + side) === 'hidden') document.documentElement.classList.add(side + '-hidden'); } catch (e) {}
+</script>
 </head>
 <body>
 <a class="skip" href="#content">Skip to content</a>
@@ -273,7 +278,23 @@ function layout(page: Page, pages: Map<string, Page>, order: string[]): string {
   <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
   <a class="brand" href="index.html">Zoomdeck</a>
   <span class="tagline">zooming presentations in the browser</span>
+  <span class="sides">
+    <button class="side-toggle" data-side="nav" title="Show or hide the table of contents">Contents</button>
+    <button class="side-toggle" data-side="outline" title="Show or hide the outline of this page">On this page</button>
+  </span>
 </header>
+<script>
+for (const button of document.querySelectorAll('.side-toggle')) {
+  const side = button.dataset.side;
+  const sync = () => button.setAttribute('aria-pressed', String(!document.documentElement.classList.contains(side + '-hidden')));
+  button.addEventListener('click', () => {
+    const hidden = document.documentElement.classList.toggle(side + '-hidden');
+    try { localStorage.setItem('zoomdeck-docs-' + side, hidden ? 'hidden' : 'shown'); } catch (e) {}
+    sync();
+  });
+  sync();
+}
+</script>
 <div class="shell">
   <nav class="sidebar" aria-label="Documentation">${nav}
   </nav>

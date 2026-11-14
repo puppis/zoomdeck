@@ -7,6 +7,10 @@
 <meta name="description" content="The main things Zoomdeck does, each shown live on this page with the markup that produces it. Click a deck to give it the keys, then use the arrows.">
 <link rel="stylesheet" href="docs.css">
 <script type="module" src="zoomdeck/zoomdeck.js"></script>
+<script>
+// The side columns stay hidden or shown as the reader last left them, before the page paints.
+try { for (const side of ['nav', 'outline']) if (localStorage.getItem('zoomdeck-docs-' + side) === 'hidden') document.documentElement.classList.add(side + '-hidden'); } catch (e) {}
+</script>
 </head>
 <body>
 <a class="skip" href="#content">Skip to content</a>
@@ -14,7 +18,23 @@
   <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
   <a class="brand" href="index.html">Zoomdeck</a>
   <span class="tagline">zooming presentations in the browser</span>
+  <span class="sides">
+    <button class="side-toggle" data-side="nav" title="Show or hide the table of contents">Contents</button>
+    <button class="side-toggle" data-side="outline" title="Show or hide the outline of this page">On this page</button>
+  </span>
 </header>
+<script>
+for (const button of document.querySelectorAll('.side-toggle')) {
+  const side = button.dataset.side;
+  const sync = () => button.setAttribute('aria-pressed', String(!document.documentElement.classList.contains(side + '-hidden')));
+  button.addEventListener('click', () => {
+    const hidden = document.documentElement.classList.toggle(side + '-hidden');
+    try { localStorage.setItem('zoomdeck-docs-' + side, hidden ? 'hidden' : 'shown'); } catch (e) {}
+    sync();
+  });
+  sync();
+}
+</script>
 <div class="shell">
   <nav class="sidebar" aria-label="Documentation">
       <section>
@@ -61,8 +81,8 @@ keyboard, press → and ← to move, or use its buttons. The markup beside a dec
 slide, the pages are visited first to last with a cut between them, the bookmarks name them in
 the outline, and the text stays sharp at any zoom because pages are drawn at the density of the
 screen. The pen, the spotlight, recording and printing work on a PDF as on any deck.</p>
-<figure class="live no-code">
-<zoom-deck src="live/paper.pdf" without="camera record screen print"></zoom-deck>
+<figure class="live">
+<zoom-deck src="live/slides.pdf" without="camera record screen print"></zoom-deck>
 
 </figure>
 <pre><code class="language-bash">zoomdeck serve paper.pdf          <span class="tk-comment"># present it</span>
@@ -90,7 +110,7 @@ With prose, **emphasis**, `code` and $\sum_{n\ge1} n^{-2} = \pi^2/6$.
 - as usual
 :::
 </script></zoom-deck>
-<pre class="markup"><code><span class="tk-directive">::: slide </span><span class="tk-attribute">{#one}</span>
+<details class="markup" open><summary>The markup</summary><pre><code><span class="tk-directive">::: slide </span><span class="tk-attribute">{#one}</span>
 <span class="tk-type tk-bold"># </span><span class="tk-bold">One</span>
 
 Three plain slides, visited in order.
@@ -107,7 +127,7 @@ With prose, <span class="tk-bold">**emphasis**</span>, <span class="tk-type">`co
 
 - Lists
 - as usual
-<span class="tk-directive">:::</span></code></pre>
+<span class="tk-directive">:::</span></code></pre></details>
 </figure>
 <h2 id="slides-as-a-tree">Slides as a tree<a class="anchor" href="#slides-as-a-tree" aria-label="Link to this section">#</a></h2><p>An <code>[[include: #id …]]</code> places one slide inside another, as a viewport with a position and a
 size. The camera zooms into each child in turn, goes from a child straight to its next sibling,
@@ -141,7 +161,7 @@ Visited first.
 The last stop; then the camera zooms back out.
 :::
 </script></zoom-deck>
-<pre class="markup"><code><span class="tk-directive">::: slide </span><span class="tk-attribute">{#talk width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<details class="markup" open><summary>The markup</summary><pre><code><span class="tk-directive">::: slide </span><span class="tk-attribute">{#talk width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
 <span class="tk-type tk-bold"># </span><span class="tk-bold">A talk as a tree</span>
 
 <span class="tk-directive">[[include:</span> <span class="tk-attribute">#first</span> <span class="tk-attribute">x=</span><span class="tk-number">-5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.5</span> <span class="tk-attribute">width=</span><span class="tk-number">8</span> <span class="tk-attribute">preview=</span>true<span class="tk-directive">]]</span>
@@ -165,17 +185,18 @@ Visited first.
 <span class="tk-type tk-bold">### </span><span class="tk-bold">A detail of the second child</span>
 
 The last stop; then the camera zooms back out.
-<span class="tk-directive">:::</span></code></pre>
+<span class="tk-directive">:::</span></code></pre></details>
 </figure>
-<h2 id="spotlight-and-laser">Spotlight and laser<a class="anchor" href="#spotlight-and-laser" aria-label="Link to this section">#</a></h2><p>Hold the pointer button (or the key bound to it, <strong>Space</strong> by default) to dim everything but a
-circle around the pointer; the setting next to it turns the spotlight into a laser dot. Both
-work on any deck, including a PDF, and are recorded with a talk. Try it on the deck below.</p>
-<figure class="live no-code">
+<h2 id="spotlight-and-laser">Spotlight and laser<a class="anchor" href="#spotlight-and-laser" aria-label="Link to this section">#</a></h2><p>Hold <strong>Shift</strong> while moving the pointer to dim everything but a circle around it; the <code>L</code> key
+(or the Pointer setting) turns the spotlight into a red laser dot, Shift + scroll resizes
+either, and Shift + drag draws a highlight. Both work on any deck, including a PDF, and are
+recorded with a talk. Try it on the deck below.</p>
+<figure class="live">
 <zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#spot width=20}
 ## Spotlight and laser
 
-Press and hold **Space** while moving the pointer over this slide: a spotlight follows it. The settings (⚙) switch it to a laser and set its size.
+Hold **Shift** while moving the pointer over this slide: a spotlight follows it. **L** switches between the spotlight and a laser dot, and Shift with the mouse wheel (or a two-finger scroll) changes the size; the settings (⚙, or the comma key) offer the same choices.
 
 [Where does this term come from?]{#q x=-6 y=-1 font_size=26}
 
@@ -184,34 +205,34 @@ Press and hold **Space** while moving the pointer over this slide: a spotlight f
 </script></zoom-deck>
 
 </figure>
-<h2 id="pen-tablet-and-whiteboard">Pen, tablet and whiteboard<a class="anchor" href="#pen-tablet-and-whiteboard" aria-label="Link to this section">#</a></h2><p><strong>P</strong> turns the pen on: a drag draws on the slide in the chosen color, with pressure from a pen
-or an Apple Pencil, and the strokes stay with the slide. A tablet or an iPad pairs with the
-player as a drawing pad (Settings → Tablet), so you write on it and the audience sees the slide:
-pressure, palm rejection, erasing with a finger. <strong>W</strong> opens the whiteboard, an infinite canvas
-of its own that keeps what you wrote and comes back when you need it again.</p>
-<figure class="live no-code">
+<h2 id="pen-tablet-and-whiteboard">Pen, tablet and whiteboard<a class="anchor" href="#pen-tablet-and-whiteboard" aria-label="Link to this section">#</a></h2><p><strong>D</strong> turns the pen on: a drag draws on the slide in the chosen color (keys 1 to 4), with
+pressure from a pen or an Apple Pencil, and the strokes stay with the slide. A tablet or an iPad
+pairs with the player as a drawing pad (Settings → Tablet), so you write on it and the audience
+sees the slide: pressure, palm rejection, erasing with a finger. <strong>W</strong> opens the whiteboard, an
+infinite canvas of its own that keeps what you wrote and comes back when you need it again.</p>
+<figure class="live">
 <zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#ink width=20}
 ## Pen and whiteboard
 
-Press **P** and draw on this slide; the colors in the footer choose the pen. Press **W** for the whiteboard, an infinite canvas that scrolls with the arrows and keeps your notes.
+Press **D** and draw on this slide; the keys **1** to **4** (or the dots in the footer) pick the color, and ⌘Z or Ctrl+Z takes a stroke back. Press **W** for the whiteboard, an infinite canvas that scrolls with the arrows and keeps your notes.
 
 [Annotate this: $x^2 + y^2 = r^2$]{#note x=-6 y=-1.5 font_size=30}
 :::
 </script></zoom-deck>
 
 </figure>
-<h2 id="camera-recording-and-video">Camera, recording and video<a class="anchor" href="#camera-recording-and-video" aria-label="Link to this section">#</a></h2><p>The camera shows you next to or over the slides, as a picture in a corner or full screen. A
-recording keeps the whole talk: your voice, the camera and every move on the deck, strokes
-included; it plays back on the deck itself, where it stays navigable, and exports as a plain
-video file. A shared screen (another application, say) can be filmed as part of the talk. The
-deck below has these controls on; each asks the browser for permission the first time.</p>
-<figure class="live no-code">
+<h2 id="camera-recording-and-video">Camera, recording and video<a class="anchor" href="#camera-recording-and-video" aria-label="Link to this section">#</a></h2><p>The camera (C) shows you next to or over the slides, as a picture in a corner or full screen.
+A recording (R) keeps the whole talk: your voice, the camera and every move on the deck,
+strokes included; it plays back on the deck itself, where it stays navigable, and exports as a
+plain video file. A shared screen (S), another application say, can be filmed as part of the
+talk. The deck below has these controls on; each asks the browser for permission the first time.</p>
+<figure class="live">
 <zoom-deck ><script type="text/markdown">
 ::: slide {#rec width=20}
 ## Camera and recording
 
-The **Camera** button shows the camera, **Record** starts a talk (voice, camera and the deck), **Screen** films a window or a screen. A recorded talk appears under the Record button, plays back on the deck and exports as a video.
+The **Camera** button (C) shows the camera, **Record** (R) starts a talk (voice, camera and the deck), **Screen** (S) films a window or a screen. A recorded talk appears beside the Record button as a **▶ Talk** button, plays back on the deck and exports as a video; **Print** (P) writes the deck to a PDF.
 :::
 </script></zoom-deck>
 
@@ -267,7 +288,7 @@ one step per click.</p>
 [Drawn by hand]{#written x=-8 y=-3 font_size=28 enter=write step=4}
 :::
 </script></zoom-deck>
-<pre class="markup"><code><span class="tk-directive">::: slide </span><span class="tk-attribute">{#formula width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<details class="markup" open><summary>The markup</summary><pre><code><span class="tk-directive">::: slide </span><span class="tk-attribute">{#formula width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
 <span class="tk-type tk-bold">## </span><span class="tk-bold">A formula and its parts</span>
 
 [<span class="tk-string">$\displaystyle \int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}$</span>]<span class="tk-attribute">{#gauss x=</span><span class="tk-number">-6</span><span class="tk-attribute"> y=</span><span class="tk-number">1.2</span><span class="tk-attribute"> font_size=</span><span class="tk-number">40</span><span class="tk-attribute">}</span>
@@ -309,7 +330,7 @@ one step per click.</p>
 <span class="tk-directive">[[effect:</span> indicate <span class="tk-attribute">#mover</span>, <span class="tk-attribute">step=</span><span class="tk-number">3</span><span class="tk-directive">]]</span>
 
 [Drawn by hand]<span class="tk-attribute">{#written x=</span><span class="tk-number">-8</span><span class="tk-attribute"> y=</span><span class="tk-number">-3</span><span class="tk-attribute"> font_size=</span><span class="tk-number">28</span><span class="tk-attribute"> enter=write step=</span><span class="tk-number">4</span><span class="tk-attribute">}</span>
-<span class="tk-directive">:::</span></code></pre>
+<span class="tk-directive">:::</span></code></pre></details>
 </figure>
 <h2 id="and-then">And then<a class="anchor" href="#and-then" aria-label="Link to this section">#</a></h2><ul>
 <li><a href="getting-started.html">Getting started</a>: install, open a deck, export it, set up your editor.</li>
