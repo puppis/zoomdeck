@@ -6,6 +6,7 @@ import { Group, MoveAlongPath, ReplacementTransform, type Animation, type Mobjec
 import { sketchSeed, type OutlineMobject } from '../sketch';
 import { PropertyAnimation, RATE_FUNCTIONS, Tremble, enterAnimation, exitAnimation, makeEffect, type PropertyTargets } from '../animations';
 import { Slide, PlaceholderSlide, pageSequence, resolveSize, startingSlide, type SourceLocation, type TransitionMode } from '../slides';
+import type { ArtworkModule } from '../icons';
 import { LINKED_OBJECTS, SOURCE_OBJECTS } from '../links';
 import { RasterImage, RasterMovie } from '../raster';
 import { VideoClip, VideoPlay } from '../video';
@@ -455,10 +456,14 @@ export class SlideBuilder {
     document: MarkupDocument,
     options: {
       namespace?: SlideNamespace | null; macros?: Record<string, string>; assets?: Record<string, string>; locate?: (line: number) => SourceLocation;
+      paths?: string[]; artworks?: string[]; artworkModules?: Record<string, ArtworkModule>;
     } = {},
   ): Slide {
     document = new ASTTransformer().validate(document);
-    const renderer = this.renderer ?? new MarkupRenderer({ layout: this.layout, basePath: document.basePath, macros: options.macros, assets: options.assets });
+    const renderer = this.renderer ?? new MarkupRenderer({
+      layout: this.layout, basePath: document.basePath, macros: options.macros, assets: options.assets,
+      paths: options.paths, artworks: options.artworks, artworkModules: options.artworkModules,
+    });
     const locate = options.locate ?? ((line: number) => ({ file: '', line }));
     this.slides = new Map(
       document.slides.map((slide) => [

@@ -188,7 +188,8 @@ elements and directives, as if its lines were written there. Paths are relative 
 file (so a file in <code>parts/</code> imports its neighbours by bare name), imported files may import
 others, and import lines inside fenced code are left alone. Error messages name the imported
 file and the line within it. Asset paths (images, videos, pages) in an imported file keep
-resolving relative to the main document, like everything else.</p>
+resolving relative to the main document, like everything else. A file that is not next to the
+importing one is looked for in the folders <code>paths</code> names in <code>deck.json</code>, in their order.</p>
 <p>Exports embed the imported files, so a built deck needs no server to resolve them; the
 preview server reloads when any of them changes.</p>
 

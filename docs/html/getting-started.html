@@ -150,9 +150,11 @@ from there:</p>
 ├── deck.json        title, colors, typography, presenter options, styles, macros
 ├── assets/          images, videos, pages referenced from slides.md
 ├── parts/           optional: Markdown files spliced in with [[import: path.md]]
+├── artworks/        optional: artworks of your own, name.svg or name.ts, for [[artwork: name]]
 ├── code-slides.ts   optional: Slide classes used by [[subslide: Name]]
 └── recordings/      talks recorded by the player, when the deck is served</code></pre>
-<p>Paths in <code>slides.md</code> resolve relative to the Markdown file.</p>
+<p>Paths in <code>slides.md</code> resolve relative to the Markdown file, then in the folders <code>paths</code> names
+in <code>deck.json</code>, so figures shared between talks can stay in one place.</p>
 <h2 id="set-up-your-editor">Set up your editor<a class="anchor" href="#set-up-your-editor" aria-label="Link to this section">#</a></h2><p>Editing is most comfortable when the browser follows your typing. The <code>editors/</code> folder of the
 repository has ready-made setups for <strong>VS Code, Sublime Text, Emacs, Vim/Neovim and JetBrains
 IDEs</strong>: they save after a second of idle typing, bind the preview, the jump from a source line

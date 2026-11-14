@@ -9,6 +9,7 @@ import { SlideBuilder, type SlideNamespace } from './slide';
 import { loadDefaultFonts } from '../fonts';
 import { preloadMathJax } from 'manim-web';
 import type { SourceLocation } from '../slides';
+import type { ArtworkModule } from '../icons';
 
 export interface MarkupDeckOptions {
   /** Markdown source text. Provide this or `url`. */
@@ -40,6 +41,36 @@ export interface MarkupDeckOptions {
   assets?: Record<string, string>;
   /** Named styles: attribute strings (`"font_size=18 color=GRAY"`) or objects, applied by role or `.class`. */
   styles?: Record<string, string | Record<string, unknown>>;
+  /**
+   * Folders searched, after the document's own, for the files it names: imported Markdown,
+   * images, videos, pages. Relative to the document (or to `basePath`); absolute URLs as they are.
+   */
+  paths?: string[];
+  /**
+   * Folders searched for artworks, `[[artwork: name]]` or an `[[icon: name]]` that is not built in:
+   * `name.svg`, or `name.js`, `.mjs` or `.ts` exporting a drawing. Relative to the document;
+   * an `artworks/` folder next to it is searched as well, then the `paths`.
+   */
+  artworks?: string[];
+  /** Artwork modules bundled ahead of time, by name, as an export carries them. */
+  artworkModules?: Record<string, ArtworkModule>;
+}
+
+/**
+ * `folders` ending in a slash; with `base`, relative ones become absolute URLs against it (a
+ * deck.json names folders relative to itself, while the document may live elsewhere). Without a
+ * base they stay relative, to the document or to the keys of a bundle.
+ */
+export function resolveFolders(folders: string[] | undefined, base?: string): string[] {
+  return (folders ?? []).map((folder) => {
+    const slashed = folder.endsWith('/') ? folder : `${folder}/`;
+    if (!base || /^(?:[a-z]+:)?\/\//i.test(slashed) || slashed.startsWith('/')) return slashed;
+    try {
+      return new URL(slashed, base).href;
+    } catch {
+      return slashed;
+    }
+  });
 }
 
 /** The folder of a document URL, as an absolute URL with a trailing slash; undefined without one. */
@@ -84,14 +115,29 @@ export function markupDeck(options: MarkupDeckOptions): ResolvedDeck {
       void loadDefaultFonts();
       if (/\$/.test(source as string)) void preloadMathJax().catch(() => undefined);
       const files = options.files ?? {};
+      const base = basePath || (typeof location !== 'undefined' ? location.href : undefined);
+      // Search folders: relative to the document (or keys of a bundle), or absolute URLs. An
+      // `artworks/` folder next to a document loaded by URL is searched for artworks as well.
+      const paths = resolveFolders(options.paths);
+      const artworks = [...resolveFolders(options.artworks), ...(options.url !== undefined ? ['artworks/'] : [])];
       const expanded = await expandImports(source as string, {
         load: async (path) => {
-          const preloaded = files[path] ?? files[path.replace(/^\.\//, '')];
+          const clean = path.replace(/^\.\//, '');
+          const preloaded = files[path] ?? files[clean];
           if (preloaded !== undefined) return preloaded;
-          const base = basePath || (typeof location !== 'undefined' ? location.href : undefined);
-          const response = await fetch(new URL(path, base).href);
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          return response.text();
+          for (const folder of paths) {
+            const inFolder = files[folder + clean];
+            if (inFolder !== undefined) return inFolder;
+          }
+          // The document's own folder first, then each search folder; the first that answers.
+          const candidates = [path, ...paths.map((folder) => folder + clean)].map((candidate) => new URL(candidate, base).href);
+          let status = 0;
+          for (const candidate of candidates) {
+            const response = await fetch(candidate);
+            if (response.ok) return response.text();
+            status = status || response.status;
+          }
+          throw new Error(`HTTP ${status}`);
         },
       });
       // Errors name the imported file a line came from.
@@ -112,7 +158,9 @@ export function markupDeck(options: MarkupDeckOptions): ResolvedDeck {
         }
         return { file, line: origin.line };
       };
-      return new SlideBuilder({ layout }).build(document, { namespace, macros: options.macros, assets: options.assets, locate });
+      return new SlideBuilder({ layout }).build(document, {
+        namespace, macros: options.macros, assets: options.assets, locate, paths, artworks, artworkModules: options.artworkModules,
+      });
     },
   };
   return defineDeck(definition);
@@ -135,6 +183,10 @@ export interface DeckConfig {
   classes?: string;
   /** @deprecated Use `classes`. */
   imports?: string;
+  /** Folders searched, after the deck's own, for imported Markdown, images, videos and pages; relative to this file. */
+  paths?: string[];
+  /** Folders with artworks of the deck's own (`name.svg`, `name.js`, `name.ts`); `artworks/` next to the Markdown is searched anyway. */
+  artworks?: string[];
 }
 
 /** Load a `deck.json` configuration and its Markdown document. */
@@ -162,5 +214,7 @@ export async function loadDeckConfig(configUrl: string, loadModule?: (url: strin
     macros: config.macros,
     styles: config.styles,
     classes,
+    paths: resolveFolders(config.paths, url),
+    artworks: resolveFolders(config.artworks, url),
   });
 }

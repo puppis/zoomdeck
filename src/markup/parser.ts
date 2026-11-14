@@ -270,11 +270,12 @@ export class MarkupParser {
           if ('target' in attrs) throw new MarkupError(`Name the ${kind} targets first: [[${kind}: #id #id ...]]`, line);
           attrs.target = targets.map((token) => token.slice(1)).join(' ');
           items.push(new ElementSpec(attrs.id ?? `${prefix}element-${items.length + 1}`, kind, [], attrs, '', line));
-        } else if (kind === 'icon') {
-          const match = /^([a-z-]+)\s+(.*)$/s.exec(value.trim());
-          if (!match) throw new MarkupError('Expected [[icon: name #id ...]]', line);
+        } else if (kind === 'icon' || kind === 'artwork') {
+          // A built-in icon by name, or an artwork of the deck's own, found in its artworks folders at build time.
+          const match = /^([A-Za-z_][\w.-]*)\s+(.*)$/s.exec(value.trim());
+          if (!match) throw new MarkupError(`Expected [[${kind}: name #id ...]]`, line);
           const attrs = parseAttributes(match[2], line, { commas: true });
-          if (!('id' in attrs)) throw new MarkupError('Icons require an explicit #id', line);
+          if (!('id' in attrs)) throw new MarkupError(`${kind === 'icon' ? 'Icons' : 'Artworks'} require an explicit #id`, line);
           items.push(new ElementSpec(attrs.id, 'icon', [], attrs, match[1], line));
         } else if (kind === 'import') {
           throw new MarkupError('File imports are resolved before parsing: load the document through markupDeck or expandImports', line);
@@ -676,7 +677,7 @@ export class ASTTransformer {
     if (!['text', 'image', 'math', 'code', 'group', 'iframe', 'icon', 'table', 'chart'].includes(item.kind) && !SHAPES.has(item.kind) && !decoration) {
       throw new MarkupError(`Unknown element kind ${JSON.stringify(item.kind)}`, item.line);
     }
-    let allowed: Set<string>;
+    let allowed: Set<string> | null;
     if (item.kind === 'group') allowed = new Set(GROUP_ATTRS);
     else if (CONNECTIONS.has(item.kind)) {
       allowed = new Set(['id', 'step', 'hide', 'color', 'from', 'to', 'label', 'font', 'font_size', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
@@ -694,6 +695,8 @@ export class ASTTransformer {
     } else if (item.kind === 'icon') {
       allowed = new Set([...ELEMENT_ATTRS].filter((key) => !['width', 'height'].includes(key)));
       for (const key of ['size', 'label', 'label_side', ...STROKE_ATTRS, ...FILL_ATTRS, ...SKETCH_ATTRS]) allowed.add(key);
+      // An artwork of the deck's own reads its directive's attributes itself: any name is allowed.
+      if (!ICON_KINDS.has(item.source)) allowed = null;
     } else if (SHAPES.has(item.kind)) {
       allowed = new Set([...ELEMENT_ATTRS].filter((key) => !['font_size', 'width', 'height'].includes(key)));
       for (const key of [...STROKE_ATTRS, ...SKETCH_ATTRS]) allowed.add(key);
@@ -717,13 +720,12 @@ export class ASTTransformer {
         if (VIDEO_EXTENSIONS.test(item.source)) allowed.add('muted');
       } else if (item.kind === 'code') allowed.add('lang');
     }
-    if (VECTOR_KINDS.has(item.kind)) for (const key of TREMBLE_ATTRS) allowed.add(key);
-    this._checkAttrs(item.attributes, allowed, item.line);
+    if (allowed && VECTOR_KINDS.has(item.kind)) for (const key of TREMBLE_ATTRS) allowed.add(key);
+    if (allowed) this._checkAttrs(item.attributes, allowed, item.line);
     if ('href' in item.attributes && !LINK_TARGET.test(item.attributes.href)) {
       throw new MarkupError(`Unsupported link target ${JSON.stringify(item.attributes.href)}; use https://, mailto:, #, / or a relative path`, item.line);
     }
     if (item.kind === 'icon') {
-      if (!ICON_KINDS.has(item.source)) throw new MarkupError(`Unknown icon ${JSON.stringify(item.source)}; use one of ${[...ICON_KINDS].join(', ')}`, item.line);
       if ('label_side' in item.attributes && !LABEL_SIDES.has(item.attributes.label_side)) {
         throw new MarkupError('label_side must be below, above, left or right', item.line);
       }

@@ -7,7 +7,7 @@
  * the icon's fill. Parts become ordinary vector mobjects, crisp or hand-drawn,
  * so icons take the same colors, fills, animations and effects as shapes.
  */
-import { VGroup } from 'manim-web';
+import { VGroup, type Mobject } from 'manim-web';
 import { sketch, type OutlineMobject, type SketchOptions } from './sketch';
 import { arcPath, circlePath, ellipsePath, pathMobject, rectPath } from './paths';
 
@@ -234,15 +234,22 @@ export function iconParts(name: IconName): IconPart[] {
   return parts;
 }
 
-/** Create an icon as a group of vector parts, crisp or hand-drawn. */
+/** Create a built-in icon as a group of vector parts, crisp or hand-drawn. */
 export function makeIcon(name: IconName, options: IconOptions = {}): VGroup {
+  return makeIconFromParts(iconParts(name), options);
+}
+
+/**
+ * Create an icon from its parts, path data in the unit box: the built-in icons are made this
+ * way, and so is an artwork of a deck's own that exports `parts` instead of drawing itself.
+ */
+export function makeIconFromParts(parts: IconPart[], options: IconOptions = {}): VGroup {
   const size = options.size ?? 1;
   if (!Number.isFinite(size) || size <= 0) throw new Error('Icon size must be finite and positive');
   const color = options.color ?? '#000000';
   const strokeWidth = options.strokeWidth ?? 2;
   const fillColor = options.fillColor ?? color;
   const fillOpacity = options.fillOpacity ?? 0;
-  const parts = iconParts(name);
   const crisp = new VGroup();
   for (const part of parts) {
     const vmob = pathMobject(part.d, size, part.fill);
@@ -259,4 +266,43 @@ export function makeIcon(name: IconName, options: IconOptions = {}): VGroup {
   }
   (rough as OutlineMobject).markupOutline = crisp;
   return rough;
+}
+
+/** What an artwork of a deck's own receives: the icon options and every attribute of its directive. */
+export interface ArtworkOptions extends IconOptions {
+  /** The attributes written on the `[[artwork: …]]` directive, as strings. */
+  attributes: Record<string, string>;
+  /** The slide's text color, for parts that should follow the deck. */
+  foreground: string;
+}
+
+/** A function that draws an artwork: a mobject, several, or icon parts in the unit box. */
+export type ArtworkFactory = (options: ArtworkOptions) => Mobject | Mobject[] | IconPart[] | Promise<Mobject | Mobject[] | IconPart[]>;
+
+/**
+ * A module in an artworks folder: `export default` a factory function or a list of parts, or
+ * named exports `artwork` (the function) or `parts` (the list). Parts are drawn like built-in
+ * icons, colors, fill and hand-drawn look included; a function draws anything it likes with the
+ * engine and gets `size`, `color` and the other options to honour.
+ */
+export interface ArtworkModule {
+  default?: ArtworkFactory | IconPart[];
+  artwork?: ArtworkFactory;
+  parts?: IconPart[];
+}
+
+function isParts(value: unknown): value is IconPart[] {
+  return Array.isArray(value) && value.length > 0 && value.every((part) => part && typeof part === 'object' && typeof (part as IconPart).d === 'string');
+}
+
+/** Draw the artwork a module defines, with the icon options. */
+export async function artworkFromModule(module: ArtworkModule, options: ArtworkOptions): Promise<Mobject> {
+  const parts = module.parts ?? (isParts(module.default) ? module.default : null);
+  if (parts) return makeIconFromParts(parts, options);
+  const factory = module.artwork ?? (typeof module.default === 'function' ? module.default : null);
+  if (!factory) throw new Error('An artwork module exports a drawing function (default or `artwork`) or a list of `parts`');
+  const result = await factory(options);
+  if (isParts(result)) return makeIconFromParts(result, options);
+  if (Array.isArray(result)) return new VGroup(...(result as Mobject[]));
+  return result as Mobject;
 }

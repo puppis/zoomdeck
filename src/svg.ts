@@ -215,10 +215,12 @@ export function svgToMobject(svgText: string, options: SvgImportOptions = {}): V
         if (lengths.length > 1) vmob.setBaseSubpathLengths(lengths);
         const ctmScale = Math.sqrt(Math.abs(matrix[0] * matrix[3] - matrix[1] * matrix[2]));
         const strokeWorld = style.stroke ? style.strokeWidth * ctmScale * scale : 0;
+        // A shape without a stroke keeps its opacity: the stroke opacity is the mobject's own
+        // opacity in the engine, and zeroing it would hide the fill as well; a zero width is enough.
         vmob.setStyle({
           strokeColor: style.stroke ?? style.fill ?? defaultColor,
           strokeWidth: style.stroke ? strokeWorld * 100 : 0,
-          strokeOpacity: style.stroke ? style.strokeOpacity * style.opacity : 0,
+          strokeOpacity: style.opacity * (style.stroke ? style.strokeOpacity : 1),
         });
         // The stroke color assignment above also resets the fill color, so the fill comes last.
         vmob.setFill(style.fill ?? defaultColor, style.fill ? style.fillOpacity * style.opacity : 0);
@@ -229,7 +231,9 @@ export function svgToMobject(svgText: string, options: SvgImportOptions = {}): V
     if (tag === 'text') console.warn('[zoomdeck] SVG <text> elements are not supported; convert text to paths');
     for (const child of Array.from(element.children)) visit(child, matrix, style, depth + 1);
   };
-  for (const child of Array.from(root.children)) visit(child, IDENTITY, rootStyle, 0);
+  // Presentation attributes on the <svg> element itself (a stroke, a fill, an opacity) are inherited like a group's.
+  const inherited = styleOf(root, rootStyle, defaultColor);
+  for (const child of Array.from(root.children)) visit(child, IDENTITY, inherited, 0);
   if (!group.isEmpty()) group.moveTo([0, 0, 0]);
   return group;
 }

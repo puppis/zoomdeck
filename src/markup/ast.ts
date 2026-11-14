@@ -204,7 +204,7 @@ export const BARE_FLAGS = new Set(['start_here', 'only_this', 'skip_return', 're
 
 export const IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_.-]*$/;
 export const CONTAINER = /^\s*:::\s*(.*?)\s*$/;
-export const DIRECTIVE = /^\s*\[\[(include|subslide|import|arrow|line|rectangle|circle|polyline|dot|ellipse|polygon|arc|icon|brace|box|blob|iframe|show|hide|animate|effect|transform|move_along|next|skip_next):\s*(.*?)\]\]\s*$/;
+export const DIRECTIVE = /^\s*\[\[(include|subslide|import|arrow|line|rectangle|circle|polyline|dot|ellipse|polygon|arc|icon|artwork|brace|box|blob|iframe|show|hide|animate|effect|transform|move_along|next|skip_next):\s*(.*?)\]\]\s*$/;
 /** Names accepted by `rate=`; implemented in `animations.ts`. */
 export const RATE_NAMES = new Set(['smooth', 'linear', 'rush_into', 'rush_from', 'there_and_back', 'ease_in', 'ease_out', 'ease_in_out']);
 export const EFFECT_NAMES = new Set(['indicate', 'wiggle', 'circumscribe', 'flash', 'focus', 'grow', 'shrink', 'write', 'create', 'uncreate', 'draw', 'wave']);

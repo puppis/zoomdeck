@@ -118,11 +118,13 @@ talk/
 ├── deck.json        title, colors, typography, presenter options, styles, macros
 ├── assets/          images, videos, pages referenced from slides.md
 ├── parts/           optional: Markdown files spliced in with [[import: path.md]]
+├── artworks/        optional: artworks of your own, name.svg or name.ts, for [[artwork: name]]
 ├── code-slides.ts   optional: Slide classes used by [[subslide: Name]]
 └── recordings/      talks recorded by the player, when the deck is served
 ```
 
-Paths in `slides.md` resolve relative to the Markdown file.
+Paths in `slides.md` resolve relative to the Markdown file, then in the folders `paths` names
+in `deck.json`, so figures shared between talks can stay in one place.
 
 ## Set up your editor
 

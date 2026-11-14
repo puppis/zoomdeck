@@ -115,7 +115,13 @@ describe('markup for icons, enclosures and tremble', () => {
     const styled = element('[[icon: user #u x=0 y=0]]', 'u', '::: styles\nicon: fill_opacity=0.2\nicon-user: color=RED\n:::');
     expect(styled.attributes.fill_opacity).toBe('0.2');
     expect(styled.attributes.color).toBe('RED');
-    expect(() => parse('[[icon: rocket #r x=0 y=0]]')).toThrow(/Unknown icon "rocket"/);
+    // A name that is not built in is an artwork of the deck's own, looked up when the slide is built.
+    const custom = parse('[[icon: rocket #r x=0 y=0]]');
+    expect((custom.slides[0].items[0] as ElementSpec).source).toBe('rocket');
+    const artwork = parse('[[artwork: traffic-light #t x=0 y=0 size=2]]');
+    expect((artwork.slides[0].items[0] as ElementSpec).kind).toBe('icon');
+    expect((artwork.slides[0].items[0] as ElementSpec).source).toBe('traffic-light');
+    expect(() => parse('[[artwork: rocket x=0]]')).toThrow(/require an explicit #id/);
     expect(() => parse('[[icon: user x=0 y=0]]')).toThrow(/explicit #id/);
     expect(() => parse('[[icon: user #u label="a" label_side=inside]]')).toThrow(/label_side must be/);
     expect(() => parse('[[icon: user #u label_side=above]]')).toThrow(/requires a label/);

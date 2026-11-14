@@ -54,7 +54,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Diagrams</h4>
-        <ul><li><a href="diagrams.html">Diagrams</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="icons.html" aria-current="page">Icons</a><ul class="subsections"><li><a href="#names">Names</a></li><li><a href="#attributes">Attributes</a></li><li><a href="#styling-icons-deck-wide">Styling icons deck-wide</a></li><li><a href="#from-code">From code</a></li></ul></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li></ul>
+        <ul><li><a href="diagrams.html">Diagrams</a></li><li><a href="shapes.html">Shapes, connections and attachments</a></li><li><a href="icons.html" aria-current="page">Icons</a><ul class="subsections"><li><a href="#names">Names</a></li><li><a href="#attributes">Attributes</a></li><li><a href="#styling-icons-deck-wide">Styling icons deck-wide</a></li><li><a href="#artworks-of-your-own">Artworks of your own</a></li><li><a href="#from-code">From code</a></li></ul></li><li><a href="enclosures.html">Boxes and blobs</a></li><li><a href="sketch.html">Hand-drawn shapes</a></li></ul>
       </section>
       <section>
         <h4>Layout and style</h4>
@@ -185,6 +185,27 @@ icon: fill_opacity=0.15 stroke_width=2.5
 icon-database: color=GOLD_E
 shape: sketch=true
 <span class="tk-directive">:::</span></code></pre>
+<h2 id="artworks-of-your-own">Artworks of your own<a class="anchor" href="#artworks-of-your-own" aria-label="Link to this section">#</a></h2><pre><code class="language-markdown"><span class="tk-directive">[[artwork:</span> rocket <span class="tk-attribute">#r</span> <span class="tk-attribute">x=</span><span class="tk-number">2</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">size=</span><span class="tk-number">1.6</span> <span class="tk-attribute">color=</span>BLUE_E <span class="tk-attribute">label=</span><span class="tk-string">&quot;an SVG&quot;</span><span class="tk-directive">]]</span>
+<span class="tk-directive">[[artwork:</span> traffic-light <span class="tk-attribute">#t</span> <span class="tk-attribute">right-of:#r</span> <span class="tk-attribute">buff=</span><span class="tk-number">1</span> <span class="tk-attribute">size=</span><span class="tk-number">1.6</span> <span class="tk-attribute">lit=</span>red <span class="tk-attribute">label=</span><span class="tk-string">&quot;a module&quot;</span><span class="tk-directive">]]</span></code></pre>
+<p>The built-in names are not the end of it. An <code>artworks/</code> folder next to the Markdown file (and
+any folder named under <code>artworks</code> or <code>paths</code> in <code>deck.json</code>) holds artworks of the deck's own,
+one file per name, and <code>[[artwork: name …]]</code> (or <code>[[icon: name …]]</code> with a name that is not
+built in) places one like an icon, with <code>size</code>, <code>label</code>, <code>label_side</code> and a position:</p>
+<ul>
+<li><strong><code>name.svg</code></strong>: the drawing as it is, with its own colors, scaled to <code>size</code> in height;
+<code>currentColor</code> in the file takes <code>color=</code> when given, else the deck's text color.</li>
+<li><strong><code>name.js</code>, <code>name.mjs</code> or <code>name.ts</code></strong>: a module that draws with the engine. It exports a
+function (<code>export default</code>, or <code>artwork</code>) that receives the icon options, <code>size</code>, <code>color</code>,
+<code>strokeWidth</code>, <code>fillColor</code>, <code>fillOpacity</code>, <code>sketch</code>, the deck's <code>foreground</code> and every
+<code>attributes</code> of the directive as strings, and returns a mobject, several, or a list of parts;
+or it exports <code>parts</code>, path data in the unit box like the built-in icons, which are then
+drawn exactly like them, hand-drawn look included. A module may import <code>manim-web</code> and
+<code>zoomdeck</code> as the slide classes do. Attributes the module reads (<code>lit=red</code> above) are free.</li>
+</ul>
+<p>Compound figures belong here too: a module returns a <code>VGroup</code> of whatever shapes, labels and
+icons it likes, built from the directive's attributes, so a diagram vocabulary of your own
+(a traffic light, a gate, a server rack) is one file per symbol. Exports bundle the modules
+and copy or embed the SVG files; the tour's <code>examples/tour/artworks/</code> holds one of each.</p>
 <h2 id="from-code">From code<a class="anchor" href="#from-code" aria-label="Link to this section">#</a></h2><pre><code class="language-ts"><span class="tk-keyword">import</span> { makeIcon, ICON_NAMES, engine } <span class="tk-keyword">from</span> <span class="tk-string">'zoomdeck'</span>;
 
 <span class="tk-keyword">const</span> store = makeIcon(<span class="tk-string">'database'</span>, { size: <span class="tk-number">1.5</span>, color: engine.GOLD_E, fillColor: engine.GOLD_E, fillOpacity: <span class="tk-number">0.3</span> });
@@ -199,7 +220,7 @@ names. Hand-drawn icons keep their crisp counterpart in <code>markupOutline</cod
       <a class="next" href="enclosures.html">Boxes and blobs →</a>
     </footer>
   </main>
-  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#names">Names</a></li><li><a href="#attributes">Attributes</a></li><li><a href="#styling-icons-deck-wide">Styling icons deck-wide</a></li><li><a href="#from-code">From code</a></li></ul></nav>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#names">Names</a></li><li><a href="#attributes">Attributes</a></li><li><a href="#styling-icons-deck-wide">Styling icons deck-wide</a></li><li><a href="#artworks-of-your-own">Artworks of your own</a></li><li><a href="#from-code">From code</a></li></ul></nav>
 </div>
 </body>
 </html>

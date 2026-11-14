@@ -225,6 +225,9 @@ endpoint disappears.
 [[arrow: #alice -> #api, #req, label="HTTPS"]]
 ```
 
+`[[artwork: name #id …]]` draws an artwork of the deck's own, `name.svg` or a `name.js`/`.ts` module
+in its `artworks/` folder (or the folders `artworks` and `paths` name in `deck.json`), with any
+attributes the module reads; `paths` are also searched for imports, images, videos and pages.
 `[[icon: name #id …]]` draws one of thirty-nine symbols built from geometry: people and machines
 (`user`, `users`, `client`, `desktop`, `phone`, `server`, `database`, `cloud`, `globe`), files
 (`document`, `folder`, `message`, `calendar`, `chart`), marks and places (`check`, `cross`,

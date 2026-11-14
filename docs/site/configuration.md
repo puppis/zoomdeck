@@ -29,6 +29,8 @@ description: Every key of deck.json, the layout and presenter options, and the c
 | `title` | the page title and outline root label |
 | `root` | the root slide ID, when you want it checked explicitly |
 | `classes` | module exporting `Slide` classes for `[[subslide: Name]]` (`imports` is still accepted) |
+| `paths` | folders searched, after the Markdown file's own, for the files it names: imported Markdown, images, videos, pages; relative to this file, as in `["../shared", "figures"]` |
+| `artworks` | folders with artworks of the deck's own, `name.svg` or `name.js`/`.ts`, for `[[artwork: name]]`; an `artworks/` folder next to the Markdown is searched anyway, then the `paths`; see [Icons](icons.html#artworks-of-your-own) |
 | `background` | canvas background color (white by default) |
 | `viewport` | proportions the camera fits (the stage reveals surrounding canvas when it has room) |
 | `layout` | typography and spacing, below |

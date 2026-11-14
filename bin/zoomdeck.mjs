@@ -97,6 +97,28 @@ export function resolveDeckPath(path) {
   return deckPath;
 }
 
+/**
+ * The folders a deck.json names besides its own: `paths` (searched for imports, images, videos
+ * and pages) and `artworks` (artworks of the deck's own), plus an `artworks/` folder next to
+ * the Markdown when there is one; resolved against the deck.json, existing ones only.
+ */
+export function deckFolders(configPath) {
+  let config = {};
+  try {
+    config = JSON.parse(readFileSync(configPath, 'utf8'));
+  } catch {
+    return { paths: [], artworks: [], all: [] };
+  }
+  const dir = dirname(configPath);
+  const list = (names) => (Array.isArray(names) ? names : []).map((name) => resolve(dir, String(name))).filter((folder) => existsSync(folder));
+  const paths = list(config.paths);
+  const artworks = list(config.artworks);
+  const markupDir = typeof config.markup === 'string' ? dirname(resolve(dir, config.markup)) : dir;
+  const standard = join(markupDir, 'artworks');
+  if (existsSync(standard) && !artworks.includes(standard)) artworks.push(standard);
+  return { paths, artworks, all: [...paths, ...artworks] };
+}
+
 /** The kind of deck a file holds, by its extension; null for a file the command cannot serve. */
 export function deckKind(deckPath) {
   const ext = extname(deckPath).toLowerCase();
@@ -126,7 +148,8 @@ export async function startPreview(options) {
   const kind = deckKind(deckPath);
   if (!kind) throw new Error(`unsupported deck file ${deckPath}`);
   const deckDir = dirname(deckPath);
-  const watchRoots = [deckDir, ...options.watch];
+  // The deck's search and artwork folders are served and watched like its own folder.
+  const watchRoots = [deckDir, ...options.watch, ...(kind === 'json' ? deckFolders(deckPath).all : [])];
   const reloadPlugin = {
     name: 'zoomdeck-reload',
     configureServer(server) {
@@ -263,39 +286,58 @@ runDeck(await pdfDeck({
   } else {
     const config = kind === 'json' ? JSON.parse(await fs.readFile(deckPath, 'utf8')) : { markup: basename(deckPath) };
     const markupPath = resolve(deckDir, config.markup);
+    const markupDir = dirname(markupPath);
     const markdown = await fs.readFile(markupPath, 'utf8');
     const assets = {};
     // Markdown files next to the deck are embedded as text, so [[import: path]] works without a server.
     const files = {};
-    for (const file of await collectAssets(deckDir)) {
-      if (file === markupPath || !['.md', '.markdown'].includes(extname(file).toLowerCase())) continue;
-      files[relative(dirname(markupPath), file).split(sep).join('/')] = await fs.readFile(file, 'utf8');
-    }
-    if (options.oneFile) {
-      for (const file of await collectAssets(deckDir)) {
-        const mime = MIME[extname(file).toLowerCase()];
-        if (!mime) continue;
-        const rel = relative(dirname(markupPath), file).split(sep).join('/');
-        assets[rel] = `data:${mime};base64,${(await fs.readFile(file)).toString('base64')}`;
+    const toKey = (path) => path.split(sep).join('/');
+    // The search and artwork folders travel with the export as deck/paths/<i>/ and deck/artworks/<i>/,
+    // and the player is told those folders relative to the Markdown, the way it names its own files.
+    const folders = kind === 'json' ? deckFolders(deckPath) : { paths: [], artworks: existsSync(join(markupDir, 'artworks')) ? [join(markupDir, 'artworks')] : [] };
+    const sources = [
+      { root: deckDir, key: (file) => toKey(relative(markupDir, file)), copyTo: (file) => join(outDir, 'deck', relative(deckDir, file)) },
+      ...folders.paths.map((folder, i) => ({ root: folder, key: (file) => toKey(relative(markupDir, join(deckDir, 'paths', String(i), relative(folder, file)))), copyTo: (file) => join(outDir, 'deck', 'paths', String(i), relative(folder, file)) })),
+      ...folders.artworks.map((folder, i) => ({ root: folder, key: (file) => toKey(relative(markupDir, join(deckDir, 'artworks', String(i), relative(folder, file)))), copyTo: (file) => join(outDir, 'deck', 'artworks', String(i), relative(folder, file)) })),
+    ];
+    const pathKeys = folders.paths.map((_, i) => toKey(relative(markupDir, join(deckDir, 'paths', String(i)))) + '/');
+    const artworkKeys = folders.artworks.map((_, i) => toKey(relative(markupDir, join(deckDir, 'artworks', String(i)))) + '/');
+    const artworkImports = [];
+    for (const [i, folder] of folders.artworks.entries()) {
+      for (const file of await collectAssets(folder)) {
+        if (!['.js', '.mjs', '.ts'].includes(extname(file).toLowerCase()) || dirname(file) !== folder) continue;
+        artworkImports.push({ name: basename(file, extname(file)), variable: `artwork_${i}_${artworkImports.length}`, path: toKey(file) });
       }
-    } else {
-      for (const file of await collectAssets(deckDir)) {
-        const rel = relative(deckDir, file);
-        const recording = rel.split(sep).includes(RECORDINGS);
-        if (!recording && ['.json', '.ts', '.js', '.mjs', '.md', '.markdown'].includes(extname(file).toLowerCase())) continue;
-        const target = join(outDir, 'deck', rel);
-        await fs.mkdir(dirname(target), { recursive: true });
-        await fs.copyFile(file, target);
+    }
+    for (const { root, key, copyTo } of sources) {
+      for (const file of await collectAssets(root)) {
+        if (file === markupPath) continue;
+        const ext = extname(file).toLowerCase();
+        if (['.md', '.markdown'].includes(ext)) {
+          files[key(file)] = await fs.readFile(file, 'utf8');
+          continue;
+        }
+        if (options.oneFile) {
+          const mime = MIME[ext];
+          if (mime) assets[key(file)] = `data:${mime};base64,${(await fs.readFile(file)).toString('base64')}`;
+        } else {
+          const recording = relative(root, file).split(sep).includes(RECORDINGS);
+          if (!recording && ['.json', '.ts', '.js', '.mjs'].includes(ext)) continue;
+          const target = copyTo(file);
+          await fs.mkdir(dirname(target), { recursive: true });
+          await fs.copyFile(file, target);
+        }
       }
     }
     const classesModule = config.classes ?? config.imports;
-    const importsLine = classesModule
-      ? `import * as slides from ${JSON.stringify(resolve(deckDir, classesModule).split(sep).join('/'))};`
-      : 'const slides = undefined;';
+    const importsLine = [
+      classesModule ? `import * as slides from ${JSON.stringify(resolve(deckDir, classesModule).split(sep).join('/'))};` : 'const slides = undefined;',
+      ...artworkImports.map(({ variable, path }) => `import * as ${variable} from ${JSON.stringify(path)};`),
+    ].join('\n');
     const markupBase = options.oneFile ? '' : `deck/${relative(deckDir, markupPath).split(sep).join('/')}`;
     entrySource = `import { runDeck, markupDeck } from ${JSON.stringify(sourceIndex)};
 ${importsLine}
-const config = ${JSON.stringify({ ...config, imports: undefined, classes: undefined })};
+const config = ${JSON.stringify({ ...config, imports: undefined, classes: undefined, paths: undefined, artworks: undefined })};
 const source = ${JSON.stringify(markdown)};
 const assets = ${JSON.stringify(assets)};
 const files = ${JSON.stringify(files)};
@@ -314,6 +356,9 @@ runDeck(markupDeck({
   styles: config.styles,
   showOutline: Boolean(config.showOutline) || ${options.showOutline},
   classes: slides,
+  paths: ${JSON.stringify(pathKeys)},
+  artworks: ${JSON.stringify(artworkKeys)},
+  artworkModules: { ${artworkImports.map(({ name, variable }) => `${JSON.stringify(name)}: ${variable}`).join(', ')} },
 }));`;
   }
   const entryFile = join(stageDir, 'entry.ts');

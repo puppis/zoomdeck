@@ -9,7 +9,8 @@ import {
 } from 'manim-web';
 import { loadSvgMobject } from '../svg';
 import { sketch, sketchSeed, type FillStyle, type OutlineMobject, type SketchOptions } from '../sketch';
-import { makeIcon, type IconName } from '../icons';
+import { artworkFromModule, makeIcon, type ArtworkModule, type ArtworkOptions, type IconName } from '../icons';
+import { ICON_KINDS } from './ast';
 import { blobMobject, type Rect } from '../blob';
 import { buildChart, parseChartData, type ChartType } from '../charts';
 import { buildTable, type TableRules } from './table';
@@ -277,6 +278,15 @@ export interface MarkupRendererOptions {
   macros?: Record<string, string>;
   /** Preloaded assets keyed by document-relative path, e.g. data URIs in single-file bundles. */
   assets?: Record<string, string>;
+  /**
+   * Folders searched for a file (an image, a video, a page) after the document's own, as
+   * absolute URLs ending in a slash, or as keys of `assets` ending in a slash in a bundle.
+   */
+  paths?: string[];
+  /** Folders searched for artworks (`name.svg`, or `name.js`, `.mjs`, `.ts`), the same way. */
+  artworks?: string[];
+  /** Artwork modules bundled ahead of time, by name; an export carries them this way. */
+  artworkModules?: Record<string, ArtworkModule>;
 }
 
 /** Create engine objects for AST elements. Subclass `make` to customize. */
@@ -285,14 +295,133 @@ export class MarkupRenderer {
   readonly basePath: string;
   readonly macros: Record<string, string> | undefined;
   readonly assets: Record<string, string>;
+  readonly paths: string[];
+  readonly artworks: string[];
+  readonly artworkModules: Record<string, ArtworkModule>;
   private readonly _parser = new MarkupParser();
   private readonly _sources = new Map<string, Promise<RasterSource>>();
+  private readonly _located = new Map<string, Promise<string>>();
+  private readonly _probed = new Map<string, Promise<boolean>>();
+  private readonly _artworkModules = new Map<string, Promise<ArtworkModule | null>>();
 
   constructor(options: MarkupRendererOptions = {}) {
     this.layout = options.layout ?? new LayoutConfig();
     this.basePath = options.basePath ?? '';
     this.macros = options.macros;
     this.assets = options.assets ?? {};
+    this.paths = options.paths ?? [];
+    this.artworks = options.artworks ?? [];
+    this.artworkModules = options.artworkModules ?? {};
+  }
+
+  /**
+   * Whether `url` answers with what is asked for, asked once: a module must come back as
+   * JavaScript and a file as anything but a page, since a development server answers every
+   * path with its page. A page (`.html`) is asked for as such. Without `fetch` (tests)
+   * everything is taken to exist.
+   */
+  private _exists(url: string, kind: 'file' | 'module' | 'page' = 'file'): Promise<boolean> {
+    const key = `${kind} ${url}`;
+    let pending = this._probed.get(key);
+    if (!pending) {
+      pending = typeof fetch === 'undefined'
+        ? Promise.resolve(true)
+        : fetch(url, { method: 'HEAD' }).then((response) => {
+          if (!response.ok) return false;
+          const type = (response.headers.get('content-type') ?? '').toLowerCase();
+          if (kind === 'module') return /javascript|ecmascript|typescript/.test(type);
+          if (kind === 'page') return true;
+          return !type.includes('text/html');
+        }, () => false);
+      this._probed.set(key, pending);
+    }
+    return pending;
+  }
+
+  /** The candidates for a relative path: a preloaded asset or a URL in the document's folder, then in each search folder. */
+  private _candidates(path: string, folders: string[]): string[] {
+    const clean = path.replace(/^\.\//, '');
+    const first = this.resolveUrl(path);
+    const candidates = [first];
+    for (const folder of folders) {
+      const key = folder + clean;
+      const preloaded = this.assets[key];
+      if (preloaded) candidates.push(preloaded);
+      else if (/^(?:[a-z]+:)?\/\//i.test(folder) || folder.startsWith('/')) candidates.push(folder + clean);
+      else candidates.push(this.resolveUrl(folder + clean));
+    }
+    return candidates;
+  }
+
+  /**
+   * Find a file named in the document: in its own folder, then in each of the deck's search
+   * folders, the first that answers; a path that is absolute, a data URI or preloaded is taken
+   * as it is. When nothing answers, the document's own URL is returned, so the error names it.
+   */
+  locate(path: string, folders: string[] = this.paths): Promise<string> {
+    const first = this.resolveUrl(path);
+    const preloaded = this.assets[path] ?? this.assets[path.replace(/^\.\//, '')];
+    if (!folders.length || this._absolute(path) || preloaded) return Promise.resolve(first);
+    const key = `${folders.join('|')}::${path}`;
+    let pending = this._located.get(key);
+    if (!pending) {
+      pending = (async () => {
+        const candidates = this._candidates(path, folders);
+        const kind = /\.x?html?(\?|#|$)/i.test(path) ? 'page' : 'file';
+        for (const candidate of candidates) {
+          if (candidate.startsWith('data:') || (await this._exists(candidate, kind))) return candidate;
+        }
+        return candidates[0];
+      })();
+      this._located.set(key, pending);
+    }
+    return pending;
+  }
+
+  private _absolute(path: string): boolean {
+    return /^(?:[a-z]+:)?\/\//i.test(path) || path.startsWith('data:') || path.startsWith('/');
+  }
+
+  /**
+   * An artwork of the deck's own, by name: a module bundled with the deck, else `name.js`,
+   * `name.mjs`, `name.ts` or `name.svg` in the artworks folders (then in the search folders),
+   * drawn with the icon options. Throws, with the line, when no folder has it.
+   */
+  async artwork(name: string, options: ArtworkOptions, line: number): Promise<Mobject> {
+    const bundled = this.artworkModules[name];
+    if (bundled) return artworkFromModule(bundled, options);
+    const folders = [...this.artworks, ...this.paths];
+    const module = await this._artworkModule(name, folders);
+    if (module) return artworkFromModule(module, options);
+    for (const folder of folders) {
+      const [url] = this._candidates(`${name}.svg`, [folder]).slice(1);
+      if (url && (url.startsWith('data:') || (await this._exists(url)))) {
+        // The drawing keeps its own colors; `currentColor` in it follows `color=`, else the deck's text color.
+        return loadSvgMobject(url, { height: options.size, defaultColor: 'color' in options.attributes ? options.color : options.foreground });
+      }
+    }
+    const where = folders.length ? ` or in ${folders.join(', ')}` : '';
+    throw new MarkupError(`Unknown icon or artwork ${JSON.stringify(name)}: not a built-in icon (${[...ICON_KINDS].join(', ')}) and no ${name}.svg, ${name}.js or ${name}.ts in the deck's artworks folders${where}`, line);
+  }
+
+  private _artworkModule(name: string, folders: string[]): Promise<ArtworkModule | null> {
+    const key = `${folders.join('|')}::${name}`;
+    let pending = this._artworkModules.get(key);
+    if (!pending) {
+      pending = (async () => {
+        for (const folder of folders) {
+          for (const extension of ['js', 'mjs', 'ts']) {
+            const [url] = this._candidates(`${name}.${extension}`, [folder]).slice(1);
+            if (url && !url.startsWith('data:') && (await this._exists(url, 'module'))) {
+              return (await import(/* @vite-ignore */ url)) as ArtworkModule;
+            }
+          }
+        }
+        return null;
+      })();
+      this._artworkModules.set(key, pending);
+    }
+    return pending;
   }
 
   /** Resolve an asset path relative to the document. */
@@ -309,11 +438,10 @@ export class MarkupRenderer {
   }
 
   private _rasterSource(path: string): Promise<RasterSource> {
-    const url = this.resolveUrl(path);
-    let pending = this._sources.get(url);
+    let pending = this._sources.get(path);
     if (!pending) {
-      pending = RasterSource.load(url);
-      this._sources.set(url, pending);
+      pending = this.locate(path).then((url) => RasterSource.load(url));
+      this._sources.set(path, pending);
     }
     return pending;
   }
@@ -377,17 +505,17 @@ export class MarkupRenderer {
         if (label.getWidth() > 0) inside = label;
       }
       inside?.moveTo([0, 0, 0]);
-      obj = new IframeHost(this.resolveUrl(element.source), box, inside, caption);
+      obj = new IframeHost(await this.locate(element.source), box, inside, caption);
     } else if (element.kind === 'image' && VIDEO_EXTENSIONS.test(element.source)) {
       // A clip that cannot load (a missing file, a codec the browser lacks) leaves its place blank
       // and a warning in the console, rather than stopping the deck.
-      const video = new VideoClip(this.resolveUrl(element.source), { width, muted: attrs.muted !== 'false' });
+      const video = new VideoClip(await this.locate(element.source), { width, muted: attrs.muted !== 'false' });
       await video.waitForLoad();
       obj = video;
     } else if (element.kind === 'image') {
       if (/\.svg(?:[?#].*)?$/i.test(element.source)) {
         try {
-          obj = await loadSvgMobject(this.resolveUrl(element.source), { width, defaultColor: this.layout.color });
+          obj = await loadSvgMobject(await this.locate(element.source), { width, defaultColor: this.layout.color });
         } catch (error) {
           throw new MarkupError(`Image not found: ${element.source} (${(error as Error).message})`, element.line);
         }
@@ -437,11 +565,14 @@ export class MarkupRenderer {
       const strokeWidth = Number(attrs.stroke_width ?? 2);
       const fillColor = attrs.fill_color ? parseColor(attrs.fill_color) : color;
       const fillOpacity = Number(attrs.fill_opacity ?? 0);
-      const icon = makeIcon(element.source as IconName, {
+      const iconOptions = {
         size: numberValue(attrs, 'size', element.line, 1) as number,
         color, strokeWidth, fillColor, fillOpacity,
         sketch: sketchOptions(element, { color, strokeWidth, fillColor, fillOpacity }),
-      });
+      };
+      const icon = ICON_KINDS.has(element.source)
+        ? makeIcon(element.source as IconName, iconOptions)
+        : await this.artwork(element.source, { ...iconOptions, attributes: attrs, foreground: this.layout.color }, element.line);
       obj = icon;
       if (attrs.label) {
         const label = await this.text(this._parser.parseInlineSpans(attrs.label, element.line), size * 0.8, 6, color, attrs.font);
@@ -531,7 +662,7 @@ export class MarkupRenderer {
   async loadImage(source: string, width: number, line: number): Promise<Mobject> {
     if (/\.svg(?:[?#].*)?$/i.test(source)) {
       try {
-        return await loadSvgMobject(this.resolveUrl(source), { width, defaultColor: this.layout.color });
+        return await loadSvgMobject(await this.locate(source), { width, defaultColor: this.layout.color });
       } catch (error) {
         throw new MarkupError(`Image not found: ${source} (${(error as Error).message})`, line);
       }

@@ -83,7 +83,8 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 ![A recording](<span class="tk-string">assets/clip.mp4</span>)<span class="tk-attribute">{#movie width=</span><span class="tk-number">7.5</span><span class="tk-attribute"> play=once step=</span><span class="tk-number">4</span><span class="tk-attribute">}</span></code></pre>
 <h2 id="images">Images<a class="anchor" href="#images" aria-label="Link to this section">#</a></h2><p>An image occupies a block of its own, is centered on <code>x</code>, <code>y</code> (or placed by <code>anchor=</code>, <code>at=</code>
 and the relative constraints), and is sized with <code>width</code> (<code>height</code> scales it to fit). Paths
-resolve relative to the Markdown file; <code>data:</code> URIs and absolute URLs work too.</p>
+resolve relative to the Markdown file, then in the folders <code>paths</code> names in <code>deck.json</code>
+(<a href="configuration.html">Configuration</a>); <code>data:</code> URIs and absolute URLs work too.</p>
 <ul>
 <li><strong>SVG</strong> files keep nested transforms and inherited styles. <code>&lt;text&gt;</code> inside an SVG is not
 rendered: outline text before exporting.</li>

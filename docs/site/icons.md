@@ -65,6 +65,33 @@ shape: sketch=true
 :::
 ```
 
+## Artworks of your own
+
+```markdown
+[[artwork: rocket #r x=2 y=0 size=1.6 color=BLUE_E label="an SVG"]]
+[[artwork: traffic-light #t right-of:#r buff=1 size=1.6 lit=red label="a module"]]
+```
+
+The built-in names are not the end of it. An `artworks/` folder next to the Markdown file (and
+any folder named under `artworks` or `paths` in `deck.json`) holds artworks of the deck's own,
+one file per name, and `[[artwork: name …]]` (or `[[icon: name …]]` with a name that is not
+built in) places one like an icon, with `size`, `label`, `label_side` and a position:
+
+- **`name.svg`**: the drawing as it is, with its own colors, scaled to `size` in height;
+  `currentColor` in the file takes `color=` when given, else the deck's text color.
+- **`name.js`, `name.mjs` or `name.ts`**: a module that draws with the engine. It exports a
+  function (`export default`, or `artwork`) that receives the icon options, `size`, `color`,
+  `strokeWidth`, `fillColor`, `fillOpacity`, `sketch`, the deck's `foreground` and every
+  `attributes` of the directive as strings, and returns a mobject, several, or a list of parts;
+  or it exports `parts`, path data in the unit box like the built-in icons, which are then
+  drawn exactly like them, hand-drawn look included. A module may import `manim-web` and
+  `zoomdeck` as the slide classes do. Attributes the module reads (`lit=red` above) are free.
+
+Compound figures belong here too: a module returns a `VGroup` of whatever shapes, labels and
+icons it likes, built from the directive's attributes, so a diagram vocabulary of your own
+(a traffic light, a gate, a server rack) is one file per symbol. Exports bundle the modules
+and copy or embed the SVG files; the tour's `examples/tour/artworks/` holds one of each.
+
 ## From code
 
 ```ts

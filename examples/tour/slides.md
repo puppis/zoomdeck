@@ -779,6 +779,8 @@ Point-defined shapes (`polygon`, `polyline`, `arc`) keep their coordinates unles
 [[icon: cloud #cdn right-of:#db buff=2 size=1.4 color=TEAL_E label="cdn" sketch=true]]
 [[arrow: #alice -> #api, #req, label="HTTPS"]]
 [[arrow: #api -> #db, #sql, label="SQL", step=1]]
+[[artwork: traffic-light #light right-of:#cdn buff=1.2 size=1.4 lit=red label="a module"]]
+[[artwork: rocket #rocket right-of:#light buff=1 size=1.4 color=BLUE_E label="an SVG"]]
 ```
 
 [[icon: user #alice x=-7 y=-1.1 size=1.4 color=BLUE_E label="Alice"]]
@@ -793,7 +795,11 @@ Point-defined shapes (`polygon`, `polyline`, `arc`) keep their coordinates unles
 
 [[arrow: #api -> #db, #sql, label="SQL", step=1]]
 
-`[[icon: name #id …]]` draws one of 39 symbols built from geometry; `size` sets its height, `label` and `label_side` caption it. {#icons-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+[[artwork: traffic-light #light right-of:#cdn buff=1.2 size=1.4 lit=red label="a module"]]
+
+[[artwork: rocket #rocket right-of:#light buff=1 size=1.4 color=BLUE_E label="an SVG"]]
+
+`[[icon: name #id …]]` draws one of 39 symbols built from geometry; `size` sets its height, `label` and `label_side` caption it. `[[artwork: name …]]` draws one of the deck's own: an SVG, or a module drawing with the engine, in its `artworks/` folder. {#icons-key x=-9.35 y=-3.6 width=18.7 font_size=20}
 
 People and machines (user, server, database, cloud…), files (document, folder, message…), marks (check, question, warning, pin…) and actions (download, search, trash, gear…). Icons are positioned, connected, enclosed, animated and sketched like shapes. {#icons-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
 :::

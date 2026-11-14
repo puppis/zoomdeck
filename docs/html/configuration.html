@@ -112,6 +112,14 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 <td>module exporting <code>Slide</code> classes for <code>[[subslide: Name]]</code> (<code>imports</code> is still accepted)</td>
 </tr>
 <tr>
+<td><code>paths</code></td>
+<td>folders searched, after the Markdown file's own, for the files it names: imported Markdown, images, videos, pages; relative to this file, as in <code>[&quot;../shared&quot;, &quot;figures&quot;]</code></td>
+</tr>
+<tr>
+<td><code>artworks</code></td>
+<td>folders with artworks of the deck's own, <code>name.svg</code> or <code>name.js</code>/<code>.ts</code>, for <code>[[artwork: name]]</code>; an <code>artworks/</code> folder next to the Markdown is searched anyway, then the <code>paths</code>; see <a href="icons.html#artworks-of-your-own">Icons</a></td>
+</tr>
+<tr>
 <td><code>background</code></td>
 <td>canvas background color (white by default)</td>
 </tr>

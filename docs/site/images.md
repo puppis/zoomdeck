@@ -19,7 +19,8 @@ description: SVG and raster images, animated PNG and GIF, and video files played
 
 An image occupies a block of its own, is centered on `x`, `y` (or placed by `anchor=`, `at=`
 and the relative constraints), and is sized with `width` (`height` scales it to fit). Paths
-resolve relative to the Markdown file; `data:` URIs and absolute URLs work too.
+resolve relative to the Markdown file, then in the folders `paths` names in `deck.json`
+([Configuration](configuration.html)); `data:` URIs and absolute URLs work too.
 
 - **SVG** files keep nested transforms and inherited styles. `<text>` inside an SVG is not
   rendered: outline text before exporting.

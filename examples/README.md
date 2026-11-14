@@ -20,6 +20,7 @@ tour/
 ├── deck.json        title, typography, presenter options, styles, macros, slide classes
 ├── code-slides.ts   Slide classes used by [[subslide: Name]]
 ├── parts/           Markdown files spliced in with [[import: path.md]]
+├── artworks/        artworks of the deck's own: an SVG and a module, for [[artwork: name]]
 └── assets/          images, an animated PNG, a video, an embeddable page
 ```
 
