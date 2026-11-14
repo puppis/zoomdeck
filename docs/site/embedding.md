@@ -89,35 +89,10 @@ element, in a `<script type="text/markdown">` child, which the browser keeps ver
 element is as wide as its container and 16:9 unless the page sizes it. Its attributes are the
 options of `mountDeck`: `without="camera record"` leaves features out, `start` names the first
 stop, `title` the deck, `outline` opens the outline, `use-location` lets the deck write
-`#step=` in the page's URL. The handle is `element.handle` once the element's `ready` promise
+`#step=` in the page's URL, `background` and `foreground` set the canvas and text colors. The handle is `element.handle` once the element's `ready` promise
 resolves (a `deck` event fires then too), and setting `element.source` to new Markdown shows
 another deck in place. The module also exports everything the package does, so a page can
 `import { mountDeck } from '…/zoomdeck.js'` as well.
-
-## In a notebook
-
-```python
-import zoomdeck_nb
-```
-
-```markdown
-%%deck
-::: slide {#hello}
-# A deck in a cell
-:::
-```
-
-`docs/site/zoomdeck_nb.py` is a small helper for Jupyter. Once imported, a cell that starts
-with `%%deck` holds the Markdown of a deck and nothing else, and its output shows the deck:
-the player is loaded from the documentation site (or from the URL in the `ZOOMDECK_BUNDLE`
-environment variable) and the deck wears the notebook's colours. Options follow on the magic
-line: `--without camera,record`, `--title "A name"`, `--start 2`, `--outline`, `--height 500px`.
-`%deck paper.pdf` shows a PDF, a Markdown file or a deck.json by its address, and from code
-`deck(markdown)` and `deck(src="…")` return the same display objects. It works in JupyterLab,
-the classic notebook and JupyterLite alike. The documentation's own notebooks, such as
-[Your first deck, stage by stage](first-deck.html), are built this way: the site renders the
-cells with their decks, and the "Open in JupyterLite" badge opens the same notebook in the
-browser, where the cells can be edited and run again.
 
 ## Driving the deck
 
@@ -155,6 +130,31 @@ in the console. The underlying objects remain reachable as `deck.player`, `deck.
 and `deck.navigation` for anything the handle does not cover. A page that is itself written as a
 single-page application calls `destroy()` when it removes the element, which releases the canvas
 and the listeners.
+
+## In a notebook
+
+```python
+import zoomdeck_nb
+```
+
+```markdown
+%%deck
+::: slide {#hello}
+# A deck in a cell
+:::
+```
+
+`docs/site/zoomdeck_nb.py` is a small helper for Jupyter. Once imported, a cell that starts
+with `%%deck` holds the Markdown of a deck and nothing else, and its output shows the deck:
+the player is loaded from the documentation site (or from the URL in the `ZOOMDECK_BUNDLE`
+environment variable) and the deck wears the notebook's colors. Options follow on the magic
+line: `--without camera,record`, `--title "A name"`, `--start 2`, `--outline`, `--height 500px`.
+`%deck paper.pdf` shows a PDF, a Markdown file or a deck.json by its address, and from code
+`deck(markdown)` and `deck(src="…")` return the same display objects. It works in JupyterLab,
+the classic notebook and JupyterLite alike. The documentation's own notebooks, such as
+[Your first deck, stage by stage](first-deck.html), are built this way: the site renders the
+cells with their decks, and the "Open in JupyterLite" badge opens the same notebook in the
+browser, where the cells can be edited and run again.
 
 ## An example
 

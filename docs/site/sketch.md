@@ -26,7 +26,7 @@ endpoints, and export exactly like crisp ones.
 | `sketch` | `false` | `true` draws the element by hand |
 | `roughness` | 1 | amount of wobble: 0 is nearly exact, 2 and above visibly careless |
 | `bowing` | 1 | how much straight lines bend |
-| `fill_style` | `hachure` | `hachure`, `solid`, `zigzag`, `cross-hatch`, `dots`, `dashed` or `zigzag-line` (dots default to `solid`) |
+| `fill_style` | `hachure` | `hachure`, `solid`, `zigzag`, `cross-hatch`, `dots`, `dashed` or `zigzag-line` (the `dot` shape defaults to `solid`) |
 | `hachure_angle` | -41 | angle of the hatching lines, in degrees |
 | `hachure_gap` | 4 × the outline width | distance between hatching lines, in logical units |
 | `fill_weight` | half the outline width | width of the hatching lines, like `stroke_width` |

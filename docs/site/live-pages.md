@@ -11,7 +11,7 @@ description: Embedded web pages shown while their slide is focused, with a poste
 ```
 
 An `[[iframe: url, #id, …]]` embeds a web page. On the canvas it is a **placeholder**: the
-`poster=` image scaled into the slide, or an outlined box labelled with the `title` (or the URL).
+`poster=` image scaled into the slide, or an outlined box labeled with the `title` (or the URL).
 The placeholder takes the usual placement attributes plus `width` and `height`, `step`/`hide`,
 `color` and `.class`.
 
@@ -23,9 +23,9 @@ keyboard to the deck.
 - URLs must be `http(s)` or relative to the Markdown file; pages that forbid framing stay blank.
 - The page is not drawn by the pen or spotlight overlays and is absent from exported screenshots.
 - A poster is the only way to show the page's look in previews, since browsers do not allow
-  rasterising another page.
+  rasterizing another page.
 
-## Links
+## Not to be confused with links
 
 Plain Markdown links in prose, `[label](https://…)`, are underlined on the canvas and clickable
 wherever they are visible; see [Text](text.html).

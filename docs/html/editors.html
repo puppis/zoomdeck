@@ -116,7 +116,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Getting started</h4>
-        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html" aria-current="page">Editors</a><ul class="subsections"><li><a href="#the-loop">The loop</a></li><li><a href="#forward-and-inverse-search">Forward and inverse search</a></li><li><a href="#the-zoomdeck-command">The zoomdeck command</a></li><li><a href="#visual-studio-code">Visual Studio Code</a></li><li><a href="#sublime-text">Sublime Text</a></li><li><a href="#emacs">Emacs</a></li><li><a href="#vim-and-neovim">Vim and Neovim</a></li><li><a href="#jetbrains-ides">JetBrains IDEs</a></li><li><a href="#any-other-editor">Any other editor</a></li></ul></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="editors.html" aria-current="page">Editors</a><ul class="subsections"><li><a href="#the-loop">The loop</a></li><li><a href="#the-zoomdeck-command">The zoomdeck command</a></li><li><a href="#forward-and-inverse-search">Forward and inverse search</a></li><li><a href="#visual-studio-code">Visual Studio Code</a></li><li><a href="#sublime-text">Sublime Text</a></li><li><a href="#emacs">Emacs</a></li><li><a href="#vim-and-neovim">Vim and Neovim</a></li><li><a href="#jetbrains-ides">JetBrains IDEs</a></li><li><a href="#any-other-editor">Any other editor</a></li></ul></li><li><a href="desktop.html">The desktop app</a></li></ul>
       </section>
       <section>
         <h4>Presenting</h4>
@@ -166,6 +166,34 @@ open.</li>
 <pre><code class="language-bash">zoomdeck serve path/to/slides.md <span class="tk-attribute">--editor</span> code   <span class="tk-comment"># or deck.json; opens http://127.0.0.1:8000/</span>
 zoomdeck jump path/to/slides.md <span class="tk-number">42</span>               <span class="tk-comment"># the browser shows the stop of line 42</span>
 zoomdeck build path/to/deck.json <span class="tk-attribute">-o</span> build <span class="tk-attribute">--one-file</span></code></pre>
+<h2 id="the-zoomdeck-command">The <code>zoomdeck</code> command<a class="anchor" href="#the-zoomdeck-command" aria-label="Link to this section">#</a></h2><p>All configurations call a <code>zoomdeck</code> command. It exists once you have run <code>npm link</code> inside the
+Zoomdeck checkout (after <code>npm install</code>, on Node 20.19+ or 22.12+), as described under
+<a href="getting-started.html#from-the-sources">From the sources</a>; <code>zoomdeck --help</code>
+in a terminal confirms it. Inside a project that lists <code>zoomdeck</code> as a dependency, <code>npx zoomdeck</code>
+works as well.</p>
+<p>If an editor reports <strong><code>zoomdeck: command not found</code></strong> although the terminal finds it, the editor
+was started from the Dock, the Start menu or a launcher and did not read your shell profile, so
+npm's global <code>bin</code> directory (or nvm's, or Homebrew's) is missing from its <code>PATH</code>. The Emacs,
+Vim and Sublime Text setups below cope with that by themselves: when the command is not on the
+editor's path they run the <code>bin/zoomdeck.mjs</code> of the checkout they belong to with <code>node</code>, or ask
+your login shell where the command is. VS Code's tasks run in its integrated terminal, which
+loads the profile, and JetBrains IDEs inherit it too. For the remaining cases, start the editor
+from a terminal once, or put the full path of the command (<code>which zoomdeck</code>) into the
+configuration: each one names the command in a single place (<code>zoomdeck-command</code> in Emacs,
+<code>g:zoomdeck_command</code> in Vim, the task or tool definition in VS Code and JetBrains, the
+<code>shell_cmd</code> lines in Sublime Text). <code>node /path/to/Zoomdeck/bin/zoomdeck.mjs</code> is an equivalent
+that needs no link, as long as <code>node</code> itself is on that <code>PATH</code>.</p>
+<p>The configurations live in the repository under <code>editors/</code>. Highlighting adds, on top of the
+editor's Markdown, the slide and styles containers, the <code>[[directive: …]]</code> lines, <code>#id</code>s,
+<code>.classes</code>, <code>key=value</code> attributes, quoted strings and numbers. Errors in a deck appear in the
+browser with their line number (and file, for imported files), so the browser window doubles as
+the editor's problems panel.</p>
+<p><strong>If the browser opens on a page that refuses to connect</strong>, read the build panel or terminal:
+the server prints the address it actually listens on, <code>http://127.0.0.1:8000/</code> or the next free
+port when a previous preview still holds 8000. Stopping that previous preview (Tools ▸ Cancel
+Build in Sublime Text, closing the task terminal in VS Code, <code>C-c C-k</code> in Emacs, closing the
+terminal split in Vim, the stop button of the tool window in JetBrains) frees the port; a server
+also stops on its own when the program that started it ends.</p>
 <h2 id="forward-and-inverse-search">Forward and inverse search<a class="anchor" href="#forward-and-inverse-search" aria-label="Link to this section">#</a></h2><p>While the preview server runs, the editor and the browser follow each other, as a LaTeX editor
 and a PDF viewer do with SyncTeX:</p>
 <ul>
@@ -203,34 +231,6 @@ made with <code>npm link</code> follows the checkout) or by one that does not wa
 &quot;unknown command&quot; answer means the <code>zoomdeck</code> on the editor's <code>PATH</code> is outdated. The editor
 setups show the command's answer when it fails: a dialog in Sublime Text, the <code>*zoomdeck jump*</code>
 message in Emacs, the task terminal in VS Code.</p>
-<h2 id="the-zoomdeck-command">The <code>zoomdeck</code> command<a class="anchor" href="#the-zoomdeck-command" aria-label="Link to this section">#</a></h2><p>All configurations call a <code>zoomdeck</code> command. It exists once you have run <code>npm link</code> inside the
-Zoomdeck checkout (after <code>npm install</code>, on Node 20.19+ or 22.12+), as described under
-<a href="getting-started.html#the-zoomdeck-command">The <code>zoomdeck</code> command</a>; <code>zoomdeck --help</code>
-in a terminal confirms it. Inside a project that lists <code>zoomdeck</code> as a dependency, <code>npx zoomdeck</code>
-works as well.</p>
-<p>If an editor reports <strong><code>zoomdeck: command not found</code></strong> although the terminal finds it, the editor
-was started from the Dock, the Start menu or a launcher and did not read your shell profile, so
-npm's global <code>bin</code> directory (or nvm's, or Homebrew's) is missing from its <code>PATH</code>. The Emacs,
-Vim and Sublime Text setups below cope with that by themselves: when the command is not on the
-editor's path they run the <code>bin/zoomdeck.mjs</code> of the checkout they belong to with <code>node</code>, or ask
-your login shell where the command is. VS Code's tasks run in its integrated terminal, which
-loads the profile, and JetBrains IDEs inherit it too. For the remaining cases, start the editor
-from a terminal once, or put the full path of the command (<code>which zoomdeck</code>) into the
-configuration: each one names the command in a single place (<code>zoomdeck-command</code> in Emacs,
-<code>g:zoomdeck_command</code> in Vim, the task or tool definition in VS Code and JetBrains, the
-<code>shell_cmd</code> lines in Sublime Text). <code>node /path/to/Zoomdeck/bin/zoomdeck.mjs</code> is an equivalent
-that needs no link, as long as <code>node</code> itself is on that <code>PATH</code>.</p>
-<p>The configurations live in the repository under <code>editors/</code>. Highlighting adds, on top of the
-editor's Markdown, the slide and styles containers, the <code>[[directive: …]]</code> lines, <code>#id</code>s,
-<code>.classes</code>, <code>key=value</code> attributes, quoted strings and numbers. Errors in a deck appear in the
-browser with their line number (and file, for imported files), so the browser window doubles as
-the editor's problems panel.</p>
-<p><strong>If the browser opens on a page that refuses to connect</strong>, read the build panel or terminal:
-the server prints the address it actually listens on, <code>http://127.0.0.1:8000/</code> or the next free
-port when a previous preview still holds 8000. Stopping that previous preview (Tools ▸ Cancel
-Build in Sublime Text, closing the task terminal in VS Code, <code>C-c C-k</code> in Emacs, closing the
-terminal split in Vim, the stop button of the tool window in JetBrains) frees the port; a server
-also stops on its own when the program that started it ends.</p>
 <h2 id="visual-studio-code">Visual Studio Code<a class="anchor" href="#visual-studio-code" aria-label="Link to this section">#</a></h2><table>
 <thead>
 <tr>
@@ -315,8 +315,9 @@ therefore means an Emacs older than this package: reload <code>zoomdeck.el</code
 styles block get the mappings <strong>&lt;leader&gt;zb</strong> (<code>:ZoomdeckPreview</code>, in a terminal split),
 <strong>&lt;leader&gt;zj</strong> (<code>:ZoomdeckJump</code>, the stop of the cursor line in the browser) and
 <strong>&lt;leader&gt;zp</strong> (<code>:ZoomdeckBuild</code>), plus Ctrl+Alt+B, J and P where the terminal or GUI
-delivers them (Neovim in a modern terminal, gvim, MacVim), are saved after <code>updatetime</code> idle milliseconds (lowered to
-one second), and highlight the dialect through <code>after/syntax/markdown.vim</code>. E or Alt+click in
+delivers them (Neovim in a modern terminal, gvim, MacVim). Such buffers are saved after
+<code>updatetime</code> idle milliseconds (lowered to one second) and highlight the dialect through
+<code>after/syntax/markdown.vim</code>. E or Alt+click in
 the browser brings Vim to the line through its server: Neovim always has one, Vim needs
 <code>+clientserver</code> and a name (<code>vim --servername DECK</code>; gvim and MacVim name themselves), and
 without one the preview starts without inverse search. The plugin finds the command on Vim's
@@ -344,11 +345,11 @@ with the configured editor.</p>
 
     </article>
     <footer class="pager">
-      <a class="prev" href="getting-started.html">← Getting started</a>
+      <a class="prev" href="concepts.html">← Concepts</a>
       <a class="next" href="desktop.html">The desktop app →</a>
     </footer>
   </main>
-  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#the-loop">The loop</a></li><li><a href="#forward-and-inverse-search">Forward and inverse search</a></li><li><a href="#the-zoomdeck-command">The zoomdeck command</a></li><li><a href="#visual-studio-code">Visual Studio Code</a></li><li><a href="#sublime-text">Sublime Text</a></li><li><a href="#emacs">Emacs</a></li><li><a href="#vim-and-neovim">Vim and Neovim</a></li><li><a href="#jetbrains-ides">JetBrains IDEs</a></li><li><a href="#any-other-editor">Any other editor</a></li></ul></nav>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#the-loop">The loop</a></li><li><a href="#the-zoomdeck-command">The zoomdeck command</a></li><li><a href="#forward-and-inverse-search">Forward and inverse search</a></li><li><a href="#visual-studio-code">Visual Studio Code</a></li><li><a href="#sublime-text">Sublime Text</a></li><li><a href="#emacs">Emacs</a></li><li><a href="#vim-and-neovim">Vim and Neovim</a></li><li><a href="#jetbrains-ides">JetBrains IDEs</a></li><li><a href="#any-other-editor">Any other editor</a></li></ul></nav>
 </div>
 </body>
 </html>

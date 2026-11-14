@@ -13,7 +13,7 @@ heading: color=BLUE_E
 ::: slide {#tour width=36}
 # Zoomdeck {x=-17.35 y=9.2}
 
-Zoomdeck makes zooming presentations: a forest of slides written in Markdown, most often a single tree, with formulas, images, diagrams and animations, that the browser plays by zooming into each slide and back out. The first seven chapters show what it does; the six sections that follow cover the dialect and the player in full, each chapter next to the markup that produces it. Press → to follow the slides in order, pick a slide from the outline (O), or click a chapter to jump to it. {x=-17.35 y=8.1 width=27 font_size=24}
+Zoomdeck makes zooming presentations: a forest of slides written in Markdown, most often a single tree, with formulas, images, diagrams and animations, that the browser plays by zooming into each slide and back out; the places where it pauses are its stops. The first seven chapters show what it does; the six sections that follow cover the dialect and the player in full, each chapter next to the markup that produces it. Press → to follow the slides in order, pick a slide from the outline (O), or click a chapter to jump to it. {x=-17.35 y=8.1 width=27 font_size=24}
 
 [Documentation ↗]{#doc-link x=17.35 y=9.2 anchor=right-baseline font_size=26 color=BLUE_E href=https://puppis.github.io/zoomdeck/}
 
@@ -39,11 +39,11 @@ Zoomdeck makes zooming presentations: a forest of slides written in Markdown, mo
 [[include: #feat-pen x=-13.2 y=-4.9 width=8.6 skip_return=true preview=true]]
 [[rectangle: #root-hit-feat-pen x=-13.2 y=-4.9 width=8.6 height=4.84 opacity=0 href=#slide=feat-pen]]
 
-[6 · Camera, recording, video]{#root-cap-feat-recording x=-4.4 y=-2.15 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-recording}
+[6 · Camera, recording and video]{#root-cap-feat-recording x=-4.4 y=-2.15 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-recording}
 [[include: #feat-recording x=-4.4 y=-4.9 width=8.6 skip_return=true preview=true]]
 [[rectangle: #root-hit-feat-recording x=-4.4 y=-4.9 width=8.6 height=4.84 opacity=0 href=#slide=feat-recording]]
 
-[7 · Formulas, diagrams, motion]{#root-cap-feat-math x=4.4 y=-2.15 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-math}
+[7 · Formulas, diagrams and motion]{#root-cap-feat-math x=4.4 y=-2.15 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-math}
 [[include: #feat-math x=4.4 y=-4.9 width=8.6 skip_return=true preview=true]]
 [[rectangle: #root-hit-feat-math x=4.4 y=-4.9 width=8.6 height=4.84 opacity=0 href=#slide=feat-math]]
 
@@ -100,7 +100,7 @@ zoomdeck build paper.pdf -o out
 
 [[subslide: PaperPage x=4.3 y=-0.5 width=10.2 preview=true]]
 
-The pen, the spotlight, recording and printing work on a PDF as on any deck. On the right, the first page of a PDF typeset with LaTeX, drawn inside this slide; the player, the `zoomdeck` command, the dev page and the desktop app open the whole file. {x=-9.35 y=-4.5 width=18.7 font_size=16 color=GRAY}
+The pen, the spotlight, recording and printing work on a PDF as on any deck. On the right, the first page of a PDF typeset with LaTeX, drawn inside this slide; the player, the `zoomdeck` command and the desktop app open the whole file. {x=-9.35 y=-4.5 width=18.7 font_size=16 color=GRAY}
 :::
 
 ::: slide {#feat-plain width=20}
@@ -138,9 +138,9 @@ The pen, the spotlight, recording and printing work on a PDF as on any deck. On 
 
 [Visited first to last; the player cuts from each to the next.]{#feat-plain-cap x=0.6 y=-0.9 width=9 font_size=18 color=GRAY}
 
-A deck of your own is a Markdown file of `::: slide` containers. Slides that include no other slide are simply visited in order, with cuts and no animation, like the pages of a document. {#feat-plain-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+A deck of your own is a Markdown file of `::: slide` containers. Slides that no other slide includes are roots, visited in order with a cut from one to the next, like the pages of a document. {#feat-plain-key x=-9.35 y=-3.6 width=18.7 font_size=20}
 
-Each slide keeps its steps, fragments and animations; a slide may still include children of its own, which zoom as usual. {#feat-plain-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+A slide still shows its content click by click, and may include children of its own, which zoom as usual. {#feat-plain-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
 :::
 
 ::: slide {#feat-tree width=20}
@@ -171,7 +171,7 @@ Each slide keeps its steps, fragments and animations; a slide may still include 
 
 An `[[include: #id …]]` places one slide inside another, as a viewport. The camera zooms into each child in turn, goes straight from a child to its next sibling, and zooms back out after the last one. {#feat-tree-key x=-9.35 y=-3.0 width=10 font_size=18}
 
-Here: first child, then its sibling, then down into the sibling's own child, then back out. {#feat-tree-more x=-9.35 y=-5.0 width=10 font_size=15 color=GRAY}
+Here: first child, then its sibling, then down into the sibling's own child, then back out. {#feat-tree-more x=-9.35 y=-4.85 width=12 font_size=15 color=GRAY}
 :::
 
 ::: slide {#feat-first}
@@ -233,7 +233,7 @@ A tablet or an iPad pairs with the player from the settings (Tablet) and becomes
 
 [[snippet: docs id=feat-recording page=features.html#camera-recording-and-video]]
 
-The camera (**C**) shows you next to or over the slides, in a corner or full screen. A recording (**R**) keeps the whole talk on one clock: your voice, the camera and every move on the deck, strokes included; it plays back on the deck itself, where it stays navigable, as the **▶ Talk** button beside Record, and exports as a plain video file. A shared screen (**S**), another application say, is filmed as part of the talk; **P** prints the deck to a PDF. {x=-9.35 y=3.9 width=11.2 font_size=19}
+The camera (**C**) shows you next to or over the slides, in a corner or full screen. A recording (**R**) keeps the whole talk on one clock: your voice, the camera and every move on the deck, strokes included; it plays back on the deck itself, where it stays navigable, as the **▶ Talk** button beside Record, and exports as a plain video file. A shared screen (**S**), another application for instance, is filmed as part of the talk; **P** prints the deck to a PDF. {x=-9.35 y=3.9 width=11.2 font_size=19}
 
 [[icon: user #feat-rec-you x=-7.6 y=-1.6 size=2 color=GRAY]]
 [[icon: desktop #feat-rec-deck x=-3.6 y=-1.6 size=2 color=GRAY]]
@@ -247,7 +247,7 @@ The camera (**C**) shows you next to or over the slides, in a corner or full scr
 
 [a talk (R), a video]{#feat-rec-cap-file at=left:#feat-rec-file.right dx=0.25 font_size=15 color=GRAY}
 
-Try it here: press R, speak, draw, turn the camera on with C, stop, then press ▶ Talk; each asks the browser for permission the first time. The desktop app is to render a recording off line as well, faster than real time, into one flat video file. {x=2.3 y=-0.4 width=7.2 font_size=17 color=GRAY}
+Try it here: press R, speak, draw, turn the camera on with C, stop, then press ▶ Talk; each asks the browser for permission the first time. A later version of the desktop app will render a recording offline as well, faster than real time, into one flat video file. {x=2.3 y=-0.4 width=7.0 font_size=17 color=GRAY}
 :::
 
 ::: slide {#feat-math width=20}
@@ -285,7 +285,7 @@ Try it here: press R, speak, draw, turn the camera on with C, stop, then press �
 
 [Written by hand]{#feat-written x=4.4 y=-2.6 font=Zeyada font_size=40 enter=write step=3}
 
-Formulas are LaTeX, rendered by MathJax and zoomable like everything else. Diagrams are directives: arrows, boxes and blobs around elements, icons, any of them hand-drawn with `sketch=true`. Animations in the style of Manim come with the same directives, one step per click: here a move, a morph, and a line written in the handwriting face. {#feat-math-key x=-9.35 y=-4.3 width=18.7 font_size=16 color=GRAY}
+Formulas are LaTeX, rendered by MathJax and zoomable like everything else. Diagrams are directives: arrows, boxes and blobs around elements, icons, any of them hand-drawn with `sketch=true`. Animations come with the same directives, one step per click: here a move, a morph, and a line written in the handwriting face. {#feat-math-key x=-9.35 y=-4.3 width=18.7 font_size=16 color=GRAY}
 :::
 
 ::: slide {#sec-content width=36}
@@ -357,7 +357,7 @@ Shapes, arrows and lines, braces and boxes, icons and blobs, drawn crisply or by
 [[include: #shapes x=-12 y=2.9 width=10 skip_return=true preview=true]]
 [[rectangle: #sec-diagrams-hit-shapes x=-12 y=2.9 width=10 height=5.625 opacity=0 href=#slide=shapes]]
 
-[Braces, boxes and opacity]{#sec-diagrams-cap-more-shapes x=0 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=more-shapes}
+[More shapes, braces and boxes]{#sec-diagrams-cap-more-shapes x=0 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=more-shapes}
 [[include: #more-shapes x=0 y=2.9 width=10 skip_return=true preview=true]]
 [[rectangle: #sec-diagrams-hit-more-shapes x=0 y=2.9 width=10 height=5.625 opacity=0 href=#slide=more-shapes]]
 
@@ -475,9 +475,9 @@ Larger decks: the order in which children are visited, splitting the markup into
 
 [[include: #branch x=4.7 y=-0.4 width=9 angle=0.08 preview=true]]
 
-Every slide is a `::: slide {#id}` container with its own canvas, 16 × 9 by default. Slides that nothing includes are roots, visited first to last with cuts between them; `[[include: #id …]]` places a child viewport in the parent’s coordinates, and the camera zooms into each child in turn and back out after the last. {#tree-key x=-9.35 y=-3.5 width=18.7 font_size=18}
+Every slide is a `::: slide {#id}` container with its own canvas, 16 × 9 by default. Slides that nothing includes are roots, visited first to last with cuts between them; `[[include: #id …]]` places a child viewport in the parent's coordinates, and the camera zooms into each child in turn and back out after the last. {#tree-key x=-9.35 y=-3.5 width=18.7 font_size=18}
 
-Includes without `step` are visited in source order after the parent’s own steps. `width` or `height` sizes the viewport (the other follows the child’s proportions) and `angle` tilts it, in radians. {#tree-more x=-9.35 y=-4.9 width=18.7 font_size=16 color=GRAY}
+Includes without `step` are visited in source order after the parent's own click steps (`step=N` shows an element at the N-th click; section 5 has the rest); `preview=true` shows a child before its first visit; `width` or `height` sizes the viewport and `angle` tilts it, in radians. {#tree-more x=-9.35 y=-4.9 width=18.7 font_size=16 color=GRAY}
 :::
 
 ::: slide {#branch}
@@ -578,7 +578,7 @@ Macros from deck.json: $\N \subset \R$. {x=0.6 y=-1.8 width=9}
 
 Single dollars give inline math and `$$` lines a display formula; LaTeX renders through MathJax, with the `macros` of deck.json at hand. {#math-key x=-9.35 y=-3.6 width=18.7 font_size=20}
 
-A `::: {.element …}` container positions, sizes or animates a formula; `\\textcolor` and `\\color` accept dvipsnames and CSS colors. {#math-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+A `::: {.element …}` container positions, sizes or animates a formula; `\textcolor` and `\color` accept dvipsnames and CSS colors. {#math-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
 :::
 
 ::: slide {#images width=20}
@@ -614,13 +614,13 @@ Raster files may be PNG, JPEG, GIF or WebP. A multi-frame APNG or GIF animates w
 
 **Tools.** L spotlight or laser (hold Shift to show it) · W whiteboard · C camera · S screen · R record · P print. {#player-tools below:#player-keys left-aligned:#player-keys buff=0.5 width=9 font_size=20}
 
-**Pointer.** D turns drawing on (so does the whiteboard): a drag then draws with the pen (with pressure on a pencil or stylus), the pointer is a pencil in its color, and links are inert; Shift + drag highlights. The colors in the footer, and the keys 1 to 4, toggle drawing: a color turns it on in that color, and the color in use turns it off again. A click never changes the stop unless the settings bind a key to it. {#player-pointer below:#player-tools left-aligned:#player-tools buff=0.5 width=9 font_size=20}
+**Pointer.** D turns drawing on (so does the whiteboard): a drag then draws with the pen (with pressure on a pencil or stylus), the pointer is a pencil in its color, and links are inert; Shift + drag highlights. The colors in the footer, and the keys 1 to 4, toggle drawing: a color turns it on in that color, and the color in use turns it off again. A click never changes the stop unless the settings bind a modifier to it. {#player-pointer below:#player-tools left-aligned:#player-tools buff=0.5 width=9 font_size=20}
 
 **Links.** `#step=N` or `#slide=id` opens a stop directly, also as `href=` on any element, followed with a click (the front page is built that way; a drag over it still draws); the outline lists every slide. {#player-links x=0.6 y=3.9 width=9 font_size=20}
 
 **Tablet.** A tablet on the same network pairs from the settings and draws on the deck. {#player-tablet below:#player-links left-aligned:#player-links buff=0.5 width=9 font_size=20}
 
-**Export.** `zoomdeck build deck.json -o out` writes a static folder, `--one-file` a single HTML file with the player, fonts and assets embedded (this tour is such a file). Print writes a PDF, a page per stage or per slide. {#player-export below:#player-tablet left-aligned:#player-tablet buff=0.5 width=9 font_size=20}
+**Export.** `zoomdeck build deck.json -o out` writes a static folder, `--one-file` a single HTML file with the player, fonts and assets embedded (this tour is such a file). Print writes a PDF, a page per stop or per slide. {#player-export below:#player-tablet left-aligned:#player-tablet buff=0.5 width=9 font_size=20}
 
 Every key and gesture can be changed in the settings (,), which also hold the pen, the recording devices and the tablet pairing. {#player-more x=-9.35 y=-4.6 width=18.7 font_size=16 color=GRAY}
 :::
@@ -646,7 +646,7 @@ Every key and gesture can be changed in the settings (,), which also hold the pe
 
 [[arrow: (-9.2,-3.6) -> (-1.0,-3.6), #tablet-arrow, color=GRAY, stroke_width=1]]
 
-1. **Pair.** Start the preview so that the tablet can reach it, for this tour `zoomdeck serve examples/tour/deck.json --host` from the checkout (or `npm run dev -- --host`), open the settings here (⚙ or ,), choose "Show the pairing code" under Tablet and scan it with the tablet, over Wi-Fi or over the cable with Internet Sharing to the iPad switched on. {x=0.6 width=9 font_size=18}
+1. **Pair.** Start the preview so that the tablet can reach it (for this tour, `zoomdeck serve examples/tour/deck.json --host` from the checkout, or `npm run dev -- --host`). Open the settings here (⚙ or ,), choose "Show the pairing code" under Tablet and scan it with the tablet, over Wi-Fi or over the cable with Internet Sharing to the iPad switched on. {x=0.6 width=9 font_size=18}
 2. **Trace** the wave and the circle on the tablet: the lines should appear here as you draw, without a visible delay. {x=0.6 width=9 font_size=18}
 3. **Press** lightly, then harder, along the strip: the width should follow. The Pen settings decide how much and redraw the strokes. {x=0.6 width=9 font_size=18}
 4. **Rest your palm** on the glass while writing in the box: a finger never draws. {x=0.6 width=9 font_size=18}
@@ -685,7 +685,7 @@ A recording keeps your voice, the camera while you have it on, and every move on
 [media + timeline]{#recording-cap-file at=left:#recording-file.right dx=0.25 font_size=15 color=GRAY}
 
 1. **Set up** once: ⚙ settings ▸ Recording ▸ Detect devices; choose the microphone and the camera, test them, and pick the corner and size of your picture. {x=2.3 width=7.4 font_size=17}
-2. **Record** with R or the ● Record button; a dialog says what will be kept, then the header counts the time. Present as usual: keys, pen, W for the whiteboard, the Camera button or C for the camera (in a corner, full frame, off), recorded while it is on; S films the screen while you work in another application. Pause leaves a gap out. {x=2.3 width=7.4 font_size=17}
+2. **Record** with R or the ● Record button; a dialog says what will be kept, then the header counts the time. Present as usual: keys, pen, W for the whiteboard, the Camera button or C for the camera (in a corner, full frame, off), recorded while it is on; S films the screen while you work in another application. A pause leaves no gap: the talk resumes where it stopped. {x=2.3 width=7.4 font_size=17}
 3. **Stop** saves the talk in `recordings/` next to the deck when the deck is served by `zoomdeck serve` (downloads otherwise). R later offers to continue it where it stopped. {x=2.3 width=7.4 font_size=17}
 4. **Play** it with ▶ Talk in the footer: the deck follows the recording; Space pauses, ← and → seek, Esc leaves. {x=2.3 width=7.4 font_size=17}
 5. **Export video** in the playback bar renders it in real time: slides or whiteboard with ink, camera in a corner or full frame, and the sound. {x=2.3 width=7.4 font_size=17}
@@ -702,7 +702,7 @@ Try it on this very slide: record a few seconds, draw, turn the camera on with C
 [[rectangle: #box x=-6.5 y=-1.5 width=3.4 height=1.8 corner_radius=0.3 color=BLUE_E fill_opacity=0.15]]
 [[circle: #disk right-of:#box buff=2.5 radius=0.9 color=GREEN_E href=https://puppis.github.io/zoomdeck/]]
 [[polyline: #zigzag points="(3,-2.4) (5,-0.6) (7,-2.2) (9,-0.4)" color=ORANGE]]
-[[arrow: #box -> #disk, #edge, label="**labelled** $\to$"]]
+[[arrow: #box -> #disk, #edge, label="**labeled** $\to$"]]
 [[line: #disk -> (1,-3.1), #drop, color=GRAY]]
 ```
 
@@ -712,7 +712,7 @@ Try it on this very slide: record a few seconds, draw, turn the camera on with C
 
 [[polyline: #zigzag points="(3,-2.4) (5,-0.6) (7,-2.2) (9,-0.4)" color=ORANGE]]
 
-[[arrow: #box -> #disk, #edge, label="**labelled** $\to$"]]
+[[arrow: #box -> #disk, #edge, label="**labeled** $\to$"]]
 
 [[line: #disk -> (1,-3.1), #drop, color=GRAY]]
 
@@ -786,33 +786,33 @@ Point-defined shapes (`polygon`, `polyline`, `arc`) keep their coordinates unles
 [[snippet: docs id=icons page=icons.html]]
 
 ```markdown {#icons-source x=-9.35 y=3.9 width=18.7}
-[[icon: user #alice x=-7 y=-1.1 size=1.4 color=BLUE_E label="Alice"]]
-[[icon: server #api right-of:#alice buff=3 size=1.4 color=GREEN_E fill_opacity=0.25 label="api" label_side=above]]
-[[icon: database #db right-of:#api buff=3 size=1.4 color=GOLD_E fill_opacity=0.3 label="orders"]]
-[[icon: cloud #cdn right-of:#db buff=2 size=1.4 color=TEAL_E label="cdn" sketch=true]]
+[[icon: user #alice x=-7.6 y=-1.1 size=1.4 color=BLUE_E label="Alice"]]
+[[icon: server #api right-of:#alice buff=2.6 size=1.4 color=GREEN_E fill_opacity=0.25 label="api" label_side=above]]
+[[icon: database #db right-of:#api buff=2.6 size=1.4 color=GOLD_E fill_opacity=0.3 label="orders"]]
+[[icon: cloud #cdn right-of:#db buff=1.8 size=1.4 color=TEAL_E label="cdn" sketch=true]]
 [[arrow: #alice -> #api, #req, label="HTTPS"]]
 [[arrow: #api -> #db, #sql, label="SQL", step=1]]
-[[artwork: traffic-light #light right-of:#cdn buff=1.2 size=1.4 lit=red label="a module"]]
-[[artwork: rocket #rocket right-of:#light buff=1 size=1.4 color=BLUE_E label="an SVG"]]
+[[artwork: traffic-light #light right-of:#cdn buff=1.0 size=1.4 lit=red label="a module"]]
+[[artwork: rocket #rocket right-of:#light buff=0.8 size=1.4 color=BLUE_E label="an SVG"]]
 ```
 
-[[icon: user #alice x=-7 y=-1.1 size=1.4 color=BLUE_E label="Alice"]]
+[[icon: user #alice x=-7.6 y=-1.1 size=1.4 color=BLUE_E label="Alice"]]
 
-[[icon: server #api right-of:#alice buff=3 size=1.4 color=GREEN_E fill_opacity=0.25 label="api" label_side=above]]
+[[icon: server #api right-of:#alice buff=2.6 size=1.4 color=GREEN_E fill_opacity=0.25 label="api" label_side=above]]
 
-[[icon: database #db right-of:#api buff=3 size=1.4 color=GOLD_E fill_opacity=0.3 label="orders"]]
+[[icon: database #db right-of:#api buff=2.6 size=1.4 color=GOLD_E fill_opacity=0.3 label="orders"]]
 
-[[icon: cloud #cdn right-of:#db buff=2 size=1.4 color=TEAL_E label="cdn" sketch=true]]
+[[icon: cloud #cdn right-of:#db buff=1.8 size=1.4 color=TEAL_E label="cdn" sketch=true]]
 
 [[arrow: #alice -> #api, #req, label="HTTPS"]]
 
 [[arrow: #api -> #db, #sql, label="SQL", step=1]]
 
-[[artwork: traffic-light #light right-of:#cdn buff=1.2 size=1.4 lit=red label="a module"]]
+[[artwork: traffic-light #light right-of:#cdn buff=1.0 size=1.4 lit=red label="a module"]]
 
-[[artwork: rocket #rocket right-of:#light buff=1 size=1.4 color=BLUE_E label="an SVG"]]
+[[artwork: rocket #rocket right-of:#light buff=0.8 size=1.4 color=BLUE_E label="an SVG"]]
 
-`[[icon: name #id …]]` draws one of 39 symbols built from geometry; `size` sets its height, `label` and `label_side` caption it. `[[artwork: name …]]` draws one of the deck's own: an SVG, or a module drawing with the engine, in its `artworks/` folder. {#icons-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+`[[icon: name #id …]]` draws one of 39 built-in symbols; `size` sets its height, `label` and `label_side` caption it. `[[artwork: name …]]` draws one of the deck's own: an SVG, or a module drawing with the engine, in its `artworks/` folder. {#icons-key x=-9.35 y=-3.6 width=18.7 font_size=20}
 
 People and machines (user, server, database, cloud…), files (document, folder, message…), marks (check, question, warning, pin…) and actions (download, search, trash, gear…). Icons are positioned, connected, enclosed, animated and sketched like shapes. {#icons-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
 :::
@@ -845,7 +845,7 @@ People and machines (user, server, database, cloud…), files (document, folder,
 
 A `box` or `blob` lists the elements it surrounds before the first comma, then its own `#id`: the box grows their joint rectangle by `buff`, the blob is a smooth curve at distance `buff` from every member. {#enclosures-key x=-9.35 y=-3.6 width=18.7 font_size=20}
 
-`smoothness` (0 to 1) decides how softly neighbours merge. `tremble=3` makes vector geometry vibrate from step 3 on (`N-M` for a range, `true` from its appearance) and pairs well with `sketch=true`. {#enclosures-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+`smoothness` (0 to 1) decides how softly neighbors merge. `tremble=3` makes vector geometry vibrate from step 3 on (`N-M` for a range, `true` from its appearance) and pairs well with `sketch=true`. {#enclosures-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
 :::
 
 ::: slide {#layout width=20}
@@ -912,9 +912,9 @@ For text, `x` is the left edge and `y` the first baseline; images, shapes and ch
 
 [Starts 0.5 s later]{#later below:#slow left-aligned:#slow step=1 lag=0.5 color=GREEN_E}
 
-`anchor` names the point that `x`, `y` position: `center`, `top`, `bottom`, `left`, `right`, the four corners, and `left-baseline` or `right-baseline` for text (the red dot marks the image’s anchor). {#anchors-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+`anchor` names the point that `x`, `y` position: `center`, `top`, `bottom`, `left`, `right`, the four corners, and `left-baseline` or `right-baseline` for text (the red dot marks the image's anchor). {#anchors-key x=-9.35 y=-3.6 width=18.7 font_size=20}
 
-`dx`/`dy` nudge any placement. `run_time` and `lag` time an element’s own fades; elements sharing a step play in one click. {#anchors-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+`dx`/`dy` nudge any placement. `run_time` and `lag` time an element's own fades; elements sharing a step play in one click. {#anchors-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
 :::
 
 ::: slide {#styles width=20}
@@ -927,7 +927,7 @@ For text, `x` is the left edge and `y` the first baseline; images, shapes and ch
 [My top-left at its bottom-right]{#tl at=top-left:#ref.bottom-right dx=0.2 color=GOLD_E}
 [Centered on (5, -2.2)]{#cp at=center:(5,-2.2)}
 [A footnote with the .footnote style from deck.json]{.footnote at=#ref.bottom-left anchor=top-left dy=-0.8}
-[Styled by .callout from the styles block]{#co .callout at=#cp.top anchor=bottom dy=0.3}
+[Styled by .callout]{#co .callout at=#cp.top anchor=bottom dy=0.3}
 ```
 
 ```json {#styles-json x=-9.35 y=1.4 width=9.1}
@@ -949,9 +949,9 @@ heading: color=BLUE_E
 
 [A footnote with the .footnote style from deck.json]{.footnote at=#ref.bottom-left anchor=top-left dy=-0.8}
 
-[Styled by .callout from the styles block]{#co .callout at=#cp.top anchor=bottom dy=0.3}
+[Styled by .callout]{#co .callout at=#cp.top anchor=bottom dy=0.3}
 
-`at=` puts one anchor of an element on an anchor of another (`#id.anchor`, center by default) or on a point; `anchor:` before the target, or `anchor=`, chooses the element’s own point. {#styles-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+`at=` puts one anchor of an element on an anchor of another (`#id.anchor`, center by default) or on a point; `anchor:` before the target, or `anchor=`, chooses the element's own point. {#styles-key x=-9.35 y=-3.6 width=18.7 font_size=20}
 
 Named styles come from `styles` in deck.json or a `::: styles` block: `.class` tokens apply them, and roles such as `heading`, `body`, `code` or `shape` apply by themselves (every heading of this deck is blue because of the block above). {#styles-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
 :::
@@ -962,7 +962,7 @@ Named styles come from `styles` in deck.json or a `::: styles` block: `.class` t
 [[snippet: docs id=groups page=groups.html]]
 
 ```markdown {#groups-source x=-9.35 y=3.9 width=9.1 font_size=17}
-::: {.group #automaton x=2 y=-0.5 step=1}
+::: {.group #automaton x=2 y=-0.5 anchor=origin step=1}
 [[circle: #q0 x=0 y=0 radius=0.6 color=BLUE_E]]
 [$q_0$]{at=#q0.center anchor=center}
 [[circle: #q1 x=3 y=0 radius=0.6 color=BLUE_E]]
@@ -974,7 +974,7 @@ Named styles come from `styles` in deck.json or a `::: styles` block: `.class` t
 [[box: #automaton, #gbox, buff=0.3, color=GREEN_E, step=2]]
 ```
 
-::: {.group #automaton x=2 y=-0.5 step=1}
+::: {.group #automaton x=2 y=-0.5 anchor=origin step=1}
 [[circle: #q0 x=0 y=0 radius=0.6 color=BLUE_E]]
 [$q_0$]{at=#q0.center anchor=center}
 [[circle: #q1 x=3 y=0 radius=0.6 color=BLUE_E]]
@@ -986,7 +986,7 @@ Named styles come from `styles` in deck.json or a `::: styles` block: `.class` t
 
 [[box: #automaton, #gbox, buff=0.3, color=GREEN_E, step=2]]
 
-A `::: {.group #id}` container lays out its members in their own coordinates and behaves as one element: `x`, `y` place its origin (the red dot) and it fades in and out as a whole. {#groups-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+A `::: {.group #id}` container lays out its members in their own coordinates and behaves as one element: `x`, `y` place its center, or with `anchor=origin` its local origin (the red dot), and it fades in and out as a whole. {#groups-key x=-9.35 y=-3.6 width=18.7 font_size=20}
 
 `anchor=` picks a bounding-box point instead of the origin; relative constraints and `at=` work on the group, and braces, boxes, blobs and arrows attach to it. Members reference only other members. {#groups-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
 :::
@@ -1019,7 +1019,7 @@ zoomdeck build examples/tour/deck.json \
 
 `deck.json` names the Markdown file and sets the title, the viewport proportions, `layout` (fonts and sizes), `presenter` (transitions and pauses), LaTeX `macros`, `styles` and the `classes` module of code-authored slides; every key has a default. {#config-key x=-9.35 y=-3.6 width=18.7 font_size=20}
 
-The `zoomdeck` command previews a deck with live reload and exports it as a folder or as one file; the editor setups bind both to shortcuts. {#config-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+The `zoomdeck` command previews a deck with live reload and exports it as a folder or as one file; the editor integrations described in the documentation bind both to shortcuts. {#config-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
 :::
 
 ::: slide {#fragments width=20}
@@ -1066,7 +1066,7 @@ The `zoomdeck` command previews a deck with live reload and exports it as a fold
 
 [Step 6 follows step 4 directly]{#six x=0.6 y=-2.3 step=6 color=RED}
 
-`step=N` fades an element in and `hide=M` fades it out; `[[show]]` and `[[hide]]` repeat changes. All changes sharing a number play together, then the deck pauses. {#fragments-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+`step=N` fades an element in and `hide=M` fades it out; `[[show: #id step=N]]` and `[[hide: #id step=N]]` change an element again at a later step. All changes sharing a number play together, then the deck pauses. {#fragments-key x=-9.35 y=-3.6 width=18.7 font_size=20}
 
 `[[next: step=N]]` advances automatically after N; `[[skip_next: step=N]]` drops the following event, be it a step, a child visit or the return to the parent. {#fragments-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
 :::
@@ -1088,7 +1088,7 @@ The `zoomdeck` command previews a deck with live reload and exports it as a fold
 
 Look at this slide from its parent: the panel and the caption are gone while this ordinary text stays. {#focus-key x=-9.35 y=-3.6 width=18.7 font_size=20}
 
-Focus-only elements are static (no `step`, `hide` or `play`), are drawn behind the slide’s content and still work as positioning anchors. {#focus-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+Focus-only elements are static (no `step`, `hide` or `play`), are drawn behind the slide's content and still work as positioning anchors. {#focus-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
 :::
 
 ::: slide {#children width=20}
@@ -1113,9 +1113,9 @@ Focus-only elements are static (no `step`, `hide` or `play`), are drawn behind t
 
 [[include: #missing x=7.3 y=2.6 width=4]]
 
-An include with `step` interleaves the child visit with the parent’s fragments; without `step` it is visited in source order after the numbered steps. An undefined slide, here `#missing`, is a red placeholder, skipped in playback. {#children-key x=-9.35 y=-3.6 width=18.7 font_size=20}
+An include with `step` interleaves the child visit with the parent's fragments; without `step` it is visited in source order after the numbered steps. An undefined slide, here `#missing`, is a red placeholder, skipped in playback. {#children-key x=-9.35 y=-3.6 width=18.7 font_size=20}
 
-The camera leaves a child for the next sibling and zooms back to the parent only after the last one: `return_to_parent` brings it back earlier (here, for step 2), `skip_return` not at all. `preview=true` shows a child before its first visit; `transition=cut` cuts into the child instead of zooming, like a PDF page; the way back follows the parent. {#children-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+The camera leaves a child for the next sibling and zooms back to the parent only after the last one: `return_to_parent` brings it back earlier (here, for step 2), `skip_return` not at all. `transition=cut` cuts into the child instead of zooming, like a PDF page; the way back follows the parent. {#children-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
 :::
 
 ::: slide {#visited-first}
@@ -1163,9 +1163,9 @@ Mark one slide or include with `start_here=true` to open playback there. While e
 
 [[include: #appendix x=5 y=-1.4 width=5 preview=true]]
 
-`[[import: path.md]]` splices a file into the document before parsing: between slides it adds slides and style blocks, inside a slide it adds elements and directives. `[[snippet: name key=value]]` expands markup written once, in a `::: snippet` block or in `snippets/name.md`, filling its `{{placeholders}}`: this deck's documentation links are one such snippet. {#imports-key x=-9.35 y=-2.95 width=18.7 font_size=20}
+`[[import: path.md]]` splices a file in before parsing: between slides it adds slides and style blocks, inside a slide it adds elements. `[[snippet: name key=value]]` expands markup written once, a `::: snippet` block or `snippets/name.md`, filling its `{{placeholders}}`. {#imports-key x=-9.35 y=-3.45 width=18.7 font_size=20}
 
-Paths are relative to the importing file, a file may import others, and errors name the file and line. {#imports-more x=-9.35 y=-4.6 width=18.7 font_size=16 color=GRAY}
+Paths are relative to the importing file, a file may import others, and errors name the file and line; the documentation links of this deck are one snippet, defined at the top of slides.md. {#imports-more x=-9.35 y=-4.65 width=18.7 font_size=16 color=GRAY}
 :::
 
 [[import: parts/appendix.md]]
@@ -1203,9 +1203,9 @@ North, 3.2, 5.0
 South, 2.1, 3.1
 ```
 
-A pipe table becomes a grid of cells, positioned and styled by a `::: {.element …}` container. A `chart` fence holds comma-separated rows, the first naming the series. {#tables-key x=-9.35 y=-1.3 width=9.1 font_size=19}
+A pipe table becomes a grid of cells, positioned and styled by a `::: {.element …}` container. A `chart` fence holds comma-separated rows, the first naming the series, or reads them from a CSV or JSON file with `src=`. {#tables-key x=-9.35 y=-1.3 width=9.1 font_size=19}
 
-Table: `rules` (all, rows, cols, outer, none), `border_color`, `header_color`, `stripe_opacity`, `fill_color`, `padding`. Chart: `type=bar|line|pie`, `colors`, `legend`, `values`, `min`/`max`. Both take `sketch=true`. {#tables-more x=-9.35 y=-3.2 width=9.1 font_size=15 color=GRAY}
+Table: `rules` (all, rows, cols, outer, none), `border_color`, `header_color`, `stripe_opacity`, `fill_color`, `padding`. Chart: `type=bar|line|pie`, `src`, `colors`, `legend`, `values`, `min`/`max`. Both take `sketch=true`. {#tables-more x=-9.35 y=-3.2 width=9.1 font_size=15 color=GRAY}
 :::
 
 ::: slide {#code-slides width=20}
@@ -1213,7 +1213,7 @@ Table: `rules` (all, rows, cols, outer, none), `border_color`, `header_color`, `
 
 [[snippet: docs id=code-slides page=code-slides.html]]
 
-```markdown {#import-source x=-9.35 y=3.9 width=9.1}
+```markdown {#code-slides-source x=-9.35 y=3.9 width=9.1}
 [[subslide: Orbit x=5 y=-0.6 width=8 step=1]]
 ```
 
@@ -1276,7 +1276,7 @@ def visit(slide):
 
 A fence names its language and takes the usual attributes: `#id`, `x`/`y`, `width` (the block shrinks to fit), `font_size`, `color`, `step`/`hide` and relative placement. {#listings-key x=-9.35 y=-3.6 width=18.7 font_size=20}
 
-Languages: python, javascript, typescript, c-like, bash, json, latex, html/svg, markdown; any other is shown as plain text. Lines never wrap. {#listings-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+Languages: python, the C family (javascript, typescript, java, c, rust, go and more), shell, json, latex, html/xml/svg and markdown; a deck adds its own in `languages/`, and any other name is shown as plain text. Lines never wrap. {#listings-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
 :::
 
 ::: slide {#animations width=20}
@@ -1288,8 +1288,8 @@ Languages: python, javascript, typescript, c-like, bash, json, latex, html/svg, 
 [[dot: #ball x=1.5 y=1.5 radius=0.3 color=GOLD_E]]
 [[arc: #orbit x=4 y=1.5 radius=2.5 start_angle=3.14 angle=-3.14 color=GRAY]]
 [[rectangle: #card x=7.5 y=-0.6 width=2 height=1.2 color=TEAL_E fill_opacity=0.3]]
-[Morph me]{#before at=center:(3,-2.6) font_size=34}
-[$x^2 + y^2 = r^2$]{#after at=center:(3,-2.6) font_size=34 step=4}
+[Morph me]{#before at=center:(2,-2.6) font_size=34}
+[$x^2 + y^2 = r^2$]{#after at=center:(2,-2.6) font_size=34 step=4}
 
 [[animate: #ball, step=1, x=6.5, run_time=1.2, rate=ease_in_out]]
 [[animate: #card, step=2, angle=0.4, scale=1.3, color=ORANGE, opacity=0.6]]
@@ -1307,9 +1307,9 @@ Languages: python, javascript, typescript, c-like, bash, json, latex, html/svg, 
 
 [[rectangle: #card x=7.5 y=-0.6 width=2 height=1.2 color=TEAL_E fill_opacity=0.3]]
 
-[Morph me]{#before at=center:(3,-2.6) font_size=34}
+[Morph me]{#before at=center:(2,-2.6) font_size=34}
 
-[$x^2 + y^2 = r^2$]{#after at=center:(3,-2.6) font_size=34 step=4}
+[$x^2 + y^2 = r^2$]{#after at=center:(2,-2.6) font_size=34 step=4}
 
 [[animate: #ball, step=1, x=6.5, run_time=1.2, rate=ease_in_out]]
 
@@ -1329,7 +1329,7 @@ Languages: python, javascript, typescript, c-like, bash, json, latex, html/svg, 
 
 `animate` moves an anchor to `x`/`y` or `at=` and applies `angle`, `scale`, `opacity` and `color`; `effect` plays a named effect; `transform` morphs one element into a hidden one; `move_along` follows a shape. {#animations-key x=-9.35 y=-1.6 width=9.1 font_size=18}
 
-All take `step`, `run_time`, `lag` and `rate`; an included slide is animated by its ID, and `enter=`/`exit=` replace an element’s fades. Effects: indicate, wiggle, circumscribe, flash, focus, grow, shrink, write, create, uncreate, draw, wave; `pulse` is the deck's own, a module in its `effects/` folder. {#animations-more x=-9.35 y=-3.7 width=9.1 font_size=15 color=GRAY}
+All take `step`, `run_time`, `lag` and `rate`; an included slide is animated by its ID, and `enter=`/`exit=` replace an element's fades. Effects: indicate, wiggle, circumscribe, flash, focus, grow, shrink, write, create, uncreate, draw, wave; `pulse` is the deck's own, a module in its `effects/` folder. {#animations-more x=-9.35 y=-3.7 width=9.6 font_size=15 color=GRAY}
 :::
 
 ::: slide {#satellite}

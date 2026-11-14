@@ -116,7 +116,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Getting started</h4>
-        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li></ul>
       </section>
       <section>
         <h4>Presenting</h4>
@@ -136,7 +136,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Motion and interaction</h4>
-        <ul><li><a href="motion.html">Motion and interaction</a></li><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li><li><a href="live-pages.html" aria-current="page">Live pages</a><ul class="subsections"><li><a href="#links">Links</a></li></ul></li></ul>
+        <ul><li><a href="motion.html">Motion and interaction</a></li><li><a href="fragments.html">Fragments and steps</a></li><li><a href="animations.html">Animations</a></li><li><a href="focus.html">Focus-only decorations</a></li><li><a href="live-pages.html" aria-current="page">Live pages</a><ul class="subsections"><li><a href="#not-to-be-confused-with-links">Not to be confused with links</a></li></ul></li></ul>
       </section>
       <section>
         <h4>Advanced</h4>
@@ -155,7 +155,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 <pre><code class="language-markdown"><span class="tk-directive">[[iframe:</span> assets/embedded.html, <span class="tk-attribute">#page</span>, <span class="tk-attribute">x=</span><span class="tk-number">5</span> <span class="tk-attribute">y=</span><span class="tk-number">-1.2</span>, <span class="tk-attribute">width=</span><span class="tk-number">8</span>, <span class="tk-attribute">height=</span><span class="tk-number">4.5</span>, <span class="tk-attribute">step=</span><span class="tk-number">2</span>, <span class="tk-attribute">poster=</span>assets/page.png<span class="tk-directive">]]</span>
 <span class="tk-directive">[[iframe:</span> https://example.org/demo, <span class="tk-attribute">#demo</span>, <span class="tk-attribute">below:#heading</span>, <span class="tk-attribute">width=</span><span class="tk-number">10</span>, <span class="tk-attribute">height=</span><span class="tk-number">6</span>, <span class="tk-attribute">title=</span><span class="tk-string">&quot;Demo&quot;</span><span class="tk-directive">]]</span></code></pre>
 <p>An <code>[[iframe: url, #id, …]]</code> embeds a web page. On the canvas it is a <strong>placeholder</strong>: the
-<code>poster=</code> image scaled into the slide, or an outlined box labelled with the <code>title</code> (or the URL).
+<code>poster=</code> image scaled into the slide, or an outlined box labeled with the <code>title</code> (or the URL).
 The placeholder takes the usual placement attributes plus <code>width</code> and <code>height</code>, <code>step</code>/<code>hide</code>,
 <code>color</code> and <code>.class</code>.</p>
 <p>The <strong>live page</strong> appears over the placeholder only once the camera has come to rest on the
@@ -166,9 +166,9 @@ keyboard to the deck.</p>
 <li>URLs must be <code>http(s)</code> or relative to the Markdown file; pages that forbid framing stay blank.</li>
 <li>The page is not drawn by the pen or spotlight overlays and is absent from exported screenshots.</li>
 <li>A poster is the only way to show the page's look in previews, since browsers do not allow
-rasterising another page.</li>
+rasterizing another page.</li>
 </ul>
-<h2 id="links">Links<a class="anchor" href="#links" aria-label="Link to this section">#</a></h2><p>Plain Markdown links in prose, <code>[label](https://…)</code>, are underlined on the canvas and clickable
+<h2 id="not-to-be-confused-with-links">Not to be confused with links<a class="anchor" href="#not-to-be-confused-with-links" aria-label="Link to this section">#</a></h2><p>Plain Markdown links in prose, <code>[label](https://…)</code>, are underlined on the canvas and clickable
 wherever they are visible; see <a href="text.html">Text</a>.</p>
 
     </article>
@@ -177,7 +177,7 @@ wherever they are visible; see <a href="text.html">Text</a>.</p>
       <a class="next" href="code-slides.html">Code-authored slides →</a>
     </footer>
   </main>
-  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#links">Links</a></li></ul></nav>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#not-to-be-confused-with-links">Not to be confused with links</a></li></ul></nav>
 </div>
 </body>
 </html>

@@ -36,7 +36,7 @@ separate loops.
 | Attribute | Default | Meaning |
 | --- | --- | --- |
 | `buff` | 0.3 | distance between the targets and the curve |
-| `smoothness` | 0.5 | from 0 (the plain outline of the margins, with creases where they meet) to 1 (neighbours merge into one soft shape) |
+| `smoothness` | 0.5 | from 0 (the plain outline of the margins, with creases where they meet) to 1 (neighbors merge into one soft shape) |
 | `color`, `stroke_width` | the layout color, 2 | the curve |
 | `fill_color`, `fill_opacity` | `color`, 0 | the enclosed area |
 | `sketch` and its tuning | `false` | a [hand-drawn](sketch.html) curve with a hatched or solid fill |
@@ -44,7 +44,7 @@ separate loops.
 
 A blob flows around the parts of a composite target separately: the members of a
 [group](groups.html), or an [icon](icons.html) and its label. Blobs take `opacity`, `step`,
-`hide`, `enter`, `exit`, `run_time` and `lag` like other attachments.
+`hide`, `run_time`, `lag` and `href` like other attachments.
 
 ## From code
 

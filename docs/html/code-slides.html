@@ -116,7 +116,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Getting started</h4>
-        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li></ul>
       </section>
       <section>
         <h4>Presenting</h4>
@@ -209,11 +209,11 @@ next to the deck that points the two names at the checkout:</p>
 <td>runs on entry: <code>await ctx.play(...)</code>, <code>await ctx.wait(s)</code>, <code>ctx.stop(options)</code>; an <code>async *</code> generator may <code>yield ctx.visit(child)</code></td>
 </tr>
 <tr>
-<td><code>addChild(child, { center, width, height, angle, strokeColor, strokeOpacity, strokeWidth, onlyThis, startHere, transition })</code></td>
+<td><code>addChild(child, { center, width, height, angle, strokeColor, strokeOpacity, strokeWidth, onlyThis, startHere, returnToParent, skipReturn, transition, preview })</code></td>
 <td>place a child viewport in this canvas</td>
 </tr>
 <tr>
-<td>options <code>skipReturn</code>, <code>onlyThis</code>, <code>startHere</code>, <code>transition</code>, <code>size</code>, <code>build</code>, <code>program</code></td>
+<td>options <code>skipReturn</code>, <code>returnToParent</code>, <code>onlyThis</code>, <code>startHere</code>, <code>transition</code>, <code>preview</code>, <code>size</code>, <code>build</code>, <code>program</code></td>
 <td>the same flags as the markup attributes; callbacks instead of subclassing</td>
 </tr>
 </tbody>

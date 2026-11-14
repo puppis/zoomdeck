@@ -40,7 +40,7 @@ together, finite ones before loops. Single-slide files cannot request playback.
 
 ## Video
 
-A video file (`.mp4`, `.webm`, `.ogv`, `.mov`) uses the same syntax and plays through the
+A video file (`.mp4`, `.m4v`, `.webm`, `.ogv`, `.ogg`, `.mov`) uses the same syntax and plays through the
 browser's decoder:
 
 - `play=once` plays one pass as its own stop; `play=loop` keeps looping until the next click;

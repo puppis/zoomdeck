@@ -116,7 +116,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Getting started</h4>
-        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li></ul>
       </section>
       <section>
         <h4>Presenting</h4>
@@ -140,7 +140,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Advanced</h4>
-        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html" aria-current="page">A deck inside a page</a><ul class="subsections"><li><a href="#mounting">Mounting</a></li><li><a href="#features">Features</a></li><li><a href="#without-a-bundler-the-element">Without a bundler: the &lt;zoom-deck&gt; element</a></li><li><a href="#in-a-notebook">In a notebook</a></li><li><a href="#driving-the-deck">Driving the deck</a></li><li><a href="#an-example">An example</a></li></ul></li><li><a href="extending.html">Extending a deck</a></li><li><a href="reference.html">Reference</a></li></ul>
+        <ul><li><a href="code-slides.html">Code-authored slides</a></li><li><a href="embedding.html" aria-current="page">A deck inside a page</a><ul class="subsections"><li><a href="#mounting">Mounting</a></li><li><a href="#features">Features</a></li><li><a href="#without-a-bundler-the-element">Without a bundler: the &lt;zoom-deck&gt; element</a></li><li><a href="#driving-the-deck">Driving the deck</a></li><li><a href="#in-a-notebook">In a notebook</a></li><li><a href="#an-example">An example</a></li></ul></li><li><a href="extending.html">Extending a deck</a></li><li><a href="reference.html">Reference</a></li></ul>
       </section>
       <section>
         <h4>Reference manuals</h4>
@@ -273,26 +273,10 @@ element, in a <code>&lt;script type=&quot;text/markdown&quot;&gt;</code> child, 
 element is as wide as its container and 16:9 unless the page sizes it. Its attributes are the
 options of <code>mountDeck</code>: <code>without=&quot;camera record&quot;</code> leaves features out, <code>start</code> names the first
 stop, <code>title</code> the deck, <code>outline</code> opens the outline, <code>use-location</code> lets the deck write
-<code>#step=</code> in the page's URL. The handle is <code>element.handle</code> once the element's <code>ready</code> promise
+<code>#step=</code> in the page's URL, <code>background</code> and <code>foreground</code> set the canvas and text colors. The handle is <code>element.handle</code> once the element's <code>ready</code> promise
 resolves (a <code>deck</code> event fires then too), and setting <code>element.source</code> to new Markdown shows
 another deck in place. The module also exports everything the package does, so a page can
 <code>import { mountDeck } from '…/zoomdeck.js'</code> as well.</p>
-<h2 id="in-a-notebook">In a notebook<a class="anchor" href="#in-a-notebook" aria-label="Link to this section">#</a></h2><pre><code class="language-python"><span class="tk-keyword">import</span> zoomdeck_nb</code></pre>
-<pre><code class="language-markdown">%%deck
-<span class="tk-directive">::: slide </span><span class="tk-attribute">{#hello}</span>
-<span class="tk-type tk-bold"># </span><span class="tk-bold">A deck in a cell</span>
-<span class="tk-directive">:::</span></code></pre>
-<p><code>docs/site/zoomdeck_nb.py</code> is a small helper for Jupyter. Once imported, a cell that starts
-with <code>%%deck</code> holds the Markdown of a deck and nothing else, and its output shows the deck:
-the player is loaded from the documentation site (or from the URL in the <code>ZOOMDECK_BUNDLE</code>
-environment variable) and the deck wears the notebook's colours. Options follow on the magic
-line: <code>--without camera,record</code>, <code>--title &quot;A name&quot;</code>, <code>--start 2</code>, <code>--outline</code>, <code>--height 500px</code>.
-<code>%deck paper.pdf</code> shows a PDF, a Markdown file or a deck.json by its address, and from code
-<code>deck(markdown)</code> and <code>deck(src=&quot;…&quot;)</code> return the same display objects. It works in JupyterLab,
-the classic notebook and JupyterLite alike. The documentation's own notebooks, such as
-<a href="first-deck.html">Your first deck, stage by stage</a>, are built this way: the site renders the
-cells with their decks, and the &quot;Open in JupyterLite&quot; badge opens the same notebook in the
-browser, where the cells can be edited and run again.</p>
 <h2 id="driving-the-deck">Driving the deck<a class="anchor" href="#driving-the-deck" aria-label="Link to this section">#</a></h2><p>The handle exposes the deck's position and the player's actions, for buttons, a table of
 contents or a script of the page's own:</p>
 <pre><code class="language-ts">deck.length;                  <span class="tk-comment">// how many stops</span>
@@ -323,6 +307,22 @@ in the console. The underlying objects remain reachable as <code>deck.player</co
 and <code>deck.navigation</code> for anything the handle does not cover. A page that is itself written as a
 single-page application calls <code>destroy()</code> when it removes the element, which releases the canvas
 and the listeners.</p>
+<h2 id="in-a-notebook">In a notebook<a class="anchor" href="#in-a-notebook" aria-label="Link to this section">#</a></h2><pre><code class="language-python"><span class="tk-keyword">import</span> zoomdeck_nb</code></pre>
+<pre><code class="language-markdown">%%deck
+<span class="tk-directive">::: slide </span><span class="tk-attribute">{#hello}</span>
+<span class="tk-type tk-bold"># </span><span class="tk-bold">A deck in a cell</span>
+<span class="tk-directive">:::</span></code></pre>
+<p><code>docs/site/zoomdeck_nb.py</code> is a small helper for Jupyter. Once imported, a cell that starts
+with <code>%%deck</code> holds the Markdown of a deck and nothing else, and its output shows the deck:
+the player is loaded from the documentation site (or from the URL in the <code>ZOOMDECK_BUNDLE</code>
+environment variable) and the deck wears the notebook's colors. Options follow on the magic
+line: <code>--without camera,record</code>, <code>--title &quot;A name&quot;</code>, <code>--start 2</code>, <code>--outline</code>, <code>--height 500px</code>.
+<code>%deck paper.pdf</code> shows a PDF, a Markdown file or a deck.json by its address, and from code
+<code>deck(markdown)</code> and <code>deck(src=&quot;…&quot;)</code> return the same display objects. It works in JupyterLab,
+the classic notebook and JupyterLite alike. The documentation's own notebooks, such as
+<a href="first-deck.html">Your first deck, stage by stage</a>, are built this way: the site renders the
+cells with their decks, and the &quot;Open in JupyterLite&quot; badge opens the same notebook in the
+browser, where the cells can be edited and run again.</p>
 <h2 id="an-example">An example<a class="anchor" href="#an-example" aria-label="Link to this section">#</a></h2><p>The checkout has a page that does all of this: <code>examples/embed/index.html</code>, served by the
 development server at <code>/examples/embed/index.html</code>. It mounts the tour in a resizable box
 between paragraphs, with buttons and a slide menu of its own below it, and a second, smaller deck
@@ -334,7 +334,7 @@ with most features left out.</p>
       <a class="next" href="extending.html">Extending a deck →</a>
     </footer>
   </main>
-  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#mounting">Mounting</a></li><li><a href="#features">Features</a></li><li><a href="#without-a-bundler-the-element">Without a bundler: the &lt;zoom-deck&gt; element</a></li><li><a href="#in-a-notebook">In a notebook</a></li><li><a href="#driving-the-deck">Driving the deck</a></li><li><a href="#an-example">An example</a></li></ul></nav>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#mounting">Mounting</a></li><li><a href="#features">Features</a></li><li><a href="#without-a-bundler-the-element">Without a bundler: the &lt;zoom-deck&gt; element</a></li><li><a href="#driving-the-deck">Driving the deck</a></li><li><a href="#in-a-notebook">In a notebook</a></li><li><a href="#an-example">An example</a></li></ul></nav>
 </div>
 </body>
 </html>

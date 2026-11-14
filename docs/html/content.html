@@ -117,7 +117,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Getting started</h4>
-        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li></ul>
       </section>
       <section>
         <h4>Presenting</h4>
@@ -153,11 +153,11 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       <h1>The content of a slide</h1>
       <p class="lead">Prose and inline styling, headings and lists, formulas, listings, tables and images, one cell at a time.</p>
       <a class="try" href="lite/lab/index.html?path=content.ipynb">Open in JupyterLite ↗</a>
-<p>Every cell below holds the Markdown of one deck and nothing else; the deck plays under it. Open the notebook live (&quot;Open in JupyterLite&quot; above), change a cell, run it again, and watch the deck follow. The first cell loads the helper; from then on a cell that starts with <code>%%deck</code> is a deck.</p>
+<p>As in <a href="first-deck.html">Your first deck</a>, every cell holds the Markdown of one deck and plays it below; the first cell loads the helper, and the notebook can be opened live (&quot;Open in JupyterLite&quot; above).</p>
 <p>This notebook is about what a slide can hold. Each cell adds one kind of content; the pages that follow it in the sidebar give every detail.</p>
 
 <div class="cell"><pre class="cell-input"><code><span class="tk-keyword">import</span> zoomdeck_nb</code></pre></div>
-<h2 id="prose">Prose<a class="anchor" href="#prose" aria-label="Link to this section">#</a></h2><p>A slide holds Markdown prose: paragraphs, emphasis, inline code and inline math, coloured spans in braces. Text flows from the top left of the canvas and wraps to the slide's width; <code>{#id x= y= width=}</code> after a paragraph places it instead.</p>
+<h2 id="prose">Prose<a class="anchor" href="#prose" aria-label="Link to this section">#</a></h2><p>A slide holds Markdown prose: paragraphs, emphasis, inline code and inline math, colored spans in braces. Text flows from the top left of the canvas and wraps to the slide's width; <code>{#id x= y= width=}</code> after a paragraph places it instead.</p>
 
 <div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
 </span><span class="tk-directive">::: slide </span><span class="tk-attribute">{#prose width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
@@ -165,7 +165,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 
 Paragraphs wrap to the canvas. Use <span class="tk-bold">**bold**</span>, *italic*, *<span class="tk-bold">**both**</span>*, <span class="tk-type">`inline code`</span> and inline math <span class="tk-string">$e^{i\pi} + 1 = 0$</span>.
 
-[Coloured spans]<span class="tk-attribute">{color=ORANGE}</span> take palette names, [CSS colours]<span class="tk-attribute">{style=</span><span class="tk-string">&quot;color:#4ADE80&quot;</span><span class="tk-attribute">}</span> or hex values, and [nest <span class="tk-bold">**emphasis**</span> and <span class="tk-string">$\sqrt{2}$</span>]<span class="tk-attribute">{color=TEAL}</span>.
+[Colored spans]<span class="tk-attribute">{color=ORANGE}</span> take palette names, [CSS colors]<span class="tk-attribute">{style=</span><span class="tk-string">&quot;color:#4ADE80&quot;</span><span class="tk-attribute">}</span> or hex values, and [nest <span class="tk-bold">**emphasis**</span> and <span class="tk-string">$\sqrt{2}$</span>]<span class="tk-attribute">{color=TEAL}</span>.
 
 A paragraph placed by hand sits where its attributes say. <span class="tk-attribute">{#aside x=</span><span class="tk-number">2</span><span class="tk-attribute"> y=</span><span class="tk-number">-2</span><span class="tk-attribute"> width=</span><span class="tk-number">7</span><span class="tk-attribute"> font_size=</span><span class="tk-number">20</span><span class="tk-attribute"> color=GRAY}</span>
 <span class="tk-directive">:::</span></code></pre><div class="cell-output"><zoom-deck without="camera record screen"><script type="text/markdown">
@@ -174,7 +174,7 @@ A paragraph placed by hand sits where its attributes say. <span class="tk-attrib
 
 Paragraphs wrap to the canvas. Use **bold**, *italic*, ***both***, `inline code` and inline math $e^{i\pi} + 1 = 0$.
 
-[Coloured spans]{color=ORANGE} take palette names, [CSS colours]{style="color:#4ADE80"} or hex values, and [nest **emphasis** and $\sqrt{2}$]{color=TEAL}.
+[Colored spans]{color=ORANGE} take palette names, [CSS colors]{style="color:#4ADE80"} or hex values, and [nest **emphasis** and $\sqrt{2}$]{color=TEAL}.
 
 A paragraph placed by hand sits where its attributes say. {#aside x=2 y=-2 width=7 font_size=20 color=GRAY}
 :::
@@ -211,7 +211,7 @@ First line.\\
 Second line after an explicit break.
 :::
 </script></zoom-deck></div></div>
-<h2 id="formulas">Formulas<a class="anchor" href="#formulas" aria-label="Link to this section">#</a></h2><p>Inline math shares the baseline of its line; a <code>$$</code> block is a display formula, centred. A formula may be an element of its own, with a position, a size and a step.</p>
+<h2 id="formulas">Formulas<a class="anchor" href="#formulas" aria-label="Link to this section">#</a></h2><p>Inline math shares the baseline of its line; a <code>$$</code> block is a display formula, centered. A formula may be an element of its own, with a position, a size and a step.</p>
 
 <div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
 </span><span class="tk-directive">::: slide </span><span class="tk-attribute">{#math width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
@@ -255,7 +255,7 @@ def fib(n):
     return a
 <span class="tk-directive">```</span>
 
-The listing on the left is placed at <span class="tk-type">`x=-9 y=3`</span>, nine units wide; its language picks the colours. <span class="tk-attribute">{#note x=</span><span class="tk-number">1</span><span class="tk-attribute"> y=</span><span class="tk-number">3</span><span class="tk-attribute"> width=</span><span class="tk-number">8</span><span class="tk-attribute"> font_size=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+The listing on the left is placed at <span class="tk-type">`x=-9 y=3`</span>, nine units wide; its language picks the colors. <span class="tk-attribute">{#note x=</span><span class="tk-number">1</span><span class="tk-attribute"> y=</span><span class="tk-number">3</span><span class="tk-attribute"> width=</span><span class="tk-number">8</span><span class="tk-attribute"> font_size=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
 <span class="tk-directive">:::</span></code></pre><div class="cell-output"><zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#code width=20}
 ## A listing
@@ -268,7 +268,7 @@ def fib(n):
     return a
 ```
 
-The listing on the left is placed at `x=-9 y=3`, nine units wide; its language picks the colours. {#note x=1 y=3 width=8 font_size=20}
+The listing on the left is placed at `x=-9 y=3`, nine units wide; its language picks the colors. {#note x=1 y=3 width=8 font_size=20}
 :::
 </script></zoom-deck></div></div>
 <h2 id="tables">Tables<a class="anchor" href="#tables" aria-label="Link to this section">#</a></h2><p>A Markdown table becomes a table element; the alignment row sets the columns, <code>rules=</code> and <code>stripe_opacity=</code> its look, and cells may hold emphasis and math.</p>
@@ -305,17 +305,17 @@ The listing on the left is placed at `x=-9 y=3`, nine units wide; its language p
 
 ![An orbit](<span class="tk-string">https://puppis.github.io/zoomdeck/live/orbit.png</span>)<span class="tk-attribute">{#orbit x=</span><span class="tk-number">-6</span><span class="tk-attribute"> y=</span><span class="tk-number">-0.6</span><span class="tk-attribute"> width=</span><span class="tk-number">5</span><span class="tk-attribute">}</span>
 
-Images are placed by their centre; <span class="tk-type">`width`</span> or <span class="tk-type">`height`</span> sizes them, the other follows the picture's proportions. <span class="tk-attribute">{#cap x=</span><span class="tk-number">0</span><span class="tk-attribute"> y=</span><span class="tk-number">1.2</span><span class="tk-attribute"> width=</span><span class="tk-number">8</span><span class="tk-attribute"> font_size=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+Images are placed by their center; <span class="tk-type">`width`</span> or <span class="tk-type">`height`</span> sizes them, the other follows the picture's proportions. <span class="tk-attribute">{#cap x=</span><span class="tk-number">0</span><span class="tk-attribute"> y=</span><span class="tk-number">1.2</span><span class="tk-attribute"> width=</span><span class="tk-number">8</span><span class="tk-attribute"> font_size=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
 <span class="tk-directive">:::</span></code></pre><div class="cell-output"><zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#images width=20}
 ## An image
 
 ![An orbit](https://puppis.github.io/zoomdeck/live/orbit.png){#orbit x=-6 y=-0.6 width=5}
 
-Images are placed by their centre; `width` or `height` sizes them, the other follows the picture's proportions. {#cap x=0 y=1.2 width=8 font_size=20}
+Images are placed by their center; `width` or `height` sizes them, the other follows the picture's proportions. {#cap x=0 y=1.2 width=8 font_size=20}
 :::
 </script></zoom-deck></div></div>
-<h2 id="where-to-go-next">Where to go next<a class="anchor" href="#where-to-go-next" aria-label="Link to this section">#</a></h2><p><a href="text.html">Text and styling</a>, <a href="math.html">Formulas</a>, <a href="images.html">Images and video</a>, <a href="code.html">Code listings</a> and <a href="tables-charts.html">Tables and charts</a> give every attribute; <a href="slides.html">Slides and the forest</a> has the includes that nest slides.</p>
+<h2 id="where-to-go-next">Where to go next<a class="anchor" href="#where-to-go-next" aria-label="Link to this section">#</a></h2><p><a href="text.html">Text</a>, <a href="math.html">Mathematics</a>, <a href="images.html">Images and video</a>, <a href="code.html">Code listings</a> and <a href="tables-charts.html">Tables and charts</a> give every attribute; <a href="slides.html">Slides and the forest</a> has the includes that nest slides.</p>
 
     </article>
     <footer class="pager">

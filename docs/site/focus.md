@@ -13,7 +13,7 @@ description: Elements that appear only while their slide is focused, such as an 
 [This caption fades in with focus and out when the camera leaves]{#caption x=-9.35 y=0.6 width=19 focus_only=true color=TEAL}
 ```
 
-Static text, math, images, listings, shapes and groups with `focus_only=true` fade in when their
+Static text, math, images, listings, shapes, icons, tables, charts and groups with `focus_only=true` fade in when their
 slide is focused and out when the camera leaves, including to a child. They are drawn behind the
 slide's ordinary content, still take part in layout and can anchor other elements.
 
@@ -21,4 +21,4 @@ The typical use is an opaque local canvas with its heading: while the slide is f
 text cannot show through, and on return the panel disappears so the parent is not covered.
 
 Focus-only elements cannot carry `step`, `hide` or `play`, and `show`/`hide`/`transform`
-directives cannot target them. Transparent zoom-only slides need no local canvas.
+directives cannot target them. A slide whose region of the parent is empty needs no local canvas.

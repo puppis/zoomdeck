@@ -9,7 +9,7 @@ description: Anchors, flow, explicit coordinates, relative constraints, at= expr
 
 `x`, `y` position an element's **anchor**. The default anchor is `left-baseline` for prose,
 headings, math and listings (the left edge and the first baseline) and `center` for images,
-shapes, listings' siblings and child viewports. `anchor=` chooses another point:
+shapes, icons, tables, charts, groups and child viewports. `anchor=` chooses another point:
 
 | Anchors | Available on |
 | --- | --- |
@@ -56,7 +56,7 @@ blocks move up. A center-anchored element with one missing coordinate defaults t
   the free axis (`below:#h x=0`).
 
 References target elements of the same slide (and the same [group](groups.html)), including
-later ones and hidden fragments, but never arrows, lines, braces or boxes. Sizes are measured once
+later ones and hidden fragments, but never arrows, lines, braces, boxes or blobs. Sizes are measured once
 during preparation; dependency cycles are reported with their line.
 
 ## Anchor expressions
@@ -85,6 +85,6 @@ inside parentheses does not split attributes.
 
 ## Children
 
-Includes and imports take the same attributes against local elements: `x`, `y`, `anchor`, `at=`,
+Includes and subslides take the same attributes against local elements: `x`, `y`, `anchor`, `at=`,
 the relative constraints, `dx`/`dy` and `.class` styles. Their `width`/`height` size the viewport,
 not the child's canvas.

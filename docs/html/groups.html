@@ -116,7 +116,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Getting started</h4>
-        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li></ul>
       </section>
       <section>
         <h4>Presenting</h4>
@@ -171,8 +171,8 @@ groups (no includes, subslides or directives).</p>
 <h2 id="local-coordinates">Local coordinates<a class="anchor" href="#local-coordinates" aria-label="Link to this section">#</a></h2><p>Members are laid out in the group's own coordinates: flow starts at the local origin, explicit
 coordinates and <code>at=</code> are local, and members may only reference other members of the same group.
 Member IDs without an explicit <code>#id</code> are prefixed with the group ID (<code>automaton.element-2</code>).</p>
-<h2 id="one-element-of-the-slide">One element of the slide<a class="anchor" href="#one-element-of-the-slide" aria-label="Link to this section">#</a></h2><p>The group is then a single element: <code>x</code>, <code>y</code> place its <strong>origin</strong> (the local <code>(0,0)</code>) unless
-<code>anchor=</code> names a bounding-box point; relative constraints, <code>at=</code>, <code>dx</code>/<code>dy</code>, <code>width</code> (the
+<h2 id="one-element-of-the-slide">One element of the slide<a class="anchor" href="#one-element-of-the-slide" aria-label="Link to this section">#</a></h2><p>The group is then a single element: <code>x</code>, <code>y</code> place its center unless <code>anchor=</code> names another
+point, <code>origin</code> (the local <code>(0,0)</code>) included; relative constraints, <code>at=</code>, <code>dx</code>/<code>dy</code>, <code>width</code> (the
 members' wrapping width), <code>opacity</code>, <code>step</code>, <code>hide</code>, <code>focus_only</code> and <code>enter</code>/<code>exit</code> apply to the
 whole. A group can be an <code>at=</code> or relative reference, an arrow endpoint, a brace or box target, and
 the target of an <a href="animations.html">animation</a>.</p>

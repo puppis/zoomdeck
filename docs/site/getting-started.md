@@ -3,7 +3,7 @@ title: Getting started
 description: Get Zoomdeck as a desktop app or from the sources, open a deck, present it, export it to a folder or a single file, and set up your editor.
 ---
 
-The [overview](features.html) showed what Zoomdeck does; this page gets it onto your computer
+[A quick tour](features.html) showed what Zoomdeck does; this page gets it onto your computer
 and a deck of yours into it. There are two ways in: the desktop app, which needs nothing else,
 and the sources, which bring the `zoomdeck` command and the live development page.
 
@@ -141,9 +141,9 @@ in the editor (E, or Alt + click on an element), and highlight the dialect insid
 
 - [Concepts](concepts.html): what a slide, a viewport and a stop are, and how a deck is
   recorded once and replayed.
-- [PDFs, flat decks and forests](documents.html), then [Slides and the forest](slides.html),
-  start the topic-by-topic part of the documentation; the sidebar follows the same order, from
-  the content of a slide to the reference.
+- After the two notebooks, [PDFs, flat decks and forests](documents.html) and
+  [Slides and the forest](slides.html) start the topic-by-topic part of the documentation, in
+  the sidebar's order, from the content of a slide to the reference manuals.
 - The [tour](tour.html) shows every topic live, and each documentation page opens its chapter
   with the "Open in the tour" badge.
 - The reference manuals, [the markup language in full](manual-markup.html) and

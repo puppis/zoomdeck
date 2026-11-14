@@ -116,7 +116,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Getting started</h4>
-        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li></ul>
       </section>
       <section>
         <h4>Presenting</h4>
@@ -157,13 +157,13 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 <span class="tk-type tk-bold">## </span><span class="tk-bold">Decorations visible only in focus</span>
 
 [This caption fades in with focus and out when the camera leaves]<span class="tk-attribute">{#caption x=</span><span class="tk-number">-9.35</span><span class="tk-attribute"> y=</span><span class="tk-number">0.6</span><span class="tk-attribute"> width=</span><span class="tk-number">19</span><span class="tk-attribute"> focus_only=true color=TEAL}</span></code></pre>
-<p>Static text, math, images, listings, shapes and groups with <code>focus_only=true</code> fade in when their
+<p>Static text, math, images, listings, shapes, icons, tables, charts and groups with <code>focus_only=true</code> fade in when their
 slide is focused and out when the camera leaves, including to a child. They are drawn behind the
 slide's ordinary content, still take part in layout and can anchor other elements.</p>
 <p>The typical use is an opaque local canvas with its heading: while the slide is focused the parent's
 text cannot show through, and on return the panel disappears so the parent is not covered.</p>
 <p>Focus-only elements cannot carry <code>step</code>, <code>hide</code> or <code>play</code>, and <code>show</code>/<code>hide</code>/<code>transform</code>
-directives cannot target them. Transparent zoom-only slides need no local canvas.</p>
+directives cannot target them. A slide whose region of the parent is empty needs no local canvas.</p>
 
     </article>
     <footer class="pager">

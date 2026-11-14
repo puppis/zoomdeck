@@ -41,7 +41,7 @@ children, the parent's changes play first.
 
 Each fade lasts `layout.animationTime` unless the element sets `run_time=S`; `lag=S` delays its
 start inside the step, so one click can stagger several elements. A `show`/`hide` directive may
-carry its own `run_time`, `lag` and `rate`.
+carry its own `run_time`, `lag` and `enter` or `exit`.
 
 ```markdown
 [Fades in over 1.5 s]{#slow x=-3.5 y=-0.4 step=1 run_time=1.5}

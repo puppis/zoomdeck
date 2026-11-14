@@ -116,7 +116,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Getting started</h4>
-        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li></ul>
       </section>
       <section>
         <h4>Presenting</h4>
@@ -188,8 +188,8 @@ joined; an explicit break takes two trailing spaces, a backslash before the newl
 paragraph with inline math stays one element: prose and formulas share one baseline, and the
 paragraph wraps to its width as a whole.</p>
 <p>Colors are written as <code>[text]{color=…}</code> or <code>[text]{style=&quot;color:…&quot;}</code> (not both). A color is a
-palette name (<code>BLUE</code>, <code>RED</code>, <code>TEAL</code>, <code>ORANGE</code>, <code>YELLOW</code>, <code>GRAY</code>, <code>GREEN</code>, <code>PURPLE</code>, with <code>_A</code> to
-<code>_E</code> variants), a CSS name, a hex value or <code>rgb(…)</code>. Nested emphasis and math inherit the span's
+palette name (<code>BLUE</code>, <code>RED</code>, <code>TEAL</code>, <code>ORANGE</code>, <code>YELLOW</code>, <code>GOLD</code>, <code>GRAY</code>, <code>GREEN</code>, <code>PURPLE</code>, each with
+<code>_A</code> to <code>_E</code> variants, listed in <a href="manual-markup.html#color-names">the manual</a>), a CSS name, a hex value or <code>rgb(…)</code>. Nested emphasis and math inherit the span's
 color. A color-only span stays inline; any other attribute makes the bracketed text a positioned
 element of its own, which then must be a whole block.</p>
 <h2 id="links">Links<a class="anchor" href="#links" aria-label="Link to this section">#</a></h2><p><code>[label](https://…)</code> renders an underlined label that opens the page in a new tab; <code>mailto:</code> and
@@ -198,8 +198,8 @@ parent's preview of it.</p>
 <p>Any element can be a link as a whole: <code>href=</code> on a paragraph, heading, image, formula, shape,
 icon, arrow, brace, box, blob, table, chart or group opens its URL in a new tab when the element
 is clicked. The element's look does not change. Targets inside the deck, <code>#slide=id</code> and
-<code>#step=N</code>, are followed on a <strong>double-click</strong> instead: such links often cover whole tiles, and a
-single click over them keeps drawing with the pen. The dots left by the two clicks are removed.</p>
+<code>#step=N</code>, move to that stop instead, on a click or a double-click. While the pen is on, links
+are inert, so a drag over a tile still draws, and the dot a tap would leave is taken back.</p>
 <pre><code class="language-markdown"><span class="tk-directive">[[icon:</span> document <span class="tk-attribute">#paper</span> <span class="tk-attribute">x=</span><span class="tk-number">0</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">size=</span><span class="tk-number">1.2</span> <span class="tk-attribute">label=</span><span class="tk-string">&quot;the paper&quot;</span> <span class="tk-attribute">href=</span>https://arxiv.org/abs/<span class="tk-number">1234.56789</span><span class="tk-directive">]]</span>
 
 <span class="tk-directive">::: </span><span class="tk-attribute">{.group #team x=</span><span class="tk-number">4</span><span class="tk-attribute"> y=</span><span class="tk-number">0</span><span class="tk-attribute"> href=https://example.org/team}</span>
@@ -211,8 +211,8 @@ use MathJax's TeX fonts, and a <code>font_size</code> means the same em for all 
 code and formulas inside it looks like one LaTeX paragraph without any tuning. <code>layout.font</code> and
 <code>layout.codeFont</code> replace the faces (<code>&quot;Georgia&quot;</code>, <code>&quot;Fira Code&quot;</code>, …) while keeping the size
 calibration.</p>
-<p>Body text uses <code>layout.fontSize</code> (28 by default) and headings <code>layout.headingSize</code>, shrinking
-slightly per level; code spans use <code>layout.codeFont</code>. Any element can override its size with
+<p>Body text uses <code>layout.fontSize</code> (28 by default) and headings <code>layout.headingSize</code> (42),
+shrinking slightly per level. Any element can override its size with
 <code>font_size=</code> and its color with <code>color=</code>, or through a <a href="styles.html">style</a>. A paragraph, heading,
 arrow label or brace label can also pick its own face with <code>font=</code>: any font the page has, or the
 bundled handwriting face <strong>Zeyada</strong>, which pairs with <a href="sketch.html">hand-drawn shapes</a>

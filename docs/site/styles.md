@@ -30,7 +30,7 @@ kept apart from the deck is a **theme**, `themes/<name>.md` next to the Markdown
 
 ## Classes
 
-Elements, includes and imports opt into styles with `.name` tokens in their attribute list. Several
+Elements, includes and subslides opt into styles with `.name` tokens in their attribute list. Several
 classes may be listed; later ones win.
 
 ## Roles
@@ -41,10 +41,11 @@ Styles named after a **role** apply automatically to every element of that role:
 | --- | --- |
 | `heading`, `h1` … `h6` | headings (the level-specific name wins) |
 | `body` | paragraphs and list items |
-| `math`, `code`, `image`, `iframe`, `group`, `include` | that element kind, or child viewports |
+| `math`, `code`, `image`, `iframe`, `table`, `chart`, `group`, `include` | that element kind, or child viewports |
 | `shape`, and `rectangle`, `circle`, `dot`, `ellipse`, `polygon`, `arc`, `polyline` | shapes |
 | `connection`, `arrow`, `line` | arrows and lines |
-| `attachment`, `brace`, `box` | braces and boxes |
+| `attachment`, `brace`, `box`, `blob` | braces, boxes and blobs |
+| `icon`, `icon-<name>` | every icon, or the icons of one name |
 
 ## Resolution
 

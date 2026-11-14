@@ -11,7 +11,7 @@ and the player itself prints a deck to a [PDF](#a-pdf-printout).
 ## One self-contained file
 
 ```bash
-node bin/zoomdeck.mjs build path/to/deck.json -o out --one-file
+zoomdeck build path/to/deck.json -o out --one-file
 ```
 
 This writes `out/offline.html`: the player, the engine, the bundled fonts, your Markdown source
@@ -21,12 +21,12 @@ host, and keeps everything the live deck has: outline, keys, settings, pen, spot
 playback and `#step=` / `#slide=` deep links. The tour you can open from the front page of this
 documentation is exactly such a file.
 
-Two things to know:
+Three things to know:
 
 - Size. The player with the engine weighs about 15 MB before your assets, most of it the formula
   renderer, which the file carries as inert text and compiles only when a formula needs it, so
-  the page starts long before it would if everything were parsed up front; assets are embedded as data URIs and add their own size, so long videos belong in the
-  folder export instead.
+  the page starts long before it would if everything were parsed up front. Assets are embedded
+  as data URIs and add their own size, so long videos belong in the folder export instead.
 - Code-authored decks (`.ts` modules) embed their code too, but images they load themselves at
   run time are not collected; put such images next to the exported file or use the Markdown
   image syntax.
@@ -36,7 +36,7 @@ Two things to know:
 ## A static folder
 
 ```bash
-node bin/zoomdeck.mjs build path/to/deck.json -o out
+zoomdeck build path/to/deck.json -o out
 ```
 
 This writes `out/index.html`, `out/assets/` (the player, split in chunks loaded on demand) and

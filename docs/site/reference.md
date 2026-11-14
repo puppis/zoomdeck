@@ -54,7 +54,7 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
 | `title`, `poster` | iframes | label and preview image |
 | `rules`, `header`, `padding`, `border_color`, `header_color`, `header_opacity`, `stripe_opacity` | tables | rules, header row, cell padding and shading |
 | `type`, `src`, `colors`, `axis_color`, `border_color`, `grid`, `legend`, `values`, `min`, `max`, `header` | charts | chart kind (built in, or a module of the deck's `charts/` folder), data file, palette, axes, gridlines, legend, value labels and axis bounds |
-| `href` | every element, group, connection and attachment | URL opened when the element is clicked; `#slide=id` and `#step=N` move within the deck on a double-click |
+| `href` | every element, group, connection and attachment | URL opened by a click on the element (a drag still draws); `#slide=id` and `#step=N` move within the deck instead of opening a page |
 
 ## Diagrams
 
@@ -62,7 +62,7 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
 
 | Directive | Form |
 | --- | --- |
-| `rectangle`, `ellipse` | `#id width height [corner_radius] fill_color fill_opacity …` |
+| `rectangle`, `ellipse` | `#id width height fill_color fill_opacity …` (`rectangle` also `corner_radius`) |
 | `circle`, `dot` | `#id radius …` (dot: radius optional) |
 | `polygon`, `polyline` | `#id points="(x,y) (x,y) …" …` |
 | `arc` | `#id x y radius angle [start_angle] …` |
@@ -81,7 +81,7 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
 | `buff` | attachments | distance from the targets |
 | `side` | braces | `bottom`, `top`, `left`, `right` |
 | `corner_radius` | rectangles, boxes | rounded corners |
-| `smoothness` | blobs | how softly neighbouring targets merge, 0 to 1 |
+| `smoothness` | blobs | how softly neighboring targets merge, 0 to 1 |
 | `sketch`, `roughness`, `bowing`, `fill_style`, `hachure_angle`, `hachure_gap`, `fill_weight`, `seed` | shapes, icons, connections, attachments | hand-drawn rendering and its tuning |
 
 ## Layout

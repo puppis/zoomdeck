@@ -116,7 +116,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Getting started</h4>
-        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li></ul>
       </section>
       <section>
         <h4>Presenting</h4>
@@ -1172,13 +1172,13 @@ or <code>play</code> of their own. Relative references stay within a group.</p>
 <td><code>x</code>, <code>y</code></td>
 <td>units</td>
 <td>flow</td>
-<td>place the group's <strong>origin</strong> (the local 0, 0), unless <code>anchor</code> names another point</td>
+<td>place the group's center, unless <code>anchor</code> names another point</td>
 </tr>
 <tr>
 <td><code>anchor</code></td>
 <td>the anchors, or <code>origin</code></td>
-<td><code>origin</code> for <code>x</code>, <code>y</code>; <code>center</code> for relative placement</td>
-<td></td>
+<td><code>center</code></td>
+<td><code>origin</code> is the local (0, 0), where the members' flow starts</td>
 </tr>
 <tr>
 <td><code>width</code></td>
@@ -1208,10 +1208,10 @@ relative reference (<code>below</code>, <code>above</code>, <code>top-aligned</c
 leaves the flow; a text block with only <code>x</code> keeps its flow line and moves horizontally.</p>
 <h3 id="coordinates-and-anchors">Coordinates and anchors<a class="anchor" href="#coordinates-and-anchors" aria-label="Link to this section">#</a></h3><p><code>x</code> and <code>y</code> place the element's <strong>anchor</strong> at that point: the left end of the first baseline
 for text, formulas and listings (<code>layout.textAnchor</code>, <code>left-baseline</code>), the center for
-everything else, the origin for a group. <code>anchor=</code> names another point: <code>center</code>, <code>top</code>,
+everything else, groups included. <code>anchor=</code> names another point: <code>center</code>, <code>top</code>,
 <code>bottom</code>, <code>left</code>, <code>right</code>, <code>top-left</code>, <code>top-right</code>, <code>bottom-left</code>, <code>bottom-right</code>,
 <code>left-baseline</code> or <code>right-baseline</code> (the baselines for text, formulas and listings only), and
-<code>origin</code> for a group. For a center-anchored element an omitted coordinate is 0; for a text
+<code>origin</code>, the local (0, 0) of a group. For a center-anchored element an omitted coordinate is 0; for a text
 element it is the flow position.</p>
 <h3 id="relative-placement">Relative placement<a class="anchor" href="#relative-placement" aria-label="Link to this section">#</a></h3><table>
 <thead>

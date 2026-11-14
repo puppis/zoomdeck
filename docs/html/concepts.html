@@ -116,7 +116,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Getting started</h4>
-        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html" aria-current="page">Concepts</a><ul class="subsections"><li><a href="#slides-and-the-forest">Slides and the forest</a></li><li><a href="#pre-order-visits">Pre-order visits</a></li><li><a href="#coordinates">Coordinates</a></li><li><a href="#stops-clips-and-recording">Stops, clips and recording</a></li><li><a href="#what-runs-where">What runs where</a></li></ul></li></ul>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html" aria-current="page">Concepts</a><ul class="subsections"><li><a href="#slides-and-the-forest">Slides and the forest</a></li><li><a href="#pre-order-visits">Pre-order visits</a></li><li><a href="#coordinates">Coordinates</a></li><li><a href="#stops-clips-and-recording">Stops, clips and recording</a></li><li><a href="#what-runs-where">What runs where</a></li></ul></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li></ul>
       </section>
       <section>
         <h4>Presenting</h4>
@@ -168,8 +168,8 @@ root: a slide runs its own steps and visits its children in order, each visit zo
 goes straight to the next sibling, and zooms back out to the parent after the last one. The
 order within a slide is the source order of its includes, unless an include carries <code>step=N</code>,
 which interleaves the visit with the parent's numbered fragments. A child's content is invisible
-until its first visit and fades in then, unless its include says <code>preview=true</code> or <code>presenter.revealOnEntry</code> is <code>false</code>. <code>return_to_parent</code>, <code>skip_return</code>
-and <code>skip_next</code> change where the camera goes when a child ends. A deck whose slides include none
+until its first visit and fades in then, unless its include says <code>preview=true</code> or <code>presenter.revealOnEntry</code> is <code>false</code>. <code>return_to_parent</code> and <code>skip_return</code>
+change where the camera goes when a child ends; <code>[[skip_next: step=N]]</code> drops one event after a step. A deck whose slides include none
 of the others is a forest of single slides, a <a href="documents.html">flat document</a> read page after
 page, as a PDF opened in the player is.</p>
 <h2 id="coordinates">Coordinates<a class="anchor" href="#coordinates" aria-label="Link to this section">#</a></h2><p>Inside a slide, coordinates are the slide's own: the origin is the center of the canvas, <code>x</code> grows
@@ -220,8 +220,8 @@ first entry and stays visible afterwards, so parents show their finished childre
 
     </article>
     <footer class="pager">
-      <a class="prev" href="desktop.html">← The desktop app</a>
-      <a class="next" href="player.html">The player →</a>
+      <a class="prev" href="getting-started.html">← Getting started</a>
+      <a class="next" href="editors.html">Editors →</a>
     </footer>
   </main>
   <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#slides-and-the-forest">Slides and the forest</a></li><li><a href="#pre-order-visits">Pre-order visits</a></li><li><a href="#coordinates">Coordinates</a></li><li><a href="#stops-clips-and-recording">Stops, clips and recording</a></li><li><a href="#what-runs-where">What runs where</a></li></ul></nav>

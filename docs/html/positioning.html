@@ -116,7 +116,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Getting started</h4>
-        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li></ul>
       </section>
       <section>
         <h4>Presenting</h4>
@@ -154,7 +154,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       <p><a class="try" href="tour.html#slide=layout">Open in the tour ↗</a></p>
 <h2 id="anchors">Anchors<a class="anchor" href="#anchors" aria-label="Link to this section">#</a></h2><p><code>x</code>, <code>y</code> position an element's <strong>anchor</strong>. The default anchor is <code>left-baseline</code> for prose,
 headings, math and listings (the left edge and the first baseline) and <code>center</code> for images,
-shapes, listings' siblings and child viewports. <code>anchor=</code> chooses another point:</p>
+shapes, icons, tables, charts, groups and child viewports. <code>anchor=</code> chooses another point:</p>
 <table>
 <thead>
 <tr>
@@ -204,7 +204,7 @@ the other axis.</li>
 the free axis (<code>below:#h x=0</code>).</li>
 </ul>
 <p>References target elements of the same slide (and the same <a href="groups.html">group</a>), including
-later ones and hidden fragments, but never arrows, lines, braces or boxes. Sizes are measured once
+later ones and hidden fragments, but never arrows, lines, braces, boxes or blobs. Sizes are measured once
 during preparation; dependency cycles are reported with their line.</p>
 <h2 id="anchor-expressions">Anchor expressions<a class="anchor" href="#anchor-expressions" aria-label="Link to this section">#</a></h2><p><a class="try" href="tour.html#slide=styles">Open in the tour ↗</a></p>
 <pre><code class="language-markdown"><span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#ref</span> <span class="tk-attribute">x=</span><span class="tk-number">-6</span> <span class="tk-attribute">y=</span><span class="tk-number">-2.2</span> <span class="tk-attribute">width=</span><span class="tk-number">3</span> <span class="tk-attribute">height=</span><span class="tk-number">1.6</span><span class="tk-directive">]]</span>
@@ -222,7 +222,7 @@ inside parentheses does not split attributes.</p>
 <code>height</code> scales the result; <code>font_size</code> overrides the layout size.</li>
 <li><code>opacity</code> (0 to 1) makes any element translucent; fades preserve it.</li>
 </ul>
-<h2 id="children">Children<a class="anchor" href="#children" aria-label="Link to this section">#</a></h2><p>Includes and imports take the same attributes against local elements: <code>x</code>, <code>y</code>, <code>anchor</code>, <code>at=</code>,
+<h2 id="children">Children<a class="anchor" href="#children" aria-label="Link to this section">#</a></h2><p>Includes and subslides take the same attributes against local elements: <code>x</code>, <code>y</code>, <code>anchor</code>, <code>at=</code>,
 the relative constraints, <code>dx</code>/<code>dy</code> and <code>.class</code> styles. Their <code>width</code>/<code>height</code> size the viewport,
 not the child's canvas.</p>
 

@@ -30,7 +30,7 @@ const standaloneDir = join(root, 'dist', 'standalone');
  */
 const NAV: Array<{ title: string; blurb: string; pages: string[] }> = [
   { title: 'Features overview', blurb: 'What Zoomdeck does, shown live: a PDF, plain slides, a tree of slides, the spotlight and the pen, the camera and recording, formulas, diagrams and animations.', pages: ['index', 'features'] },
-  { title: 'Getting started', blurb: 'Install, open and export a deck, set up your editor, the desktop app, and what a slide, a viewport and a stop are.', pages: ['getting-started', 'editors', 'desktop', 'concepts'] },
+  { title: 'Getting started', blurb: 'Install, open and export a deck, set up your editor, the desktop app, and what a slide, a viewport and a stop are.', pages: ['getting-started', 'concepts', 'editors', 'desktop'] },
   { title: 'Presenting', blurb: 'The player and its tools: keys, spotlight and laser, the pen and the whiteboard, the camera, recording a talk, printing the deck, exporting it to a folder or a single file.', pages: ['player', 'exporting'] },
   { title: 'Writing slides', blurb: 'Two notebooks to try: a first deck built stage by stage, and the content of a slide; then a PDF shown as it is and a file of plain slides, the forest of slides, and prose, formulas, images, listings, tables and charts in detail.', pages: ['first-deck', 'content', 'documents', 'slides', 'text', 'math', 'images', 'code', 'tables-charts'] },
   { title: 'Diagrams', blurb: 'Shapes, arrows, icons and enclosures, crisp or hand-drawn: a notebook to try them, then every kind in detail.', pages: ['diagrams', 'shapes', 'icons', 'enclosures', 'sketch'] },

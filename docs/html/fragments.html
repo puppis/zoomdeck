@@ -116,7 +116,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Getting started</h4>
-        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li></ul>
       </section>
       <section>
         <h4>Presenting</h4>
@@ -178,7 +178,7 @@ children, the parent's changes play first.</p>
 <h2 id="timing">Timing<a class="anchor" href="#timing" aria-label="Link to this section">#</a></h2><p><a class="try" href="tour.html#slide=anchors">Open in the tour ↗</a></p>
 <p>Each fade lasts <code>layout.animationTime</code> unless the element sets <code>run_time=S</code>; <code>lag=S</code> delays its
 start inside the step, so one click can stagger several elements. A <code>show</code>/<code>hide</code> directive may
-carry its own <code>run_time</code>, <code>lag</code> and <code>rate</code>.</p>
+carry its own <code>run_time</code>, <code>lag</code> and <code>enter</code> or <code>exit</code>.</p>
 <pre><code class="language-markdown">[Fades in over 1.5 s]<span class="tk-attribute">{#slow x=</span><span class="tk-number">-3.5</span><span class="tk-attribute"> y=</span><span class="tk-number">-0.4</span><span class="tk-attribute"> step=</span><span class="tk-number">1</span><span class="tk-attribute"> run_time=</span><span class="tk-number">1.5</span><span class="tk-attribute">}</span>
 [Starts 0.5 s later]<span class="tk-attribute">{#later below:#slow left-aligned:#slow step=</span><span class="tk-number">1</span><span class="tk-attribute"> lag=</span><span class="tk-number">0.5</span><span class="tk-attribute">}</span></code></pre>
 <h2 id="entrance-and-exit-styles">Entrance and exit styles<a class="anchor" href="#entrance-and-exit-styles" aria-label="Link to this section">#</a></h2><p><code>enter=</code> and <code>exit=</code> on an element (or on <code>show</code>/<code>hide</code> directives) replace the default fades:</p>

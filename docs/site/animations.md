@@ -56,13 +56,13 @@ best between formulas and shapes.
 
 ## move_along
 
-`[[move_along: #id, step=N, path=#shape]]` moves an element along a circle, arc, polyline or
-polygon; `rotate=true` turns it along the path.
+`[[move_along: #id, step=N, path=#shape]]` moves an element along a shape, a circle, an arc, a
+polyline, a polygon, a rectangle or an ellipse; `rotate=true` turns it along the path.
 
 ## tremble
 
 `tremble=` is an attribute of shapes, [icons](icons.html), connections, attachments (braces,
-[boxes and blobs](enclosures.html)), formulas and groups rather than a directive: it makes the
+[boxes and blobs](enclosures.html)), formulas, groups, tables and charts rather than a directive: it makes the
 points of the element's vector geometry vibrate, a few times per second jumping to new nearby
 positions, with nearby points moving together so that outlines quiver like a line in an animated
 sketch. The geometry is exact again whenever the vibration stops.

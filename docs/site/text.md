@@ -54,8 +54,8 @@ paragraph with inline math stays one element: prose and formulas share one basel
 paragraph wraps to its width as a whole.
 
 Colors are written as `[text]{color=…}` or `[text]{style="color:…"}` (not both). A color is a
-palette name (`BLUE`, `RED`, `TEAL`, `ORANGE`, `YELLOW`, `GRAY`, `GREEN`, `PURPLE`, with `_A` to
-`_E` variants), a CSS name, a hex value or `rgb(…)`. Nested emphasis and math inherit the span's
+palette name (`BLUE`, `RED`, `TEAL`, `ORANGE`, `YELLOW`, `GOLD`, `GRAY`, `GREEN`, `PURPLE`, each with
+`_A` to `_E` variants, listed in [the manual](manual-markup.html#color-names)), a CSS name, a hex value or `rgb(…)`. Nested emphasis and math inherit the span's
 color. A color-only span stays inline; any other attribute makes the bracketed text a positioned
 element of its own, which then must be a whole block.
 
@@ -68,8 +68,8 @@ parent's preview of it.
 Any element can be a link as a whole: `href=` on a paragraph, heading, image, formula, shape,
 icon, arrow, brace, box, blob, table, chart or group opens its URL in a new tab when the element
 is clicked. The element's look does not change. Targets inside the deck, `#slide=id` and
-`#step=N`, are followed on a **double-click** instead: such links often cover whole tiles, and a
-single click over them keeps drawing with the pen. The dots left by the two clicks are removed.
+`#step=N`, move to that stop instead, on a click or a double-click. While the pen is on, links
+are inert, so a drag over a tile still draws, and the dot a tap would leave is taken back.
 
 ```markdown
 [[icon: document #paper x=0 y=0 size=1.2 label="the paper" href=https://arxiv.org/abs/1234.56789]]
@@ -88,8 +88,8 @@ code and formulas inside it looks like one LaTeX paragraph without any tuning. `
 `layout.codeFont` replace the faces (`"Georgia"`, `"Fira Code"`, …) while keeping the size
 calibration.
 
-Body text uses `layout.fontSize` (28 by default) and headings `layout.headingSize`, shrinking
-slightly per level; code spans use `layout.codeFont`. Any element can override its size with
+Body text uses `layout.fontSize` (28 by default) and headings `layout.headingSize` (42),
+shrinking slightly per level. Any element can override its size with
 `font_size=` and its color with `color=`, or through a [style](styles.html). A paragraph, heading,
 arrow label or brace label can also pick its own face with `font=`: any font the page has, or the
 bundled handwriting face **Zeyada**, which pairs with [hand-drawn shapes](sketch.html)

@@ -116,7 +116,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Getting started</h4>
-        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li></ul>
       </section>
       <section>
         <h4>Presenting</h4>
@@ -302,7 +302,7 @@ commas; <code>(x,y)</code> tuples stay whole; <code>#id</code> sets the ID; <cod
 <tr>
 <td><code>href</code></td>
 <td>every element, group, connection and attachment</td>
-<td>URL opened when the element is clicked; <code>#slide=id</code> and <code>#step=N</code> move within the deck on a double-click</td>
+<td>URL opened by a click on the element (a drag still draws); <code>#slide=id</code> and <code>#step=N</code> move within the deck instead of opening a page</td>
 </tr>
 </tbody>
 </table>
@@ -317,7 +317,7 @@ commas; <code>(x,y)</code> tuples stay whole; <code>#id</code> sets the ID; <cod
 <tbody>
 <tr>
 <td><code>rectangle</code>, <code>ellipse</code></td>
-<td><code>#id width height [corner_radius] fill_color fill_opacity …</code></td>
+<td><code>#id width height fill_color fill_opacity …</code> (<code>rectangle</code> also <code>corner_radius</code>)</td>
 </tr>
 <tr>
 <td><code>circle</code>, <code>dot</code></td>
@@ -399,7 +399,7 @@ commas; <code>(x,y)</code> tuples stay whole; <code>#id</code> sets the ID; <cod
 <tr>
 <td><code>smoothness</code></td>
 <td>blobs</td>
-<td>how softly neighbouring targets merge, 0 to 1</td>
+<td>how softly neighboring targets merge, 0 to 1</td>
 </tr>
 <tr>
 <td><code>sketch</code>, <code>roughness</code>, <code>bowing</code>, <code>fill_style</code>, <code>hachure_angle</code>, <code>hachure_gap</code>, <code>fill_weight</code>, <code>seed</code></td>

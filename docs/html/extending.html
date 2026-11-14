@@ -116,7 +116,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Getting started</h4>
-        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li></ul>
       </section>
       <section>
         <h4>Presenting</h4>
@@ -151,8 +151,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
     <article>
       <h1>Extending a deck</h1>
       <p class="lead">Folders next to the Markdown that add to the player by name, without touching it: snippets, directives, fonts, effects, camera transitions, chart types and data, languages, code themes, themes, artworks and slide classes.</p>
-      <p><a class="try" href="tour.html#slide=animations">Open in the tour ↗</a></p>
-<p>A deck extends the player by putting files in folders next to its Markdown. Each folder holds
+      <p>A deck extends the player by putting files in folders next to its Markdown. Each folder holds
 one kind of thing, one file per name, and the name is what the Markdown says: <code>[[snippet: card …]]</code>
 expands <code>snippets/card.md</code>, <code>[[gauge: …]]</code> draws with <code>directives/gauge.ts</code>, <code>[[effect: pulse …]]</code>
 plays <code>effects/pulse.ts</code>, <code>transition=swoop</code> moves the camera with <code>transitions/swoop.ts</code>,
@@ -218,7 +217,7 @@ with its caption, or a footer.</p>
 <pre><code class="language-markdown"><span class="tk-directive">[[gauge:</span> <span class="tk-attribute">#load</span> <span class="tk-attribute">x=</span><span class="tk-number">4</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">level=</span><span class="tk-number">0.7</span> <span class="tk-attribute">label=</span><span class="tk-string">&quot;load&quot;</span> <span class="tk-attribute">step=</span><span class="tk-number">2</span><span class="tk-directive">]]</span></code></pre>
 <p>A directive of the deck's own is any <code>[[name: …]]</code> the dialect does not know: it is drawn by
 <code>directives/name.ts</code>, a module exporting a function (<code>default</code>, or <code>directive</code>) that receives the
-directive's attributes as written, the deck's typography (<code>fontSize</code>, <code>width</code>, <code>color</code>, <code>layout</code>,
+directive's attributes as written, its <code>name</code> (so one module may serve several), the deck's typography (<code>fontSize</code>, <code>width</code>, <code>color</code>, <code>foreground</code>, <code>layout</code>,
 the hand-drawn options under <code>sketch</code>) and three helpers, <code>text</code> for inline markup in the deck's
 font, <code>icon</code> for a built-in icon and <code>artwork</code> for one of the deck's own, and returns a mobject or
 a list of them. The result is an element like any other: <code>x</code>, <code>y</code>, the relative positions, <code>step</code>,
@@ -286,14 +285,15 @@ embed the file, so data stays out of the slides and one chart module serves many
 { <span class="tk-attribute">&quot;keywords&quot;</span>: [<span class="tk-string">&quot;fn&quot;</span>, <span class="tk-string">&quot;pub&quot;</span>, <span class="tk-string">&quot;const&quot;</span>, <span class="tk-string">&quot;var&quot;</span>, <span class="tk-string">&quot;return&quot;</span>, <span class="tk-string">&quot;if&quot;</span>, <span class="tk-string">&quot;else&quot;</span>, <span class="tk-string">&quot;while&quot;</span>, <span class="tk-string">&quot;for&quot;</span>], <span class="tk-attribute">&quot;types&quot;</span>: [<span class="tk-string">&quot;u8&quot;</span>, <span class="tk-string">&quot;u32&quot;</span>, <span class="tk-string">&quot;i64&quot;</span>, <span class="tk-string">&quot;void&quot;</span>, <span class="tk-string">&quot;bool&quot;</span>],
   <span class="tk-attribute">&quot;lineComment&quot;</span>: [<span class="tk-string">&quot;//&quot;</span>], <span class="tk-attribute">&quot;strings&quot;</span>: [<span class="tk-string">&quot;\&quot;&quot;</span>], <span class="tk-attribute">&quot;aliases&quot;</span>: [<span class="tk-string">&quot;ziglang&quot;</span>] }</code></pre>
 <p>A language profile is a JSON file with the lists the tokenizer uses: <code>keywords</code>, <code>types</code>,
-<code>builtins</code>, <code>lineComment</code>, <code>blockComment</code> (pairs), <code>strings</code>, <code>tripleStrings</code>, and the flags
-<code>commands</code> (TeX <code>\name</code>), <code>variables</code> (<code>$name</code>), <code>flags</code> (<code>--name</code>) and <code>keys</code> (<code>&quot;name&quot;:</code>).
+<code>lineComment</code>, <code>blockComment</code> (pairs), <code>strings</code>, <code>tripleStrings</code>, the flags <code>commands</code> (TeX
+<code>\name</code>), <code>variables</code> (<code>$name</code>), <code>flags</code> (<code>--name</code>) and <code>keys</code> (<code>&quot;name&quot;:</code>), and <code>mode</code>
+(<code>markup</code> or <code>tags</code>) for line-oriented syntaxes.
 <code>aliases</code> adds other fence names for the same profile. Any fence name the player does not know
 is looked for as <code>languages/&lt;name&gt;.json</code>, once per deck.</p>
 <pre><code class="language-json">// code-themes/sepia.json
 { <span class="tk-attribute">&quot;keyword&quot;</span>: <span class="tk-string">&quot;#884400&quot;</span>, <span class="tk-attribute">&quot;type&quot;</span>: <span class="tk-string">&quot;#556B2F&quot;</span>, <span class="tk-attribute">&quot;string&quot;</span>: <span class="tk-string">&quot;#A0522D&quot;</span>, <span class="tk-attribute">&quot;comment&quot;</span>: <span class="tk-string">&quot;#8B8378&quot;</span>, <span class="tk-attribute">&quot;number&quot;</span>: <span class="tk-string">&quot;#B8860B&quot;</span> }</code></pre>
-<p>A code theme maps token classes (<code>keyword</code>, <code>type</code>, <code>builtin</code>, <code>string</code>, <code>comment</code>, <code>number</code>,
-<code>attribute</code>, <code>tag</code>, <code>punctuation</code>, <code>directive</code>, <code>math</code>, …) to colors; <code>&quot;layout&quot;: { &quot;codeTheme&quot;: &quot;sepia&quot; }</code> applies <code>code-themes/sepia.json</code> to every listing. Classes the theme leaves out keep
+<p>A code theme maps token classes (<code>keyword</code>, <code>type</code>, <code>string</code>, <code>comment</code>, <code>number</code>, <code>directive</code>,
+<code>attribute</code>, and <code>plain</code> for everything else) to colors; <code>&quot;layout&quot;: { &quot;codeTheme&quot;: &quot;sepia&quot; }</code> applies <code>code-themes/sepia.json</code> to every listing. Classes the theme leaves out keep
 the color the deck's text color gives them.</p>
 <h2 id="themes">Themes<a class="anchor" href="#themes" aria-label="Link to this section">#</a></h2><pre><code class="language-markdown"><span class="tk-comment">&lt;!-- themes/lecture.md --&gt;</span>
 <span class="tk-directive">::: styles</span>

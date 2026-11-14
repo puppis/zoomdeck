@@ -3,7 +3,7 @@ title: A quick tour
 description: The main things Zoomdeck does, each shown live with the markup that produces it.
 ---
 
-<a class="try" href="tour.html">The same tour as a deck ↗</a>
+<a class="try" href="tour.html">The tour deck ↗</a>
 
 Every deck on this page is the real player. Click one to give it the focus, then move with →
 and ← or with its buttons; the markup under a deck is all it takes to write it.
@@ -149,8 +149,8 @@ The camera (C) shows you next to or over the slides, as a picture in a corner or
 A recording (R) keeps the whole talk: your voice, the camera and every move on the deck,
 strokes included; it plays back on the deck itself, where it stays navigable, and exports as a
 plain video file. A shared screen (S), another application say, can be filmed as part of the
-talk. The desktop app is to render a recording off line as well, faster than real time, into
-one flat video file. The deck below has these controls on; each asks the browser for permission
+talk. A later version of the desktop app will render a recording offline as well, faster than
+real time, into one flat video file. The deck below has these controls on; each asks the browser for permission
 the first time.
 
 ```zoomdeck without=none code=hidden
@@ -167,8 +167,8 @@ The **Camera** button (C) shows the camera, **Record** (R) starts a talk (voice,
 
 Formulas are LaTeX, inline or displayed, rendered by MathJax and zoomable like everything else.
 Diagrams are directives: arrows between elements, boxes and blobs around them, icons, braces,
-and any of them hand-drawn with `sketch=true`. Animations in the style of Manim come with the
-same directives: elements move, grow, change colour, morph into one another, get highlighted,
+and any of them hand-drawn with `sketch=true`. Animations are directives too: elements move,
+grow, change color, morph into one another, get highlighted,
 or are written stroke by stroke in the bundled handwriting face, one step per click. The deck
 below has three slides: a formula, a diagram, and five steps of motion.
 

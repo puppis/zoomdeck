@@ -10,7 +10,7 @@ recording a talk, the screen, printing and the exports all work, and so do the c
 The app brings what a program is expected to have: a double-clickable icon with no Node.js to
 install, decks opened from a menu or from the system, recent decks, and the system's own
 permission prompts for the camera and the microphone. It renders through the same engine as
-Chrome, so it is as fast as Chrome and the same on every system, not faster.
+Chrome, so a deck looks and runs exactly as it does there, on every system; it is not faster.
 
 ## Installing
 

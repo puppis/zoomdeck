@@ -43,7 +43,7 @@ like shapes.
 <a class="try" href="tour.html#slide=shapes">Open in the tour ↗</a>
 
 ```markdown
-[[arrow: #box -> #disk, #edge, label="**labelled** $\to$", color=YELLOW]]
+[[arrow: #box -> #disk, #edge, label="**labeled** $\to$", color=YELLOW]]
 [[line: #disk -> (-1.2,-5), #drop, color=GRAY, stroke_width=2]]
 [[arrow: (-8.8,-5) -> #box, #pointer, color=RED, step=1]]
 ```

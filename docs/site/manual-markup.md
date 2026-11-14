@@ -590,8 +590,8 @@ or `play` of their own. Relative references stay within a group.
 | Attribute | Values | Default | Meaning |
 | --- | --- | --- | --- |
 | `id` | identifier | `element-N` | members are named `id.element-N` when they have no id |
-| `x`, `y` | units | flow | place the group's **origin** (the local 0, 0), unless `anchor` names another point |
-| `anchor` | the anchors, or `origin` | `origin` for `x`, `y`; `center` for relative placement | |
+| `x`, `y` | units | flow | place the group's center, unless `anchor` names another point |
+| `anchor` | the anchors, or `origin` | `center` | `origin` is the local (0, 0), where the members' flow starts |
 | `width` | units | the available width | the flow width inside the group |
 | `at`, `dx`, `dy`, `buff`, the relative references, `class`, `opacity`, `step`, `hide`, `enter`, `exit`, `run_time`, `lag`, `focus_only`, `href` | | | as for elements |
 | `tremble`, `tremble_amplitude`, `tremble_rate` | | | shake the group's geometry |
@@ -611,10 +611,10 @@ leaves the flow; a text block with only `x` keeps its flow line and moves horizo
 
 `x` and `y` place the element's **anchor** at that point: the left end of the first baseline
 for text, formulas and listings (`layout.textAnchor`, `left-baseline`), the center for
-everything else, the origin for a group. `anchor=` names another point: `center`, `top`,
+everything else, groups included. `anchor=` names another point: `center`, `top`,
 `bottom`, `left`, `right`, `top-left`, `top-right`, `bottom-left`, `bottom-right`,
 `left-baseline` or `right-baseline` (the baselines for text, formulas and listings only), and
-`origin` for a group. For a center-anchored element an omitted coordinate is 0; for a text
+`origin`, the local (0, 0) of a group. For a center-anchored element an omitted coordinate is 0; for a text
 element it is the flow position.
 
 ### Relative placement

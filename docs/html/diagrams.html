@@ -117,7 +117,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Getting started</h4>
-        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li></ul>
       </section>
       <section>
         <h4>Presenting</h4>
@@ -157,7 +157,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 <p>Diagrams are directives in double brackets: a shape, an arrow between two elements, an icon, an enclosure around several of them. Each cell adds one kind.</p>
 
 <div class="cell"><pre class="cell-input"><code><span class="tk-keyword">import</span> zoomdeck_nb</code></pre></div>
-<h2 id="shapes">Shapes<a class="anchor" href="#shapes" aria-label="Link to this section">#</a></h2><p>A shape directive names the kind, gives it an <code>#id</code>, a position and a size, then its colours. Shapes are placed by their centre.</p>
+<h2 id="shapes">Shapes<a class="anchor" href="#shapes" aria-label="Link to this section">#</a></h2><p>A shape directive names the kind, gives it an <code>#id</code>, a position and a size, then its colors. Shapes are placed by their center.</p>
 
 <div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
 </span><span class="tk-directive">::: slide </span><span class="tk-attribute">{#shapes width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
@@ -191,7 +191,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 [[polyline: #zigzag points="(3,-4.2) (5,-2.3) (7,-3.8) (9,-2)" color=ORANGE stroke_width=3]]
 :::
 </script></zoom-deck></div></div>
-<h2 id="arrows-and-lines">Arrows and lines<a class="anchor" href="#arrows-and-lines" aria-label="Link to this section">#</a></h2><p>An arrow or a line joins two endpoints: elements by <code>#id</code>, or points in parentheses. A label sits along it, and <code>step=</code> makes it appear on a click.</p>
+<h2 id="arrows-and-lines">Arrows and lines<a class="anchor" href="#arrows-and-lines" aria-label="Link to this section">#</a></h2><p>An arrow or a line joins two endpoints: elements by <code>#id</code>, or points in parentheses. A label sits along it, and <code>step=</code> makes it appear on a click (steps are the subject of the Motion notebook).</p>
 
 <div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
 </span><span class="tk-directive">::: slide </span><span class="tk-attribute">{#arrows width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
@@ -201,7 +201,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 
 <span class="tk-directive">[[circle:</span> <span class="tk-attribute">#disk</span> <span class="tk-attribute">x=</span><span class="tk-number">2</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">radius=</span><span class="tk-number">0.9</span> <span class="tk-attribute">color=</span>GREEN <span class="tk-attribute">stroke_width=</span><span class="tk-number">4</span><span class="tk-directive">]]</span>
 
-<span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#box</span> -&gt; <span class="tk-attribute">#disk</span>, <span class="tk-attribute">#edge</span>, <span class="tk-attribute">label=</span><span class="tk-string">&quot;**labelled** $\to$&quot;</span>, <span class="tk-attribute">color=</span>GOLD_E<span class="tk-directive">]]</span>
+<span class="tk-directive">[[arrow:</span> <span class="tk-attribute">#box</span> -&gt; <span class="tk-attribute">#disk</span>, <span class="tk-attribute">#edge</span>, <span class="tk-attribute">label=</span><span class="tk-string">&quot;**labeled** $\to$&quot;</span>, <span class="tk-attribute">color=</span>GOLD_E<span class="tk-directive">]]</span>
 
 <span class="tk-directive">[[line:</span> <span class="tk-attribute">#disk</span> -&gt; (<span class="tk-number">6</span>,<span class="tk-number">-3.5</span>), <span class="tk-attribute">#drop</span>, <span class="tk-attribute">color=</span>GRAY, <span class="tk-attribute">stroke_width=</span><span class="tk-number">2</span><span class="tk-directive">]]</span>
 
@@ -214,14 +214,14 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 
 [[circle: #disk x=2 y=0 radius=0.9 color=GREEN stroke_width=4]]
 
-[[arrow: #box -> #disk, #edge, label="**labelled** $\to$", color=GOLD_E]]
+[[arrow: #box -> #disk, #edge, label="**labeled** $\to$", color=GOLD_E]]
 
 [[line: #disk -> (6,-3.5), #drop, color=GRAY, stroke_width=2]]
 
 [[arrow: (-8.8,-3.5) -> #box, #pointer, color=RED, step=1]]
 :::
 </script></zoom-deck></div></div>
-<h2 id="icons">Icons<a class="anchor" href="#icons" aria-label="Link to this section">#</a></h2><p>Icons come from a built-in set (<code>user</code>, <code>server</code>, <code>database</code>, <code>cloud</code>, <code>document</code> and more); a label sits beside them, and they take the same colours and arrows as shapes.</p>
+<h2 id="icons">Icons<a class="anchor" href="#icons" aria-label="Link to this section">#</a></h2><p>Icons come from a built-in set (<code>user</code>, <code>server</code>, <code>database</code>, <code>cloud</code>, <code>document</code> and more); a label sits under them (or on the side <code>label_side</code> names), and they take the same colors and arrows as shapes.</p>
 
 <div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
 </span><span class="tk-directive">::: slide </span><span class="tk-attribute">{#icons width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
@@ -289,7 +289,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 [[brace: #store, #bs, side=bottom, label="the data", color=GRAY, step=3]]
 :::
 </script></zoom-deck></div></div>
-<h2 id="hand-drawn">Hand-drawn<a class="anchor" href="#hand-drawn" aria-label="Link to this section">#</a></h2><p><code>sketch=true</code> draws a shape, an icon, an arrow or an enclosure as if by hand: a wobbly outline and a hatched or solid fill. A <code>::: styles</code> block turns it on for whole kinds at once, and <code>font=Zeyada</code> sets the matching handwriting face on text. For drawing by hand during the talk itself, the player has the pen (D) and pairs with a tablet or an iPad; see <a href="player.html">The player</a>.</p>
+<h2 id="hand-drawn">Hand-drawn<a class="anchor" href="#hand-drawn" aria-label="Link to this section">#</a></h2><p><code>sketch=true</code> draws a shape, an icon, an arrow or an enclosure as if by hand: a wobbly outline and a hatched or solid fill. A <code>::: styles</code> block (styles are the subject of the next notebook) turns it on for whole kinds at once, and <code>font=Zeyada</code> sets the matching handwriting face on text. For drawing by hand during the talk itself, the player has the pen (D) and pairs with a tablet or an iPad; see <a href="player.html">The player</a>.</p>
 
 <div class="cell"><pre class="cell-input"><code><span class="cell-magic">%%deck
 </span><span class="tk-directive">::: styles</span>

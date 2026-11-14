@@ -23,6 +23,40 @@ zoomdeck jump path/to/slides.md 42               # the browser shows the stop of
 zoomdeck build path/to/deck.json -o build --one-file
 ```
 
+## The `zoomdeck` command
+
+All configurations call a `zoomdeck` command. It exists once you have run `npm link` inside the
+Zoomdeck checkout (after `npm install`, on Node 20.19+ or 22.12+), as described under
+[From the sources](getting-started.html#from-the-sources); `zoomdeck --help`
+in a terminal confirms it. Inside a project that lists `zoomdeck` as a dependency, `npx zoomdeck`
+works as well.
+
+If an editor reports **`zoomdeck: command not found`** although the terminal finds it, the editor
+was started from the Dock, the Start menu or a launcher and did not read your shell profile, so
+npm's global `bin` directory (or nvm's, or Homebrew's) is missing from its `PATH`. The Emacs,
+Vim and Sublime Text setups below cope with that by themselves: when the command is not on the
+editor's path they run the `bin/zoomdeck.mjs` of the checkout they belong to with `node`, or ask
+your login shell where the command is. VS Code's tasks run in its integrated terminal, which
+loads the profile, and JetBrains IDEs inherit it too. For the remaining cases, start the editor
+from a terminal once, or put the full path of the command (`which zoomdeck`) into the
+configuration: each one names the command in a single place (`zoomdeck-command` in Emacs,
+`g:zoomdeck_command` in Vim, the task or tool definition in VS Code and JetBrains, the
+`shell_cmd` lines in Sublime Text). `node /path/to/Zoomdeck/bin/zoomdeck.mjs` is an equivalent
+that needs no link, as long as `node` itself is on that `PATH`.
+
+The configurations live in the repository under `editors/`. Highlighting adds, on top of the
+editor's Markdown, the slide and styles containers, the `[[directive: …]]` lines, `#id`s,
+`.classes`, `key=value` attributes, quoted strings and numbers. Errors in a deck appear in the
+browser with their line number (and file, for imported files), so the browser window doubles as
+the editor's problems panel.
+
+**If the browser opens on a page that refuses to connect**, read the build panel or terminal:
+the server prints the address it actually listens on, `http://127.0.0.1:8000/` or the next free
+port when a previous preview still holds 8000. Stopping that previous preview (Tools ▸ Cancel
+Build in Sublime Text, closing the task terminal in VS Code, `C-c C-k` in Emacs, closing the
+terminal split in Vim, the stop button of the tool window in JetBrains) frees the port; a server
+also stops on its own when the program that started it ends.
+
 ## Forward and inverse search
 
 While the preview server runs, the editor and the browser follow each other, as a LaTeX editor
@@ -63,40 +97,6 @@ made with `npm link` follows the checkout) or by one that does not watch the fil
 "unknown command" answer means the `zoomdeck` on the editor's `PATH` is outdated. The editor
 setups show the command's answer when it fails: a dialog in Sublime Text, the `*zoomdeck jump*`
 message in Emacs, the task terminal in VS Code.
-
-## The `zoomdeck` command
-
-All configurations call a `zoomdeck` command. It exists once you have run `npm link` inside the
-Zoomdeck checkout (after `npm install`, on Node 20.19+ or 22.12+), as described under
-[The `zoomdeck` command](getting-started.html#the-zoomdeck-command); `zoomdeck --help`
-in a terminal confirms it. Inside a project that lists `zoomdeck` as a dependency, `npx zoomdeck`
-works as well.
-
-If an editor reports **`zoomdeck: command not found`** although the terminal finds it, the editor
-was started from the Dock, the Start menu or a launcher and did not read your shell profile, so
-npm's global `bin` directory (or nvm's, or Homebrew's) is missing from its `PATH`. The Emacs,
-Vim and Sublime Text setups below cope with that by themselves: when the command is not on the
-editor's path they run the `bin/zoomdeck.mjs` of the checkout they belong to with `node`, or ask
-your login shell where the command is. VS Code's tasks run in its integrated terminal, which
-loads the profile, and JetBrains IDEs inherit it too. For the remaining cases, start the editor
-from a terminal once, or put the full path of the command (`which zoomdeck`) into the
-configuration: each one names the command in a single place (`zoomdeck-command` in Emacs,
-`g:zoomdeck_command` in Vim, the task or tool definition in VS Code and JetBrains, the
-`shell_cmd` lines in Sublime Text). `node /path/to/Zoomdeck/bin/zoomdeck.mjs` is an equivalent
-that needs no link, as long as `node` itself is on that `PATH`.
-
-The configurations live in the repository under `editors/`. Highlighting adds, on top of the
-editor's Markdown, the slide and styles containers, the `[[directive: …]]` lines, `#id`s,
-`.classes`, `key=value` attributes, quoted strings and numbers. Errors in a deck appear in the
-browser with their line number (and file, for imported files), so the browser window doubles as
-the editor's problems panel.
-
-**If the browser opens on a page that refuses to connect**, read the build panel or terminal:
-the server prints the address it actually listens on, `http://127.0.0.1:8000/` or the next free
-port when a previous preview still holds 8000. Stopping that previous preview (Tools ▸ Cancel
-Build in Sublime Text, closing the task terminal in VS Code, `C-c C-k` in Emacs, closing the
-terminal split in Vim, the stop button of the tool window in JetBrains) frees the port; a server
-also stops on its own when the program that started it ends.
 
 ## Visual Studio Code
 
@@ -177,8 +177,9 @@ Copy `editors/vim/plugin/` and `editors/vim/after/` into `~/.vim/` or `~/.config
 styles block get the mappings **\<leader\>zb** (`:ZoomdeckPreview`, in a terminal split),
 **\<leader\>zj** (`:ZoomdeckJump`, the stop of the cursor line in the browser) and
 **\<leader\>zp** (`:ZoomdeckBuild`), plus Ctrl+Alt+B, J and P where the terminal or GUI
-delivers them (Neovim in a modern terminal, gvim, MacVim), are saved after `updatetime` idle milliseconds (lowered to
-one second), and highlight the dialect through `after/syntax/markdown.vim`. E or Alt+click in
+delivers them (Neovim in a modern terminal, gvim, MacVim). Such buffers are saved after
+`updatetime` idle milliseconds (lowered to one second) and highlight the dialect through
+`after/syntax/markdown.vim`. E or Alt+click in
 the browser brings Vim to the line through its server: Neovim always has one, Vim needs
 `+clientserver` and a name (`vim --servername DECK`; gvim and MacVim name themselves), and
 without one the preview starts without inverse search. The plugin finds the command on Vim's

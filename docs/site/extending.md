@@ -3,8 +3,6 @@ title: Extending a deck
 description: Folders next to the Markdown that add to the player by name, without touching it: snippets, directives, fonts, effects, camera transitions, chart types and data, languages, code themes, themes, artworks and slide classes.
 ---
 
-<a class="try" href="tour.html#slide=animations">Open in the tour ↗</a>
-
 A deck extends the player by putting files in folders next to its Markdown. Each folder holds
 one kind of thing, one file per name, and the name is what the Markdown says: `[[snippet: card …]]`
 expands `snippets/card.md`, `[[gauge: …]]` draws with `directives/gauge.ts`, `[[effect: pulse …]]`
@@ -90,7 +88,7 @@ export default async function gauge({ attributes, color, text }: DirectiveOption
 
 A directive of the deck's own is any `[[name: …]]` the dialect does not know: it is drawn by
 `directives/name.ts`, a module exporting a function (`default`, or `directive`) that receives the
-directive's attributes as written, the deck's typography (`fontSize`, `width`, `color`, `layout`,
+directive's attributes as written, its `name` (so one module may serve several), the deck's typography (`fontSize`, `width`, `color`, `foreground`, `layout`,
 the hand-drawn options under `sketch`) and three helpers, `text` for inline markup in the deck's
 font, `icon` for a built-in icon and `artwork` for one of the deck's own, and returns a mobject or
 a list of them. The result is an element like any other: `x`, `y`, the relative positions, `step`,
@@ -186,8 +184,9 @@ embed the file, so data stays out of the slides and one chart module serves many
 ```
 
 A language profile is a JSON file with the lists the tokenizer uses: `keywords`, `types`,
-`builtins`, `lineComment`, `blockComment` (pairs), `strings`, `tripleStrings`, and the flags
-`commands` (TeX `\name`), `variables` (`$name`), `flags` (`--name`) and `keys` (`"name":`).
+`lineComment`, `blockComment` (pairs), `strings`, `tripleStrings`, the flags `commands` (TeX
+`\name`), `variables` (`$name`), `flags` (`--name`) and `keys` (`"name":`), and `mode`
+(`markup` or `tags`) for line-oriented syntaxes.
 `aliases` adds other fence names for the same profile. Any fence name the player does not know
 is looked for as `languages/<name>.json`, once per deck.
 
@@ -196,8 +195,8 @@ is looked for as `languages/<name>.json`, once per deck.
 { "keyword": "#884400", "type": "#556B2F", "string": "#A0522D", "comment": "#8B8378", "number": "#B8860B" }
 ```
 
-A code theme maps token classes (`keyword`, `type`, `builtin`, `string`, `comment`, `number`,
-`attribute`, `tag`, `punctuation`, `directive`, `math`, …) to colors; `"layout": { "codeTheme":
+A code theme maps token classes (`keyword`, `type`, `string`, `comment`, `number`, `directive`,
+`attribute`, and `plain` for everything else) to colors; `"layout": { "codeTheme":
 "sepia" }` applies `code-themes/sepia.json` to every listing. Classes the theme leaves out keep
 the color the deck's text color gives them.
 

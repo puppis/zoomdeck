@@ -97,7 +97,7 @@ Every camera move is a zoom, with one exception: a root of the forest (a page of
 nothing includes) is reached with a cut from outside its own tree, as the next page of a document
 is; zooming back out to a root from its own children is a move like any other. A slide's
 `transition` says how the camera arrives at it, whichever slide it comes from, and overrides the
-rule either way: `transition=cut` on a slide (or on the include that places it) replaces the view
+rule in both directions, a cut into a zoomed deck or a zoom into a cut one: `transition=cut` on a slide (or on the include that places it) replaces the view
 at once when the camera moves into that slide, `transition=zoom` on a root pans to it from its
 neighbour; fades of focus-only decorations still play. The move out of a slide is the next
 destination's business: back to the parent, it follows the parent's setting. To present a whole

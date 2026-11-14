@@ -116,11 +116,11 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Getting started</h4>
-        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li></ul>
       </section>
       <section>
         <h4>Presenting</h4>
-        <ul><li><a href="player.html" aria-current="page">The player</a><ul class="subsections"><li><a href="#controls">Controls</a></li><li><a href="#settings">Settings</a></li><li><a href="#pointer-tools">Pointer tools</a></li><li><a href="#the-pen">The pen</a></li><li><a href="#the-whiteboard">The whiteboard</a></li><li><a href="#a-tablet-as-a-drawing-pad">A tablet as a drawing pad</a></li><li><a href="#the-camera">The camera</a></li><li><a href="#recording-a-talk">Recording a talk</a></li><li><a href="#printing-to-pdf">Printing to PDF</a></li><li><a href="#rendering-options">Rendering options</a></li><li><a href="#reverse-playback">Reverse playback</a></li><li><a href="#cuts">Cuts</a></li><li><a href="#outline-and-deep-links">Outline and deep links</a></li><li><a href="#loops-and-automatic-advancement">Loops and automatic advancement</a></li><li><a href="#editing-preview">Editing preview</a></li><li><a href="#static-exports">Static exports</a></li></ul></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
+        <ul><li><a href="player.html" aria-current="page">The player</a><ul class="subsections"><li><a href="#controls">Controls</a></li><li><a href="#settings">Settings</a></li><li><a href="#pointer-tools">Pointer tools</a></li><li><a href="#the-pen">The pen</a></li><li><a href="#the-whiteboard">The whiteboard</a></li><li><a href="#a-tablet-as-a-drawing-pad">A tablet as a drawing pad</a></li><li><a href="#the-camera">The camera</a></li><li><a href="#recording-a-talk">Recording a talk</a></li><li><a href="#printing-to-pdf">Printing to PDF</a></li><li><a href="#rendering-options">Rendering options</a></li><li><a href="#reverse-playback">Reverse playback</a></li><li><a href="#cuts">Cuts</a></li><li><a href="#outline-and-deep-links">Outline and deep links</a></li><li><a href="#loops-and-automatic-advancement">Loops and automatic advancement</a></li><li><a href="#editing-preview">Editing preview</a></li></ul></li><li><a href="exporting.html">Exporting a deck</a></li></ul>
       </section>
       <section>
         <h4>Writing slides</h4>
@@ -238,6 +238,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 </tr>
 </tbody>
 </table>
+<p>While a recorded talk plays, Space or K pause and resume it, <code>←</code> and <code>→</code> seek five seconds, Home returns to the start and Esc leaves the playback (<a href="#recording-a-talk">Recording a talk</a>).</p>
 <p>The footer has four groups: the previous/next buttons with the stop counter; the pen colors and
 the Whiteboard button; the Camera, Screen, Record, Pause and Talk buttons; and, at the
 right, Print, Fullscreen and the settings gear. A progress bar runs along its top edge. Camera,
@@ -450,7 +451,7 @@ deck), and off. The first step asks the browser for the camera chosen in the set
 the corner, the size and the mirroring are settings. The pen never draws on the camera: strokes
 belong to slides and to the whiteboard. A recording keeps the camera exactly while it is on, so
 you can record a talk without it even with a camera attached, or bring it in for some moments
-only. The camera and the screen (see <a href="#recording-a-talk">Filming the screen</a>) are one picture at
+only. The camera and the screen (see Filming the screen under <a href="#recording-a-talk">Recording a talk</a>) are one picture at
 a time: turning the camera on stops the filming of the screen, and filming the screen sets the
 camera aside, to come back when the filming stops.</p>
 <h2 id="recording-a-talk">Recording a talk<a class="anchor" href="#recording-a-talk" aria-label="Link to this section">#</a></h2><p><strong>Record</strong> in the footer, or <code>R</code>, records the talk (a dialog first says what will be kept and where it goes, and offers to continue a saved talk instead of starting a new one): your voice through the microphone, the
@@ -579,10 +580,8 @@ reverse settles it and steps back once more, so quick presses step through stops
 <code>&quot;presenter&quot;: { &quot;reversePlayback&quot;: false }</code> restores instant jumps.</p>
 <h2 id="cuts">Cuts<a class="anchor" href="#cuts" aria-label="Link to this section">#</a></h2><p><code>&quot;presenter&quot;: { &quot;transition&quot;: &quot;cut&quot; }</code> replaces the view at once when the camera moves between
 slides, like turning the pages of a PDF, while fragments and animations inside a slide still
-play. <code>transition=cut</code> on a slide, include or subslide does the same for the move into that slide
-alone, and <code>transition=zoom</code> brings the zoom back for one slide of a <code>cut</code> deck. A PDF opened in the player,
-and a Markdown file whose slides include none of the others, cut between their pages by themselves
-(<a href="documents.html">PDFs, flat decks and forests</a>).</p>
+play; a slide's own <code>transition=</code> decides how the camera arrives at it. The rule is under
+<a href="slides.html#cuts-instead-of-zooms">Cuts instead of zooms</a>.</p>
 <h2 id="outline-and-deep-links">Outline and deep links<a class="anchor" href="#outline-and-deep-links" aria-label="Link to this section">#</a></h2><p>The outline lists every slide; clicking one jumps to its first stop. The address bar follows the
 current stop as <code>#step=N</code>, which can be shared or bookmarked; <code>#slide=id</code> opens the first stop of a
 slide by its markup ID (or a slide by name). A URL without a hash opens at the first stop, and a
@@ -595,18 +594,16 @@ slide and step you were on, using a bookmark saved just before the reload. Parse
 errors are shown with the offending line. The editor and the player also follow each other:
 <code>zoomdeck jump &lt;file&gt; &lt;line&gt;</code> shows the stop of a source line, and <code>E</code> or Alt + click opens the
 source of a stop or of an element in the editor named by <code>--editor</code>; <a href="editors.html#forward-and-inverse-search">Editors</a>
-explains both and the ready-made setups.</p>
-<h2 id="static-exports">Static exports<a class="anchor" href="#static-exports" aria-label="Link to this section">#</a></h2><p>A deck can be exported as a static folder or as one self-contained HTML file that opens from
-disk; both keep the complete player, including settings and deep links. See
-<a href="exporting.html">Exporting a deck</a>.</p>
+explains both and the ready-made setups. <a href="exporting.html">Exporting a deck</a> makes the same
+player a static folder or one self-contained HTML file, settings and deep links included.</p>
 
     </article>
     <footer class="pager">
-      <a class="prev" href="concepts.html">← Concepts</a>
+      <a class="prev" href="desktop.html">← The desktop app</a>
       <a class="next" href="exporting.html">Exporting a deck →</a>
     </footer>
   </main>
-  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#controls">Controls</a></li><li><a href="#settings">Settings</a></li><li><a href="#pointer-tools">Pointer tools</a></li><li><a href="#the-pen">The pen</a></li><li><a href="#the-whiteboard">The whiteboard</a></li><li><a href="#a-tablet-as-a-drawing-pad">A tablet as a drawing pad</a></li><li><a href="#the-camera">The camera</a></li><li><a href="#recording-a-talk">Recording a talk</a></li><li><a href="#printing-to-pdf">Printing to PDF</a></li><li><a href="#rendering-options">Rendering options</a></li><li><a href="#reverse-playback">Reverse playback</a></li><li><a href="#cuts">Cuts</a></li><li><a href="#outline-and-deep-links">Outline and deep links</a></li><li><a href="#loops-and-automatic-advancement">Loops and automatic advancement</a></li><li><a href="#editing-preview">Editing preview</a></li><li><a href="#static-exports">Static exports</a></li></ul></nav>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#controls">Controls</a></li><li><a href="#settings">Settings</a></li><li><a href="#pointer-tools">Pointer tools</a></li><li><a href="#the-pen">The pen</a></li><li><a href="#the-whiteboard">The whiteboard</a></li><li><a href="#a-tablet-as-a-drawing-pad">A tablet as a drawing pad</a></li><li><a href="#the-camera">The camera</a></li><li><a href="#recording-a-talk">Recording a talk</a></li><li><a href="#printing-to-pdf">Printing to PDF</a></li><li><a href="#rendering-options">Rendering options</a></li><li><a href="#reverse-playback">Reverse playback</a></li><li><a href="#cuts">Cuts</a></li><li><a href="#outline-and-deep-links">Outline and deep links</a></li><li><a href="#loops-and-automatic-advancement">Loops and automatic advancement</a></li><li><a href="#editing-preview">Editing preview</a></li></ul></nav>
 </div>
 </body>
 </html>

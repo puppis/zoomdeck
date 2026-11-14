@@ -116,7 +116,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Getting started</h4>
-        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li></ul>
       </section>
       <section>
         <h4>Presenting</h4>
@@ -248,7 +248,7 @@ child. They are the two sides of one choice and are never written together.</p>
 nothing includes) is reached with a cut from outside its own tree, as the next page of a document
 is; zooming back out to a root from its own children is a move like any other. A slide's
 <code>transition</code> says how the camera arrives at it, whichever slide it comes from, and overrides the
-rule either way: <code>transition=cut</code> on a slide (or on the include that places it) replaces the view
+rule in both directions, a cut into a zoomed deck or a zoom into a cut one: <code>transition=cut</code> on a slide (or on the include that places it) replaces the view
 at once when the camera moves into that slide, <code>transition=zoom</code> on a root pans to it from its
 neighbour; fades of focus-only decorations still play. The move out of a slide is the next
 destination's business: back to the parent, it follows the parent's setting. To present a whole

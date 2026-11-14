@@ -116,7 +116,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Getting started</h4>
-        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li></ul>
       </section>
       <section>
         <h4>Presenting</h4>
@@ -124,7 +124,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="first-deck.html">Your first deck, stage by stage</a></li><li><a href="content.html">The content of a slide</a></li><li><a href="documents.html">PDFs, flat decks and forests</a></li><li><a href="slides.html">Slides and the forest</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html" aria-current="page">Tables and charts</a></li></ul>
+        <ul><li><a href="first-deck.html">Your first deck, stage by stage</a></li><li><a href="content.html">The content of a slide</a></li><li><a href="documents.html">PDFs, flat decks and forests</a></li><li><a href="slides.html">Slides and the forest</a></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html" aria-current="page">Tables and charts</a><ul class="subsections"><li><a href="#tables">Tables</a></li><li><a href="#charts">Charts</a></li><li><a href="#from-code">From code</a></li></ul></li></ul>
       </section>
       <section>
         <h4>Diagrams</h4>
@@ -162,89 +162,184 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 <span class="tk-directive">```</span><span class="tk-type">chart </span><span class="tk-attribute">{#bars x=</span><span class="tk-number">5</span><span class="tk-attribute"> y=</span><span class="tk-number">-2.6</span><span class="tk-attribute"> width=</span><span class="tk-number">6</span><span class="tk-attribute"> height=</span><span class="tk-number">2.6</span><span class="tk-attribute"> values=true}</span>
 Region, 2023, 2024
 North, 3.2, 5.0
-South, 2.1, 3.1</code></pre>
-<pre><code>
-## Tables
-
-A Markdown pipe table (a header row, a delimiter row, then body rows) becomes a grid of cells.
+South, 2.1, 3.1
+<span class="tk-directive">```</span></code></pre>
+<h2 id="tables">Tables<a class="anchor" href="#tables" aria-label="Link to this section">#</a></h2><p>A Markdown pipe table (a header row, a delimiter row, then body rows) becomes a grid of cells.
 Cells hold the usual inline markup: emphasis, code, math, colored spans and links. The delimiter
-row sets each column's alignment (`:---` left, `:---:` center, `---:` right). Like a formula, a
-table is positioned and styled by wrapping it in a `::: {.element …}` container, which also gives
-it its `#id`, `step`, `hide` and the placement attributes of [Positioning](positioning.html);
-tables are centered on `x`, `y` unless `anchor=` says otherwise. Columns take the width of their
-widest cell; when the table would exceed `width` (the available width by default), columns shrink
-in proportion and their text wraps.
-
-| Attribute | Default | Meaning |
-| --- | --- | --- |
-| `rules` | `all` | which lines to draw: `all`, `rows`, `cols`, `outer` or `none` |
-| `border_color` | the text color | color of the rules and the default shading color |
-| `stroke_width` | <span class="tk-number">1.5</span> | width of the rules |
-| `header` | `true` | whether the first row is a header (shaded; `false` treats it as a body row) |
-| `header_color`, `header_opacity` | the rule color, <span class="tk-number">0.12</span> | background of the header row |
-| `stripe_opacity` | <span class="tk-number">0</span> | background of every second body row, in the rule color |
-| `fill_color`, `fill_opacity` | the rule color, <span class="tk-number">0</span> | background of the whole table |
-| `padding` | <span class="tk-number">0.15</span> | space between a cell's text and its rules |
-| `font_size`, `font`, `color`, `opacity` | the layout's | typography and translucency |
-| `sketch` and its tuning | `false` | [hand-drawn](sketch.html) rules and backgrounds |
-
-Tables take the style role `table`, so `table: rules=rows header_opacity=<span class="tk-number">0.2</span>` in a styles block
-sets a deck-wide look, and `tremble=` makes their rules vibrate like any vector geometry.
-
-## Charts
-
-A fenced block whose language is `chart` holds the data; its info string holds the options, among
-them `type`: `bar`, `line`, `pie`, or the name of a chart module of the deck's own in its
-`charts/` folder ([Extending a deck](extending.html#chart-types)):
-
-````markdown
-```chart {#visits x=<span class="tk-number">4</span> y=<span class="tk-number">0</span> width=<span class="tk-number">7</span> height=<span class="tk-number">3.5</span> type=line colors=&quot;RED_E TEAL_E&quot;}
+row sets each column's alignment (<code>:---</code> left, <code>:---:</code> center, <code>---:</code> right). Like a formula, a
+table is positioned and styled by wrapping it in a <code>::: {.element …}</code> container, which also gives
+it its <code>#id</code>, <code>step</code>, <code>hide</code> and the placement attributes of <a href="positioning.html">Positioning</a>;
+tables are centered on <code>x</code>, <code>y</code> unless <code>anchor=</code> says otherwise. Columns take the width of their
+widest cell; when the table would exceed <code>width</code> (the available width by default), columns shrink
+in proportion and their text wraps.</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>rules</code></td>
+<td><code>all</code></td>
+<td>which lines to draw: <code>all</code>, <code>rows</code>, <code>cols</code>, <code>outer</code> or <code>none</code></td>
+</tr>
+<tr>
+<td><code>border_color</code></td>
+<td>the text color</td>
+<td>color of the rules and the default shading color</td>
+</tr>
+<tr>
+<td><code>stroke_width</code></td>
+<td>1.5</td>
+<td>width of the rules</td>
+</tr>
+<tr>
+<td><code>header</code></td>
+<td><code>true</code></td>
+<td>whether the first row is a header (shaded; <code>false</code> treats it as a body row)</td>
+</tr>
+<tr>
+<td><code>header_color</code>, <code>header_opacity</code></td>
+<td>the rule color, 0.12</td>
+<td>background of the header row</td>
+</tr>
+<tr>
+<td><code>stripe_opacity</code></td>
+<td>0</td>
+<td>background of every second body row, in the rule color</td>
+</tr>
+<tr>
+<td><code>fill_color</code>, <code>fill_opacity</code></td>
+<td>the rule color, 0</td>
+<td>background of the whole table</td>
+</tr>
+<tr>
+<td><code>padding</code></td>
+<td>0.15</td>
+<td>space between a cell's text and its rules</td>
+</tr>
+<tr>
+<td><code>font_size</code>, <code>font</code>, <code>color</code>, <code>opacity</code></td>
+<td>the layout's</td>
+<td>typography and translucency</td>
+</tr>
+<tr>
+<td><code>sketch</code> and its tuning</td>
+<td><code>false</code></td>
+<td><a href="sketch.html">hand-drawn</a> rules and backgrounds</td>
+</tr>
+</tbody>
+</table>
+<p>Tables take the style role <code>table</code>, so <code>table: rules=rows header_opacity=0.2</code> in a styles block
+sets a deck-wide look, and <code>tremble=</code> makes their rules vibrate like any vector geometry.</p>
+<h2 id="charts">Charts<a class="anchor" href="#charts" aria-label="Link to this section">#</a></h2><p>A fenced block whose language is <code>chart</code> holds the data; its info string holds the options, among
+them <code>type</code>: <code>bar</code>, <code>line</code>, <code>pie</code>, or the name of a chart module of the deck's own in its
+<code>charts/</code> folder (<a href="extending.html#chart-types">Extending a deck</a>):</p>
+<pre><code class="language-markdown"><span class="tk-directive">```</span><span class="tk-type">chart </span><span class="tk-attribute">{#visits x=</span><span class="tk-number">4</span><span class="tk-attribute"> y=</span><span class="tk-number">0</span><span class="tk-attribute"> width=</span><span class="tk-number">7</span><span class="tk-attribute"> height=</span><span class="tk-number">3.5</span><span class="tk-attribute"> type=line colors=</span><span class="tk-string">&quot;RED_E TEAL_E&quot;</span><span class="tk-attribute">}</span>
 Month, Visits, Signups
-Jan, <span class="tk-number">12</span>, <span class="tk-number">3</span>
-Feb, <span class="tk-number">18</span>, <span class="tk-number">5</span>
-Mar, <span class="tk-number">15</span>, <span class="tk-number">4</span></code></pre>
-<pre><code>
-Rows are separated by commas, semicolons or tabs. The first row names the series (its first cell
+Jan, 12, 3
+Feb, 18, 5
+Mar, 15, 4
+<span class="tk-directive">```</span></code></pre>
+<p>Each line is a row; its cells are separated by commas, semicolons or tabs. The first row names the series (its first cell
 labels the category column and is ignored) unless its cells after the first are plain numbers;
-years such as `<span class="tk-number">2023</span>` still count as names, and `header=true` or `header=false` settles doubtful
-cases. Each later row is a category followed by one value per series. Lines starting with `#` are
-comments.
+years such as <code>2023</code> still count as names, and <code>header=true</code> or <code>header=false</code> settles doubtful
+cases. Each later row is a category followed by one value per series. Lines starting with <code>#</code> are
+comments.</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td><code>bar</code></td>
+<td><code>bar</code> (grouped bars), <code>line</code> (lines with markers) or <code>pie</code> (the first series as slices); any other name is a chart module of the deck's own</td>
+</tr>
+<tr>
+<td><code>src</code></td>
+<td>the fence's rows</td>
+<td>a CSV, TSV or JSON file with the rows, next to the Markdown or in the <code>paths</code> folders; the fence is then left empty (<a href="extending.html#chart-types">Extending a deck</a>)</td>
+</tr>
+<tr>
+<td><code>width</code>, <code>height</code></td>
+<td>6, 3.5</td>
+<td>size of the plot area, or of the box a pie fits in; axis labels and the legend add to it</td>
+</tr>
+<tr>
+<td><code>colors</code></td>
+<td>a built-in palette</td>
+<td>series (or slice) colors, space- or comma-separated</td>
+</tr>
+<tr>
+<td><code>fill_opacity</code></td>
+<td>0.85</td>
+<td>opacity of bars and slices</td>
+</tr>
+<tr>
+<td><code>border_color</code></td>
+<td>each bar's own color</td>
+<td>outline of bars and slices (<code>WHITE</code> separates slices cleanly)</td>
+</tr>
+<tr>
+<td><code>stroke_width</code></td>
+<td>2</td>
+<td>width of axes, series lines and outlines</td>
+</tr>
+<tr>
+<td><code>axis_color</code></td>
+<td>the text color</td>
+<td>axes, ticks and gridlines</td>
+</tr>
+<tr>
+<td><code>grid</code></td>
+<td><code>true</code></td>
+<td>horizontal gridlines at the ticks</td>
+</tr>
+<tr>
+<td><code>legend</code></td>
+<td><code>true</code> with several series</td>
+<td>legend above the plot</td>
+</tr>
+<tr>
+<td><code>values</code></td>
+<td><code>false</code></td>
+<td>value labels on bars and points (pies always show percentages)</td>
+</tr>
+<tr>
+<td><code>min</code>, <code>max</code></td>
+<td>from the data</td>
+<td>fixed bounds of the value axis</td>
+</tr>
+<tr>
+<td><code>font_size</code>, <code>font</code>, <code>color</code>, <code>opacity</code></td>
+<td>the layout's</td>
+<td>typography (labels use 75% of the size) and translucency</td>
+</tr>
+<tr>
+<td><code>sketch</code> and its tuning</td>
+<td><code>false</code></td>
+<td><a href="sketch.html">hand-drawn</a> bars, lines, slices and axes</td>
+</tr>
+</tbody>
+</table>
+<p>Charts are centered on <code>x</code>, <code>y</code>, take <code>anchor=</code>, the relative constraints, <code>step</code>, <code>hide</code>,
+<code>enter</code>/<code>exit</code> and <code>tremble=</code>, serve as endpoints and attachment targets, and carry the style
+role <code>chart</code>. Negative values extend below the baseline; the value axis always includes zero
+unless <code>min</code>/<code>max</code> move it.</p>
+<h2 id="from-code">From code<a class="anchor" href="#from-code" aria-label="Link to this section">#</a></h2><pre><code class="language-ts"><span class="tk-keyword">import</span> { buildChart, parseChartData, buildTable } <span class="tk-keyword">from</span> <span class="tk-string">'zoomdeck'</span>;
 
-| Attribute | Default | Meaning |
-| --- | --- | --- |
-| `type` | `bar` | `bar` (grouped bars), `line` (lines with markers) or `pie` (the first series as slices); any other name is a chart module of the deck's own |
-| `src` | the fence's rows | a CSV, TSV or JSON file with the rows, next to the Markdown or in the `paths` folders; the fence is then left empty ([Extending a deck](extending.html#chart-types)) |
-| `width`, `height` | <span class="tk-number">6</span>, <span class="tk-number">3.5</span> | size of the plot area, or of the box a pie fits in; axis labels and the legend add to it |
-| `colors` | a built-in palette | series (or slice) colors, space- or comma-separated |
-| `fill_opacity` | <span class="tk-number">0.85</span> | opacity of bars and slices |
-| `border_color` | each bar's own color | outline of bars and slices (`WHITE` separates slices cleanly) |
-| `stroke_width` | <span class="tk-number">2</span> | width of axes, series lines and outlines |
-| `axis_color` | the text color | axes, ticks and gridlines |
-| `grid` | `true` | horizontal gridlines at the ticks |
-| `legend` | `true` with several series | legend above the plot |
-| `values` | `false` | value labels on bars and points (pies always show percentages) |
-| `min`, `max` | from the data | fixed bounds of the value axis |
-| `font_size`, `font`, `color`, `opacity` | the layout's | typography (labels use <span class="tk-number">75</span>% of the size) and translucency |
-| `sketch` and its tuning | `false` | [hand-drawn](sketch.html) bars, lines, slices and axes |
-
-Charts are centered on `x`, `y`, take `anchor=`, the relative constraints, `step`, `hide`,
-`enter`/`exit` and `tremble=`, serve as endpoints and attachment targets, and carry the style
-role `chart`. Negative values extend below the baseline; the value axis always includes zero
-unless `min`/`max` move it.
-
-## From code
-
-```ts
-import { buildChart, parseChartData, buildTable, engine } from 'zoomdeck';
-
-const data = parseChartData('Region, <span class="tk-number">2023</span>, <span class="tk-number">2024</span>\nNorth, <span class="tk-number">3.2</span>, <span class="tk-number">5</span>\nSouth, <span class="tk-number">2.1</span>, <span class="tk-number">3.1</span>');
-const chart = await buildChart(data, { type: 'bar', width: <span class="tk-number">6</span>, height: <span class="tk-number">3</span>, values: true }, makeLabel);
-```
-
-`buildChart(data, options, label)` returns an engine `Group` centered at the origin; `label(text,
-size, color)` must return a text mobject, for example the renderer's `text()` method, so charts
-use the deck's typography. `niceStep` and `valueAxis` expose the axis arithmetic. `buildTable(rows,
-options, cell)` works the same way with a cell factory that lays out inline spans within a width.</code></pre>
+<span class="tk-keyword">const</span> data = parseChartData(<span class="tk-string">'Region, 2023, 2024\nNorth, 3.2, 5\nSouth, 2.1, 3.1'</span>);
+<span class="tk-keyword">const</span> chart = <span class="tk-keyword">await</span> buildChart(data, { <span class="tk-keyword">type</span>: <span class="tk-string">'bar'</span>, width: <span class="tk-number">6</span>, height: <span class="tk-number">3</span>, values: <span class="tk-keyword">true</span> }, makeLabel);</code></pre>
+<p><code>buildChart(data, options, label)</code> returns an engine <code>Group</code> centered at the origin; <code>label(text, size, color)</code> must return a text mobject, for example the renderer's <code>text()</code> method, so charts
+use the deck's typography. <code>niceStep</code> and <code>valueAxis</code> expose the axis arithmetic. <code>buildTable(rows, options, cell)</code> works the same way with a cell factory that lays out inline spans within a width.</p>
 
     </article>
     <footer class="pager">
@@ -252,7 +347,7 @@ options, cell)` works the same way with a cell factory that lays out inline span
       <a class="next" href="diagrams.html">Diagrams →</a>
     </footer>
   </main>
-  
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#tables">Tables</a></li><li><a href="#charts">Charts</a></li><li><a href="#from-code">From code</a></li></ul></nav>
 </div>
 </body>
 </html>

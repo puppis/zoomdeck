@@ -5,7 +5,7 @@ description: Pipe tables with styled cells, rules and shading, and bar, line and
 
 <a class="try" href="tour.html#slide=tables">Open in the tour ↗</a>
 
-```markdown
+````markdown
 ::: {.element #sales x=5 y=1.3 rules=rows stripe_opacity=0.08}
 | Region | 2023 | 2024 |
 | :--- | ---: | ---: |
@@ -18,7 +18,7 @@ Region, 2023, 2024
 North, 3.2, 5.0
 South, 2.1, 3.1
 ```
-```
+````
 
 ## Tables
 
@@ -62,7 +62,7 @@ Mar, 15, 4
 ```
 ````
 
-Rows are separated by commas, semicolons or tabs. The first row names the series (its first cell
+Each line is a row; its cells are separated by commas, semicolons or tabs. The first row names the series (its first cell
 labels the category column and is ignored) unless its cells after the first are plain numbers;
 years such as `2023` still count as names, and `header=true` or `header=false` settles doubtful
 cases. Each later row is a category followed by one value per series. Lines starting with `#` are
@@ -93,7 +93,7 @@ unless `min`/`max` move it.
 ## From code
 
 ```ts
-import { buildChart, parseChartData, buildTable, engine } from 'zoomdeck';
+import { buildChart, parseChartData, buildTable } from 'zoomdeck';
 
 const data = parseChartData('Region, 2023, 2024\nNorth, 3.2, 5\nSouth, 2.1, 3.1');
 const chart = await buildChart(data, { type: 'bar', width: 6, height: 3, values: true }, makeLabel);

@@ -29,6 +29,8 @@ description: Keyboard and pointer controls, the pen and its pressure styles, the
 | O | toggle the slide outline |
 | , | open the settings |
 
+While a recorded talk plays, Space or K pause and resume it, `←` and `→` seek five seconds, Home returns to the start and Esc leaves the playback ([Recording a talk](#recording-a-talk)).
+
 The footer has four groups: the previous/next buttons with the stop counter; the pen colors and
 the Whiteboard button; the Camera, Screen, Record, Pause and Talk buttons; and, at the
 right, Print, Fullscreen and the settings gear. A progress bar runs along its top edge. Camera,
@@ -225,7 +227,7 @@ deck), and off. The first step asks the browser for the camera chosen in the set
 the corner, the size and the mirroring are settings. The pen never draws on the camera: strokes
 belong to slides and to the whiteboard. A recording keeps the camera exactly while it is on, so
 you can record a talk without it even with a camera attached, or bring it in for some moments
-only. The camera and the screen (see [Filming the screen](#recording-a-talk)) are one picture at
+only. The camera and the screen (see Filming the screen under [Recording a talk](#recording-a-talk)) are one picture at
 a time: turning the camera on stops the filming of the screen, and filming the screen sets the
 camera aside, to come back when the filming stops.
 
@@ -379,10 +381,8 @@ reverse settles it and steps back once more, so quick presses step through stops
 
 `"presenter": { "transition": "cut" }` replaces the view at once when the camera moves between
 slides, like turning the pages of a PDF, while fragments and animations inside a slide still
-play. `transition=cut` on a slide, include or subslide does the same for the move into that slide
-alone, and `transition=zoom` brings the zoom back for one slide of a `cut` deck. A PDF opened in the player,
-and a Markdown file whose slides include none of the others, cut between their pages by themselves
-([PDFs, flat decks and forests](documents.html)).
+play; a slide's own `transition=` decides how the camera arrives at it. The rule is under
+[Cuts instead of zooms](slides.html#cuts-instead-of-zooms).
 
 ## Outline and deep links
 
@@ -404,10 +404,5 @@ slide and step you were on, using a bookmark saved just before the reload. Parse
 errors are shown with the offending line. The editor and the player also follow each other:
 `zoomdeck jump <file> <line>` shows the stop of a source line, and `E` or Alt + click opens the
 source of a stop or of an element in the editor named by `--editor`; [Editors](editors.html#forward-and-inverse-search)
-explains both and the ready-made setups.
-
-## Static exports
-
-A deck can be exported as a static folder or as one self-contained HTML file that opens from
-disk; both keep the complete player, including settings and deep links. See
-[Exporting a deck](exporting.html).
+explains both and the ready-made setups. [Exporting a deck](exporting.html) makes the same
+player a static folder or one self-contained HTML file, settings and deep links included.

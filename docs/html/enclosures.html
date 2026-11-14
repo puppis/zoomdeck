@@ -116,7 +116,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Getting started</h4>
-        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li></ul>
       </section>
       <section>
         <h4>Presenting</h4>
@@ -187,7 +187,7 @@ separate loops.</p>
 <tr>
 <td><code>smoothness</code></td>
 <td>0.5</td>
-<td>from 0 (the plain outline of the margins, with creases where they meet) to 1 (neighbours merge into one soft shape)</td>
+<td>from 0 (the plain outline of the margins, with creases where they meet) to 1 (neighbors merge into one soft shape)</td>
 </tr>
 <tr>
 <td><code>color</code>, <code>stroke_width</code></td>
@@ -213,7 +213,7 @@ separate loops.</p>
 </table>
 <p>A blob flows around the parts of a composite target separately: the members of a
 <a href="groups.html">group</a>, or an <a href="icons.html">icon</a> and its label. Blobs take <code>opacity</code>, <code>step</code>,
-<code>hide</code>, <code>enter</code>, <code>exit</code>, <code>run_time</code> and <code>lag</code> like other attachments.</p>
+<code>hide</code>, <code>run_time</code>, <code>lag</code> and <code>href</code> like other attachments.</p>
 <h2 id="from-code">From code<a class="anchor" href="#from-code" aria-label="Link to this section">#</a></h2><pre><code class="language-ts"><span class="tk-keyword">import</span> { blobMobject, blobOutline, engine } <span class="tk-keyword">from</span> <span class="tk-string">'zoomdeck'</span>;
 
 <span class="tk-keyword">const</span> rects = [{ x: <span class="tk-number">0</span>, y: <span class="tk-number">0</span>, width: <span class="tk-number">2</span>, height: <span class="tk-number">1</span> }, { x: <span class="tk-number">1.5</span>, y: -<span class="tk-number">1.6</span>, width: <span class="tk-number">1</span>, height: <span class="tk-number">1</span> }];

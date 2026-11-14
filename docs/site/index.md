@@ -16,10 +16,13 @@ icons and arrows (crisp or hand-drawn), boxes and blobs around groups of element
 code listings, live web pages, fragments that appear on clicks, and animations such as moves,
 morphs and effects. When the dialect is not enough, a slide can be a small TypeScript class with
 the full animation engine at hand. Everything runs live on a WebGL canvas in the browser: a deck
-loads, records itself once, and then plays forwards and backwards instantly, with an outline, deep
-links, a pressure-sensitive pen, a highlighter, a whiteboard, a companion tablet, a camera view, a spotlight or laser, links on any element and configurable keys and
-gestures, and it records a talk (voice, camera and every move on the deck) that plays back on the deck itself or exports as a video, and prints every stage to a PDF. The same deck previews while you edit it and [exports](exporting.html) to a static
-folder or to a single HTML file that plays from disk.
+loads, records itself once, and then plays forwards and backwards instantly. The player brings
+an outline, deep links, a pressure-sensitive pen, a highlighter, a whiteboard, a companion
+tablet, a camera view, a spotlight or laser, links on any element, and configurable keys and
+gestures; it records a talk (voice, camera and every move on the deck) that plays back on the
+deck itself or exports as a video, and prints every stage to a PDF. The same deck previews
+while you edit it and [exports](exporting.html) to a static folder or to a single HTML file
+that plays from disk.
 
 **See it:** the **[tour deck](tour.html)** is itself a Zoomdeck presentation, a tour of every
 feature with the markup that produces it next to the result. **Source:**
@@ -51,7 +54,7 @@ its "Open in the tour" badge.
 The tour is Zoomdeck's own demonstration and the companion of these pages: a presentation in
 which every chapter shows a feature next to the listing that produces it, organized in the same
 sections as this documentation. **[Open the tour](tour.html)**: its front page lists the
-sections and jumps to any of them on a double-click, and each chapter links back to its page here.
+sections and jumps to any of them on a click, and each chapter links back to its page here.
 
 The tour is a single self-contained HTML file next to these pages, exported from
 `examples/tour/` when you run `npm install` (and again by `npm run docs`); it runs from disk or

@@ -26,9 +26,9 @@ Macros from deck.json: $\N \subset \R$.
 - Formulas render through MathJax with the `ams`, `newcommand` and `configmacros` packages.
   `macros` in `deck.json` defines commands for the whole deck:
 
-```json
-"macros": { "N": "\\mathbb{N}", "R": "\\mathbb{R}" }
-```
+  ```json
+  "macros": { "N": "\\mathbb{N}", "R": "\\mathbb{R}" }
+  ```
 
 - `\textcolor{…}{…}` and `{\color{…} …}` accept dvipsnames (`Orange`, `Cerulean`, `OliveGreen`,
   …) and CSS colors.

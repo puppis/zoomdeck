@@ -116,7 +116,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Getting started</h4>
-        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li><li><a href="concepts.html">Concepts</a></li></ul>
+        <ul><li><a href="getting-started.html">Getting started</a></li><li><a href="concepts.html">Concepts</a></li><li><a href="editors.html">Editors</a></li><li><a href="desktop.html">The desktop app</a></li></ul>
       </section>
       <section>
         <h4>Presenting</h4>
@@ -154,26 +154,26 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       <p><a class="try" href="tour.html#slide=player">Open in the tour ↗</a></p>
 <p>A deck that previews on the dev page can be exported with the command line. Two forms exist,
 and the player itself prints a deck to a <a href="#a-pdf-printout">PDF</a>.</p>
-<h2 id="one-self-contained-file">One self-contained file<a class="anchor" href="#one-self-contained-file" aria-label="Link to this section">#</a></h2><pre><code class="language-bash"><span class="tk-keyword">node</span> bin/zoomdeck.mjs build path/to/deck.json <span class="tk-attribute">-o</span> out <span class="tk-attribute">--one-file</span></code></pre>
+<h2 id="one-self-contained-file">One self-contained file<a class="anchor" href="#one-self-contained-file" aria-label="Link to this section">#</a></h2><pre><code class="language-bash">zoomdeck build path/to/deck.json <span class="tk-attribute">-o</span> out <span class="tk-attribute">--one-file</span></code></pre>
 <p>This writes <code>out/offline.html</code>: the player, the engine, the bundled fonts, your Markdown source
 and every asset it references (images, animated images, videos, embedded pages) in a single HTML
 file. Open it by double-clicking; it runs from disk, from an e-mail attachment or from any static
 host, and keeps everything the live deck has: outline, keys, settings, pen, spotlight, reverse
 playback and <code>#step=</code> / <code>#slide=</code> deep links. The tour you can open from the front page of this
 documentation is exactly such a file.</p>
-<p>Two things to know:</p>
+<p>Three things to know:</p>
 <ul>
 <li>Size. The player with the engine weighs about 15 MB before your assets, most of it the formula
 renderer, which the file carries as inert text and compiles only when a formula needs it, so
-the page starts long before it would if everything were parsed up front; assets are embedded as data URIs and add their own size, so long videos belong in the
-folder export instead.</li>
+the page starts long before it would if everything were parsed up front. Assets are embedded
+as data URIs and add their own size, so long videos belong in the folder export instead.</li>
 <li>Code-authored decks (<code>.ts</code> modules) embed their code too, but images they load themselves at
 run time are not collected; put such images next to the exported file or use the Markdown
 image syntax.</li>
 <li>Recorded talks are left out: their sound and video would not fit in a page. The folder export
 below ships them.</li>
 </ul>
-<h2 id="a-static-folder">A static folder<a class="anchor" href="#a-static-folder" aria-label="Link to this section">#</a></h2><pre><code class="language-bash"><span class="tk-keyword">node</span> bin/zoomdeck.mjs build path/to/deck.json <span class="tk-attribute">-o</span> out</code></pre>
+<h2 id="a-static-folder">A static folder<a class="anchor" href="#a-static-folder" aria-label="Link to this section">#</a></h2><pre><code class="language-bash">zoomdeck build path/to/deck.json <span class="tk-attribute">-o</span> out</code></pre>
 <p>This writes <code>out/index.html</code>, <code>out/assets/</code> (the player, split in chunks loaded on demand) and
 <code>out/deck/</code> (your Markdown and assets as files). Host or copy the whole folder. Because the player
 is loaded as ES modules, browsers need the folder served over HTTP rather than opened from disk;

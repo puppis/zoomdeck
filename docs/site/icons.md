@@ -43,7 +43,7 @@ strokes for the details, drawn with the same outline width inside a square box.
 | `fill_opacity` | 0 | opacity of that fill; details such as text lines and bands stay strokes |
 | `label` | | inline text under the icon, with styling and math |
 | `label_side` | `below` | `below`, `above`, `left` or `right` |
-| `font_size`, `font` | 80% of the prose size, the prose face | the label's size and font family |
+| `font_size`, `font` | the prose size, the prose face | the size the label is 80 % of, and its font family |
 | `sketch` and its tuning | `false` | [hand-drawn](sketch.html) rendering: `roughness`, `bowing`, `fill_style`, `hachure_angle`, `hachure_gap`, `fill_weight`, `seed` |
 | `tremble`, `tremble_amplitude`, `tremble_rate` | | [vibration](animations.html#tremble) over a range of steps |
 
@@ -91,8 +91,9 @@ Compound figures belong here too: a module returns a `VGroup` of whatever shapes
 icons it likes, built from the directive's attributes, so a diagram vocabulary of your own
 (a traffic light, a gate, a server rack) is one file per symbol. Exports bundle the modules
 and copy or embed the SVG files; the tour's `examples/tour/artworks/` holds one of each. The
-other folders a deck extends the player with, fonts, effects, chart types, languages, code
-themes, themes and slide classes, work the same way: [Extending a deck](extending.html).
+other folders a deck extends the player with, fonts, effects, camera transitions, chart types,
+languages, code themes, themes, snippets, directives and slide classes, work the same way:
+[Extending a deck](extending.html).
 
 ## From code
 
