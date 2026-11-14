@@ -3,7 +3,7 @@ title: Code-authored slides
 description: Slides written in TypeScript with the complete animation engine, used alone or placed as subslides of Markdown decks.
 ---
 
-<a class="try" href="guide.html#slide=code-slides">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=code-slides">Open in the tour ↗</a>
 
 ## Placing a code-authored slide in a Markdown deck
 

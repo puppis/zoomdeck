@@ -3,15 +3,15 @@ title: Configuration
 description: Every key of deck.json, the layout and presenter options, and the command line.
 ---
 
-<a class="try" href="guide.html#slide=config">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=config">Open in the tour ↗</a>
 
 ## deck.json
 
 ```json
 {
   "markup": "slides.md",
-  "title": "Zoomdeck guide",
-  "root": "guide",
+  "title": "Zoomdeck tour",
+  "root": "tour",
   "classes": "code-slides.ts",
   "background": "#0F172A",
   "viewport": { "width": 16, "height": 9 },
@@ -90,7 +90,7 @@ they load themselves.
 ## Development page
 
 `npm run dev` serves `index.html`, which reads `?deck=` (a `deck.json`, a Markdown file or a
-module path, also `/@fs/absolute/path`) and `&scene=` for named exports, and opens the guide when
+module path, also `/@fs/absolute/path`) and `&scene=` for named exports, and opens the tour when
 `deck` is omitted. Files under `examples/` trigger a reload on change, and `zoomdeck jump` and
 the inverse search work there too (set `ZOOMDECK_EDITOR` before `npm run dev`).
 

@@ -3,7 +3,7 @@ title: Exporting a deck
 description: Turn a deck into a static folder or into one self-contained HTML file that plays anywhere, without Node or a server, or print it to a PDF.
 ---
 
-<a class="try" href="guide.html#slide=player">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=player">Open in the tour ↗</a>
 
 A deck that previews on the dev page can be exported with the command line. Two forms exist,
 and the player itself prints a deck to a [PDF](#a-pdf-printout).
@@ -18,7 +18,7 @@ This writes `out/offline.html`: the player, the engine, the bundled fonts, your 
 and every asset it references (images, animated images, videos, embedded pages) in a single HTML
 file. Open it by double-clicking; it runs from disk, from an e-mail attachment or from any static
 host, and keeps everything the live deck has: outline, keys, settings, pen, spotlight, reverse
-playback and `#step=` / `#slide=` deep links. The guide you can open from the front page of this
+playback and `#step=` / `#slide=` deep links. The tour you can open from the front page of this
 documentation is exactly such a file.
 
 Two things to know:

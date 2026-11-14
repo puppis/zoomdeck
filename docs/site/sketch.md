@@ -3,7 +3,7 @@ title: Hand-drawn shapes
 description: sketch=true renders shapes, icons, arrows, lines, braces, boxes and blobs as if drawn by hand, with hatched or solid fills, through Rough.js.
 ---
 
-<a class="try" href="guide.html#slide=sketch">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=sketch">Open in the tour ↗</a>
 
 ```markdown
 [[rectangle: #hr x=-6.5 y=-3 width=3.4 height=1.8 color=BLUE_E fill_opacity=0.5 sketch=true]]

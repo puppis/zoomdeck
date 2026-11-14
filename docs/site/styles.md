@@ -3,7 +3,7 @@ title: Styles
 description: Named attribute sets applied by class tokens and automatically by roles such as heading, body or code.
 ---
 
-<a class="try" href="guide.html#slide=styles">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=styles">Open in the tour ↗</a>
 
 ```json
 "styles": {

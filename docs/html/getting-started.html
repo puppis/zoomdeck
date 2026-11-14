@@ -80,7 +80,7 @@ the browser), no video encoder, no font installation (the Latin Modern faces are
 <p><code>npm install</code> fetches the runtime dependencies (the <code>manim-web</code> rendering engine with Three.js
 and MathJax inside, <code>markdown-it</code> for the dialect, <code>gifuct-js</code> for GIFs, <code>roughjs</code> for hand-drawn
 shapes, and Vite for the preview and exports), checks the Node version first, and builds this
-documentation into <code>docs/html/</code>, including the standalone guide (<code>docs/html/guide.html</code>);
+documentation into <code>docs/html/</code>, including the standalone tour (<code>docs/html/tour.html</code>);
 <code>npm run docs</code> rebuilds it later.</p>
 <blockquote>
 <p><strong>Note</strong> On an older or odd-numbered Node release such as 21.x the install would otherwise stop
@@ -90,7 +90,7 @@ Installing a supported Node (for example with <code>nvm install --lts</code>) an
 again fixes it.</p>
 </blockquote>
 <p><code>npm run dev</code> starts a Vite development server (by default on <code>http://localhost:5173/</code>) and opens
-the <strong>guide deck</strong>. Other decks are selected through the query string:</p>
+the <strong>tour deck</strong>. Other decks are selected through the query string:</p>
 <table>
 <thead>
 <tr>
@@ -100,8 +100,8 @@ the <strong>guide deck</strong>. Other decks are selected through the query stri
 </thead>
 <tbody>
 <tr>
-<td><code>/?deck=examples/guide/deck.json</code></td>
-<td>a Markdown deck with its configuration (the guide)</td>
+<td><code>/?deck=examples/tour/deck.json</code></td>
+<td>a Markdown deck with its configuration (the tour)</td>
 </tr>
 <tr>
 <td><code>/?deck=path/to/slides.md</code></td>
@@ -167,7 +167,7 @@ Slides are <span class="tk-type">`::: slide`</span> containers; this one has a 2
 }</code></pre>
 <p>Every slide needs an <code>#id</code>; the slide nobody includes is the root; <code>width</code> on a slide sets its
 canvas, while <code>x</code>, <code>y</code>, <code>width</code> on an include place the child inside the parent. Without further
-keys a deck is black Latin Modern text on a white canvas, which is also what the guide deck uses;
+keys a deck is black Latin Modern text on a white canvas, which is also what the tour deck uses;
 <code>background</code> and <code>layout.color</code> change the colors (<a href="configuration.html">Configuration</a> lists
 every key).</p>
 <p>Open the deck with <code>/?deck=path/to/deck.json</code> on the dev page, or with the command line below.</p>
@@ -201,7 +201,7 @@ screen while you work in another application. <code>R</code> records
 the talk (your voice, the camera while it is on, and every move on the deck) and <strong>▶ Talk</strong> plays
 it back on the deck itself or exports it as a video; <code>P</code> prints the deck to a PDF, a page
 per stage. Every key and gesture can be changed in the settings (<code>,</code>). <a href="player.html">The player</a>
-describes each tool in full, and the guide's section 2, Presenting, shows them live.</p>
+describes each tool in full, and the tour's section 2, Presenting, shows them live.</p>
 <h2 id="set-up-your-editor">Set up your editor<a class="anchor" href="#set-up-your-editor" aria-label="Link to this section">#</a></h2><p>Editing is most comfortable when the browser follows your typing: start the preview once, and
 every save reloads the page at the stop you were looking at. The <code>editors/</code> folder of the
 repository holds ready-made setups for <strong>VS Code, Sublime Text, Emacs, Vim/Neovim and JetBrains
@@ -225,8 +225,8 @@ explains each one and what to do when an editor cannot find the command.</p>
 tablet, camera, recording a talk and printing the deck.</li>
 <li><a href="documents.html">PDFs, flat decks and forests</a> and <a href="slides.html">Slides and the forest</a> start the topic-by-topic tour of the dialect; the sidebar
 follows the same order, from the content of a slide to the reference.</li>
-<li>The <a href="guide.html">guide deck</a> shows each topic live; its front page lists the sections, and
-every documentation page opens its chapter with the &quot;Open in the guide&quot; badge.</li>
+<li>The <a href="tour.html">tour deck</a> shows each topic live; its front page lists the sections, and
+every documentation page opens its chapter with the &quot;Open in the tour&quot; badge.</li>
 </ul>
 
     </article>

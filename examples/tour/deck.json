@@ -1,6 +1,6 @@
 {
   "markup": "slides.md",
-  "title": "Zoomdeck guide",
+  "title": "Zoomdeck tour",
   "classes": "code-slides.ts",
   "viewport": {
     "width": 16,

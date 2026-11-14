@@ -3,7 +3,7 @@ title: Positioning
 description: Anchors, flow, explicit coordinates, relative constraints, at= expressions, offsets and sizes.
 ---
 
-<a class="try" href="guide.html#slide=layout">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=layout">Open in the tour ↗</a>
 
 ## Anchors
 
@@ -34,7 +34,7 @@ blocks move up. A center-anchored element with one missing coordinate defaults t
 
 ## Relative constraints
 
-<a class="try" href="guide.html#slide=layout">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=layout">Open in the tour ↗</a>
 
 ```markdown
 ### A heading {#h x=0.6 y=1.6}
@@ -61,7 +61,7 @@ during preparation; dependency cycles are reported with their line.
 
 ## Anchor expressions
 
-<a class="try" href="guide.html#slide=styles">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=styles">Open in the tour ↗</a>
 
 ```markdown
 [[rectangle: #ref x=-6 y=-2.2 width=3 height=1.6]]

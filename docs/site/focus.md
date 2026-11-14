@@ -3,7 +3,7 @@ title: Focus-only decorations
 description: Elements that appear only while their slide is focused, such as an opaque local canvas.
 ---
 
-<a class="try" href="guide.html#slide=focus">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=focus">Open in the tour ↗</a>
 
 ```markdown
 [[rectangle: #paper x=0 y=0 width=20 height=11.25 fill_color="#1E293B" fill_opacity=1 stroke_width=0 focus_only=true]]

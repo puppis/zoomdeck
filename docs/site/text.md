@@ -3,7 +3,7 @@ title: Text
 description: Paragraphs, headings, emphasis, colors, code spans, line breaks, lists and links.
 ---
 
-<a class="try" href="guide.html#slide=prose">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=prose">Open in the tour ↗</a>
 
 ```markdown
 Paragraphs wrap to `width`. Use **bold**, *italic*, ***both***, `inline code`

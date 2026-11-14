@@ -3,7 +3,7 @@ title: Tables and charts
 description: Pipe tables with styled cells, rules and shading, and bar, line and pie charts drawn from rows of numbers, crisp or hand-drawn.
 ---
 
-<a class="try" href="guide.html#slide=tables">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=tables">Open in the tour ↗</a>
 
 ```markdown
 ::: {.element #sales x=5 y=1.3 rules=rows stripe_opacity=0.08}

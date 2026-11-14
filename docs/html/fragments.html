@@ -53,7 +53,7 @@
     <article>
       <h1>Fragments and steps</h1>
       <p class="lead">Reveal and hide elements on clicks, time the fades, advance automatically and skip events.</p>
-      <p><a class="try" href="guide.html#slide=fragments">Open in the guide ↗</a></p>
+      <p><a class="try" href="tour.html#slide=fragments">Open in the tour ↗</a></p>
 <pre><code class="language-markdown">[Visible on entry, hidden at step 3]<span class="tk-attribute">{#hint x=</span><span class="tk-number">0.6</span><span class="tk-attribute"> y=</span><span class="tk-number">1.7</span><span class="tk-attribute"> hide=</span><span class="tk-number">3</span><span class="tk-attribute">}</span>
 
 [Appears at step 1]<span class="tk-attribute">{#one x=</span><span class="tk-number">0.6</span><span class="tk-attribute"> y=</span><span class="tk-number">0.9</span><span class="tk-attribute"> step=</span><span class="tk-number">1</span><span class="tk-attribute"> color=GREEN}</span>
@@ -77,7 +77,7 @@ hidden one is an error, reported with its line.</p>
 <p>Numbers are local to each slide and need not be consecutive: a lone <code>step=4</code> creates one click,
 not four. All changes sharing a number play together, followed by a pause; if a step also visits
 children, the parent's changes play first.</p>
-<h2 id="timing">Timing<a class="anchor" href="#timing" aria-label="Link to this section">#</a></h2><p><a class="try" href="guide.html#slide=anchors">Open in the guide ↗</a></p>
+<h2 id="timing">Timing<a class="anchor" href="#timing" aria-label="Link to this section">#</a></h2><p><a class="try" href="tour.html#slide=anchors">Open in the tour ↗</a></p>
 <p>Each fade lasts <code>layout.animationTime</code> unless the element sets <code>run_time=S</code>; <code>lag=S</code> delays its
 start inside the step, so one click can stagger several elements. A <code>show</code>/<code>hide</code> directive may
 carry its own <code>run_time</code>, <code>lag</code> and <code>rate</code>.</p>

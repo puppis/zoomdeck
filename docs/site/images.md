@@ -3,7 +3,7 @@ title: Images and video
 description: SVG and raster images, animated PNG and GIF, and video files played through the browser.
 ---
 
-<a class="try" href="guide.html#slide=images">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=images">Open in the tour ↗</a>
 
 ```markdown
 ![Vector artwork](assets/slides.svg){#svg x=-6.5 y=-2.6 width=4}

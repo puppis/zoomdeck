@@ -53,7 +53,7 @@
     <article>
       <h1>Slides and the forest</h1>
       <p class="lead">Slide containers, canvas sizes, includes, visit order, start and preview flags, placeholders.</p>
-      <p><a class="try" href="guide.html#slide=tree">Open in the guide ↗</a></p>
+      <p><a class="try" href="tour.html#slide=tree">Open in the tour ↗</a></p>
 <h2 id="slide-containers">Slide containers<a class="anchor" href="#slide-containers" aria-label="Link to this section">#</a></h2><pre><code class="language-markdown"><span class="tk-directive">::: slide </span><span class="tk-attribute">{#overview title=</span><span class="tk-string">&quot;Lecture overview&quot;</span><span class="tk-attribute"> width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
 <span class="tk-type tk-bold"># </span><span class="tk-bold">Introduction</span>
 
@@ -138,7 +138,7 @@ them; <code>return_to_parent</code> on that child brings the camera back before 
 <tr>
 <td><code>preview=true</code></td>
 <td>slide, include, subslide</td>
-<td>show the child's content before its first visit instead of fading it in on entry, as the tiles of the guide's front page do</td>
+<td>show the child's content before its first visit instead of fading it in on entry, as the tiles of the tour's front page do</td>
 </tr>
 </tbody>
 </table>
@@ -155,7 +155,7 @@ ask for <code>transition=zoom</code> again. When two slides disagree, the cut wi
 <p><code>subslide</code> with a class name instead of a <code>#id</code> instantiates a <code>Slide</code> subclass exported by the
 module named by <code>classes</code> in <code>deck.json</code>; see <a href="code-slides.html">Code-authored slides</a>. It takes
 the same placement attributes as an include.</p>
-<h2 id="splitting-a-deck-into-files">Splitting a deck into files<a class="anchor" href="#splitting-a-deck-into-files" aria-label="Link to this section">#</a></h2><p><a class="try" href="guide.html#slide=imports">Open in the guide ↗</a></p>
+<h2 id="splitting-a-deck-into-files">Splitting a deck into files<a class="anchor" href="#splitting-a-deck-into-files" aria-label="Link to this section">#</a></h2><p><a class="try" href="tour.html#slide=imports">Open in the tour ↗</a></p>
 <pre><code class="language-markdown"><span class="tk-directive">::: slide </span><span class="tk-attribute">{#intro}</span>
 <span class="tk-type tk-bold">## </span><span class="tk-bold">Introduction</span>
 <span class="tk-directive">[[import:</span> parts/footer.md<span class="tk-directive">]]</span>

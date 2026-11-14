@@ -158,6 +158,6 @@ and the listeners.
 ## An example
 
 The checkout has a page that does all of this: `examples/embed/index.html`, served by the
-development server at `/examples/embed/index.html`. It mounts the guide in a resizable box
+development server at `/examples/embed/index.html`. It mounts the tour in a resizable box
 between paragraphs, with buttons and a slide menu of its own below it, and a second, smaller deck
 with most features left out.

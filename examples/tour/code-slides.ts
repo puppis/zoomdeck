@@ -1,4 +1,4 @@
-/** Code-authored slides imported by the guide through `[[import: Orbit ...]]`. */
+/** Code-authored slides imported by the tour through `[[import: Orbit ...]]`. */
 import { BLUE_E, Circle, Dot, GOLD_E, MoveAlongPath, Text, linear } from 'manim-web';
 import { Slide, type SlideContext } from 'zoomdeck';
 

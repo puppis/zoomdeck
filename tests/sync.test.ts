@@ -37,12 +37,12 @@ const navigation: NavigationData = {
 describe('document paths', () => {
   it('turns the server URLs of a deck into file paths', () => {
     expect(documentPath(MAIN, ROOT)).toBe('/home/me/decks/talk/slides.md');
-    expect(documentPath('http://localhost:5173/examples/guide/slides.md', ROOT)).toBe('/home/me/Zoomdeck/examples/guide/slides.md');
+    expect(documentPath('http://localhost:5173/examples/tour/slides.md', ROOT)).toBe('/home/me/Zoomdeck/examples/tour/slides.md');
     expect(documentPath('http://localhost:5173/@fs/C:/Users/me/a%20b/slides.md', 'C:/Zoomdeck')).toBe('C:/Users/me/a b/slides.md');
     expect(documentPath('/already/a/path.md', ROOT)).toBe('/already/a/path.md');
     expect(documentPath('', ROOT)).toBeNull();
     expect(serverDocumentPath(MAIN, ROOT)).toBe('/home/me/decks/talk/slides.md');
-    expect(serverDocumentPath('http://localhost:5173/examples/guide/slides.md', ROOT)).toBe('/home/me/Zoomdeck/examples/guide/slides.md');
+    expect(serverDocumentPath('http://localhost:5173/examples/tour/slides.md', ROOT)).toBe('/home/me/Zoomdeck/examples/tour/slides.md');
     expect(serverDocumentPath(null, ROOT)).toBeNull();
   });
 });

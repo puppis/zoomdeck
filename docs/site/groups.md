@@ -3,7 +3,7 @@ title: Groups
 description: Several elements laid out in their own coordinates and handled as one element of the slide.
 ---
 
-<a class="try" href="guide.html#slide=groups">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=groups">Open in the tour ↗</a>
 
 ```markdown
 ::: {.group #automaton x=2 y=-0.5 step=1}

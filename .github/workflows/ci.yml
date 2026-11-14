@@ -17,4 +17,4 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
-      - run: node bin/zoomdeck.mjs build examples/guide/deck.json -o build/guide
+      - run: node bin/zoomdeck.mjs build examples/tour/deck.json -o build/tour

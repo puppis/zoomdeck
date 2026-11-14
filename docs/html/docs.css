@@ -34,7 +34,7 @@ a:hover { text-decoration: underline; }
 .map-section li { font-size: 14px; max-width: none; }
 .map-section li > a:first-child { font-weight: 600; }
 .map-section li span { display: block; color: var(--muted); }
-.guide-link { font-size: 12px; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: var(--accent-soft); }
+.tour-link { font-size: 12px; margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: var(--accent-soft); }
 .outline { position: sticky; top: 57px; align-self: start; padding: 20px 0; font-size: 14px; }
 .outline li a { display: block; padding: 3px 0; color: var(--muted); }
 .outline li a:hover { color: var(--accent); }

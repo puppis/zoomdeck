@@ -52,7 +52,7 @@
   const log = document.getElementById('log');
   const say = (text) => { log.textContent += text + '\n'; log.scrollTop = log.scrollHeight; };
 
-  const deck = await mountDeck(document.getElementById('deck'), '/examples/guide/deck.json', { features: { camera: false, screen: false, record: false } });
+  const deck = await mountDeck(document.getElementById('deck'), '/examples/tour/deck.json', { features: { camera: false, screen: false, record: false } });
   window.deck = deck;
   say(`mounted: ${deck.length} stops, ${deck.slides.length} slides`);
   const jump = document.getElementById('jump');

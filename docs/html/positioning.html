@@ -53,7 +53,7 @@
     <article>
       <h1>Positioning</h1>
       <p class="lead">Anchors, flow, explicit coordinates, relative constraints, at= expressions, offsets and sizes.</p>
-      <p><a class="try" href="guide.html#slide=layout">Open in the guide ↗</a></p>
+      <p><a class="try" href="tour.html#slide=layout">Open in the tour ↗</a></p>
 <h2 id="anchors">Anchors<a class="anchor" href="#anchors" aria-label="Link to this section">#</a></h2><p><code>x</code>, <code>y</code> position an element's <strong>anchor</strong>. The default anchor is <code>left-baseline</code> for prose,
 headings, math and listings (the left edge and the first baseline) and <code>center</code> for images,
 shapes, listings' siblings and child viewports. <code>anchor=</code> chooses another point:</p>
@@ -87,7 +87,7 @@ shapes, listings' siblings and child viewports. <code>anchor=</code> chooses ano
 <code>layout.gap</code>. Text with only <code>x</code> keeps flowing at that left edge; an explicit <code>y</code>, an <code>at=</code> or a
 vertical constraint leaves the flow. Elements that leave the flow do not reserve space, so later
 blocks move up. A center-anchored element with one missing coordinate defaults that axis to zero.</p>
-<h2 id="relative-constraints">Relative constraints<a class="anchor" href="#relative-constraints" aria-label="Link to this section">#</a></h2><p><a class="try" href="guide.html#slide=layout">Open in the guide ↗</a></p>
+<h2 id="relative-constraints">Relative constraints<a class="anchor" href="#relative-constraints" aria-label="Link to this section">#</a></h2><p><a class="try" href="tour.html#slide=layout">Open in the tour ↗</a></p>
 <pre><code class="language-markdown"><span class="tk-type tk-bold">### </span><span class="tk-bold">A heading </span><span class="tk-attribute tk-bold">{#h x=</span><span class="tk-number tk-bold">0.6</span><span class="tk-attribute tk-bold"> y=</span><span class="tk-number tk-bold">1.6</span><span class="tk-attribute tk-bold">}</span>
 
 [Below it, left-aligned]<span class="tk-attribute">{#p below:#h left-aligned:#h buff=</span><span class="tk-number">0.3</span><span class="tk-attribute">}</span>
@@ -108,7 +108,7 @@ the free axis (<code>below:#h x=0</code>).</li>
 <p>References target elements of the same slide (and the same <a href="groups.html">group</a>), including
 later ones and hidden fragments, but never arrows, lines, braces or boxes. Sizes are measured once
 during preparation; dependency cycles are reported with their line.</p>
-<h2 id="anchor-expressions">Anchor expressions<a class="anchor" href="#anchor-expressions" aria-label="Link to this section">#</a></h2><p><a class="try" href="guide.html#slide=styles">Open in the guide ↗</a></p>
+<h2 id="anchor-expressions">Anchor expressions<a class="anchor" href="#anchor-expressions" aria-label="Link to this section">#</a></h2><p><a class="try" href="tour.html#slide=styles">Open in the tour ↗</a></p>
 <pre><code class="language-markdown"><span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#ref</span> <span class="tk-attribute">x=</span><span class="tk-number">-6</span> <span class="tk-attribute">y=</span><span class="tk-number">-2.2</span> <span class="tk-attribute">width=</span><span class="tk-number">3</span> <span class="tk-attribute">height=</span><span class="tk-number">1.6</span><span class="tk-directive">]]</span>
 [My top-left at its bottom-right]<span class="tk-attribute">{#tl at=top-left:#ref.bottom-right dx=</span><span class="tk-number">0.2</span><span class="tk-attribute">}</span>
 <span class="tk-directive">[[dot:</span> <span class="tk-attribute">#d</span> <span class="tk-attribute">at=#ref.top</span> <span class="tk-attribute">color=</span>RED<span class="tk-directive">]]</span>

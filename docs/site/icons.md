@@ -3,7 +3,7 @@ title: Icons
 description: Thirty-nine diagram symbols built from geometry (people, machines, files, marks and actions) with configurable outline, fill and label, crisp or hand-drawn.
 ---
 
-<a class="try" href="guide.html#slide=icons">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=icons">Open in the tour ↗</a>
 
 ```markdown
 [[icon: user #alice x=-7 y=-2.4 size=1.4 color=BLUE_E label="Alice"]]

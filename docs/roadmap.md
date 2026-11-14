@@ -25,7 +25,7 @@ ones without letting the sources or the syntax grow clumsy. Status legend: **don
 | 16 | Tables and charts | **done** | Pipe tables (`TableSpec`, `src/markup/table.ts`: natural or shrunken columns, rules, header/stripe/table shading) and `chart` fences (`src/charts.ts`: bar, line, pie with axes, grid, legend, value labels, CSV parsing with header detection), both sketchable (added 2026-11-11). | Stacked bars, scatter plots and axis titles if a need appears. |
 | 12 | Design mode: drag objects in the browser | **missing** | Elements know their source line (`ElementSpec.line`) and the player exposes `navigation()`; nothing interactive. | Hit-testing, dragging in logical coordinates, writing attributes back into the file. |
 
-Everything that is **done** or **partial** is exercised by `examples/guide/` and described in
+Everything that is **done** or **partial** is exercised by `examples/tour/` and described in
 `docs/markup.md`; both must be updated together with each phase below.
 
 ## 2. Design principles for what follows
@@ -44,12 +44,12 @@ Everything that is **done** or **partial** is exercised by `examples/guide/` and
 ## 3. Phases
 
 Each phase ships with: tests in `tests/`, a section in `docs/markup.md`, and a slide (or a new
-chapter) in the guide deck. Phases are ordered so that later ones build on earlier abstractions;
+chapter) in the tour deck. Phases are ordered so that later ones build on earlier abstractions;
 within a phase the items are independent.
 
 ### Phase 1 — small gaps, no new concepts (done 2026-11-10)
 
-Low risk, mostly additive validation and rendering. Implemented; see the guide chapters
+Low risk, mostly additive validation and rendering. Implemented; see the tour chapters
 "More shapes, braces, boxes and opacity" and "Anchors, offsets and timing".
 
 1. **More shapes**: `[[dot: #p x=1 y=2]]` (radius 0.08 by default), `[[ellipse: … width height]]`,
@@ -69,7 +69,7 @@ Low risk, mostly additive validation and rendering. Implemented; see the guide c
 
 ### Phase 2 — anchors, styles, groups (done 2026-11-10)
 
-Implemented as proposed; see the guide chapters "Anchor expressions and styles" and "Groups".
+Implemented as proposed; see the tour chapters "Anchor expressions and styles" and "Groups".
 Group members use group-local coordinates and reference only members; styles live in `deck.json`
 and in a `::: styles` block that wins for the same name.
 
@@ -101,7 +101,7 @@ and in a `::: styles` block that wins for the same name.
 
 ### Phase 3 — animations from markup (done 2026-11-10)
 
-Implemented with directives; see the guide chapter "Animations from markup".
+Implemented with directives; see the tour chapter "Animations from markup".
 
 All compile to engine animations inside `construct`, recorded like fades.
 

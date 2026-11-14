@@ -3,7 +3,7 @@ title: Mathematics
 description: Inline and display formulas, containers for formula attributes, macros and colored LaTeX.
 ---
 
-<a class="try" href="guide.html#slide=math">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=math">Open in the tour ↗</a>
 
 ```markdown
 Inline math shares the baseline: $\int_0^1 x^2\,dx = \tfrac13$.

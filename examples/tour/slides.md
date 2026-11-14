@@ -1,14 +1,14 @@
-<!-- A guided tour of every feature of the Markdown dialect. Each slide pairs a listing with the result it produces. -->
+<!-- A tour of every feature of the Markdown dialect. Each slide pairs a listing with the result it produces. -->
 
 ::: styles
 callout: color=ORANGE font_size=30
 heading: color=BLUE_E
 :::
 
-::: slide {#guide width=36}
+::: slide {#tour width=36}
 # Zoomdeck {x=-17.35 y=9.2}
 
-Zoomdeck makes zooming presentations: a forest of slides written in Markdown, most often a single tree, with formulas, images, diagrams and animations, that the browser plays by zooming into each slide and back out. This guide tours the dialect and the player in six sections; each chapter shows the markup next to what it produces. Press → to follow the slides in order, pick a slide from the outline (O), or click a section or chapter to jump to it. {x=-17.35 y=8.1 width=27 font_size=26}
+Zoomdeck makes zooming presentations: a forest of slides written in Markdown, most often a single tree, with formulas, images, diagrams and animations, that the browser plays by zooming into each slide and back out. This tour covers the dialect and the player in six sections; each chapter shows the markup next to what it produces. Press → to follow the slides in order, pick a slide from the outline (O), or click a section or chapter to jump to it. {x=-17.35 y=8.1 width=27 font_size=26}
 
 [Documentation ↗]{#doc-link x=17.35 y=9.2 anchor=right-baseline font_size=26 color=BLUE_E href=https://puppis.github.io/zoomdeck/}
 
@@ -46,7 +46,7 @@ A deck is a forest of slides, and a slide holds prose, formulas, images, listing
 
 [Documentation: Slides and content ↗]{#sec-content-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/slides.html}
 
-[Back to the overview]{#sec-content-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=guide}
+[Back to the overview]{#sec-content-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=tour}
 
 [Slides form a forest]{#sec-content-cap-tree x=-12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=tree}
 [[include: #tree x=-12 y=2.9 width=10 skip_return=true preview=true]]
@@ -80,7 +80,7 @@ Playing a deck: keys, the spotlight and laser, the pen and the whiteboard, the c
 
 [Documentation: Presenting ↗]{#sec-presenting-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/player.html}
 
-[Back to the overview]{#sec-presenting-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=guide}
+[Back to the overview]{#sec-presenting-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=tour}
 
 [The player]{#sec-presenting-cap-player x=-12 y=2.6999999999999997 anchor=bottom font_size=24 color=BLUE_E href=#slide=player}
 [[include: #player x=-12 y=-0.6 width=10 skip_return=true preview=true]]
@@ -102,7 +102,7 @@ Shapes, arrows and lines, braces and boxes, icons and blobs, drawn crisply or by
 
 [Documentation: Diagrams ↗]{#sec-diagrams-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/shapes.html}
 
-[Back to the overview]{#sec-diagrams-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=guide}
+[Back to the overview]{#sec-diagrams-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=tour}
 
 [Shapes and connections]{#sec-diagrams-cap-shapes x=-12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=shapes}
 [[include: #shapes x=-12 y=2.9 width=10 skip_return=true preview=true]]
@@ -132,7 +132,7 @@ Where elements go and how they look: the vertical flow, coordinates and anchors,
 
 [Documentation: Layout and style ↗]{#sec-layout-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/positioning.html}
 
-[Back to the overview]{#sec-layout-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=guide}
+[Back to the overview]{#sec-layout-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=tour}
 
 [Positioning and relative layout]{#sec-layout-cap-layout x=-12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=layout}
 [[include: #layout x=-12 y=2.9 width=10 skip_return=true preview=true]]
@@ -162,7 +162,7 @@ What happens on each click: fragments that appear and disappear, decorations see
 
 [Documentation: Motion and interaction ↗]{#sec-motion-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/fragments.html}
 
-[Back to the overview]{#sec-motion-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=guide}
+[Back to the overview]{#sec-motion-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=tour}
 
 [Fragments and click steps]{#sec-motion-cap-fragments x=-12 y=6.199999999999999 anchor=bottom font_size=24 color=BLUE_E href=#slide=fragments}
 [[include: #fragments x=-12 y=2.9 width=10 skip_return=true preview=true]]
@@ -188,7 +188,7 @@ Larger decks: the order in which children are visited, splitting the markup into
 
 [Documentation: Forests, files and code ↗]{#sec-structure-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/slides.html#visit-order}
 
-[Back to the overview]{#sec-structure-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=guide}
+[Back to the overview]{#sec-structure-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=tour}
 
 [Children, visit order and placeholders]{#sec-structure-cap-children x=-12 y=2.6999999999999997 anchor=bottom font_size=24 color=BLUE_E href=#slide=children}
 [[include: #children x=-12 y=-0.6 width=10 skip_return=true preview=true]]
@@ -371,7 +371,7 @@ Raster files may be PNG, JPEG, GIF or WebP. A multi-frame APNG or GIF animates w
 
 **Tablet.** A tablet on the same network pairs from the settings and draws on the deck. {#player-tablet below:#player-links left-aligned:#player-links buff=0.5 width=9 font_size=20}
 
-**Export.** `zoomdeck build deck.json -o out` writes a static folder, `--one-file` a single HTML file with the player, fonts and assets embedded (this guide is such a file). Print writes a PDF, a page per stage or per slide. {#player-export below:#player-tablet left-aligned:#player-tablet buff=0.5 width=9 font_size=20}
+**Export.** `zoomdeck build deck.json -o out` writes a static folder, `--one-file` a single HTML file with the player, fonts and assets embedded (this tour is such a file). Print writes a PDF, a page per stage or per slide. {#player-export below:#player-tablet left-aligned:#player-tablet buff=0.5 width=9 font_size=20}
 
 Every key and gesture can be changed in the settings (,), which also hold the pen, the recording devices and the tablet pairing. {#player-more x=-9.35 y=-4.6 width=18.7 font_size=16 color=GRAY}
 :::
@@ -397,7 +397,7 @@ Every key and gesture can be changed in the settings (,), which also hold the pe
 
 [[arrow: (-9.2,-3.6) -> (-1.0,-3.6), #tablet-arrow, color=GRAY, stroke_width=1]]
 
-1. **Pair.** Start the preview so that the tablet can reach it, for this guide `zoomdeck serve examples/guide/deck.json --host` from the checkout (or `npm run dev -- --host`), open the settings here (⚙ or ,), choose "Show the pairing code" under Tablet and scan it with the tablet, over Wi-Fi or over the cable with Internet Sharing to the iPad switched on. {x=0.6 width=9 font_size=18}
+1. **Pair.** Start the preview so that the tablet can reach it, for this tour `zoomdeck serve examples/tour/deck.json --host` from the checkout (or `npm run dev -- --host`), open the settings here (⚙ or ,), choose "Show the pairing code" under Tablet and scan it with the tablet, over Wi-Fi or over the cable with Internet Sharing to the iPad switched on. {x=0.6 width=9 font_size=18}
 2. **Trace** the wave and the circle on the tablet: the lines should appear here as you draw, without a visible delay. {x=0.6 width=9 font_size=18}
 3. **Press** lightly, then harder, along the strip: the width should follow. The Pen settings decide how much and redraw the strokes. {x=0.6 width=9 font_size=18}
 4. **Rest your palm** on the glass while writing in the box: a finger never draws. {x=0.6 width=9 font_size=18}
@@ -736,7 +736,7 @@ A `::: {.group #id}` container lays out its members in their own coordinates and
 ```json {#deck-json x=-9.35 y=3.9 width=9.1}
 {
   "markup": "slides.md",
-  "title": "Zoomdeck guide",
+  "title": "Zoomdeck tour",
   "classes": "code-slides.ts",
   "viewport": { "width": 16, "height": 9 },
   "layout": { "fontSize": 26, "headingSize": 40, "codeSize": 19 },
@@ -747,11 +747,11 @@ A `::: {.group #id}` container lays out its members in their own coordinates and
 
 ```bash {#cli x=0.6 y=3.9 width=9.1}
 # live preview: reloads on save, keeps your position
-zoomdeck serve examples/guide/deck.json
+zoomdeck serve examples/tour/deck.json
 
 # a static folder, or one self-contained HTML file
-zoomdeck build examples/guide/deck.json \
-  -o build/guide --one-file
+zoomdeck build examples/tour/deck.json \
+  -o build/tour --one-file
 ```
 
 `deck.json` names the Markdown file and sets the title, the viewport proportions, `layout` (fonts and sizes), `presenter` (transitions and pauses), LaTeX `macros`, `styles` and the `classes` module of code-authored slides; every key has a default. {#config-key x=-9.35 y=-3.6 width=18.7 font_size=20}

@@ -3,7 +3,7 @@ title: Shapes, connections and attachments
 description: Rectangles, circles, dots, ellipses, polygons, arcs and polylines; arrows and lines; braces, boxes and blobs.
 ---
 
-<a class="try" href="guide.html#slide=shapes">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=shapes">Open in the tour ↗</a>
 
 ```markdown
 [[rectangle: #box x=-6 y=-2.4 width=3.4 height=1.8 corner_radius=0.3 color=BLUE fill_color=BLUE fill_opacity=0.15]]
@@ -40,7 +40,7 @@ like shapes.
 
 ## Connections
 
-<a class="try" href="guide.html#slide=shapes">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=shapes">Open in the tour ↗</a>
 
 ```markdown
 [[arrow: #box -> #disk, #edge, label="**labelled** $\to$", color=YELLOW]]
@@ -56,7 +56,7 @@ they cannot anchor other elements and are not hidden implicitly when an endpoint
 
 ## Attachments
 
-<a class="try" href="guide.html#slide=more-shapes">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=more-shapes">Open in the tour ↗</a>
 
 ```markdown
 [[brace: #e, #be, side=bottom, label="an ellipse", color=GRAY]]

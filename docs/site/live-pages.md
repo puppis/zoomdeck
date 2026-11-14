@@ -3,7 +3,7 @@ title: Live pages
 description: Embedded web pages shown while their slide is focused, with a poster for previews.
 ---
 
-<a class="try" href="guide.html#slide=media">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=media">Open in the tour ↗</a>
 
 ```markdown
 [[iframe: assets/embedded.html, #page, x=5 y=-1.2, width=8, height=4.5, step=2, poster=assets/page.png]]

@@ -1,12 +1,12 @@
 /**
  * Development entry: `?deck=examples/tree-deck&scene=Demo` loads a deck module
- * (or `?deck=path/deck.json`, `?deck=path/slides.md`, `?deck=path/paper.pdf`) from this checkout and starts the player. Without `?deck=` it opens the guide.
+ * (or `?deck=path/deck.json`, `?deck=path/slides.md`, `?deck=path/paper.pdf`) from this checkout and starts the player. Without `?deck=` it opens the tour.
  */
 import { runDeck, loadDeckConfig, markupDeck, pdfDeck } from './index';
 import type { DeckDefinition } from './deck';
 
 const params = new URLSearchParams(location.search);
-const deckPath = params.get('deck') ?? 'examples/guide/deck.json';
+const deckPath = params.get('deck') ?? 'examples/tour/deck.json';
 const scene = params.get('scene');
 
 async function main(): Promise<void> {

@@ -3,7 +3,7 @@ title: Fragments and steps
 description: Reveal and hide elements on clicks, time the fades, advance automatically and skip events.
 ---
 
-<a class="try" href="guide.html#slide=fragments">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=fragments">Open in the tour ↗</a>
 
 ```markdown
 [Visible on entry, hidden at step 3]{#hint x=0.6 y=1.7 hide=3}
@@ -37,7 +37,7 @@ children, the parent's changes play first.
 
 ## Timing
 
-<a class="try" href="guide.html#slide=anchors">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=anchors">Open in the tour ↗</a>
 
 Each fade lasts `layout.animationTime` unless the element sets `run_time=S`; `lag=S` delays its
 start inside the step, so one click can stagger several elements. A `show`/`hide` directive may

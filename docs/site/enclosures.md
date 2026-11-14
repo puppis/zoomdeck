@@ -3,7 +3,7 @@ title: Boxes and blobs
 description: Surround a set of elements with a rectangle or with a smooth curve that keeps a chosen distance from every member, crisp or hand-drawn.
 ---
 
-<a class="try" href="guide.html#slide=enclosures">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=enclosures">Open in the tour ↗</a>
 
 ```markdown
 [[icon: server #web x=-6.5 y=-1.9 size=1.1 color=GREEN_E label="web" label_side=right]]

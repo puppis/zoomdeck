@@ -3,7 +3,7 @@ title: Code listings
 description: Fenced code blocks as verbatim listings with syntax colors for common languages and for the slide dialect itself.
 ---
 
-<a class="try" href="guide.html#slide=listings">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=listings">Open in the tour ↗</a>
 
 ````markdown
 ```python {#py x=0.6 y=3.7 width=9 step=1}

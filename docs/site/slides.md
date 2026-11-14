@@ -3,7 +3,7 @@ title: Slides and the forest
 description: Slide containers, canvas sizes, includes, visit order, start and preview flags, placeholders.
 ---
 
-<a class="try" href="guide.html#slide=tree">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=tree">Open in the tour ↗</a>
 
 ## Slide containers
 
@@ -84,7 +84,7 @@ them; `return_to_parent` on that child brings the camera back before it ([Flags]
 | `return_to_parent` | slide, include, subslide | zoom back to the parent after this child even when a sibling follows; `return_to_parent=false` is `skip_return` |
 | `skip_return` | slide, include, subslide | leave this child straight for the next stop even when it is the last one, without zooming back to the parent; `skip_return=false` is `return_to_parent` |
 | `transition=cut` | slide, include, subslide | enter and leave this slide without a camera animation; `transition=zoom` restores the zoom under a `cut` deck |
-| `preview=true` | slide, include, subslide | show the child's content before its first visit instead of fading it in on entry, as the tiles of the guide's front page do |
+| `preview=true` | slide, include, subslide | show the child's content before its first visit instead of fading it in on entry, as the tiles of the tour's front page do |
 
 A flag written bare means `=true`: `[[include: #proof skip_return]]`. By default a child returns
 to its parent only when it is the last one visited, so the camera moves from sibling to sibling
@@ -111,7 +111,7 @@ the same placement attributes as an include.
 
 ## Splitting a deck into files
 
-<a class="try" href="guide.html#slide=imports">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=imports">Open in the tour ↗</a>
 
 ```markdown
 ::: slide {#intro}

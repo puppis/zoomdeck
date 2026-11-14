@@ -3,7 +3,7 @@
 A deck is a Markdown file made of **slides**, each a `::: slide {#id} … :::` container with its own
 logical canvas. Slides reference each other with `[[include: #id …]]` directives, which form a
 forest, most often a single tree, whose trees the player walks in pre-order while zooming and
-whose roots it visits first to last with cuts between them. The guide deck in `examples/guide/` shows
+whose roots it visits first to last with cuts between them. The tour deck in `examples/tour/` shows
 every construct of this page live, each next to the listing that produced it; open it with
 `npm run dev` (it is the default deck) and keep it beside this reference.
 

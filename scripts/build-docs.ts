@@ -63,8 +63,8 @@ interface Page {
   description: string;
   html: string;
   headings: Array<{ id: string; text: string }>;
-  /** The guide chapter the page's first "Open in the guide" badge points at, if any. */
-  guide: string | null;
+  /** The tour chapter the page's first "Open in the tour" badge points at, if any. */
+  tour: string | null;
 }
 
 function slug(text: string): string {
@@ -153,8 +153,8 @@ function parsePage(name: string, source: string): Page {
   }
   const headings: Page['headings'] = [];
   const html = makeMarkdown(headings).render(source);
-  const guide = /class="try" href="(guide\.html#slide=[^"]+)"/.exec(source)?.[1] ?? null;
-  return { name, title: meta.title ?? name, description: meta.description ?? '', html, headings, guide };
+  const tour = /class="try" href="(tour\.html#slide=[^"]+)"/.exec(source)?.[1] ?? null;
+  return { name, title: meta.title ?? name, description: meta.description ?? '', html, headings, tour };
 }
 
 interface NotebookCell {
@@ -219,16 +219,16 @@ function parseNotebook(name: string, json: string): Page {
       : highlight(source, source.startsWith('%') ? 'bash' : 'python');
     parts.push(`<div class="cell"><pre class="cell-input"><code>${input}</code></pre>${outputs}</div>`);
   });
-  return { name, title: title ?? name, description: meta.description ?? '', html: parts.join('\n'), headings, guide: null };
+  return { name, title: title ?? name, description: meta.description ?? '', html: parts.join('\n'), headings, tour: null };
 }
 
-/** The documentation map for the index page: every section with its pages and their guide chapters. */
+/** The documentation map for the index page: every section with its pages and their tour chapters. */
 function navMap(pages: Map<string, Page>): string {
   return NAV.map((section) => {
     const items = section.pages.filter((name) => name !== 'index').map((name) => {
       const target = pages.get(name) as Page;
-      const guide = target.guide ? ` <a class="guide-link" href="${target.guide}" title="This topic in the guide deck">guide ↗</a>` : '';
-      return `<li><a href="${name}.html">${escapeHtml(target.title)}</a>${guide}<span>${escapeHtml(target.description)}</span></li>`;
+      const tour = target.tour ? ` <a class="tour-link" href="${target.tour}" title="This topic in the tour deck">tour ↗</a>` : '';
+      return `<li><a href="${name}.html">${escapeHtml(target.title)}</a>${tour}<span>${escapeHtml(target.description)}</span></li>`;
     }).join('');
     return `<section class="map-section"><h3>${escapeHtml(section.title)}</h3><p>${escapeHtml(section.blurb)}</p><ul>${items}</ul></section>`;
   }).join('\n');
@@ -335,13 +335,13 @@ async function main(): Promise<void> {
   if (await exists(standaloneDir)) await copyDir(standaloneDir, join(outDir, 'zoomdeck'));
   else console.warn('dist/standalone/ is missing: run `npm run build:standalone` first, or the live decks of the pages will not play');
   console.log(`Built ${pages.size} pages into docs/html/`);
-  if (!process.argv.includes('--no-guide')) {
-    // The guide deck as one self-contained page, so the documentation can open it anywhere.
-    const stage = await fs.mkdtemp(join(tmpdir(), 'zoomdeck-guide-'));
-    execFileSync(process.execPath, [join(root, 'bin', 'zoomdeck.mjs'), 'build', join(root, 'examples', 'guide', 'deck.json'), '-o', stage, '--one-file'], { stdio: 'inherit' });
-    await fs.copyFile(join(stage, 'offline.html'), join(outDir, 'guide.html'));
+  if (!process.argv.includes('--no-tour')) {
+    // The tour deck as one self-contained page, so the documentation can open it anywhere.
+    const stage = await fs.mkdtemp(join(tmpdir(), 'zoomdeck-tour-'));
+    execFileSync(process.execPath, [join(root, 'bin', 'zoomdeck.mjs'), 'build', join(root, 'examples', 'tour', 'deck.json'), '-o', stage, '--one-file'], { stdio: 'inherit' });
+    await fs.copyFile(join(stage, 'offline.html'), join(outDir, 'tour.html'));
     await fs.rm(stage, { recursive: true, force: true });
-    console.log('Exported the guide deck to docs/html/guide.html');
+    console.log('Exported the tour deck to docs/html/tour.html');
   }
 }
 

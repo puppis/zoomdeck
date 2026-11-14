@@ -53,11 +53,11 @@
     <article>
       <h1>Configuration</h1>
       <p class="lead">Every key of deck.json, the layout and presenter options, and the command line.</p>
-      <p><a class="try" href="guide.html#slide=config">Open in the guide ↗</a></p>
+      <p><a class="try" href="tour.html#slide=config">Open in the tour ↗</a></p>
 <h2 id="deck-json">deck.json<a class="anchor" href="#deck-json" aria-label="Link to this section">#</a></h2><pre><code class="language-json">{
   <span class="tk-attribute">&quot;markup&quot;</span>: <span class="tk-string">&quot;slides.md&quot;</span>,
-  <span class="tk-attribute">&quot;title&quot;</span>: <span class="tk-string">&quot;Zoomdeck guide&quot;</span>,
-  <span class="tk-attribute">&quot;root&quot;</span>: <span class="tk-string">&quot;guide&quot;</span>,
+  <span class="tk-attribute">&quot;title&quot;</span>: <span class="tk-string">&quot;Zoomdeck tour&quot;</span>,
+  <span class="tk-attribute">&quot;root&quot;</span>: <span class="tk-string">&quot;tour&quot;</span>,
   <span class="tk-attribute">&quot;classes&quot;</span>: <span class="tk-string">&quot;code-slides.ts&quot;</span>,
   <span class="tk-attribute">&quot;background&quot;</span>: <span class="tk-string">&quot;#0F172A&quot;</span>,
   <span class="tk-attribute">&quot;viewport&quot;</span>: { <span class="tk-attribute">&quot;width&quot;</span>: <span class="tk-number">16</span>, <span class="tk-attribute">&quot;height&quot;</span>: <span class="tk-number">9</span> },
@@ -270,7 +270,7 @@ the stop of a source line. <code>build</code> writes <code>index.html</code>, <c
 <code>offline.html</code> with <code>--one-file</code>. Code decks in <code>--one-file</code> mode embed the code but not images
 they load themselves.</p>
 <h2 id="development-page">Development page<a class="anchor" href="#development-page" aria-label="Link to this section">#</a></h2><p><code>npm run dev</code> serves <code>index.html</code>, which reads <code>?deck=</code> (a <code>deck.json</code>, a Markdown file or a
-module path, also <code>/@fs/absolute/path</code>) and <code>&amp;scene=</code> for named exports, and opens the guide when
+module path, also <code>/@fs/absolute/path</code>) and <code>&amp;scene=</code> for named exports, and opens the tour when
 <code>deck</code> is omitted. Files under <code>examples/</code> trigger a reload on change, and <code>zoomdeck jump</code> and
 the inverse search work there too (set <code>ZOOMDECK_EDITOR</code> before <code>npm run dev</code>).</p>
 <h2 id="package-scripts">Package scripts<a class="anchor" href="#package-scripts" aria-label="Link to this section">#</a></h2><table>

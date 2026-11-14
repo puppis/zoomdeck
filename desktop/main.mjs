@@ -6,7 +6,7 @@
  * permission prompts for the camera and the microphone, and a screen picker for filming.
  * Started with a deck (from the command line, or from the system by double-click or drop) it
  * opens that deck; started bare it asks for one in the folder used last, and the first time it
- * offers to copy the guide deck to a folder of the user's, out of the app.
+ * offers to copy the tour deck to a folder of the user's, out of the app.
  *
  *   Zoomdeck [deck.json | slides.md | paper.pdf] [--local] [--port N] [--editor NAME] [--watch PATH] [--scene Name]
  */
@@ -15,12 +15,12 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve, basename } from 'node:path';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { startPreview, parseArgs, resolveDeckPath, deckKind } from '../bin/zoomdeck.mjs';
-import { copyGuide, GUIDE_FOLDER } from './guide.mjs';
+import { copyTour, TOUR_FOLDER } from './tour.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(here, '..');
-/** The guide deck inside the app: the source of the copies, never opened in place. */
-const GUIDE_SOURCE = join(packageRoot, 'examples', 'guide');
+/** The tour deck inside the app: the source of the copies, never opened in place. */
+const TOUR_SOURCE = join(packageRoot, 'examples', 'tour');
 const DOCS = 'https://puppis.github.io/zoomdeck/';
 const REPOSITORY = 'https://github.com/puppis/zoomdeck';
 const FLAGS = new Set(['--host', '--local', '--port', '--editor', '--watch', '--scene']);
@@ -68,7 +68,7 @@ function readStore() {
     const decks = Array.isArray(saved) ? saved : Array.isArray(saved?.decks) ? saved.decks : [];
     const folder = !Array.isArray(saved) && typeof saved?.folder === 'string' ? saved.folder : null;
     return {
-      // Decks that are gone drop out; so does the guide inside the app, which earlier versions opened in place.
+      // Decks that are gone drop out; so does the tour inside the app, which earlier versions opened in place.
       decks: decks.filter((item) => typeof item === 'string' && existsSync(item) && !(app.isPackaged && item.startsWith(packageRoot))),
       folder: folder && existsSync(folder) ? folder : null,
     };
@@ -192,14 +192,14 @@ async function chooseDeck(folder = readStore().folder) {
 }
 
 /**
- * Copy the guide deck, with its examples, into a folder the user chooses, and open the copy;
+ * Copy the tour deck, with its examples, into a folder the user chooses, and open the copy;
  * whether one was opened. A copy already there is opened as it is, or its deck files written
  * afresh (talks recorded in it stay).
  */
-async function offerGuide() {
+async function offerTour() {
   const chosen = await dialog.showOpenDialog(win ?? undefined, {
-    title: 'Choose a folder for the guide deck',
-    message: `The guide and its examples are copied to a "${GUIDE_FOLDER}" folder inside the one you choose, where you can read and edit them and record talks.`,
+    title: 'Choose a folder for the tour deck',
+    message: `The tour and its examples are copied to a "${TOUR_FOLDER}" folder inside the one you choose, where you can read and edit them and record talks.`,
     defaultPath: app.getPath('documents'),
     properties: ['openDirectory', 'createDirectory'],
     buttonLabel: 'Copy Here',
@@ -207,22 +207,22 @@ async function offerGuide() {
   if (chosen.canceled || !chosen.filePaths[0]) return false;
   let deck;
   try {
-    deck = copyGuide(GUIDE_SOURCE, chosen.filePaths[0]);
+    deck = copyTour(TOUR_SOURCE, chosen.filePaths[0]);
   } catch (error) {
     if (error.code !== 'EEXIST') {
-      dialog.showErrorBox('Zoomdeck', `The guide could not be copied:\n${error.message}`);
+      dialog.showErrorBox('Zoomdeck', `The tour could not be copied:\n${error.message}`);
       return false;
     }
     const { response } = await dialog.showMessageBox(win ?? undefined, {
       type: 'question',
-      message: 'A copy of the guide is there already',
+      message: 'A copy of the tour is there already',
       detail: `${error.target}\n\nOpen it as it is, or write the deck's files afresh over it? Talks recorded in it stay either way.`,
       buttons: ['Open It', 'Write Afresh', 'Cancel'],
       defaultId: 0,
       cancelId: 2,
     });
     if (response === 2) return false;
-    deck = response === 1 ? copyGuide(GUIDE_SOURCE, chosen.filePaths[0], { replace: true }) : join(error.target, 'deck.json');
+    deck = response === 1 ? copyTour(TOUR_SOURCE, chosen.filePaths[0], { replace: true }) : join(error.target, 'deck.json');
   }
   await openDeck(deck);
   return Boolean(current);
@@ -230,7 +230,7 @@ async function offerGuide() {
 
 /**
  * Started without a deck: ask for one, in the folder used last. The first time, with no deck
- * ever opened, offer the guide as a starting point instead. Giving up with no window open ends the app.
+ * ever opened, offer the tour as a starting point instead. Giving up with no window open ends the app.
  */
 async function start() {
   const store = readStore();
@@ -238,13 +238,13 @@ async function start() {
     const { response } = await dialog.showMessageBox({
       type: 'none',
       message: 'Welcome to Zoomdeck',
-      detail: 'Open a deck of yours (a deck.json, a Markdown file, a PDF or a slide module), or copy the guide deck with its examples to a folder of yours and start from there.',
-      buttons: ['Open a Deck…', 'Copy the Guide…', 'Quit'],
+      detail: 'Open a deck of yours (a deck.json, a Markdown file, a PDF or a slide module), or copy the tour deck with its examples to a folder of yours and start from there.',
+      buttons: ['Open a Deck…', 'Copy the Tour…', 'Quit'],
       defaultId: 1,
       cancelId: 2,
     });
     if (response === 2) return app.quit();
-    const opened = response === 0 ? await chooseDeck(app.getPath('documents')) : await offerGuide();
+    const opened = response === 0 ? await chooseDeck(app.getPath('documents')) : await offerTour();
     if (!opened && !win) return start();
     return;
   }
@@ -268,7 +268,7 @@ function buildMenu() {
             : [{ label: 'No recent decks', enabled: false }],
         },
         { type: 'separator' },
-        { label: 'Copy the Guide Deck…', click: () => void offerGuide() },
+        { label: 'Copy the Tour Deck…', click: () => void offerTour() },
         { type: 'separator' },
         { label: 'Reload Deck', accelerator: 'CmdOrCtrl+Shift+R', click: () => win?.webContents.reload() },
         { label: 'Reveal Deck Folder', enabled: Boolean(current), click: () => { if (current) shell.showItemInFolder(current); } },

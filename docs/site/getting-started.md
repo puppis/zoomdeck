@@ -23,7 +23,7 @@ npm run dev
 `npm install` fetches the runtime dependencies (the `manim-web` rendering engine with Three.js
 and MathJax inside, `markdown-it` for the dialect, `gifuct-js` for GIFs, `roughjs` for hand-drawn
 shapes, and Vite for the preview and exports), checks the Node version first, and builds this
-documentation into `docs/html/`, including the standalone guide (`docs/html/guide.html`);
+documentation into `docs/html/`, including the standalone tour (`docs/html/tour.html`);
 `npm run docs` rebuilds it later.
 
 > **Note** On an older or odd-numbered Node release such as 21.x the install would otherwise stop
@@ -33,11 +33,11 @@ documentation into `docs/html/`, including the standalone guide (`docs/html/guid
 > again fixes it.
 
 `npm run dev` starts a Vite development server (by default on `http://localhost:5173/`) and opens
-the **guide deck**. Other decks are selected through the query string:
+the **tour deck**. Other decks are selected through the query string:
 
 | URL | Opens |
 | --- | --- |
-| `/?deck=examples/guide/deck.json` | a Markdown deck with its configuration (the guide) |
+| `/?deck=examples/tour/deck.json` | a Markdown deck with its configuration (the tour) |
 | `/?deck=path/to/slides.md` | a bare Markdown file with default settings |
 | `/?deck=path/to/paper.pdf` | a PDF, page after page ([PDFs, flat decks and forests](documents.html)) |
 | `/?deck=examples/tree-deck&scene=Demo` | a named export of a module |
@@ -109,7 +109,7 @@ Slides are `::: slide` containers; this one has a 20 × 11.25 canvas.
 
 Every slide needs an `#id`; the slide nobody includes is the root; `width` on a slide sets its
 canvas, while `x`, `y`, `width` on an include place the child inside the parent. Without further
-keys a deck is black Latin Modern text on a white canvas, which is also what the guide deck uses;
+keys a deck is black Latin Modern text on a white canvas, which is also what the tour deck uses;
 `background` and `layout.color` change the colors ([Configuration](configuration.html) lists
 every key).
 
@@ -155,7 +155,7 @@ screen while you work in another application. `R` records
 the talk (your voice, the camera while it is on, and every move on the deck) and **▶ Talk** plays
 it back on the deck itself or exports it as a video; `P` prints the deck to a PDF, a page
 per stage. Every key and gesture can be changed in the settings (`,`). [The player](player.html)
-describes each tool in full, and the guide's section 2, Presenting, shows them live.
+describes each tool in full, and the tour's section 2, Presenting, shows them live.
 
 ## Set up your editor
 
@@ -190,5 +190,5 @@ Paths in `slides.md` resolve relative to the Markdown file.
   tablet, camera, recording a talk and printing the deck.
 - [PDFs, flat decks and forests](documents.html) and [Slides and the forest](slides.html) start the topic-by-topic tour of the dialect; the sidebar
   follows the same order, from the content of a slide to the reference.
-- The [guide deck](guide.html) shows each topic live; its front page lists the sections, and
-  every documentation page opens its chapter with the "Open in the guide" badge.
+- The [tour deck](tour.html) shows each topic live; its front page lists the sections, and
+  every documentation page opens its chapter with the "Open in the tour" badge.

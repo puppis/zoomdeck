@@ -1,6 +1,6 @@
 # Zoomdeck
 
-Repository: <https://github.com/puppis/zoomdeck> · Documentation and guide: <https://puppis.github.io/zoomdeck/>
+Repository: <https://github.com/puppis/zoomdeck> · Documentation and tour: <https://puppis.github.io/zoomdeck/>
 
 Author a presentation as a forest of **Slides**, most often a single tree, each slide with its own logical canvas and a small
 animation program, and present it as a zooming slideshow that runs **entirely in the browser**.
@@ -11,16 +11,16 @@ each child and back out to its parent, and cuts from one root to the next.
 ## Documentation
 
 The topic-by-topic documentation is published at <https://puppis.github.io/zoomdeck/>, with the
-guide deck playable at <https://puppis.github.io/zoomdeck/guide.html>. Its sources live in
+tour deck playable at <https://puppis.github.io/zoomdeck/tour.html>. Its sources live in
 `docs/site/*.md`, and in `docs/site/*.ipynb` for the pages written as notebooks, and are built
-into static pages in `docs/html/`, together with `docs/html/guide.html`, the guide deck as one
+into static pages in `docs/html/`, together with `docs/html/tour.html`, the tour deck as one
 self-contained file. Live decks in the pages (a ```zoomdeck fence, or the output of a notebook
 cell) run in the self-contained player, `dist/standalone/`, which the build copies next to the
 pages; `npm run docs:lite` (JupyterLite, a Python tool) adds the notebooks as an editable
 in-browser lab, and the Pages workflow publishes all of it.
 `npm install` builds them (through the `prepare` script) and `npm run docs` rebuilds them; open
 `docs/html/index.html` in a browser (or `/docs/html/` on the dev server). The pages are
-committed, the 15 MB guide file is generated. It
+committed, the 15 MB tour file is generated. It
 covers getting started, concepts, every part of the dialect, code-authored slides, the player,
 the configuration and a one-page reference. `docs/markup.md` is the compact dialect reference and
 `docs/roadmap.md` the plan of remaining work.
@@ -42,7 +42,7 @@ the configuration and a one-page reference. `docs/markup.md` is the compact dial
   labels (crisp, or hand-drawn with `sketch=true` through Rough.js), boxes and blobs around several elements, pipe tables and bar/line/pie charts, a `tremble=` vibration, anchor-based and relative positioning, named styles, groups, `focus_only`, fragments
   (`step`, `hide`, `show:`/`hide:`), animation directives (`animate:`, `effect:`, `transform:`,
   `move_along:`, entrance and exit styles), `next:` and `skip_next:`. The dialect is documented in
-  [docs/markup.md](docs/markup.md) and demonstrated live by the guide deck.
+  [docs/markup.md](docs/markup.md) and demonstrated live by the tour deck.
 - **The browser player**: slide outline, breadcrumb, previous/next stops (backwards steps play
   the stop in reverse), replay, Home, speed, a settings dialog with editable key bindings, undo
   and redo of strokes,
@@ -89,11 +89,11 @@ npm install
 npm run dev
 ```
 
-The development page opens the **guide deck** (`examples/guide/`), a tour of every feature of the
+The development page opens the **tour deck** (`examples/tour/`), a tour of every feature of the
 dialect and the player in which each slide shows the listing that produces it. Other decks are
 chosen through the query string:
 
-- `http://localhost:5173/?deck=examples/guide/deck.json` — a Markdown deck with its configuration
+- `http://localhost:5173/?deck=examples/tour/deck.json` — a Markdown deck with its configuration
 - `http://localhost:5173/?deck=path/to/slides.md` — a bare Markdown file with default settings
 - `http://localhost:5173/?deck=path/to/paper.pdf` — a PDF, page after page
 - `http://localhost:5173/?deck=examples/tree-deck&scene=Demo` — a named export of a module
@@ -102,13 +102,13 @@ chosen through the query string:
 
 ```bash
 # Live preview while editing: reloads on save and keeps your current slide/step.
-node bin/zoomdeck.mjs serve examples/guide/deck.json
+node bin/zoomdeck.mjs serve examples/tour/deck.json
 
 # Static bundle: index.html + assets/ + deck/ (copy or host the whole folder).
-node bin/zoomdeck.mjs build examples/guide/deck.json -o build/guide
+node bin/zoomdeck.mjs build examples/tour/deck.json -o build/tour
 
 # One portable file with every asset embedded as a data URI.
-node bin/zoomdeck.mjs build examples/guide/deck.json -o build/guide --one-file
+node bin/zoomdeck.mjs build examples/tour/deck.json -o build/tour --one-file
 ```
 
 `serve` accepts `--port N`, `--host` (for a tablet), `--no-open`, `--editor NAME` (the editor the
@@ -120,8 +120,8 @@ in `--one-file` mode embed the code but not images they load themselves.
 
 ## Markdown decks
 
-Write slides in the Markdown dialect ([docs/markup.md](docs/markup.md); the guide deck under
-`examples/guide/` shows every construct next to its source) and place a `deck.json` next to the
+Write slides in the Markdown dialect ([docs/markup.md](docs/markup.md); the tour deck under
+`examples/tour/` shows every construct next to its source) and place a `deck.json` next to the
 file:
 
 ```json
@@ -181,7 +181,7 @@ Zoomdeck/
 │   └── dev.ts, index.html    development page
 ├── docs/site/, docs/html/    documentation sources and the built site (npm run docs)
 ├── docs/markup.md            compact reference of the Markdown dialect
-├── examples/                 the guide deck, and one code-authored deck for the engine API
+├── examples/                 the tour deck, and one code-authored deck for the engine API
 └── tests/                    vitest unit tests (parser, code listings, colors, transforms, traversal)
 ```
 

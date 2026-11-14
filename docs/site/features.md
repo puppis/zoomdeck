@@ -3,7 +3,7 @@ title: Features overview
 description: The main things Zoomdeck does, each shown live on this page with the markup that produces it. Click a deck to give it the keys, then use the arrows.
 ---
 
-<a class="try" href="guide.html">The same tour as a deck: open the guide ↗</a>
+<a class="try" href="tour.html">The same tour as a deck: open the tour ↗</a>
 
 Every deck on this page is the real player, embedded in the page. Click one to give it the
 keyboard, press → and ← to move, or use its buttons. The markup beside a deck is all it takes.
@@ -196,5 +196,5 @@ one step per click.
 - [Your first deck, stage by stage](first-deck.html): a notebook that builds a deck one cell at
   a time, which you can edit and run in the browser.
 - [The player](player.html): everything the controls do, from keys to recordings.
-- [The guide deck](guide.html): this tour again, as a presentation, with the markup of every
+- [The tour deck](tour.html): this tour again, as a presentation, with the markup of every
   chapter next to its result.

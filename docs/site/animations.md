@@ -3,7 +3,7 @@ title: Animations
 description: Move, rotate, scale, recolor and fade elements, play named effects, morph one element into another, follow paths, make geometry tremble, and move child viewports.
 ---
 
-<a class="try" href="guide.html#slide=animations">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=animations">Open in the tour ↗</a>
 
 ```markdown
 [[animate: #ball, step=1, x=6.5, run_time=1.2, rate=ease_in_out]]
@@ -33,7 +33,7 @@ only once per step.
 | `opacity`, `color` | final values |
 
 The ID may name an **included slide**: its viewport then moves, rotates or scales, and the whole
-subtree follows, as in the guide where a child is slid and tilted before it is visited. A child is
+subtree follows, as in the tour where a child is slid and tilted before it is visited. A child is
 invisible until its first visit, so give its include `preview=true` when it is animated earlier:
 the move is then seen, instead of the child appearing already moved when it is entered.
 

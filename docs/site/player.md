@@ -3,7 +3,7 @@ title: The player
 description: Keyboard and pointer controls, the pen and its pressure styles, the whiteboard, a companion tablet, the camera, recording a talk and exporting it as a video, printing the deck to a PDF, spotlight and laser, reverse playback, deep links, speed and fullscreen.
 ---
 
-<a class="try" href="guide.html#slide=player">Open in the guide ↗</a>
+<a class="try" href="tour.html#slide=player">Open in the tour ↗</a>
 
 ## Controls
 
@@ -95,11 +95,11 @@ With the default gestures:
   before the tile); the `E` key opens the line of the current stop. See
   [Editors](editors.html#forward-and-inverse-search).
 - **Click** a link to follow it, that is a press and release without movement: a Markdown link, or
-  any element with `href=`, which is how the guide's front page and its "Back to the overview"
+  any element with `href=`, which is how the tour's front page and its "Back to the overview"
   lines work. Targets inside the deck (`#slide=`, `#step=`) move to that stop; others open in a
   new tab. The pointer turns into a hand over a link while drawing is off; while it is on, links
   are inert and the pencil stays. A double-click also follows a link inside the deck. An include is not a link by itself: the
-  guide's front page lays an invisible rectangle with `href=` over each tile.
+  tour's front page lays an invisible rectangle with `href=` over each tile.
 
 Strokes belong to the current slide and clear when the slide changes; undo, redo and clear act on
 the current slide's strokes (or on the whiteboard's while it is shown). Links and live pages keep
@@ -198,7 +198,7 @@ in the style chosen there. An Apple Pencil hovering over the tablet
 shows as a red dot on the presenting screen. A graphics tablet without a screen (a Wacom) needs no
 pairing: plugged into the computer, it drives the pointer and draws with pressure directly.
 
-The guide's chapter <a href="guide.html#slide=tablet">Pen, whiteboard and tablet</a> is a test page
+The tour's chapter <a href="tour.html#slide=tablet">Pen, whiteboard and tablet</a> is a test page
 for all of this: shapes to trace, a strip for the pressure, a box to write in with the palm resting,
 and the checklist to go through once the tablet is paired.
 

@@ -155,7 +155,7 @@ describe('ink surfaces', () => {
 
 describe('pairing', () => {
   it('builds the tablet URL on a network address and knows when the server is reachable', () => {
-    history.replaceState(null, '', '/?deck=examples/guide/deck.json&resume=x#step=3');
+    history.replaceState(null, '', '/?deck=examples/tour/deck.json&resume=x#step=3');
     const url = new URL(padUrl('192.168.1.20', 8000, 'abc123'));
     expect(url.hostname).toBe('192.168.1.20');
     expect(url.port).toBe('8000');

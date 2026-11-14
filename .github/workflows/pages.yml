@@ -27,7 +27,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: npm ci
-      # The pages, the self-contained player the live decks run in, and the guide deck.
+      # The pages, the self-contained player the live decks run in, and the tour deck.
       - run: npm run docs
       # The notebooks, editable in the browser: JupyterLite with its Python kernel.
       - run: pip install jupyterlite-core jupyterlite-pyodide-kernel jupyter-server

@@ -21,7 +21,7 @@ links, a pressure-sensitive pen, a highlighter, a whiteboard, a companion tablet
 gestures, and it records a talk (voice, camera and every move on the deck) that plays back on the deck itself or exports as a video, and prints every stage to a PDF. The same deck previews while you edit it and [exports](exporting.html) to a static
 folder or to a single HTML file that plays from disk.
 
-**See it:** the **[guide deck](guide.html)** is itself a Zoomdeck presentation, a tour of every
+**See it:** the **[tour deck](tour.html)** is itself a Zoomdeck presentation, a tour of every
 feature with the markup that produces it next to the result. **Source:**
 [github.com/puppis/zoomdeck](https://github.com/puppis/zoomdeck).
 
@@ -43,18 +43,18 @@ feature with the markup that produces it next to the result. **Source:**
    whiteboard and a companion tablet, the camera, recording a talk and printing the deck to a PDF.
 
 The rest of the documentation follows the map below, from presenting a deck and the content of
-a slide to the reference, and every topic page opens the matching chapter of the guide deck with
-its "Open in the guide" badge.
+a slide to the reference, and every topic page opens the matching chapter of the tour deck with
+its "Open in the tour" badge.
 
-## The guide deck
+## The tour deck
 
-The guide is Zoomdeck's own demonstration and the companion of these pages: a presentation in
+The tour is Zoomdeck's own demonstration and the companion of these pages: a presentation in
 which every chapter shows a feature next to the listing that produces it, organized in the same
-sections as this documentation. **[Open the guide](guide.html)**: its front page lists the
+sections as this documentation. **[Open the tour](tour.html)**: its front page lists the
 sections and jumps to any of them on a double-click, and each chapter links back to its page here.
 
-The guide is a single self-contained HTML file next to these pages, exported from
-`examples/guide/` when you run `npm install` (and again by `npm run docs`); it runs from disk or
+The tour is a single self-contained HTML file next to these pages, exported from
+`examples/tour/` when you run `npm install` (and again by `npm run docs`); it runs from disk or
 from any web server, and `npm run dev` opens the same deck live. Its sources (`slides.md`,
 `deck.json`, `code-slides.ts` and a few assets) are a good starting point for a deck of your own.
 
@@ -65,7 +65,7 @@ from any web server, and `npm run dev` opens the same deck live. Its sources (`s
 ## The project
 
 Zoomdeck lives at [github.com/puppis/zoomdeck](https://github.com/puppis/zoomdeck); this site and
-the guide are published from it at [puppis.github.io/zoomdeck](https://puppis.github.io/zoomdeck/).
+the tour are published from it at [puppis.github.io/zoomdeck](https://puppis.github.io/zoomdeck/).
 It needs Node.js 20.19 or newer (or 22.12 or newer) to install and build, and a browser with
 WebGL 2 to play decks; nothing else, no Python, LaTeX or video tools. Exported decks are plain
 HTML files.
