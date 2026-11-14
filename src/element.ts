@@ -11,10 +11,13 @@
  * `without` leaves features out, `start` names the first stop, `title` the deck, `outline`
  * opens the outline, `use-location` lets the deck write `#step=` in the page's URL (for a page
  * that is one deck). The element is sized by the page; without a size it is as wide as its
- * container and 16:9.
+ * container and 16:9. A deck written inside the element, and a PDF, take the page's own colours
+ * (the element's background and text colour, so a dark page shows a dark deck, and the deck
+ * follows when the colour scheme changes) unless `background` and `foreground` say otherwise;
+ * a `deck.json` keeps its own.
  */
 export * from './index';
-import { mountDeck, markupDeck, FEATURES, type DeckHandle, type Feature, type ResolvedDeck } from './index';
+import { mountDeck, markupDeck, pdfDeck, FEATURES, type DeckHandle, type Feature, type ResolvedDeck } from './index';
 
 const STYLE_ID = 'zoom-deck-style';
 
@@ -36,9 +39,35 @@ export function featuresWithout(without: string | null): Partial<Record<Feature,
   return flags;
 }
 
+/** A CSS colour as `#rrggbb`, or null for transparency and anything a canvas cannot parse. */
+function hexColor(value: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const context = document.createElement('canvas').getContext('2d');
+  if (!context) return null;
+  const match = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/.exec(value);
+  if (match) {
+    if (match[4] !== undefined && Number(match[4]) === 0) return null;
+    return '#' + [match[1], match[2], match[3]].map((part) => Number(part).toString(16).padStart(2, '0')).join('');
+  }
+  context.fillStyle = value;
+  return /^#[0-9a-f]{6}$/i.test(context.fillStyle) ? context.fillStyle : null;
+}
+
+/** The colours of the page around `element`: the nearest opaque background behind it and its text colour. */
+export function pageColors(element: HTMLElement): { background: string; foreground: string } {
+  let background: string | null = null;
+  for (let node: HTMLElement | null = element; node && !background; node = node.parentElement) {
+    background = hexColor(getComputedStyle(node).backgroundColor);
+  }
+  const foreground = hexColor(getComputedStyle(element).color) ?? '#000000';
+  return { background: background ?? '#ffffff', foreground };
+}
+
 /** A deck in an element of the page; see the module comment. */
 export class ZoomDeckElement extends HTMLElement {
-  static observedAttributes = ['src', 'without', 'start', 'title', 'outline', 'use-location'];
+  static observedAttributes = ['src', 'without', 'start', 'title', 'outline', 'use-location', 'background', 'foreground'];
+  private static readonly _scheme = typeof matchMedia !== 'undefined' ? matchMedia('(prefers-color-scheme: dark)') : null;
+  private _onScheme: (() => void) | null = null;
   /** The handle of the mounted deck, once `ready` resolves. */
   handle: DeckHandle | null = null;
   /** Resolves with the handle when the deck is shown, or null when the element was taken out before. */
@@ -57,6 +86,20 @@ export class ZoomDeckElement extends HTMLElement {
     this._generation += 1;
     this.handle?.destroy();
     this.handle = null;
+    this._followScheme(false);
+  }
+
+  /** While the deck wears the page's colours, a change of colour scheme mounts it again in the new ones. */
+  private _followScheme(on: boolean): void {
+    const scheme = ZoomDeckElement._scheme;
+    if (!scheme) return;
+    if (on && !this._onScheme) {
+      this._onScheme = () => this._schedule();
+      scheme.addEventListener('change', this._onScheme);
+    } else if (!on && this._onScheme) {
+      scheme.removeEventListener('change', this._onScheme);
+      this._onScheme = null;
+    }
   }
 
   attributeChangedCallback(): void {
@@ -100,14 +143,25 @@ export class ZoomDeckElement extends HTMLElement {
       this._settled = true;
       return null;
     }
+    // Colours: the attributes, else the page's own for a deck written here or a PDF; a deck.json keeps its own.
+    const own = this.hasAttribute('background') || this.hasAttribute('foreground');
+    const inherited = !own && (!src || /\.pdf(\?|#|$)/i.test(src));
+    const page = inherited ? pageColors(this) : null;
+    const background = this.getAttribute('background') ?? page?.background;
+    const foreground = this.getAttribute('foreground') ?? page?.foreground;
+    this._followScheme(inherited);
     let deck: string | ResolvedDeck;
-    if (src) deck = new URL(src, this.baseURI).href;
-    else {
+    if (src) {
+      const url = new URL(src, this.baseURI).href;
+      deck = inherited ? await pdfDeck({ url, background, foreground, showOutline: this.hasAttribute('outline') }) : url;
+    } else {
       deck = markupDeck({
         source: source as string,
         basePath: this.getAttribute('base') ? new URL(this.getAttribute('base') as string, this.baseURI).href : this.baseURI,
         title: this.getAttribute('title') ?? 'Deck',
         showOutline: this.hasAttribute('outline'),
+        background,
+        layout: foreground ? { color: foreground } : undefined,
       });
     }
     this.replaceChildren();

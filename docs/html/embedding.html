@@ -178,18 +178,20 @@ stop, <code>title</code> the deck, <code>outline</code> opens the outline, <code
 resolves (a <code>deck</code> event fires then too), and setting <code>element.source</code> to new Markdown shows
 another deck in place. The module also exports everything the package does, so a page can
 <code>import { mountDeck } from '…/zoomdeck.js'</code> as well.</p>
-<h2 id="in-a-notebook">In a notebook<a class="anchor" href="#in-a-notebook" aria-label="Link to this section">#</a></h2><pre><code class="language-python"><span class="tk-keyword">from</span> zoomdeck_nb <span class="tk-keyword">import</span> deck
-
-deck(<span class="tk-string">'''</span>
-<span class="tk-string">::: slide {#hello}</span>
-<span class="tk-string"># A deck in a cell</span>
-<span class="tk-string">:::</span>
-<span class="tk-string">'''</span>)</code></pre>
-<p><code>docs/site/zoomdeck_nb.py</code> is a small helper for Jupyter: <code>deck(markdown)</code> or <code>deck(src=&quot;…&quot;)</code>
-returns an HTML display object whose output loads the player from the documentation site (or
-from the URL in the <code>ZOOMDECK_BUNDLE</code> environment variable) and shows the deck in the cell, in
-JupyterLab, the classic notebook and JupyterLite alike. The documentation's own notebooks, such
-as <a href="first-deck.html">Your first deck, stage by stage</a>, are built this way: the site renders the
+<h2 id="in-a-notebook">In a notebook<a class="anchor" href="#in-a-notebook" aria-label="Link to this section">#</a></h2><pre><code class="language-python"><span class="tk-keyword">import</span> zoomdeck_nb</code></pre>
+<pre><code class="language-markdown">%%deck
+<span class="tk-directive">::: slide </span><span class="tk-attribute">{#hello}</span>
+<span class="tk-type tk-bold"># </span><span class="tk-bold">A deck in a cell</span>
+<span class="tk-directive">:::</span></code></pre>
+<p><code>docs/site/zoomdeck_nb.py</code> is a small helper for Jupyter. Once imported, a cell that starts
+with <code>%%deck</code> holds the Markdown of a deck and nothing else, and its output shows the deck:
+the player is loaded from the documentation site (or from the URL in the <code>ZOOMDECK_BUNDLE</code>
+environment variable) and the deck wears the notebook's colours. Options follow on the magic
+line: <code>--without camera,record</code>, <code>--title &quot;A name&quot;</code>, <code>--start 2</code>, <code>--outline</code>, <code>--height 500px</code>.
+<code>%deck paper.pdf</code> shows a PDF, a Markdown file or a deck.json by its address, and from code
+<code>deck(markdown)</code> and <code>deck(src=&quot;…&quot;)</code> return the same display objects. It works in JupyterLab,
+the classic notebook and JupyterLite alike. The documentation's own notebooks, such as
+<a href="first-deck.html">Your first deck, stage by stage</a>, are built this way: the site renders the
 cells with their decks, and the &quot;Open in JupyterLite&quot; badge opens the same notebook in the
 browser, where the cells can be edited and run again.</p>
 <h2 id="driving-the-deck">Driving the deck<a class="anchor" href="#driving-the-deck" aria-label="Link to this section">#</a></h2><p>The handle exposes the deck's position and the player's actions, for buttons, a table of

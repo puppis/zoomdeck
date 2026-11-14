@@ -79,7 +79,7 @@ article img { max-width: 100%; border-radius: 8px; border: 1px solid var(--borde
 /* Live decks: the player in the page, its markup beside it. */
 figure.live { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 14px; align-items: start; margin: 18px 0 24px; }
 figure.live.no-code { grid-template-columns: minmax(0, 1fr); }
-figure.live zoom-deck { border: 1px solid var(--border); border-radius: 8px; background: #000; }
+figure.live zoom-deck { border: 1px solid var(--border); border-radius: 8px; }
 figure.live pre.markup { margin: 0; max-height: 420px; overflow: auto; font-size: 12.5px; }
 figure.live figcaption { grid-column: 1 / -1; font-size: 14px; color: var(--muted); }
 @media (max-width: 900px) { figure.live { grid-template-columns: minmax(0, 1fr); } }
@@ -87,6 +87,7 @@ figure.live figcaption { grid-column: 1 / -1; font-size: 14px; color: var(--mute
 .cell { margin: 14px 0 24px; }
 .cell pre.cell-input { margin: 0 0 8px; border-left: 4px solid var(--accent); }
 .cell .cell-output, .cell pre.cell-output { margin: 0; }
-.cell .cell-output zoom-deck { border: 1px solid var(--border); border-radius: 8px; background: #000; max-width: 960px; }
+.cell .cell-output zoom-deck { border: 1px solid var(--border); border-radius: 8px; max-width: 960px; }
 .cell pre.cell-stream { background: var(--sidebar-bg); color: var(--fg); }
 .cell pre.cell-error { background: var(--warn); color: var(--fg); }
+.cell .cell-magic { color: var(--tk-comment); }

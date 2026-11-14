@@ -96,20 +96,25 @@ another deck in place. The module also exports everything the package does, so a
 ## In a notebook
 
 ```python
-from zoomdeck_nb import deck
+import zoomdeck_nb
+```
 
-deck('''
+```markdown
+%%deck
 ::: slide {#hello}
 # A deck in a cell
 :::
-''')
 ```
 
-`docs/site/zoomdeck_nb.py` is a small helper for Jupyter: `deck(markdown)` or `deck(src="…")`
-returns an HTML display object whose output loads the player from the documentation site (or
-from the URL in the `ZOOMDECK_BUNDLE` environment variable) and shows the deck in the cell, in
-JupyterLab, the classic notebook and JupyterLite alike. The documentation's own notebooks, such
-as [Your first deck, stage by stage](first-deck.html), are built this way: the site renders the
+`docs/site/zoomdeck_nb.py` is a small helper for Jupyter. Once imported, a cell that starts
+with `%%deck` holds the Markdown of a deck and nothing else, and its output shows the deck:
+the player is loaded from the documentation site (or from the URL in the `ZOOMDECK_BUNDLE`
+environment variable) and the deck wears the notebook's colours. Options follow on the magic
+line: `--without camera,record`, `--title "A name"`, `--start 2`, `--outline`, `--height 500px`.
+`%deck paper.pdf` shows a PDF, a Markdown file or a deck.json by its address, and from code
+`deck(markdown)` and `deck(src="…")` return the same display objects. It works in JupyterLab,
+the classic notebook and JupyterLite alike. The documentation's own notebooks, such as
+[Your first deck, stage by stage](first-deck.html), are built this way: the site renders the
 cells with their decks, and the "Open in JupyterLite" badge opens the same notebook in the
 browser, where the cells can be edited and run again.
 

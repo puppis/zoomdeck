@@ -1,27 +1,32 @@
 """Show Zoomdeck decks in a Jupyter notebook.
 
-    from zoomdeck_nb import deck
-    deck('''
-    ::: slide {#hello}
-    # Hello
-    :::
-    ''')
+    import zoomdeck_nb
 
-`deck()` returns an HTML display object: the output cell loads the Zoomdeck player once (from
-the documentation site, or from the URL in the ZOOMDECK_BUNDLE environment variable) and shows
-the Markdown in it, with the player's own controls. Edit the string and run the cell again to see
-the deck change. `deck(src="paper.pdf")` shows a PDF, a Markdown file or a deck.json instead.
-It works in JupyterLab, the classic notebook, JupyterLite and any viewer that keeps the HTML
-output of a cell, including the documentation site built from these notebooks.
+then, in a cell of its own, the Markdown of a deck and nothing else:
+
+    %%deck
+    ::: slide {#hello}
+    # Hello, $e^{i\\pi} + 1 = 0$
+    :::
+
+The cell's output loads the Zoomdeck player once (from the documentation site, or from the URL
+in the ZOOMDECK_BUNDLE environment variable) and shows the deck in it, with the player's own
+controls; edit the cell and run it again to see the deck change. The line after `%%deck` may
+carry options: `--without camera,record`, `--title "A name"`, `--start 2`, `--outline`,
+`--height 500px`. `%deck paper.pdf` (one line) shows a PDF, a Markdown file or a deck.json by
+its address. The same from code: `deck("::: slide ...")` and `deck(src="paper.pdf")` return
+display objects. It all works in JupyterLab, the classic notebook, JupyterLite and any viewer
+that keeps the HTML output of a cell, including the documentation site built from these notebooks.
 """
 from __future__ import annotations
 
 import html
 import os
+import shlex
 import textwrap
 from typing import Iterable
 
-__all__ = ["deck", "BUNDLE"]
+__all__ = ["deck", "BUNDLE", "load_ipython_extension"]
 
 #: Where the player's self-contained module is served from unless ZOOMDECK_BUNDLE says otherwise.
 BUNDLE = os.environ.get("ZOOMDECK_BUNDLE", "https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js")
@@ -83,3 +88,58 @@ def deck(
         body = '<script type="text/markdown">\n' + source.replace("</script", "<\\/script") + "\n</script>"
     script = f'<script type="module" src="{html.escape(bundle or BUNDLE, quote=True)}"></script>'
     return _Html(f"{script}\n<zoom-deck {' '.join(attributes)}>{body}</zoom-deck>")
+
+
+def _options(line: str) -> dict:
+    """The keyword arguments of `deck()` written as options on a magic line."""
+    options: dict = {}
+    words = shlex.split(line)
+    i = 0
+    while i < len(words):
+        word = words[i]
+        if word == "--outline":
+            options["outline"] = True
+        elif word in ("--without", "--title", "--start", "--height", "--bundle"):
+            if i + 1 >= len(words):
+                raise ValueError(f"{word} needs a value")
+            value = words[i + 1]
+            i += 1
+            if word == "--without":
+                options["without"] = tuple(part for part in value.replace(",", " ").split() if part != "none")
+            elif word == "--start":
+                options["start"] = int(value) if value.isdigit() else value
+            else:
+                options[word[2:]] = value
+        elif not word.startswith("--") and "src" not in options:
+            options["src"] = word
+        else:
+            raise ValueError(f"Unknown option {word}")
+        i += 1
+    return options
+
+
+def _magic(line: str, cell: str | None = None):
+    """`%%deck [options]` with the Markdown below, or `%deck address [options]`."""
+    options = _options(line)
+    if cell is None:
+        if "src" not in options:
+            raise ValueError("%deck needs the address of a PDF, a Markdown file or a deck.json; %%deck takes the Markdown in the cell")
+        return deck(**options)
+    if "src" in options:
+        raise ValueError("%%deck shows the Markdown of its cell; use %deck for a file")
+    return deck(cell, **options)
+
+
+def load_ipython_extension(ipython) -> None:
+    """Register the `deck` magic (IPython calls this for `%load_ext zoomdeck_nb`)."""
+    ipython.register_magic_function(_magic, magic_kind="line_cell", magic_name="deck")
+
+
+try:  # Importing the module in IPython is enough: the magic is registered at once.
+    from IPython import get_ipython
+
+    _shell = get_ipython()
+    if _shell is not None:
+        load_ipython_extension(_shell)
+except ImportError:  # outside IPython, deck() alone is available
+    pass

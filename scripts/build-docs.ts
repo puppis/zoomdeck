@@ -212,7 +212,12 @@ function parseNotebook(name: string, json: string): Page {
       if (data['text/plain']) return `<pre class="cell-output">${escapeHtml(text(data['text/plain']))}</pre>`;
       return '';
     }).join('');
-    parts.push(`<div class="cell"><pre class="cell-input"><code>${highlight(source, 'python')}</code></pre>${outputs}</div>`);
+    // A %%deck cell is the Markdown of a deck: shown as such, with the magic line kept as is.
+    const magic = /^(%%deck[^\n]*\n)([\s\S]*)$/.exec(source);
+    const input = magic
+      ? `<span class="cell-magic">${escapeHtml(magic[1])}</span>${highlight(magic[2], 'markdown')}`
+      : highlight(source, source.startsWith('%') ? 'bash' : 'python');
+    parts.push(`<div class="cell"><pre class="cell-input"><code>${input}</code></pre>${outputs}</div>`);
   });
   return { name, title: title ?? name, description: meta.description ?? '', html: parts.join('\n'), headings, guide: null };
 }
