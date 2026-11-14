@@ -297,6 +297,18 @@ export function placeRelative(
 }
 
 /** What a renderer is made with: the layout, the document's base path, macros, preloaded assets, and the deck's library folders and modules. */
+/** The point where a ray from the center of `obj` along `direction` leaves its bounding box. */
+export function boundaryPoint(obj: Mobject, direction: [number, number, number]): [number, number, number] {
+  const center = obj.getCenter();
+  const half = [obj.getWidth() / 2, obj.getHeight() / 2];
+  let t = Infinity;
+  for (const axis of [0, 1] as const) {
+    if (Math.abs(direction[axis]) > 1e-9 && half[axis] > 0) t = Math.min(t, half[axis] / Math.abs(direction[axis]));
+  }
+  if (!Number.isFinite(t)) return [center[0], center[1], center[2]];
+  return [center[0] + direction[0] * t, center[1] + direction[1] * t, center[2]];
+}
+
 export interface MarkupRendererOptions {
   layout?: LayoutConfig;
   /** Base URL for images; relative paths resolve against it. */
@@ -1039,8 +1051,10 @@ export class MarkupRenderer {
     const direction: [number, number, number] = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
     const length = Math.hypot(...direction);
     if (length < 1e-9) throw new MarkupError('Arrow endpoints must have distinct positions', element.line);
-    if (source) a = source.getEdge(direction);
-    if (target) b = target.getEdge([-direction[0], -direction[1], -direction[2]]);
+    // Each end sits where the line between the centers leaves the element's box: a direction that
+    // is horizontal up to floating-point noise still meets the side, not a corner.
+    if (source) a = boundaryPoint(source, direction);
+    if (target) b = boundaryPoint(target, [-direction[0], -direction[1], -direction[2]]);
     const color = element.attributes.color ? parseColor(element.attributes.color) : this.layout.color;
     const isArrow = element.kind === 'arrow';
     const buff = isArrow ? 0.08 : 0;

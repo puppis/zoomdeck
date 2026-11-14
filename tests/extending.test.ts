@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { Circle, Group, VGroup } from 'manim-web';
+import { Circle, Group, Rectangle, VGroup } from 'manim-web';
 import { expandImports, fillSnippet } from '../src/markup/imports';
 import { ASTTransformer, MarkupParser } from '../src/markup/parser';
 import { ElementSpec, IncludeSpec, MarkupError } from '../src/markup/ast';
@@ -8,7 +8,7 @@ import { applyTheme, loadMarkupDeck, markupDeck, parseTheme } from '../src/marku
 import { directiveFromModule, type DirectiveOptions } from '../src/directives';
 import { Presenter, PresenterConfig, transitionFromModule, type CameraTransition } from '../src/runtime';
 import { Slide, pageSequence } from '../src/slides';
-import { LayoutConfig } from '../src/markup/renderer';
+import { LayoutConfig, boundaryPoint } from '../src/markup/renderer';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -99,6 +99,20 @@ describe('a stacked page sequence', () => {
     expect(b.preview).toBe(false);
     const row = pageSequence([new Slide('c', { width: 16, height: 9 }), new Slide('d', { width: 16, height: 9 })], { spacing: 1.15 });
     expect(row.width).toBeCloseTo(2 * 1.15 * 16);
+  });
+});
+
+describe('connection ends', () => {
+  it('leave an element where the line between the centers crosses its box, a side for a nearly level line', () => {
+    const box = new Rectangle({ width: 4, height: 2 });
+    box.moveTo([10, -0.9, 0]);
+    expect(boundaryPoint(box, [3, 1e-12, 0]).map((v) => +v.toFixed(3))).toEqual([12, -0.9, 0]);
+    expect(boundaryPoint(box, [-3, 0, 0]).map((v) => +v.toFixed(3))).toEqual([8, -0.9, 0]);
+    expect(boundaryPoint(box, [0, 5, 0]).map((v) => +v.toFixed(3))).toEqual([10, 0.1, 0]);
+    // A steep diagonal leaves through the top, on the line itself.
+    const [x, y] = boundaryPoint(box, [1, 2, 0]);
+    expect(y).toBeCloseTo(0.1);
+    expect(x).toBeCloseTo(10.5);
   });
 });
 
