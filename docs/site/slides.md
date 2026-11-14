@@ -83,7 +83,7 @@ them; `return_to_parent` on that child brings the camera back before it ([Flags]
 | `only_this=true` | slide, include | prepare only this subtree while editing; everything else becomes a placeholder |
 | `return_to_parent` | slide, include, subslide | zoom back to the parent after this child even when a sibling follows; `return_to_parent=false` is `skip_return` |
 | `skip_return` | slide, include, subslide | leave this child straight for the next stop even when it is the last one, without zooming back to the parent; `skip_return=false` is `return_to_parent` |
-| `transition=cut` | slide, include, subslide | enter and leave this slide without a camera animation; `transition=zoom` restores the zoom under a `cut` deck; any other name is a camera transition of the deck's own ([Extending a deck](extending.html#camera-transitions)) |
+| `transition=cut` | slide, include, subslide | arrive at this slide without a camera animation; `transition=zoom` restores the zoom under a `cut` deck; any other name is a camera transition of the deck's own ([Extending a deck](extending.html#camera-transitions)) |
 | `preview=true` | slide, include, subslide | show the child's content before its first visit instead of fading it in on entry, as the tiles of the tour's front page do |
 
 A flag written bare means `=true`: `[[include: #proof skip_return]]`. By default a child returns
@@ -93,11 +93,14 @@ child. They are the two sides of one choice and are never written together.
 
 ## Cuts instead of zooms
 
-By default the camera flies between slides. `transition=cut` on a slide (or on the include that
-places it) replaces the view at once whenever the camera moves into or out of that slide, as
-between the pages of a PDF; fades of focus-only decorations still play. To present a whole deck
-that way, set `"presenter": { "transition": "cut" }` in deck.json; individual slides can then
-ask for `transition=zoom` again. When two slides disagree, the cut wins.
+By default the camera flies between slides. A slide's `transition` says how the camera arrives
+at it, whichever slide it comes from: `transition=cut` on a slide (or on the include that places
+it) replaces the view at once when the camera moves into that slide, as between the pages of a
+PDF; fades of focus-only decorations still play. The move out of the slide is the next
+destination's business: back to the parent, it follows the parent's setting. To present a whole
+deck that way, set `"presenter": { "transition": "cut" }` in deck.json; individual slides can
+then ask for `transition=zoom` again, and a module of the deck's own by name
+([Extending a deck](extending.html#camera-transitions)).
 
 ## Code-authored children
 

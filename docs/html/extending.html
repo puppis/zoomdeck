@@ -185,8 +185,9 @@ before any step plays.</p>
 <p><code>transition=</code> on a slide or an include, and <code>&quot;presenter&quot;: { &quot;transition&quot;: &quot;…&quot; }</code> for the whole
 deck, take <code>zoom</code>, <code>cut</code>, or the name of a module in <code>transitions/</code>: a function that receives the
 camera's start and target (center and width) and how far the move is, 0 to 1 linear in time, and
-returns where the camera is; it eases as it likes. The move keeps <code>transitionTime</code>, and a cut on
-either side still wins. Transitions load when the deck is built.</p>
+returns where the camera is; it eases as it likes. A slide's transition governs every move into
+that slide, from wherever the camera comes; the move out of it belongs to the next destination.
+The move keeps <code>transitionTime</code>. Transitions load when the deck is built.</p>
 <h2 id="chart-types">Chart types<a class="anchor" href="#chart-types" aria-label="Link to this section">#</a></h2><pre><code class="language-ts"><span class="tk-comment">// charts/donut.ts</span>
 <span class="tk-keyword">import</span> { <span class="tk-keyword">type</span> ChartData, <span class="tk-keyword">type</span> ChartOptions, <span class="tk-keyword">type</span> LabelFactory, CHART_COLORS } <span class="tk-keyword">from</span> <span class="tk-string">'zoomdeck'</span>;
 <span class="tk-keyword">import</span> { Annulus, VGroup } <span class="tk-keyword">from</span> <span class="tk-string">'manim-web'</span>;

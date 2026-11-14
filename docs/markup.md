@@ -47,8 +47,9 @@ every construct of this page live, each next to the listing that produced it; op
 - `preview=true` on a slide, include or subslide shows its content before its first visit instead of
   fading it in on entry.
 - `transition=cut` on a slide, include or subslide replaces the view at once when the camera moves
-  into or out of that slide, like turning a PDF page; `transition=zoom` restores the animation for
-  one slide when `presenter.transition` is `cut` for the whole deck.
+  into that slide, like turning a PDF page (the move out of it follows the next destination);
+  `transition=zoom` restores the animation for one slide when `presenter.transition` is `cut` for
+  the whole deck, and any other name is a camera transition of the deck's own.
 - Includes and subslides accept `.class` styles, `anchor=`, `at=` and `dx`/`dy` like elements.
 - Includes without `step` are visited in source order after all numbered steps of their parent;
   `step=N` interleaves a visit with the parent's fragments. On return the parent resumes with its

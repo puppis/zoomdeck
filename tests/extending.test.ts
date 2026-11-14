@@ -6,7 +6,8 @@ import { ElementSpec, MarkupError } from '../src/markup/ast';
 import { chartDataFromJson } from '../src/charts';
 import { applyTheme, loadMarkupDeck, markupDeck, parseTheme } from '../src/markup/deck';
 import { directiveFromModule, type DirectiveOptions } from '../src/directives';
-import { PresenterConfig, transitionFromModule } from '../src/runtime';
+import { Presenter, PresenterConfig, transitionFromModule, type CameraTransition } from '../src/runtime';
+import { Slide } from '../src/slides';
 import { LayoutConfig } from '../src/markup/renderer';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -79,6 +80,31 @@ describe('camera transitions of the deck\'s own', () => {
     expect(() => new PresenterConfig({ transition: 'no way' })).toThrow(/zoom, cut, or the name/);
     expect(transitionFromModule({ default: (_start, target) => target }, 'swoop')({ center: [0, 0, 0], width: 1 }, { center: [1, 1, 0], width: 2 }, 0.5)).toEqual({ center: [1, 1, 0], width: 2 });
     expect(() => transitionFromModule({}, 'swoop')).toThrow(/exports a function/);
+  });
+
+  it('belong to the destination of a move: the slide being left has no say', () => {
+    const parent = new Slide('parent');
+    const a = new Slide('a', { transition: 'cut' });
+    const b = new Slide('b');
+    parent.addChild(a, { center: [-3, 0, 0], width: 4 });
+    parent.addChild(b, { center: [3, 0, 0], width: 4 });
+    const swoop: CameraTransition = (start) => start;
+    const presenter = new Presenter({ config: new PresenterConfig({ transition: 'swoop', transitions: { swoop } }) });
+    expect(presenter.transitionMode(parent, a)).toBe('cut');
+    expect(presenter.transitionTime(parent, a)).toBe(0);
+    expect(presenter.transitionMode(a, parent)).toBe('swoop');
+    expect(presenter.transitionPath(a, parent)).toBe(swoop);
+    expect(presenter.transitionMode(a, b)).toBe('swoop');
+    expect(presenter.transitionTime(a, b)).toBe(presenter.config.transitionTime);
+    // The pages of a flat document cut, unless the page arrived at says otherwise.
+    const root = new Slide('root', { hidden: true });
+    const one = new Slide('one');
+    const two = new Slide('two', { transition: 'zoom' });
+    root.addChild(one, { center: [0, 0, 0], width: 4 });
+    root.addChild(two, { center: [5, 0, 0], width: 4 });
+    expect(presenter.transitionMode(one, two)).toBe('zoom');
+    expect(presenter.transitionPath(one, two)).toBeNull();
+    expect(presenter.transitionMode(two, one)).toBe('cut');
   });
 });
 

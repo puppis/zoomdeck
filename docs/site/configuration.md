@@ -65,7 +65,7 @@ description: Every key of deck.json, the layout and presenter options, and the c
 | Key | Default | Meaning |
 | --- | --- | --- |
 | `transitionTime` | 0.7 | seconds of each camera move; 0 jumps |
-| `transition` | `zoom` | `cut` replaces the view at once between slides, like turning PDF pages; the name of a module in the deck's `transitions/` folder moves the camera its own way; a slide's own `transition=` overrides it |
+| `transition` | `zoom` | `cut` replaces the view at once between slides, like turning PDF pages; the name of a module in the deck's `transitions/` folder moves the camera its own way; a slide's own `transition=` overrides it for the moves into that slide |
 | `padding` | 1 | camera width multiplier around a focused slide |
 | `pauseOnEntry` | true | stop after entering a slide, before its first step |
 | `pauseOnReturn` | true | stop after returning to a parent |

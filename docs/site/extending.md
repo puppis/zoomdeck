@@ -150,8 +150,9 @@ export default function swoop(start: CameraState, target: CameraState, alpha: nu
 `transition=` on a slide or an include, and `"presenter": { "transition": "…" }` for the whole
 deck, take `zoom`, `cut`, or the name of a module in `transitions/`: a function that receives the
 camera's start and target (center and width) and how far the move is, 0 to 1 linear in time, and
-returns where the camera is; it eases as it likes. The move keeps `transitionTime`, and a cut on
-either side still wins. Transitions load when the deck is built.
+returns where the camera is; it eases as it likes. A slide's transition governs every move into
+that slide, from wherever the camera comes; the move out of it belongs to the next destination.
+The move keeps `transitionTime`. Transitions load when the deck is built.
 
 ## Chart types
 

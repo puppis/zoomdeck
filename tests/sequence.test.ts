@@ -70,7 +70,7 @@ describe('a flat sequence of pages', () => {
     expect(three.transition).toBe('zoom');
     // Moves between pages cut (their common ancestor is the hidden root); moves inside a page zoom.
     const presenter = new PresenterConfig();
-    const times = (a: Slide, b: Slide) => Presenter.prototype.transitionTime.call({ config: presenter }, a, b);
+    const times = (a: Slide, b: Slide) => Presenter.prototype.transitionTime.call({ config: presenter, transitionMode: Presenter.prototype.transitionMode }, a, b);
     expect(times(one, two)).toBe(0);
     expect(times(two.children[0], one)).toBe(0);
     expect(times(two, two.children[0])).toBe(presenter.transitionTime);

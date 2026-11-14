@@ -69,7 +69,7 @@ export interface SlideOptions {
   /** Open playback at this slide's first entry. At most one slide may enable it. */
   startHere?: boolean;
   /** How the camera moves into and out of this slide: `cut` replaces the view at once, `zoom`
-   * animates; unset follows the presenter's `transition`. */
+   * animates; it governs the move into this slide, and unset follows the presenter's `transition`. */
   transition?: TransitionMode | null;
   /** Show this slide's content before its first visit instead of fading it in on entry. */
   preview?: boolean;

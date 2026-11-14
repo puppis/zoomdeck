@@ -1107,7 +1107,7 @@ Focus-only elements are static (no `step`, `hide` or `play`), are drawn behind t
 
 An include with `step` interleaves the child visit with the parent’s fragments; without `step` it is visited in source order after the numbered steps. An undefined slide, here `#missing`, is a red placeholder, skipped in playback. {#children-key x=-9.35 y=-3.6 width=18.7 font_size=20}
 
-The camera leaves a child for the next sibling and zooms back to the parent only after the last one: `return_to_parent` brings it back earlier (here, for step 2), `skip_return` not at all. `preview=true` shows a child before its first visit; `transition=cut` cuts instead of zooming, like a PDF page. {#children-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
+The camera leaves a child for the next sibling and zooms back to the parent only after the last one: `return_to_parent` brings it back earlier (here, for step 2), `skip_return` not at all. `preview=true` shows a child before its first visit; `transition=cut` cuts into the child instead of zooming, like a PDF page; the way back follows the parent. {#children-more x=-9.35 y=-4.75 width=18.7 font_size=16 color=GRAY}
 :::
 
 ::: slide {#visited-first}

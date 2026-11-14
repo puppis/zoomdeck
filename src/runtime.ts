@@ -48,7 +48,7 @@ export interface PresenterConfigOptions {
   /** Seconds used for each animated camera move. Zero positions the camera immediately. */
   transitionTime?: number;
   /** `zoom` (default) animates the camera between slides; `cut` replaces the view at once, like
-   * turning a PDF page. A slide's own `transition` overrides it for the moves into and out of it. */
+   * turning a PDF page. A slide's own `transition` overrides it for the move into that slide. */
   transition?: TransitionMode;
   /** Camera transitions of the deck's own, by name, for `transition=name`; filled as a Markdown deck loads. */
   transitions?: Record<string, CameraTransition>;
@@ -1042,20 +1042,24 @@ export class Presenter {
   }
 
   /**
-   * Seconds of the camera move from one slide to another: zero (a cut) when either slide asks
-   * for a cut, when neither says anything and the move crosses from one page of a flat document
-   * to another (their nearest common ancestor is hidden), or when the deck's `transition` is `cut`.
+   * How the camera moves into `to`: the destination's own `transition` when it has one; else a
+   * cut when the move crosses from one page of a flat document to another (their nearest common
+   * ancestor is hidden); else the deck's `transition`. The slide being left has no say.
    */
-  transitionTime(from: Slide, to: Slide): number {
-    const modes = [from.transition, to.transition].filter((mode): mode is TransitionMode => mode !== null);
-    const mode = modes.includes('cut') ? 'cut' : modes.length ? 'zoom' : commonAncestor(from, to)?.hidden ? 'cut' : this.config.transition;
-    return mode === 'cut' ? 0 : this.config.transitionTime;
+  transitionMode(from: Slide, to: Slide): TransitionMode {
+    if (to.transition) return to.transition;
+    return commonAncestor(from, to)?.hidden ? 'cut' : this.config.transition;
   }
 
-  /** The camera transition of the deck's own that a move uses, when either slide or the deck names one; null for the built-in zoom. */
+  /** Seconds of the camera move from one slide to another: zero for a cut. */
+  transitionTime(from: Slide, to: Slide): number {
+    return this.transitionMode(from, to) === 'cut' ? 0 : this.config.transitionTime;
+  }
+
+  /** The camera transition of the deck's own that a move uses, by the destination's name or the deck's; null for the built-in zoom. */
   transitionPath(from: Slide, to: Slide): CameraTransition | null {
-    const named = [from.transition, to.transition, this.config.transition].find((mode) => mode && mode !== 'zoom' && mode !== 'cut');
-    return named ? this.config.transitions[named] ?? null : null;
+    const mode = this.transitionMode(from, to);
+    return mode === 'zoom' || mode === 'cut' ? null : this.config.transitions[mode] ?? null;
   }
 
   /** Record a clip boundary; options configure the following clip. */
