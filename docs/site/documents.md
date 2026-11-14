@@ -5,7 +5,7 @@ description: A PDF opened as it is, a Markdown file of plain slides read page af
 
 The simplest deck is one you already have. This page goes from a PDF shown as it is, through a
 Markdown file that lists plain slides, to the forest of slides that every deck is. Every deck
-below is the real player: click one to give it the keys, then press → and ←.
+below is the real player: click one to give it the focus, then press → and ←.
 
 ## A PDF
 
