@@ -156,7 +156,7 @@ export async function startPreview(options) {
     server: {
       host: options.host ? '0.0.0.0' : '127.0.0.1',
       port: options.port ?? 8000,
-      strictPort: options.port !== null && options.port !== 0,
+      strictPort: options.strictPort ?? (options.port !== null && options.port !== 0),
       fs: { allow: [packageRoot, ...watchRoots] },
     },
     logLevel: 'warn',

@@ -8,13 +8,12 @@
  * opens that deck; started bare it asks for one in the folder used last, and the first time it
  * offers to copy the guide deck to a folder of the user's, out of the app.
  *
- *   Zoomdeck [deck.json | slides.md] [--host] [--port N] [--editor NAME] [--watch PATH] [--scene Name]
+ *   Zoomdeck [deck.json | slides.md] [--local] [--port N] [--editor NAME] [--watch PATH] [--scene Name]
  */
 import { app, BrowserWindow, Menu, dialog, shell, session, desktopCapturer, screen, systemPreferences } from 'electron';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve, basename } from 'node:path';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { createServer } from 'node:net';
 import { startPreview, parseArgs, resolveDeckPath, deckKind } from '../bin/zoomdeck.mjs';
 import { copyGuide, GUIDE_FOLDER } from './guide.mjs';
 
@@ -24,8 +23,14 @@ const packageRoot = resolve(here, '..');
 const GUIDE_SOURCE = join(packageRoot, 'examples', 'guide');
 const DOCS = 'https://puppis.github.io/zoomdeck/';
 const REPOSITORY = 'https://github.com/puppis/zoomdeck';
-const FLAGS = new Set(['--host', '--port', '--editor', '--watch', '--scene']);
+const FLAGS = new Set(['--host', '--local', '--port', '--editor', '--watch', '--scene']);
 const WITH_VALUE = new Set(['--port', '--editor', '--watch', '--scene']);
+/**
+ * The port the app prefers, so that a tablet trusted once finds the deck again at the same
+ * address; when it is busy the next free port is taken. Away from the 8000 of a preview started
+ * from a terminal, so the two never collide.
+ */
+const DESKTOP_PORT = 8765;
 
 /** The command's own flags among the arguments; Electron's and Chromium's are left out. */
 function ownArguments(argv) {
@@ -43,25 +48,16 @@ function ownArguments(argv) {
 }
 
 const argv = ownArguments(process.argv.slice(app.isPackaged ? 1 : 2));
-const options = parseArgs(argv);
+// The app listens on the network, so a tablet can pair with it without a flag that a Finder-opened app cannot pass; --local keeps it to this computer.
+const localOnly = argv.includes('--local');
+const options = parseArgs(argv.filter((arg) => arg !== '--local'));
+options.host = options.host || !localOnly;
 const smokeShot = process.env.ZOOMDECK_SMOKE || null;
 
 let win = null;
 let preview = null;
 let current = null;
 
-/** A port nobody listens on right now (Vite would take 5173 for a port of 0). */
-function freePort() {
-  return new Promise((resolvePort, reject) => {
-    const probe = createServer();
-    probe.unref();
-    probe.on('error', reject);
-    probe.listen(0, '127.0.0.1', () => {
-      const { port } = probe.address();
-      probe.close(() => resolvePort(port));
-    });
-  });
-}
 
 /** The decks opened lately, and the folder of the last one, where the next Open dialog starts. */
 const recentFile = () => join(app.getPath('userData'), 'recent.json');
@@ -110,8 +106,9 @@ async function openDeck(deckPath) {
       ...options,
       positional: [target],
       open: false,
-      // A free port, so the app never collides with a preview started from a terminal; --port insists on one.
-      port: options.port ?? (await freePort()),
+      // The app's own port when free, the next free one otherwise; --port insists on one.
+      port: options.port ?? DESKTOP_PORT,
+      strictPort: options.port !== null,
       cacheDir: join(app.getPath('userData'), 'vite-cache'),
     });
   } catch (error) {

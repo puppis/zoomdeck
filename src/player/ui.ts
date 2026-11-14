@@ -1819,7 +1819,7 @@ export class PlayerUI {
       ),
       el('section', { class: 'tablet' },
         el('h3', { text: 'Tablet' }),
-        el('p', { class: 'note', text: 'A tablet on the same network can show this deck and draw on it: open the code or address below on the tablet. It follows the presentation and cannot move it; strokes drawn on either device appear on both. The code admits a tablet for this session; a tablet you trust (from the prompt on the deck, or here) comes back on its own, without the code. Pairing needs the preview server started with --host (zoomdeck serve --host, or npm run dev -- --host).' }),
+        el('p', { class: 'note', text: 'A tablet on the same network can show this deck and draw on it: open the code or address below on the tablet. It follows the presentation and cannot move it; strokes drawn on either device appear on both. The code admits a tablet for this session; a tablet you trust (from the prompt on the deck, or here) comes back on its own, without the code. Pairing needs the preview server started with --host (zoomdeck serve --host, or npm run dev -- --host); the desktop app listens on the network by itself.' }),
         this._pairingStatus,
         this._padList,
         pairButton,
@@ -2135,7 +2135,7 @@ export class PlayerUI {
       return;
     }
     if (!info.lan || info.addresses.length === 0) {
-      this._pairingPanel.append(el('p', { class: 'note', text: 'The server listens on this computer only. Restart it with --host (zoomdeck serve --host, or npm run dev -- --host) so the tablet can reach it, then come back here.' }));
+      this._pairingPanel.append(el('p', { class: 'note', text: 'The server listens on this computer only. Restart it with --host (zoomdeck serve --host, or npm run dev -- --host; the desktop app listens on the network unless started with --local) so the tablet can reach it, then come back here.' }));
       return;
     }
     // One code per name or address: the computer's name on the network outlives a change of

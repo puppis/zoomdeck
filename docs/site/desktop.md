@@ -47,16 +47,18 @@ The command line takes the preview's flags:
 
 ```bash
 # macOS
-/Applications/Zoomdeck.app/Contents/MacOS/Zoomdeck path/to/deck.json --host --editor code
+/Applications/Zoomdeck.app/Contents/MacOS/Zoomdeck path/to/deck.json --editor code
 # Linux
 ./Zoomdeck.AppImage path/to/deck.json --port 8000
 # Windows
 Zoomdeck.exe path\to\deck.json --watch path\to\parts
 ```
 
-`--host` also listens on the network, so a tablet can pair from the player's settings; `--port`
-insists on a port (otherwise the app takes a free one, so it never collides with a preview started
-from a terminal); `--editor` names the editor that `E` and Alt + click open source lines with;
+The app listens on the network, so a [tablet](player.html#a-tablet-as-a-drawing-pad) can pair
+from the player's settings without any flag; `--local` keeps it to this computer. It takes port
+8765 when that is free, so a trusted tablet finds the deck again at the same address, and the
+next free port otherwise; `--port` insists on one. The first time, macOS may ask whether Zoomdeck
+may accept incoming connections: answer Allow for the tablet to reach it. `--editor` names the editor that `E` and Alt + click open source lines with;
 `--watch` adds folders whose changes reload the deck; `--scene` picks a named export of a module.
 The server's address is in the Help menu and on the terminal, and `zoomdeck jump` from an editor
 reaches it like any preview.
