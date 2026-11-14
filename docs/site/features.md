@@ -1,12 +1,12 @@
 ---
 title: A quick tour
-description: The main things Zoomdeck does, each shown live on this page with the markup that produces it. Click a deck to give it the focus, then use the arrows.
+description: The main things Zoomdeck does, each shown live with the markup that produces it.
 ---
 
-<a class="try" href="tour.html">The same tour as a deck: open the tour ↗</a>
+<a class="try" href="tour.html">The same tour as a deck ↗</a>
 
-Every deck on this page is the real player, embedded in the page. Click one to give it the
-focus, press → and ← to move, or use its buttons. The markup beside a deck is all it takes.
+Every deck on this page is the real player. Click one to give it the focus, then move with →
+and ← or with its buttons; the markup under a deck is all it takes to write it.
 
 ## A PDF, as it is
 

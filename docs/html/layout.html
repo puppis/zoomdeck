@@ -6,7 +6,7 @@
 <title>Layout and style · Zoomdeck</title>
 <meta name="description" content="Where things go and how they look: flow and positions, anchors, relative constraints, groups and style sheets.">
 <link rel="stylesheet" href="docs.css">
-<script type="module" src="zoomdeck/zoomdeck.js"></script>
+<script type="module" src="zoomdeck/zoomdeck.js?v=Dy-5dEq2"></script>
 <script>
 // The side columns stay hidden or shown as the reader last left them, before the page paints.
 try { for (const side of ['nav', 'outline']) if (localStorage.getItem('zoomdeck-docs-' + side) === 'hidden') document.documentElement.classList.add(side + '-hidden'); } catch (e) {}
@@ -96,8 +96,7 @@ So does this one, under it.
 [the origin]<span class="tk-attribute">{at=#origin.right anchor=left-baseline dx=</span><span class="tk-number">0.2</span><span class="tk-attribute"> font_size=</span><span class="tk-number">16</span><span class="tk-attribute"> color=GRAY}</span>
 
 <span class="tk-directive">[[rectangle:</span> <span class="tk-attribute">#r</span> <span class="tk-attribute">x=</span><span class="tk-number">-6</span> <span class="tk-attribute">y=</span><span class="tk-number">-3</span> <span class="tk-attribute">width=</span><span class="tk-number">3</span> <span class="tk-attribute">height=</span><span class="tk-number">1.4</span> <span class="tk-attribute">color=</span>BLUE<span class="tk-directive">]]</span>
-<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
-<zoom-deck without="camera record screen"><script type="text/markdown">
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#positions width=20}
 ## Flow and positions
 
@@ -129,8 +128,7 @@ So does this one, under it.
 <span class="tk-directive">[[circle:</span> <span class="tk-attribute">#c</span> <span class="tk-attribute">x=</span><span class="tk-number">8</span> <span class="tk-attribute">y=</span><span class="tk-number">2.5</span> <span class="tk-attribute">radius=</span><span class="tk-number">0.6</span> <span class="tk-attribute">color=</span>TEAL <span class="tk-attribute">anchor=</span>top-right<span class="tk-directive">]]</span>
 
 [Centred]<span class="tk-attribute">{#cc x=</span><span class="tk-number">0</span><span class="tk-attribute"> y=</span><span class="tk-number">-0.5</span><span class="tk-attribute"> anchor=center font_size=</span><span class="tk-number">30</span><span class="tk-attribute"> color=TEAL}</span>
-<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
-<zoom-deck without="camera record screen"><script type="text/markdown">
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#anchors width=20}
 ## Anchors
 
@@ -166,8 +164,7 @@ So does this one, under it.
 [My top left at its bottom right]<span class="tk-attribute">{#tl at=top-left:#ref.bottom-right dx=</span><span class="tk-number">0.2</span><span class="tk-attribute"> font_size=</span><span class="tk-number">16</span><span class="tk-attribute">}</span>
 
 <span class="tk-directive">[[dot:</span> <span class="tk-attribute">#d</span> <span class="tk-attribute">at=#ref.top</span> <span class="tk-attribute">color=</span>RED<span class="tk-directive">]]</span>
-<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
-<zoom-deck without="camera record screen"><script type="text/markdown">
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#relative width=20}
 ## Relative constraints
 
@@ -208,8 +205,7 @@ So does this one, under it.
 <span class="tk-directive">[[dot:</span> <span class="tk-attribute">#k1</span> <span class="tk-attribute">x=</span><span class="tk-number">0</span> <span class="tk-attribute">y=</span><span class="tk-number">0</span> <span class="tk-attribute">color=</span>BLUE<span class="tk-directive">]]</span>
 [a state]<span class="tk-attribute">{at=#k1.right anchor=left-baseline dx=</span><span class="tk-number">0.2</span><span class="tk-attribute">}</span>
 <span class="tk-directive">:::</span>
-<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
-<zoom-deck without="camera record screen"><script type="text/markdown">
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#groups width=20}
 ## Groups
 
@@ -246,8 +242,7 @@ Body text as usual. <span class="tk-attribute">{#body x=</span><span class="tk-n
 [Look here]<span class="tk-attribute">{#c .callout below:#body left-aligned:#body buff=</span><span class="tk-number">0.6</span><span class="tk-attribute">}</span>
 
 [A side remark in the footnote style]<span class="tk-attribute">{.footnote below:#c left-aligned:#c buff=</span><span class="tk-number">0.6</span><span class="tk-attribute">}</span>
-<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
-<zoom-deck without="camera record screen"><script type="text/markdown">
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><zoom-deck without="camera record screen"><script type="text/markdown">
 ::: styles
 heading: color=BLUE_E
 callout: color=ORANGE font_size=30

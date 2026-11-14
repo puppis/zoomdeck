@@ -208,7 +208,11 @@ function parseNotebook(name: string, json: string): Page {
       if (output.output_type === 'stream') return `<pre class="cell-stream">${escapeHtml(text(output.text))}</pre>`;
       if (output.output_type === 'error') return `<pre class="cell-error">${escapeHtml(`${output.ename ?? 'Error'}: ${output.evalue ?? ''}`)}</pre>`;
       const data = output.data ?? {};
-      if (data['text/html']) return `<div class="cell-output">${text(data['text/html'])}</div>`;
+      if (data['text/html']) {
+        // The helper's own loader tag goes: the page loads the player once, under its version.
+        const html = text(data['text/html']).replace(/<script type="module" src="[^"]*zoomdeck\.js"><\/script>\s*/g, '');
+        return `<div class="cell-output">${html}</div>`;
+      }
       if (data['image/png']) return `<div class="cell-output"><img alt="" src="data:image/png;base64,${text(data['image/png']).replace(/\n/g, '')}"></div>`;
       if (data['text/plain']) return `<pre class="cell-output">${escapeHtml(text(data['text/plain']))}</pre>`;
       return '';
@@ -235,6 +239,13 @@ function navMap(pages: Map<string, Page>): string {
   }).join('\n');
 }
 
+/**
+ * A version for the player's entry: the name of its main chunk, a content hash, so that the
+ * `?v=` on the entry changes with every build and a browser's cached copy (GitHub Pages keeps
+ * it ten minutes) never points at a chunk that the next deployment has replaced.
+ */
+let playerVersion = '';
+
 function layout(page: Page, pages: Map<string, Page>, order: string[]): string {
   const position = order.indexOf(page.name);
   const previous = position > 0 ? pages.get(order[position - 1]) : null;
@@ -258,7 +269,7 @@ function layout(page: Page, pages: Map<string, Page>, order: string[]): string {
     ? `<nav class="outline" aria-label="On this page"><h4>On this page</h4><ul>${page.headings.map((h) => `<li><a href="#${h.id}">${escapeHtml(h.text)}</a></li>`).join('')}</ul></nav>`
     : '';
   // Pages with live decks load the self-contained player; the chunks it needs follow on demand.
-  const player = body.includes('<zoom-deck') ? '\n<script type="module" src="zoomdeck/zoomdeck.js"></script>' : '';
+  const player = body.includes('<zoom-deck') ? `\n<script type="module" src="zoomdeck/zoomdeck.js${playerVersion ? `?v=${playerVersion}` : ''}"></script>` : '';
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -342,6 +353,10 @@ async function main(): Promise<void> {
   const order = NAV.flatMap((section) => section.pages);
   for (const name of sources.keys()) if (!order.includes(name)) throw new Error(`docs/site/${name}.${sources.get(name)} is not listed in NAV`);
   for (const name of order) if (!sources.has(name)) throw new Error(`NAV lists ${name} but docs/site/${name}.md (or .ipynb) is missing`);
+  if (await exists(standaloneDir)) {
+    const chunk = (await fs.readdir(standaloneDir)).find((file) => /^element-.*\.js$/.test(file));
+    playerVersion = chunk ? chunk.replace(/^element-|\.js$/g, '') : '';
+  }
   const pages = new Map<string, Page>();
   for (const name of order) {
     const kind = sources.get(name) as 'md' | 'ipynb';

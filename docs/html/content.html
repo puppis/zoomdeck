@@ -6,7 +6,7 @@
 <title>The content of a slide · Zoomdeck</title>
 <meta name="description" content="Prose and inline styling, headings and lists, formulas, listings, tables and images, one cell at a time.">
 <link rel="stylesheet" href="docs.css">
-<script type="module" src="zoomdeck/zoomdeck.js"></script>
+<script type="module" src="zoomdeck/zoomdeck.js?v=Dy-5dEq2"></script>
 <script>
 // The side columns stay hidden or shown as the reader last left them, before the page paints.
 try { for (const side of ['nav', 'outline']) if (localStorage.getItem('zoomdeck-docs-' + side) === 'hidden') document.documentElement.classList.add(side + '-hidden'); } catch (e) {}
@@ -90,8 +90,7 @@ Paragraphs wrap to the canvas. Use <span class="tk-bold">**bold**</span>, *itali
 [Coloured spans]<span class="tk-attribute">{color=ORANGE}</span> take palette names, [CSS colours]<span class="tk-attribute">{style=</span><span class="tk-string">&quot;color:#4ADE80&quot;</span><span class="tk-attribute">}</span> or hex values, and [nest <span class="tk-bold">**emphasis**</span> and <span class="tk-string">$\sqrt{2}$</span>]<span class="tk-attribute">{color=TEAL}</span>.
 
 A paragraph placed by hand sits where its attributes say. <span class="tk-attribute">{#aside x=</span><span class="tk-number">2</span><span class="tk-attribute"> y=</span><span class="tk-number">-2</span><span class="tk-attribute"> width=</span><span class="tk-number">7</span><span class="tk-attribute"> font_size=</span><span class="tk-number">20</span><span class="tk-attribute"> color=GRAY}</span>
-<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
-<zoom-deck without="camera record screen"><script type="text/markdown">
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#prose width=20}
 ## Prose
 
@@ -118,8 +117,7 @@ A paragraph placed by hand sits where its attributes say. {#aside x=2 y=-2 width
 
 First line.\\
 Second line after an explicit break.
-<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
-<zoom-deck without="camera record screen"><script type="text/markdown">
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#lists width=20}
 ## A heading
 
@@ -150,8 +148,7 @@ Inline math shares the baseline: <span class="tk-string">$\int_0^1 x^2\,dx = \tf
 <span class="tk-directive">::: </span><span class="tk-attribute">{.element #pythagoras x=</span><span class="tk-number">0.6</span><span class="tk-attribute"> y=</span><span class="tk-number">-2.6</span><span class="tk-attribute"> font_size=</span><span class="tk-number">34</span><span class="tk-attribute"> step=</span><span class="tk-number">1</span><span class="tk-attribute">}</span>
 <span class="tk-string">$$ \textcolor{Orange}{a}^2 + {\color{Cerulean} b^2} = c^2 $$</span>
 <span class="tk-directive">:::</span>
-<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
-<zoom-deck without="camera record screen"><script type="text/markdown">
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#math width=20}
 ## Formulas
 
@@ -181,8 +178,7 @@ def fib(n):
 <span class="tk-directive">```</span>
 
 The listing on the left is placed at <span class="tk-type">`x=-9 y=3`</span>, nine units wide; its language picks the colours. <span class="tk-attribute">{#note x=</span><span class="tk-number">1</span><span class="tk-attribute"> y=</span><span class="tk-number">3</span><span class="tk-attribute"> width=</span><span class="tk-number">8</span><span class="tk-attribute"> font_size=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
-<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
-<zoom-deck without="camera record screen"><script type="text/markdown">
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#code width=20}
 ## A listing
 
@@ -210,8 +206,7 @@ The listing on the left is placed at `x=-9 y=3`, nine units wide; its language p
 | South | 2.1 | <span class="tk-string">$\pi$</span> |
 | East | 1.4 | 1.9 |
 <span class="tk-directive">:::</span>
-<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
-<zoom-deck without="camera record screen"><script type="text/markdown">
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#tables width=20}
 ## A table
 
@@ -233,8 +228,7 @@ The listing on the left is placed at `x=-9 y=3`, nine units wide; its language p
 ![An orbit](<span class="tk-string">https://puppis.github.io/zoomdeck/live/orbit.png</span>)<span class="tk-attribute">{#orbit x=</span><span class="tk-number">-6</span><span class="tk-attribute"> y=</span><span class="tk-number">-0.6</span><span class="tk-attribute"> width=</span><span class="tk-number">5</span><span class="tk-attribute">}</span>
 
 Images are placed by their centre; <span class="tk-type">`width`</span> or <span class="tk-type">`height`</span> sizes them, the other follows the picture's proportions. <span class="tk-attribute">{#cap x=</span><span class="tk-number">0</span><span class="tk-attribute"> y=</span><span class="tk-number">1.2</span><span class="tk-attribute"> width=</span><span class="tk-number">8</span><span class="tk-attribute"> font_size=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
-<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
-<zoom-deck without="camera record screen"><script type="text/markdown">
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#images width=20}
 ## An image
 

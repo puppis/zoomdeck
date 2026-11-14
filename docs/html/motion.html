@@ -6,7 +6,7 @@
 <title>Motion and interaction · Zoomdeck</title>
 <meta name="description" content="What happens on each click: steps, automatic advancement, animations, effects, focus-only decorations and links.">
 <link rel="stylesheet" href="docs.css">
-<script type="module" src="zoomdeck/zoomdeck.js"></script>
+<script type="module" src="zoomdeck/zoomdeck.js?v=Dy-5dEq2"></script>
 <script>
 // The side columns stay hidden or shown as the reader last left them, before the page paints.
 try { for (const side of ['nav', 'outline']) if (localStorage.getItem('zoomdeck-docs-' + side) === 'hidden') document.documentElement.classList.add(side + '-hidden'); } catch (e) {}
@@ -96,8 +96,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 <span class="tk-directive">[[show:</span> <span class="tk-attribute">#hint</span> <span class="tk-attribute">step=</span><span class="tk-number">4</span><span class="tk-directive">]]</span>
 
 <span class="tk-directive">[[hide:</span> <span class="tk-attribute">#one</span> <span class="tk-attribute">step=</span><span class="tk-number">4</span><span class="tk-directive">]]</span>
-<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
-<zoom-deck without="camera record screen"><script type="text/markdown">
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#steps width=20}
 ## Steps
 
@@ -135,8 +134,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 [Never shown: step 4 is skipped]<span class="tk-attribute">{#four x=</span><span class="tk-number">-8</span><span class="tk-attribute"> y=</span><span class="tk-number">-3</span><span class="tk-attribute"> step=</span><span class="tk-number">4</span><span class="tk-attribute">}</span>
 
 [Step 5 follows step 3 directly]<span class="tk-attribute">{#five x=</span><span class="tk-number">-8</span><span class="tk-attribute"> y=</span><span class="tk-number">-4</span><span class="tk-attribute"> step=</span><span class="tk-number">5</span><span class="tk-attribute"> color=RED}</span>
-<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
-<zoom-deck without="camera record screen"><script type="text/markdown">
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#timing width=20}
 ## Timing
 
@@ -180,8 +178,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 <span class="tk-directive">[[transform:</span> <span class="tk-attribute">#before</span> -&gt; <span class="tk-attribute">#after</span>, <span class="tk-attribute">step=</span><span class="tk-number">4</span>, <span class="tk-attribute">run_time=</span><span class="tk-number">1</span><span class="tk-directive">]]</span>
 
 [Written by hand]<span class="tk-attribute">{#hand x=</span><span class="tk-number">0</span><span class="tk-attribute"> y=</span><span class="tk-number">-4</span><span class="tk-attribute"> font=Zeyada font_size=</span><span class="tk-number">44</span><span class="tk-attribute"> enter=write step=</span><span class="tk-number">5</span><span class="tk-attribute">}</span>
-<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
-<zoom-deck without="camera record screen"><script type="text/markdown">
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#animations width=20}
 ## Animations
 
@@ -225,8 +222,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 <span class="tk-type tk-bold">## </span><span class="tk-bold">Looking back</span>
 
 From here the parent's tinted paper and its caption are gone. <span class="tk-attribute">{font_size=</span><span class="tk-number">22</span><span class="tk-attribute">}</span>
-<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
-<zoom-deck without="camera record screen"><script type="text/markdown">
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#focus width=20}
 ## Focus-only decorations
 
@@ -270,8 +266,7 @@ From here the parent's tinted paper and its caption are gone. {font_size=22}
 <span class="tk-type tk-bold">## </span><span class="tk-bold">The second slide</span>
 
 [Back to the first]<span class="tk-attribute">{#back x=</span><span class="tk-number">-7</span><span class="tk-attribute"> y=</span><span class="tk-number">0</span><span class="tk-attribute"> font_size=</span><span class="tk-number">28</span><span class="tk-attribute"> color=BLUE_E href=#slide=links}</span>
-<span class="tk-directive">:::</span></code></pre><div class="cell-output"><script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
-<zoom-deck without="camera record screen"><script type="text/markdown">
+<span class="tk-directive">:::</span></code></pre><div class="cell-output"><zoom-deck without="camera record screen"><script type="text/markdown">
 ::: slide {#links width=20}
 ## Links
 
