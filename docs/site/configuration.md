@@ -79,7 +79,7 @@ description: Every key of deck.json, the layout and presenter options, and the c
 
 ```bash
 node bin/zoomdeck.mjs serve <deck> [--port N] [--host] [--no-open] [--editor NAME] [--scene Name] [--watch PATH]...
-node bin/zoomdeck.mjs build <deck> -o <folder> [--one-file] [--show-outline] [--scene Name]
+node bin/zoomdeck.mjs build <deck> -o <folder> [--one-file] [--show-outline] [--without-notes] [--scene Name]
 node bin/zoomdeck.mjs jump <file> <line>
 ```
 
@@ -89,8 +89,8 @@ the network for a tablet, and `--editor` names the editor (`emacs`, `sublime`, `
 `jetbrains`, … or a command with `{file}` and `{line}`; `ZOOMDECK_EDITOR` is the default) that
 the player's E key and Alt + click open source lines with. `jump` moves the running preview to
 the stop of a source line. `build` writes `index.html`, `assets/` and `deck/` into the folder, or
-`offline.html` with `--one-file`. Code decks in `--one-file` mode embed the code but not images
-they load themselves.
+`offline.html` with `--one-file`; `--without-notes` leaves the presenter's `::: notes` out of
+either. Code decks in `--one-file` mode embed the code but not images they load themselves.
 
 ## Development page
 

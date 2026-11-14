@@ -51,6 +51,9 @@ every construct of this page live, each next to the listing that produced it; op
   `transition=zoom` restores the animation for one slide when `presenter.transition` is `cut` for
   the whole deck, and any other name is a camera transition of the deck's own.
 - Includes and subslides accept `.class` styles, `anchor=`, `at=` and `dx`/`dy` like elements.
+- `::: notes … :::` inside a slide, or `::: notes {step=N}`, holds the presenter's notes in
+  Markdown; they are shown on the companion tablet under the picture of the current stop, never
+  on the canvas, and `zoomdeck build --without-notes` leaves them out of an export.
 - Includes without `step` are visited in source order after all numbered steps of their parent;
   `step=N` interleaves a visit with the parent's fragments. On return the parent resumes with its
   previous state, and children keep their final appearance.

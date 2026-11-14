@@ -50,7 +50,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
       </section>
       <section>
         <h4>Writing slides</h4>
-        <ul><li><a href="first-deck.html">Your first deck, stage by stage</a></li><li><a href="content.html">The content of a slide</a></li><li><a href="documents.html">PDFs, flat decks and forests</a></li><li><a href="slides.html" aria-current="page">Slides and the forest</a><ul class="subsections"><li><a href="#slide-containers">Slide containers</a></li><li><a href="#canvas-size">Canvas size</a></li><li><a href="#includes">Includes</a></li><li><a href="#visit-order">Visit order</a></li><li><a href="#flags">Flags</a></li><li><a href="#cuts-instead-of-zooms">Cuts instead of zooms</a></li><li><a href="#code-authored-children">Code-authored children</a></li><li><a href="#splitting-a-deck-into-files">Splitting a deck into files</a></li></ul></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
+        <ul><li><a href="first-deck.html">Your first deck, stage by stage</a></li><li><a href="content.html">The content of a slide</a></li><li><a href="documents.html">PDFs, flat decks and forests</a></li><li><a href="slides.html" aria-current="page">Slides and the forest</a><ul class="subsections"><li><a href="#slide-containers">Slide containers</a></li><li><a href="#canvas-size">Canvas size</a></li><li><a href="#includes">Includes</a></li><li><a href="#visit-order">Visit order</a></li><li><a href="#flags">Flags</a></li><li><a href="#cuts-instead-of-zooms">Cuts instead of zooms</a></li><li><a href="#presenter-notes">Presenter notes</a></li><li><a href="#code-authored-children">Code-authored children</a></li><li><a href="#splitting-a-deck-into-files">Splitting a deck into files</a></li></ul></li><li><a href="text.html">Text</a></li><li><a href="math.html">Mathematics</a></li><li><a href="images.html">Images and video</a></li><li><a href="code.html">Code listings</a></li><li><a href="tables-charts.html">Tables and charts</a></li></ul>
       </section>
       <section>
         <h4>Diagrams</h4>
@@ -177,6 +177,26 @@ destination's business: back to the parent, it follows the parent's setting. To 
 deck with cuts, set <code>&quot;presenter&quot;: { &quot;transition&quot;: &quot;cut&quot; }</code> in deck.json; individual slides can
 then ask for <code>transition=zoom</code> again, and a module of the deck's own by name
 (<a href="extending.html#camera-transitions">Extending a deck</a>).</p>
+<h2 id="presenter-notes">Presenter notes<a class="anchor" href="#presenter-notes" aria-label="Link to this section">#</a></h2><pre><code class="language-markdown"><span class="tk-directive">::: slide </span><span class="tk-attribute">{#results width=</span><span class="tk-number">20</span><span class="tk-attribute">}</span>
+<span class="tk-type tk-bold">## </span><span class="tk-bold">Results</span>
+
+<span class="tk-directive">::: notes</span>
+Thank the team first. The figure is from the March run; the April one looked the same.
+<span class="tk-directive">:::</span>
+
+[Accuracy went up by 12 %]<span class="tk-attribute">{#gain x=</span><span class="tk-number">-9</span><span class="tk-attribute"> y=</span><span class="tk-number">1</span><span class="tk-attribute"> step=</span><span class="tk-number">1</span><span class="tk-attribute">}</span>
+
+<span class="tk-directive">::: notes </span><span class="tk-attribute">{step=</span><span class="tk-number">1</span><span class="tk-attribute">}</span>
+*Twelve* on the held-out set; say it is 9 on the public one if asked.
+<span class="tk-directive">:::</span>
+<span class="tk-directive">:::</span></code></pre>
+<p>A <code>::: notes</code> block inside a slide holds the presenter's notes for it, in ordinary Markdown:
+emphasis, lists, code, links. <code>::: notes {step=N}</code> ties a block to one step. The notes are never
+laid out on the canvas, printed, or shown to the audience: they appear on the
+<a href="player.html#a-tablet-as-a-drawing-pad">companion tablet</a>, under the picture of the slide,
+whenever a stop settles, the slide's own notes first and the current step's after them. Formulas
+in notes stay as written. The notes travel with the deck, so a deck handed to the audience is
+exported with <code>--without-notes</code>, which leaves them out (<a href="exporting.html#options">Exporting a deck</a>).</p>
 <h2 id="code-authored-children">Code-authored children<a class="anchor" href="#code-authored-children" aria-label="Link to this section">#</a></h2><pre><code class="language-markdown"><span class="tk-directive">[[subslide:</span> Orbit <span class="tk-attribute">x=</span><span class="tk-number">0</span> <span class="tk-attribute">y=</span><span class="tk-number">-3</span> <span class="tk-attribute">width=</span><span class="tk-number">4</span> <span class="tk-attribute">step=</span><span class="tk-number">5</span><span class="tk-directive">]]</span></code></pre>
 <p><code>subslide</code> with a class name instead of a <code>#id</code> instantiates a <code>Slide</code> subclass exported by the
 module named by <code>classes</code> in <code>deck.json</code>; see <a href="code-slides.html">Code-authored slides</a>. It takes
@@ -207,7 +227,7 @@ preview server reloads when any of them changes.</p>
       <a class="next" href="text.html">Text →</a>
     </footer>
   </main>
-  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#slide-containers">Slide containers</a></li><li><a href="#canvas-size">Canvas size</a></li><li><a href="#includes">Includes</a></li><li><a href="#visit-order">Visit order</a></li><li><a href="#flags">Flags</a></li><li><a href="#cuts-instead-of-zooms">Cuts instead of zooms</a></li><li><a href="#code-authored-children">Code-authored children</a></li><li><a href="#splitting-a-deck-into-files">Splitting a deck into files</a></li></ul></nav>
+  <nav class="outline" aria-label="On this page"><h4>On this page</h4><ul><li><a href="#slide-containers">Slide containers</a></li><li><a href="#canvas-size">Canvas size</a></li><li><a href="#includes">Includes</a></li><li><a href="#visit-order">Visit order</a></li><li><a href="#flags">Flags</a></li><li><a href="#cuts-instead-of-zooms">Cuts instead of zooms</a></li><li><a href="#presenter-notes">Presenter notes</a></li><li><a href="#code-authored-children">Code-authored children</a></li><li><a href="#splitting-a-deck-into-files">Splitting a deck into files</a></li></ul></nav>
 </div>
 </body>
 </html>

@@ -37,7 +37,7 @@ export type PadMessage =
   | { type: 'admit'; to: string; ok: boolean; trusted?: boolean }
   /** A pad leaving (the page hidden or closed). */
   | { type: 'bye' }
-  | { type: 'state'; clip: number; board: boolean; pan: { x: number; y: number }; aspect: number; background: string; foreground: string }
+  | { type: 'state'; clip: number; board: boolean; pan: { x: number; y: number }; aspect: number; background: string; foreground: string; notes?: string }
   /** A picture of the presenter's current view (a JPEG data URL), sent when a stop settles. */
   | { type: 'frame'; image: string; clip: number }
   | { type: 'board'; on: boolean; pan: { x: number; y: number } }

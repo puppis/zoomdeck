@@ -16,6 +16,7 @@ import {
 import {
   DEFAULT_PEN_STYLE, InkSurface, PEN_PRESETS, PEN_PRESET_LABELS, newStrokeId, type InkSample, type InkStroke, type InkTool, type PenPreset,
 } from './ink';
+import MarkdownIt from 'markdown-it';
 import { PadLink, fetchPairingInfo, padCode, padLinkAvailable, padUrl, type InkOp, type InkSurfaceName, type PadDevice, type PadMessage } from './pad';
 import { PEN_COLORS, Swatches } from './swatches';
 import { Recorder, initialEvents, type CapturedMedia } from './recorder';
@@ -1883,6 +1884,13 @@ export class PlayerUI {
     this._pairingPanel = el('div', { class: 'pairing' });
     const pairButton = el('button', { text: 'Show the pairing code' });
     pairButton.addEventListener('click', () => void this._showPairing());
+    this._padNotesToggle = el('input', { type: 'checkbox' });
+    this._padNotesToggle.addEventListener('change', () => {
+      this._settings.pads.notes = this._padNotesToggle.checked;
+      saveSettings(this._settings);
+      this._sendState();
+    });
+    const padNotesRow = el('p', { class: 'note' }, el('label', {}, this._padNotesToggle, ' Show the presenter notes (::: notes blocks of the deck) on the tablet, under the picture'));
 
     dialog.append(
       el('header', {}, el('h2', { text: 'Settings' }), close),
@@ -1913,6 +1921,7 @@ export class PlayerUI {
         this._padList,
         pairButton,
         this._pairingPanel,
+        padNotesRow,
       ),
       el('section', {},
         el('h3', { text: 'Keyboard' }),
@@ -1942,6 +1951,7 @@ export class PlayerUI {
   private _micSelect!: HTMLSelectElement;
   private _cameraSelect!: HTMLSelectElement;
   private _mirrorToggle!: HTMLInputElement;
+  private _padNotesToggle!: HTMLInputElement;
   private _screenAutoToggle!: HTMLInputElement;
   private _antialiasToggle!: HTMLInputElement;
   private _resolutionSelect!: HTMLSelectElement;
@@ -2175,6 +2185,7 @@ export class PlayerUI {
 
   private _syncSettingsForm(): void {
     this._reverseToggle.checked = this._settings.reversePlayback ?? this._player?.reversePlayback ?? this._deck.presenter.reversePlayback;
+    this._padNotesToggle.checked = this._settings.pads.notes;
     const recording = this._settings.recording;
     this._micSelect.value = recording.microphone ?? '';
     this._cameraSelect.value = recording.camera ?? '';
@@ -2850,7 +2861,17 @@ export class PlayerUI {
       aspect: this._deck.viewport.width / this._deck.viewport.height,
       background: this._deck.background,
       foreground: this._deck.foreground,
+      notes: this._settings.pads.notes ? this._notesHtml(this._player.clips[this._player.index]?.notes ?? '') : '',
     });
+  }
+
+  private _notesMarkdown: MarkdownIt | null = null;
+
+  /** The presenter's notes of a stop, Markdown rendered for the tablet; formulas stay as written. */
+  private _notesHtml(markdown: string): string {
+    if (!markdown.trim()) return '';
+    this._notesMarkdown ??= new MarkdownIt('commonmark', { html: false, linkify: false });
+    return this._notesMarkdown.render(markdown);
   }
 
   private _onPadMessage(message: PadMessage, from: string): void {

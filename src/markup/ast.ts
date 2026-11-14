@@ -167,6 +167,15 @@ export interface AnimationStep {
 }
 
 /** A named slide definition; `placeholder` marks synthesized missing includes. */
+/** A `::: notes` block of a slide: the presenter's notes for the slide, or for one of its steps. */
+export interface NotesSpec {
+  /** The step the notes belong to; null for the slide as a whole. */
+  step: number | null;
+  /** The notes, as Markdown. */
+  markdown: string;
+  line: number;
+}
+
 export class SlideSpec {
   constructor(
     readonly id: string,
@@ -174,7 +183,13 @@ export class SlideSpec {
     readonly attributes: Attributes = {},
     readonly line = 1,
     readonly placeholder = false,
+    readonly notes: NotesSpec[] = [],
   ) {}
+
+  /** The presenter's notes shown at a stop: the slide's own, then the step's; empty when there are none. */
+  notesFor(step: number | null): string {
+    return this.notes.filter((block) => block.step === null || block.step === step).map((block) => block.markdown.trim()).filter(Boolean).join('\n\n');
+  }
 }
 
 /** Named attribute sets applied through roles (`heading`, `body`, …) and `.class` tokens. */

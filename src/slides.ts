@@ -146,6 +146,14 @@ export class Slide {
   returnToParent: boolean | null;
   /** Never a stop of its own; see `SlideOptions.hidden`. */
   hidden: boolean;
+
+  /**
+   * The presenter's notes for a stop of this slide, as Markdown: for the whole slide (`null`,
+   * the entry and the return) or for one of its steps. Shown on the companion tablet only.
+   */
+  stopNotes(_step: number | null): string {
+    return '';
+  }
   onlyThis: boolean;
   startHere: boolean;
   transition: TransitionMode | null;

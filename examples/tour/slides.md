@@ -653,6 +653,14 @@ Every key and gesture can be changed in the settings (,), which also hold the pe
 5. **Whiteboard:** press W here, or the button on the tablet; draw, scroll with two fingers or the arrows; undo touches only the board. {x=0.6 width=9 font_size=18}
 6. **Hover** the pencil above the glass: a red dot follows it on this screen. {x=0.6 width=9 font_size=18}
 7. **Erase** a stroke by rubbing it with a fingertip; undo brings it back. {x=0.6 width=9 font_size=18}
+8. **Notes:** the slide's `::: notes` appear on the tablet only. {x=0.6 width=9 font_size=18}
+
+::: notes
+These are the presenter's notes of the tablet chapter: written in a `::: notes` block of the slide, shown here and nowhere else.
+
+- The audience screen never shows them, nor does a printout.
+- `zoomdeck build --without-notes` leaves them out of an export handed to the audience.
+:::
 
 Without a tablet the same checks work with a mouse, whose strokes take their width from the speed of the hand, or with a graphics tablet plugged into the computer, which draws with pressure directly. {x=-9.35 y=-4.5 width=19 font_size=18 color=GRAY}
 :::

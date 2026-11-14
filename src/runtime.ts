@@ -153,6 +153,7 @@ export interface StopOptions {
   loop?: boolean;
   /** Advance automatically when the following clip finishes. */
   autoNext?: boolean;
+  /** The presenter's notes for the following clip, as Markdown, shown on the companion tablet once it has played. */
   notes?: string;
   playbackRate?: number;
 }
@@ -1099,6 +1100,8 @@ export class Presenter {
     this.focused = ctx;
     const startEntry = ctx.slide === this.startSlide && !returning;
     if (startEntry || (returning ? this.config.pauseOnReturn : this.config.pauseOnEntry)) {
+      // The clip ending at this stop shows the slide's own notes on the tablet.
+      if (!this.history.openClip.notes) this.history.openClip.notes = ctx.slide.stopNotes(null);
       this.boundary(ctx, 'program');
     }
   }

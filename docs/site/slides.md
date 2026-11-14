@@ -105,6 +105,32 @@ deck with cuts, set `"presenter": { "transition": "cut" }` in deck.json; individ
 then ask for `transition=zoom` again, and a module of the deck's own by name
 ([Extending a deck](extending.html#camera-transitions)).
 
+## Presenter notes
+
+```markdown
+::: slide {#results width=20}
+## Results
+
+::: notes
+Thank the team first. The figure is from the March run; the April one looked the same.
+:::
+
+[Accuracy went up by 12 %]{#gain x=-9 y=1 step=1}
+
+::: notes {step=1}
+*Twelve* on the held-out set; say it is 9 on the public one if asked.
+:::
+:::
+```
+
+A `::: notes` block inside a slide holds the presenter's notes for it, in ordinary Markdown:
+emphasis, lists, code, links. `::: notes {step=N}` ties a block to one step. The notes are never
+laid out on the canvas, printed, or shown to the audience: they appear on the
+[companion tablet](player.html#a-tablet-as-a-drawing-pad), under the picture of the slide,
+whenever a stop settles, the slide's own notes first and the current step's after them. Formulas
+in notes stay as written. The notes travel with the deck, so a deck handed to the audience is
+exported with `--without-notes`, which leaves them out ([Exporting a deck](exporting.html#options)).
+
 ## Code-authored children
 
 ```markdown

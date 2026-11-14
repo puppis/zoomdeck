@@ -7,6 +7,7 @@ import { LINK_TARGET } from '../links';
 import type StateInline from 'markdown-it/lib/rules_inline/state_inline.mjs';
 import type Token from 'markdown-it/lib/token.mjs';
 import {
+  type NotesSpec,
   ALIGNMENTS, ANIMATE_PROPS, ATTACHMENTS, BASELINE_ANCHORS, BRACE_SIDES, CONNECTIONS, CONTAINER, DIRECTIVE, EFFECT_NAMES, ELEMENT_ATTRS,
   CUSTOM_DIRECTIVE, LIBRARY_NAME,
   ENCLOSURES, ENTER_STYLES, EXIT_STYLES, FILL_ATTRS, GEOMETRY, GROUP_ANCHORS, GROUP_ATTRS, HORIZONTAL_POSITION, ICON_KINDS, IDENTIFIER,
@@ -192,13 +193,46 @@ export class MarkupParser {
       const attrs = parseAttributes(opening[1].slice(6), index + 1);
       if (!('id' in attrs)) throw new MarkupError('Every slide requires an explicit #id', index + 1);
       const end = MarkupParser._containerEnd(lines, index);
-      const items = this._body(lines.slice(index + 1, end), index + 2);
-      slides.push(new SlideSpec(attrs.id, items, attrs, index + 1));
+      const body = MarkupParser._takeNotes(lines.slice(index + 1, end), index + 2);
+      const items = this._body(body.lines, index + 2);
+      slides.push(new SlideSpec(attrs.id, items, attrs, index + 1, false, body.notes));
       index = end + 1;
     }
     if (!slides.length) throw new MarkupError('The document contains no slides');
     const document = new MarkupDocument(slides, (options.root ?? '').replace(/^#/, ''), options.basePath ?? '', styles);
     return new ASTTransformer().validate(document);
+  }
+
+  /**
+   * Take the `::: notes` blocks out of a slide's lines: the presenter's notes, for the slide
+   * (`::: notes`) or for one step (`::: notes {step=2}`), kept apart from the content. Their
+   * lines stay blank, so the lines after them keep their numbers.
+   */
+  private static _takeNotes(lines: string[], firstLine: number): { lines: string[]; notes: NotesSpec[] } {
+    const notes: NotesSpec[] = [];
+    const kept = [...lines];
+    let fence: string | null = null;
+    for (let index = 0; index < kept.length; index += 1) {
+      const code = /^\s*(`{3,}|~{3,})/.exec(kept[index]);
+      if (code) {
+        if (fence === null) fence = code[1];
+        else if (code[1][0] === fence[0] && code[1].length >= fence.length) fence = null;
+        continue;
+      }
+      if (fence !== null) continue;
+      const opening = CONTAINER.exec(kept[index]);
+      const block = opening ? /^notes(?:\s+(\{.*\}))?\s*$/.exec(opening[1]) : null;
+      if (!block) continue;
+      const line = firstLine + index;
+      const attrs = block[1] ? parseAttributes(block[1], line) : {};
+      for (const key of Object.keys(attrs)) if (key !== 'step') throw new MarkupError(`Notes take step=N and nothing else, not ${key}=`, line);
+      const step = 'step' in attrs ? stepValue(attrs, 'step', line) : null;
+      const end = MarkupParser._containerEnd(kept, index);
+      notes.push({ step, markdown: kept.slice(index + 1, end).join('\n'), line });
+      for (let blank = index; blank <= end; blank += 1) kept[blank] = '';
+      index = end;
+    }
+    return { lines: kept, notes };
   }
 
   /** Parse `name: attributes` lines of a `::: styles` block. */

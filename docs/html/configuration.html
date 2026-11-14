@@ -300,7 +300,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
 </tbody>
 </table>
 <h2 id="command-line">Command line<a class="anchor" href="#command-line" aria-label="Link to this section">#</a></h2><pre><code class="language-bash"><span class="tk-keyword">node</span> bin/zoomdeck.mjs serve &lt;deck&gt; [--port N] [--host] [--no-open] [--editor NAME] [--scene Name] [--watch PATH]...
-<span class="tk-keyword">node</span> bin/zoomdeck.mjs build &lt;deck&gt; <span class="tk-attribute">-o</span> &lt;folder&gt; [--one-file] [--show-outline] [--scene Name]
+<span class="tk-keyword">node</span> bin/zoomdeck.mjs build &lt;deck&gt; <span class="tk-attribute">-o</span> &lt;folder&gt; [--one-file] [--show-outline] [--without-notes] [--scene Name]
 <span class="tk-keyword">node</span> bin/zoomdeck.mjs jump &lt;file&gt; &lt;line&gt;</code></pre>
 <p><code>&lt;deck&gt;</code> is a <code>deck.json</code>, a Markdown file (default settings) or a JS/TS module exporting a deck
 definition. <code>serve</code> watches the deck's folder and any <code>--watch</code> path, <code>--host</code> also listens on
@@ -308,8 +308,8 @@ the network for a tablet, and <code>--editor</code> names the editor (<code>emac
 <code>jetbrains</code>, … or a command with <code>{file}</code> and <code>{line}</code>; <code>ZOOMDECK_EDITOR</code> is the default) that
 the player's E key and Alt + click open source lines with. <code>jump</code> moves the running preview to
 the stop of a source line. <code>build</code> writes <code>index.html</code>, <code>assets/</code> and <code>deck/</code> into the folder, or
-<code>offline.html</code> with <code>--one-file</code>. Code decks in <code>--one-file</code> mode embed the code but not images
-they load themselves.</p>
+<code>offline.html</code> with <code>--one-file</code>; <code>--without-notes</code> leaves the presenter's <code>::: notes</code> out of
+either. Code decks in <code>--one-file</code> mode embed the code but not images they load themselves.</p>
 <h2 id="development-page">Development page<a class="anchor" href="#development-page" aria-label="Link to this section">#</a></h2><p><code>npm run dev</code> serves <code>index.html</code>, which reads <code>?deck=</code> (a <code>deck.json</code>, a Markdown file or a
 module path, also <code>/@fs/absolute/path</code>) and <code>&amp;scene=</code> for named exports, and opens the tour when
 <code>deck</code> is omitted. Files under <code>examples/</code> trigger a reload on change, and <code>zoomdeck jump</code> and

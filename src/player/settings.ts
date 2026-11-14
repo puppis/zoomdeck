@@ -241,12 +241,15 @@ export interface TrustedPad {
 
 export interface PadSettings {
   trusted: TrustedPad[];
+  /** Send the presenter's notes of the current stop to the tablets; on by default. */
+  notes: boolean;
 }
 
 export function sanitizePads(value: unknown): PadSettings {
-  const result: PadSettings = { trusted: [] };
+  const result: PadSettings = { trusted: [], notes: true };
   if (!value || typeof value !== 'object') return result;
-  const saved = value as { trusted?: unknown };
+  const saved = value as { trusted?: unknown; notes?: unknown };
+  if (typeof saved.notes === 'boolean') result.notes = saved.notes;
   if (!Array.isArray(saved.trusted)) return result;
   for (const item of saved.trusted as Array<Partial<TrustedPad>>) {
     if (!item || typeof item.id !== 'string' || !item.id || result.trusted.some((known) => known.id === item.id)) continue;
@@ -342,7 +345,7 @@ export function defaultSettings(): PlayerSettings {
     pen: { ...DEFAULT_PEN_STYLE },
     tipSize: DEFAULT_TIP_SIZE,
     recording: { ...DEFAULT_RECORDING },
-    pads: { trusted: [] },
+    pads: { trusted: [], notes: true },
   };
 }
 

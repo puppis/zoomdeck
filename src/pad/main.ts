@@ -40,6 +40,9 @@ class Pad {
   private readonly slideInk: InkSurface;
   private readonly boardInk: InkSurface;
   private readonly boardButton: HTMLButtonElement;
+  private readonly notesButton: HTMLButtonElement;
+  private readonly notes: HTMLElement;
+  private notesOn = true;
   private readonly toolSelect: HTMLSelectElement;
   private readonly colors: Swatches;
   private readonly sizeSelect: HTMLSelectElement;
@@ -75,6 +78,8 @@ class Pad {
     this.frame = el('div', { class: 'frame' }, this.image, this.board, this.waiting);
     this.frame.append(this.slideSvg, this.boardSvg);
     const view = el('div', { class: 'view' }, this.frame);
+    // The presenter's notes for the current stop, under the picture; the presenter sends them as HTML it rendered itself.
+    this.notes = el('div', { class: 'notes', hidden: '' });
 
     this.toolSelect = el('select', { 'aria-label': 'Tool' });
     for (const [value, label] of [['pen', 'Pen'], ['highlighter', 'Highlighter']]) this.toolSelect.append(el('option', { value, text: label }));
@@ -89,11 +94,17 @@ class Pad {
     const redo = el('button', { text: 'Redo' });
     const clear = el('button', { text: 'Clear' });
     this.boardButton = el('button', { text: 'Whiteboard', 'aria-pressed': 'false' });
+    this.notesButton = el('button', { text: 'Notes', 'aria-pressed': 'true', hidden: '' });
     this.status = el('span', { class: 'status', text: padLinkAvailable() ? 'Connecting…' : 'Not served by the preview server' });
     const footer = el('footer', {},
       el('label', {}, 'Tool ', this.toolSelect), el('label', {}, 'Color ', this.colors.element), el('label', {}, 'Tip ', this.sizeSelect),
-      undo, redo, clear, this.boardButton, this.status);
-    document.body.append(el('div', { class: 'pad' }, view, footer));
+      undo, redo, clear, this.boardButton, this.notesButton, this.status);
+    document.body.append(el('div', { class: 'pad' }, view, this.notes, footer));
+    this.notesButton.addEventListener('click', () => {
+      this.notesOn = !this.notesOn;
+      this.notesButton.setAttribute('aria-pressed', String(this.notesOn));
+      this.showNotes();
+    });
 
     undo.addEventListener('click', () => this.undo());
     redo.addEventListener('click', () => this.redo());
@@ -122,6 +133,22 @@ class Pad {
   /** Announce this tablet: its identity, and the pairing code when it was opened from one. */
   private hello(): void {
     this.link.send({ type: 'hello', role: 'pad', device: this.device, ...(this.code ? { code: this.code } : {}) });
+  }
+
+  // --- notes ----------------------------------------------------------
+
+  /** The notes of the current stop, as HTML the presenter rendered; empty hides the panel and its button. */
+  private setNotes(html: string): void {
+    this.notes.innerHTML = html;
+    this.notesButton.hidden = !html;
+    this.showNotes();
+  }
+
+  private showNotes(): void {
+    const shown = this.notesOn && Boolean(this.notes.innerHTML);
+    if (this.notes.hidden === !shown) return;
+    this.notes.hidden = !shown;
+    this.layout();
   }
 
   // --- geometry -------------------------------------------------------
@@ -204,6 +231,7 @@ class Pad {
         this.foreground = message.foreground;
         this.colors.setForeground(message.foreground);
         this.applyBoard(message.board, message.pan);
+        this.setNotes(message.notes ?? '');
         break;
       case 'frame':
         if (!this.admitted) break;

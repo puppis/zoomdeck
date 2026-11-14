@@ -19,6 +19,7 @@ links to the page with the explanations and examples.
 | `[[import: path.md]]` | splices a Markdown file in, between slides or inside one |
 | `[[snippet: name key=value …]]`, `::: snippet name … :::` | expands markup defined once, in a block or in `snippets/name.md`, filling its `{{key}}` placeholders ([Extending a deck](extending.html#snippets)) |
 | `::: styles … :::` | style definitions, `name: attributes` per line, at the top of the file |
+| `::: notes {step=N} … :::` | the presenter's notes of a slide, or of one step, shown on the companion tablet only ([Presenter notes](slides.html#presenter-notes)) |
 | `::: {.element attrs} … :::` | attributes for one paragraph, heading, image, formula, table or listing |
 | `::: {.group #id attrs} … :::` | a group of elements in local coordinates |
 | `<!-- … -->` | discarded |

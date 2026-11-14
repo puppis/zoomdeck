@@ -28,6 +28,16 @@ html, body {
 .frame svg path.highlighter { fill-opacity: .4; }
 .frame.board-on svg.slide { display: none; }
 .frame:not(.board-on) svg.boardink { display: none; }
+.notes {
+  max-height: 32%; overflow-y: auto; padding: 10px 16px; font-size: 17px; line-height: 1.45;
+  border-top: 1px solid var(--border); background: var(--background); touch-action: pan-y;
+}
+.notes[hidden] { display: none; }
+.notes > :first-child { margin-top: 0; }
+.notes > :last-child { margin-bottom: 0; }
+.notes p, .notes ul, .notes ol { margin: 0 0 .5em; }
+.notes code { font-family: ui-monospace, Menlo, monospace; font-size: .92em; background: var(--hover); padding: 0 .25em; border-radius: 4px; }
+.notes a { color: inherit; }
 .waiting {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   text-align: center; padding: 24px; color: var(--foreground); opacity: .7; pointer-events: none;

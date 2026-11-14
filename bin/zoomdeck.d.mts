@@ -1,5 +1,6 @@
 /** Types of the command's module, for the tests and the desktop app. */
 export function parseArgs(argv: string[]): Record<string, unknown>;
+export function stripNotes(text: string): string;
 export function resolveDeckPath(path: string): string;
 export function deckKind(deckPath: string): 'json' | 'markdown' | 'pdf' | 'module' | null;
 export const LIBRARY_KINDS: ReadonlyArray<{ key: string; folder: string | null; modules: boolean }>;

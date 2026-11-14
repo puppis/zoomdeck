@@ -98,6 +98,18 @@ export class MarkupSlide extends Slide {
     return this.renderer.layout.animationTime;
   }
 
+  /** The `::: notes` of the slide, and of the step, for the tablet. */
+  override stopNotes(step: number | null): string {
+    return this.spec.notesFor(step);
+  }
+
+  /** A stop of this slide's program, whose clip shows the notes of `step` on the tablet. */
+  private _stop(ctx: SlideContext, step: number): void {
+    ctx.stop();
+    const clip = ctx.completedStop();
+    if (!clip.notes) clip.notes = this.stopNotes(step);
+  }
+
   /** Lay out content and component previews once in this logical canvas. */
   override async build(ctx: SlideContext): Promise<void> {
     const layout = this.renderer.layout;
@@ -375,12 +387,12 @@ export class MarkupSlide extends Slide {
     const looping: Animation[] = [...movies.filter((movie) => movie.plays === 0), ...this._tremblers(ctx, step)];
     if (finite.length) await ctx.play(...finite);
     if (looping.length) {
-      if (reveal || finite.length) ctx.stop();
+      if (reveal || finite.length) this._stop(ctx, step);
       // The reveal (or the entry stop before the slide's program) runs straight into the loop.
       MarkupSlide._autoAdvance(ctx);
       await ctx.play(...looping);
     }
-    ctx.stop();
+    this._stop(ctx, step);
     if (looping.length) ctx.completedStop().loop = true;
   }
 
@@ -390,7 +402,7 @@ export class MarkupSlide extends Slide {
     if (!tremblers.length) return;
     MarkupSlide._autoAdvance(ctx);
     await ctx.play(...tremblers);
-    ctx.stop();
+    this._stop(ctx, step);
     ctx.completedStop().loop = true;
   }
 
@@ -399,7 +411,7 @@ export class MarkupSlide extends Slide {
     const presenter = ctx.presenter;
     // Every stop remembers the line it shows: the slide's own until a numbered step names another.
     ctx.source(this.source);
-    if (!presenter.config.pauseOnEntry) ctx.stop();
+    if (!presenter.config.pauseOnEntry) this._stop(ctx, 0);
     const entry = this.animationSteps.find((step) => step.number === 0) ?? null;
     if (entry) {
       if (entry.autoNext) MarkupSlide._autoAdvance(ctx);
@@ -435,7 +447,7 @@ export class MarkupSlide extends Slide {
         const childCtx = presenter.contexts.get(child) as SlideContext;
         eventSkipped = childCtx.phase === 'skipped';
         if (!childCtx.returnSkipped) {
-          if (!presenter.config.pauseOnReturn) ctx.stop();
+          if (!presenter.config.pauseOnReturn) this._stop(ctx, step.number);
           await this._loopIdle(ctx, step.number);
         }
       }

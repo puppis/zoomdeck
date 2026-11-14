@@ -54,6 +54,7 @@ cd out && python3 -m http.server 8000
 | --- | --- |
 | `--show-outline` | open the slide outline when the deck starts |
 | `--scene Name` | for code-authored decks, export a named export instead of the default one |
+| `--without-notes` | leave the presenter's `::: notes` out of the export, for a deck handed to the audience ([Presenter notes](slides.html#presenter-notes) are otherwise part of the deck's files) |
 | `-o <folder>` | output folder (required); it is created and existing files are kept |
 
 The folder export also copies the deck's `recordings/` folder, so a published deck shows its

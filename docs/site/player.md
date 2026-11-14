@@ -191,6 +191,14 @@ Wi-Fi one, and the tablet scans that one. The cable link is private and steadier
 Wi-Fi. An iPad with a cellular plan can also share its own connection to the computer over USB
 (Personal Hotspot), which works the same way.
 
+**Presenter notes.** A slide's `::: notes` blocks ([Presenter notes](slides.html#presenter-notes))
+appear on the tablet under the picture whenever a stop settles: the slide's own notes, then the
+current step's, rendered from their Markdown. The Notes button on the tablet folds the panel
+away and brings it back; it is absent while the stop has no notes. The presenter decides whether
+notes go to the tablets at all, with a checkbox in the Tablet section of the settings, on by
+default. The notes are part of the deck, so an export meant for the audience is made with
+`zoomdeck build --without-notes`.
+
 The pad follows the presentation and cannot move it, so a stray touch never changes the slide.
 Strokes, undo, redo, clear, and the whiteboard with its scrolling are shared both ways; each
 page draws the shared strokes with its own pen style, so the presenting screen always shows them

@@ -4,7 +4,7 @@
  * static HTML bundle (optionally a single self-contained file).
  *
  *   zoomdeck serve <deck> [--port N] [--host] [--no-open] [--editor NAME] [--watch PATH]...   (port 8000 or the next free one)
- *   zoomdeck build <deck> -o <folder> [--one-file] [--show-outline]
+ *   zoomdeck build <deck> -o <folder> [--one-file] [--show-outline] [--without-notes]
  *   zoomdeck jump <file> <line>        show, in the running preview, the stop of a source line
  *
  * `<deck>` is a `deck.json`, a Markdown file, a PDF, or a JS/TS module exporting a
@@ -35,13 +35,14 @@ function usage(message) {
       --host also listens on the network, so a tablet can pair with the player
       --editor opens the source of a stop from the player (inverse search): a name such as
                emacs, sublime, code, vim or jetbrains, or a command with {file} and {line}
-  zoomdeck build <deck> -o <folder> [--one-file] [--show-outline] [--scene Name]
+  zoomdeck build <deck> -o <folder> [--one-file] [--show-outline] [--without-notes] [--scene Name]
+      --without-notes leaves the presenter's ::: notes out of the export, for a deck handed to the audience
   zoomdeck jump <file> <line>          move the running preview to the stop that shows the line`);
   process.exit(message ? 2 : 0);
 }
 
 export function parseArgs(argv) {
-  const options = { watch: [], open: true, oneFile: false, showOutline: false, port: null, host: false, output: null, scene: null, editor: process.env.ZOOMDECK_EDITOR || null, positional: [] };
+  const options = { watch: [], open: true, oneFile: false, showOutline: false, withoutNotes: false, port: null, host: false, output: null, scene: null, editor: process.env.ZOOMDECK_EDITOR || null, positional: [] };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--port') options.port = Number(argv[++i]);
@@ -52,6 +53,7 @@ export function parseArgs(argv) {
     else if (arg === '-o' || arg === '--output') options.output = resolve(argv[++i]);
     else if (arg === '--one-file') options.oneFile = true;
     else if (arg === '--show-outline') options.showOutline = true;
+    else if (arg === '--without-notes') options.withoutNotes = true;
     else if (arg === '--scene') options.scene = argv[++i];
     else if (arg === '-h' || arg === '--help') usage();
     else if (arg.startsWith('-')) usage(`unknown option ${arg}`);
@@ -95,6 +97,36 @@ export function resolveDeckPath(path) {
     // A broken deck.json is reported when it is used explicitly.
   }
   return deckPath;
+}
+
+/**
+ * The Markdown without its `::: notes` blocks (the presenter's notes, for the slide or a step),
+ * each left as blank lines so the other lines keep their numbers; fenced code is left alone.
+ * Exports made with --without-notes carry no notes at all, so a deck handed out keeps them private.
+ */
+export function stripNotes(text) {
+  const lines = text.split(/\r?\n/);
+  let fence = null;
+  for (let index = 0; index < lines.length; index += 1) {
+    const code = /^\s*(`{3,}|~{3,})/.exec(lines[index]);
+    if (code) {
+      if (fence === null) fence = code[1];
+      else if (code[1][0] === fence[0] && code[1].length >= fence.length) fence = null;
+      continue;
+    }
+    if (fence !== null || !/^\s*:::\s*notes(?:\s+\{.*\})?\s*$/.test(lines[index])) continue;
+    let depth = 1;
+    let end = index + 1;
+    for (; end < lines.length; end += 1) {
+      const inner = /^\s*:::\s*(.*?)\s*$/.exec(lines[end]);
+      if (!inner) continue;
+      depth += inner[1] ? 1 : -1;
+      if (depth === 0) break;
+    }
+    for (let blank = index; blank <= Math.min(end, lines.length - 1); blank += 1) lines[blank] = '';
+    index = end;
+  }
+  return lines.join('\n');
 }
 
 /** The kinds of library folders a deck has, with the configuration key and the standard folder name of each. */
@@ -312,7 +344,7 @@ runDeck(await pdfDeck({
     const config = kind === 'json' ? JSON.parse(await fs.readFile(deckPath, 'utf8')) : { markup: basename(deckPath) };
     const markupPath = resolve(deckDir, config.markup);
     const markupDir = dirname(markupPath);
-    const markdown = await fs.readFile(markupPath, 'utf8');
+    const markdown = options.withoutNotes ? stripNotes(await fs.readFile(markupPath, 'utf8')) : await fs.readFile(markupPath, 'utf8');
     const assets = {};
     // Markdown files next to the deck are embedded as text, so [[import: path]] works without a server.
     const files = {};
@@ -344,7 +376,8 @@ runDeck(await pdfDeck({
         if (file === markupPath) continue;
         const ext = extname(file).toLowerCase();
         if (['.md', '.markdown'].includes(ext)) {
-          files[key(file)] = await fs.readFile(file, 'utf8');
+          const text = await fs.readFile(file, 'utf8');
+          files[key(file)] = options.withoutNotes ? stripNotes(text) : text;
           continue;
         }
         if (options.oneFile) {

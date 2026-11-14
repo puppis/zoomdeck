@@ -40,9 +40,9 @@ describe('player settings', () => {
   });
 
   it('keeps the trusted tablets, dropping corrupt entries and duplicates, and starts with none', () => {
-    expect(defaultSettings().pads).toEqual({ trusted: [] });
-    expect(sanitizePads(undefined)).toEqual({ trusted: [] });
-    expect(sanitizePads({ trusted: 'no' })).toEqual({ trusted: [] });
+    expect(defaultSettings().pads).toEqual({ trusted: [], notes: true });
+    expect(sanitizePads(undefined)).toEqual({ trusted: [], notes: true });
+    expect(sanitizePads({ trusted: 'no' })).toEqual({ trusted: [], notes: true });
     const pads = sanitizePads({ trusted: [{ id: 'a1', name: 'iPad', since: '2026-11-14T10:00:00.000Z' }, { id: 'a1', name: 'twice' }, { name: 'nameless' }, { id: 'b2' }] });
     expect(pads.trusted).toEqual([{ id: 'a1', name: 'iPad', since: '2026-11-14T10:00:00.000Z' }, { id: 'b2', name: 'Tablet', since: '' }]);
     saveSettings({ ...defaultSettings(), pads });
