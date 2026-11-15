@@ -1003,6 +1003,8 @@ export class PlayerUI {
       video.srcObject = stream;
       doc.body.append(video);
       void video.play().catch(() => undefined);
+      // The new window took the focus: the deck gets it back, so that the keys keep working there.
+      window.focus();
       // Closed with the browser's button: the camera goes off with its window.
       pip.addEventListener('pagehide', () => {
         if (this._pipWindow !== pip) return;
@@ -1187,7 +1189,7 @@ export class PlayerUI {
    */
   private _applyAway(): void {
     if (this._playback || this._prompting) return;
-    const away = awayFromDeck(this.stageHost);
+    const away = awayFromDeck(this.stageHost, document, this._pipWindow ? [this._pipWindow] : []);
     if (!this._screenHeld()) {
       // Left during a recording with no share: the browser's picker needs a click, so the deck asks for one, once per session.
       if (away && this._recorder && !this._screenDeclined && !this._screenOffer) this._offerScreen();

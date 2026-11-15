@@ -21,6 +21,11 @@ describe('leaving the deck', () => {
       expect(awayFromDeck(host, fakeDocument({}))).toBe(false);
       expect(awayFromDeck(host, fakeDocument({ hidden: true }))).toBe(true);
       expect(awayFromDeck(host, fakeDocument({ focused: false }))).toBe(true);
+      // The focus in the camera's own floating window is no leave; a closed one does not count.
+      const own = { closed: false, document: { hasFocus: () => true } } as unknown as Window;
+      expect(awayFromDeck(host, fakeDocument({ focused: false }), [own])).toBe(false);
+      expect(awayFromDeck(host, fakeDocument({ focused: false }), [{ ...own, closed: true } as unknown as Window])).toBe(true);
+      expect(awayFromDeck(host, fakeDocument({ focused: false }), [{ closed: false, document: { hasFocus: () => false } } as unknown as Window])).toBe(true);
       // A live page of the deck has the focus: the document still has it as a whole, its active element is the frame.
       expect(awayFromDeck(host, fakeDocument({ active: page }))).toBe(true);
       // A frame elsewhere in the page (a dialog's, a host page's) is not the deck's business; nor is a button of the deck.
