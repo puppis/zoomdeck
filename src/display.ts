@@ -119,6 +119,8 @@ export function isEarly(mob: Mobject): boolean {
 
 export interface DisplayOptions {
   contentOpacity: number;
+  /** The early members' opacity (default 1): zero until the parent's stop before the visit reveals them. */
+  earlyOpacity?: number;
   gridOpacity: number;
   backgrounds?: Mobject[];
   overlays?: Mobject[];
@@ -134,6 +136,8 @@ export class Display {
   readonly earlyGroup = new THREE.Group();
   readonly overlayGroup = new THREE.Group();
   contentOpacity: number;
+  /** The opacity of the members shown before the first visit, faded in by the stop that precedes it. */
+  earlyOpacity: number;
   gridOpacity: number;
   backgrounds: Mobject[];
   overlays: Mobject[];
@@ -152,6 +156,7 @@ export class Display {
       if (!Number.isFinite(value) || value < 0 || value > 1) throw new Error(`${name} must be between zero and one`);
     }
     this.contentOpacity = options.contentOpacity;
+    this.earlyOpacity = options.earlyOpacity ?? 1;
     this.gridOpacity = options.gridOpacity;
     this.backgrounds = [...(options.backgrounds ?? [])];
     this.overlays = [...(options.overlays ?? [])];
@@ -183,7 +188,7 @@ export class Display {
     this._reconcile(this.overlayGroup, this.overlays, 'overlay');
     this.gridGroup.visible = this.gridOpacity > 0 && this.backgrounds.length > 0;
     this.contentGroup.visible = this.contentOpacity > 0;
-    this.earlyGroup.visible = early.length > 0;
+    this.earlyGroup.visible = early.length > 0 && this.earlyOpacity > 0;
     this._baseVisible = this.gridGroup.visible || this.contentGroup.visible || this.earlyGroup.visible || this.overlays.length > 0;
     this.group.visible = this._baseVisible && !this._culled;
   }
@@ -225,6 +230,7 @@ export class Display {
     const partial = {
       grid: this.gridGroup.visible && this.gridOpacity < 1,
       content: this.contentGroup.visible && this.contentOpacity < 1,
+      early: this.earlyGroup.visible && this.earlyOpacity < 1,
     };
     const visit = (members: Mobject[], visible: boolean, forceDirty: boolean) => {
       for (const mob of members) {
@@ -248,7 +254,7 @@ export class Display {
     const { content, early } = this._split();
     visit(this.backgrounds, this.gridGroup.visible, reset);
     visit(content, this.contentGroup.visible, reset);
-    visit(early, this.earlyGroup.visible, false);
+    visit(early, this.earlyGroup.visible, reset);
     visit(this.overlays, true, false);
     this._needsOpacityReset = false;
     if (this.orderDirty) {
@@ -271,9 +277,14 @@ export class Display {
       scaleOpacity(this.contentGroup, this.contentOpacity);
       this._needsOpacityReset = true;
     }
-    if (partial.grid || partial.content) {
+    if (partial.early) {
+      scaleOpacity(this.earlyGroup, this.earlyOpacity);
+      this._needsOpacityReset = true;
+    }
+    if (partial.grid || partial.content || partial.early) {
       for (const mob of partial.grid ? this.backgrounds : []) markFamilyDirty(mob);
       for (const mob of partial.content ? content : []) markFamilyDirty(mob);
+      for (const mob of partial.early ? early : []) markFamilyDirty(mob);
     }
   }
 

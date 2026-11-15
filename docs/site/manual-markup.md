@@ -679,9 +679,9 @@ height after layout, sizes charts and children, and is a dimension of rectangles
 ### step and hide
 
 `step=N` on an element, a group or a connection makes it appear at click `N` of its slide;
-omitted or `step=0`, it is part of the initial content; `step=-1` shows it in the parent's
-view before the slide is first visited, outside the entry fade that reveals the rest (a
-caption on a child's tile), with no `enter=`, see [Before the visit](fragments.html#before-the-visit-step-1).
+omitted or `step=0`, it is part of the initial content; `step=-1` makes it the caption of a
+child slide, faded in at a click of the parent just before the click that visits the child,
+with no `enter=`, see [Before the visit](fragments.html#before-the-visit-step-1).
 `hide=M` makes it disappear at click `M`, which must be later than its appearance. Numbers are local to the slide and need not be
 consecutive: a lone `step=4` is one click. Changes sharing a number play together, then the
 slide pauses; a step that also visits children plays the parent's changes first. Children are

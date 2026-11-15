@@ -38,19 +38,21 @@ children, the parent's changes play first.
 ### Before the visit: step=-1
 
 A child slide that is not previewed stays hidden in its parent's view until it is first visited,
-when its initial content fades in. An element with `step=-1` is shown *before* that: it is
-present from the start, in the parent's view, outside the entry fade, so that a child can carry
-a caption or a title on its tile while the rest of it waits for the visit. On the visit nothing
-happens to it; it stays through the slide's steps like any initial element, `hide=M` removes it
-at click `M`, and it goes with the slide in exports and printouts. Nothing animates before a
-visit, so `enter=` is refused there. On a root slide, on a page of a flat document and on a
-`preview=true` child, where everything shows from the start anyway, `step=-1` is the same as no
-step.
+when its initial content fades in. An element of the child with `step=-1` is its caption: it
+fades in at a click of the parent *just before* the click that visits the child, so that the
+tile announces itself while the rest of it waits for the visit. The click that would zoom in
+first reveals the caption, as a stop of the parent of its own, and the next click visits. On the
+visit nothing happens to it; it stays through the child's steps like any initial element,
+`hide=M` removes it at click `M`, and it goes with the slide in exports and printouts. Jumping
+straight into the child, from a link or the slide menu, brings the caption in with the entry
+fade. The reveal is always a fade, so `enter=` is refused there. On a root slide, on a page of a
+flat document and on a `preview=true` child, where everything shows from the start anyway,
+`step=-1` is the same as no step.
 
 ```zoomdeck {height=5}
 ::: slide {#early-parent width=16 height=5}
 
-The tile below shows its caption only, until the child is visited. {x=-7 y=1.8 font_size=20}
+One click shows the tile's caption, the next visits the child. {x=-7 y=1.8 font_size=20}
 
 [[include: #early-child x=0 y=-0.6 width=6 step=1]]
 
@@ -58,7 +60,7 @@ The tile below shows its caption only, until the child is visited. {x=-7 y=1.8 f
 
 ::: slide {#early-child width=6 height=3.375}
 
-[A caption shown before the visit]{#early-cap x=0 y=1.1 anchor=center font_size=18 color=RED step=-1}
+[The child's caption, shown just before the visit]{#early-cap x=0 y=1.1 anchor=center font_size=18 color=RED step=-1}
 
 The rest appears on the visit {x=-2.6 y=0 width=5.2 font_size=16}
 

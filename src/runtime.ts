@@ -19,7 +19,7 @@ import {
   smooth,
   type RateFunction,
 } from 'manim-web';
-import { LocalScene, Display } from './display';
+import { LocalScene, Display, isEarly } from './display';
 import {
   Slide,
   PlaceholderSlide,
@@ -181,7 +181,7 @@ export type ProgressEvent = { phase: string; index?: number; total?: number; id?
 
 /** One replayable step of a clip. `alpha` is the linear time fraction. */
 export interface Op {
-  readonly kind: 'play' | 'focus' | 'wait';
+  readonly kind: 'play' | 'focus' | 'wait' | 'reveal';
   readonly duration: number;
   readonly slide: Slide;
   /** Whether `interpolate` may be driven backwards (false for updater-driven waits and media). */
@@ -364,7 +364,7 @@ export class FocusOp implements Op {
     this.slide = destination.slide;
     this._gridOutTime = source.display.gridOpacity > 0 ? source.slide.fadeTime : 0;
     this._gridInTime = destination.display.backgrounds.length > 0 ? destination.slide.fadeTime : 0;
-    this._contentTime = destination.display.contentOpacity < 1 ? destination.slide.fadeTime : 0;
+    this._contentTime = destination.display.contentOpacity < 1 || destination.display.earlyOpacity < 1 ? destination.slide.fadeTime : 0;
     this.duration = Math.max(cameraTime, this._gridOutTime + this._gridInTime, this._contentTime);
   }
 
@@ -378,7 +378,10 @@ export class FocusOp implements Op {
     this._sourceGrid = this.source.display.gridOpacity;
     this._destinationGrid = this.destination.display.gridOpacity;
     this._destinationContent = this.destination.display.contentOpacity;
+    this._destinationEarly = this.destination.display.earlyOpacity;
   }
+
+  private _destinationEarly = 1;
 
   private static _opacity(start: number, end: number, elapsed: number, duration: number): number {
     if (duration === 0) return end;
@@ -407,8 +410,49 @@ export class FocusOp implements Op {
       this._gridInTime,
     );
     destination.contentOpacity = FocusOp._opacity(this._destinationContent, 1, elapsed, this._contentTime);
+    destination.earlyOpacity = FocusOp._opacity(this._destinationEarly, 1, elapsed, this._contentTime);
     this.source.display.sync(this.source.transform);
     this.destination.display.sync(this.destination.transform);
+  }
+
+  update(): void {}
+
+  finish(): void {
+    this.interpolate(1);
+  }
+
+  cleanUp(): void {}
+  reset(): void {}
+}
+
+/**
+ * Fade in a child's early members (`step=-1`) before the child is visited: a stop of the parent
+ * of its own, so that a caption on the child's tile appears at a click and the next click zooms in.
+ */
+export class RevealOp implements Op {
+  readonly kind = 'reveal';
+  readonly reversible = true;
+  readonly duration: number;
+  readonly slide: Slide;
+  membership: Mobject[] = [];
+  private _start = 0;
+
+  constructor(readonly parent: SlideContext, readonly child: SlideContext) {
+    this.slide = parent.slide;
+    this.duration = child.slide.fadeTime;
+  }
+
+  touched(): Mobject[] {
+    return [];
+  }
+
+  begin(): void {
+    this._start = this.child.display.earlyOpacity;
+  }
+
+  interpolate(alpha: number): void {
+    this.child.display.earlyOpacity = this._start + (1 - this._start) * smooth(clamp01(alpha));
+    this.child.display.sync(this.child.transform);
   }
 
   update(): void {}
@@ -465,6 +509,7 @@ interface SlideRecord {
   members: Mobject[];
   backgrounds: Mobject[];
   contentOpacity: number;
+  earlyOpacity: number;
   gridOpacity: number;
 }
 
@@ -545,6 +590,7 @@ export class History {
         members: [...ctx.mobjects],
         backgrounds: [...ctx.display.backgrounds],
         contentOpacity: ctx.display.contentOpacity,
+        earlyOpacity: ctx.display.earlyOpacity,
         gridOpacity: ctx.display.gridOpacity,
       });
       for (const root of ctx.display.members()) {
@@ -601,6 +647,7 @@ export class History {
       ctx.mobjects = [...record.members];
       ctx.display.backgrounds = [...record.backgrounds];
       ctx.display.contentOpacity = record.contentOpacity;
+      ctx.display.earlyOpacity = record.earlyOpacity;
       ctx.display.gridOpacity = record.gridOpacity;
       for (const root of ctx.display.members()) {
         for (const member of root.getFamily()) {
@@ -670,8 +717,10 @@ export class SlideContext extends LocalScene {
       });
     }
     const backgrounds = config.showSlideGrid && !slide.hidden ? [coordinateGrid(slide.width, slide.height)] : [];
+    const shownFromTheStart = slide.parent === null || slide.parent.hidden || slide instanceof PlaceholderSlide || slide.preview || !config.revealOnEntry;
     this.display = new Display(this, {
       contentOpacity: slide.parent === null || slide instanceof PlaceholderSlide || slide.preview || !config.revealOnEntry ? 1 : 0,
+      earlyOpacity: shownFromTheStart ? 1 : 0,
       gridOpacity: slide.parent === null && backgrounds.length ? 1 : 0,
       backgrounds,
       overlays: this._canvasBorder ? [this._canvasBorder] : [],
@@ -995,6 +1044,7 @@ export class Presenter {
           ctx.add(...slide._children.map((child) => child.viewport as Rectangle));
         }
         ctx.display.contentOpacity = 1;
+        ctx.display.earlyOpacity = 1;
         ctx.display.gridOpacity = 0;
         ctx.display.sync(ctx.transform);
       }
@@ -1138,6 +1188,7 @@ export class Presenter {
     });
     if (initial) {
       ctx.display.contentOpacity = 1;
+      ctx.display.earlyOpacity = 1;
       ctx.display.gridOpacity = ctx.display.backgrounds.length ? 1 : 0;
       ctx.display.sync(ctx.transform);
     }
@@ -1213,6 +1264,7 @@ export class Presenter {
     else if (this.root !== root) throw new Error('play must use the prepared root');
     const rootCtx = this.contexts.get(root) as SlideContext;
     rootCtx.display.contentOpacity = 1;
+    rootCtx.display.earlyOpacity = 1;
     rootCtx.display.gridOpacity = rootCtx.display.backgrounds.length ? 1 : 0;
     rootCtx.display.sync(rootCtx.transform);
     this.camera = this.cameraTarget(this._firstShown(rootCtx));
@@ -1245,7 +1297,15 @@ export class Presenter {
           this._skipSubtree(visit.child);
           continue;
         }
-        await this._enter(this.contexts.get(visit.child) as SlideContext);
+        const childCtx = this.contexts.get(visit.child) as SlideContext;
+        if (childCtx.display.earlyOpacity < 1 && childCtx.mobjects.some(isEarly) && this.enabled(ctx.slide) && this.enabled(visit.child)) {
+          // The child's early members (step=-1) appear at a stop of the parent, right before the visit.
+          this.history.mark(ctx.slide, 'program');
+          this.history.openClip.source = visit.child.placement ?? ctx.slide.source;
+          this.history.record(new RevealOp(ctx, childCtx));
+          this.boundary(ctx, 'program');
+        }
+        await this._enter(childCtx);
         continue;
       }
       this.boundary(ctx, 'program', { force: false });
