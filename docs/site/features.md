@@ -149,7 +149,9 @@ The camera (C) shows you next to or over the slides, as a picture in a corner or
 A recording (R) keeps the whole talk: your voice, the camera and every move on the deck,
 strokes included; it plays back on the deck itself, where it stays navigable, and exports as a
 plain video file. A shared screen (S), another application say, can be filmed as part of the
-talk. A later version of the desktop app will render a recording offline as well, faster than
+talk, and once the screen is shared the switch is automatic: leaving the deck for another
+application, workspace or tab films the screen in place of the camera, and coming back returns
+to the camera. A later version of the desktop app will render a recording offline as well, faster than
 real time, into one flat video file. The deck below has these controls on; each asks the browser for permission
 the first time.
 
@@ -157,7 +159,7 @@ the first time.
 ::: slide {#rec width=20}
 ## Camera and recording
 
-The **Camera** button (C) shows the camera, **Record** (R) starts a talk (voice, camera and the deck), **Screen** (S) films a window or a screen. A recorded talk appears beside the Record button as a **▶ Talk** button, plays back on the deck and exports as a video; **Print** (P) writes the deck to a PDF.
+The **Camera** button (C) shows the camera, **Record** (R) starts a talk (voice, camera and the deck), **Screen** (S) films a window or a screen, and once one is shared, films it by itself whenever you leave the deck, giving way to the camera when you return. A recorded talk appears beside the Record button as a **▶ Talk** button, plays back on the deck and exports as a video; **Print** (P) writes the deck to a PDF.
 :::
 ```
 

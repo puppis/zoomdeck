@@ -21,7 +21,7 @@ description: Keyboard and pointer controls, the pen and its pressure styles, the
 | L | switch the pointer tool between spotlight and laser |
 | W | show or hide the whiteboard; while it is shown the arrows scroll it (their own entries in the settings) |
 | C | camera: in a corner, then full frame, then off |
-| S | film the screen for the time spent in another application, or stop; the browser asks which screen the first time |
+| S | film the screen for the time spent in another application, or stop; the browser asks which screen the first time, and once shared the screen is filmed by itself whenever you leave the deck |
 | R | record the talk (a new one, or continuing a saved one), or stop recording |
 | E | open the source line of this stop in the editor (preview server with `--editor`; see [Editors](editors.html#forward-and-inverse-search)) |
 | P, ⌘P / Ctrl+P | print the deck to a PDF, one page per stage |
@@ -229,7 +229,8 @@ belong to slides and to the whiteboard. A recording keeps the camera exactly whi
 you can record a talk without it even with a camera attached, or bring it in for some moments
 only. The camera and the screen (see Filming the screen under [Recording a talk](#recording-a-talk)) are one picture at
 a time: turning the camera on stops the filming of the screen, and filming the screen sets the
-camera aside, to come back when the filming stops.
+camera aside, to come back when the filming stops. Once the screen is shared, the two trade
+places by themselves as you leave the deck and come back to it.
 
 ## Recording a talk
 
@@ -268,7 +269,7 @@ picker again to film something else instead. Ending the share from the browser's
 (Chrome's "Stop sharing", Firefox's and Safari's sharing indicators) works too, and the next `S`
 then asks again.
 
-While a share is held, the deck films it by itself whenever you leave: switching to another tab,
+**Away from the deck.** While a share is held, the deck films it by itself whenever you leave: switching to another tab,
 another application or another workspace starts the filming, setting the camera aside if it was
 on, and coming back to the deck stops it and brings the camera back as it was. A filming you
 started by hand is left alone until you leave and come back, which ends it too; the button and
