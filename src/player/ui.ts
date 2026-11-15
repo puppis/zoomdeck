@@ -60,8 +60,10 @@ type PipWindow = Window & { documentPictureInPicture?: DocumentPictureInPicture 
 
 interface ExportChoice {
   name: string;
-  /** `server`: rendered off the clock by the server into an MP4, not in this page. */
-  destination: 'server' | 'folder' | 'pick' | 'download';
+  /** How the video is made: off the clock by the server (an MP4), or in this page in real time (a WebM). */
+  method: 'server' | 'page';
+  /** Where the file goes: a folder chosen through the browser's save dialog, the recordings folder next to the deck, or the browser's downloads. */
+  destination: 'pick' | 'folder' | 'download';
   /** The frame: a standard height or the display's own width, in the chosen proportions. */
   size: number | 'display';
   aspect: AspectChoice;
@@ -1812,6 +1814,48 @@ export class PlayerUI {
     }
   }
 
+  /**
+   * A video rendered by the server lands in the recordings folder; one wanted elsewhere is copied
+   * from there when the render ends: into the file chosen through the browser's save dialog, or
+   * as a download. This page watches the job meanwhile and must stay open.
+   */
+  private _deliverWhenRendered(talk: string, output: string, destination: 'pick' | 'download', handle?: FileSystemFileHandle): void {
+    const base = this._deck.base;
+    if (!base) return;
+    const started = Date.now();
+    const timer = window.setInterval(() => {
+      void (async () => {
+        const status = await renderStatus(base, talk).catch(() => null);
+        const job = status?.jobs.find((candidate) => candidate.output === output) ?? null;
+        if (job && job.status !== 'done' && job.status !== 'failed') {
+          if (Date.now() - started > 6 * 3600_000) clearInterval(timer);
+          return;
+        }
+        clearInterval(timer);
+        if (job?.status === 'failed') {
+          this.notice(`Rendering failed: ${job.error ?? 'unknown error'}`);
+          return;
+        }
+        try {
+          const response = await fetch(recordingUrl(base, `${output}.mp4`), { cache: 'no-store' });
+          if (!response.ok) throw new Error(`the server answered ${response.status}`);
+          const blob = await response.blob();
+          if (handle) {
+            const writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+            this.notice(`Video saved as ${handle.name} (and in recordings/)`);
+          } else {
+            download(blob, `${output}.mp4`);
+            this.notice(`${output}.mp4 downloaded (and kept in recordings/)`);
+          }
+        } catch (error) {
+          this.notice(`The video is in recordings/${output}.mp4, but could not be copied: ${(error as Error).message}`);
+        }
+      })();
+    }, 3000);
+  }
+
   /** After a recording: the talk is rendered by itself in the desktop app; a browser, which cannot open a tab without a click, offers a button. */
   private async _offerRender(talk: string): Promise<void> {
     const base = this._deck.base;
@@ -1980,8 +2024,10 @@ export class PlayerUI {
     const choice = await this._confirmExport(talk, playback.timeline);
     if (!choice || this._exporting || this._playback !== playback) return;
     const name = choice.name;
-    if (choice.destination === 'server') {
+    if (choice.method === 'server') {
       await this.startRender(talk, name, choice.size, choice.aspect);
+      // The server writes into the recordings folder; a file wanted elsewhere is handed over from there when the render ends.
+      if (choice.destination !== 'folder') this._deliverWhenRendered(talk, name, choice.destination, choice.handle);
       return;
     }
     const aspect = frameAspect(choice.aspect, playback.timeline, this._deckAspect);
@@ -2037,13 +2083,17 @@ export class PlayerUI {
   private _confirmExport(talk: string, timeline: Timeline): Promise<ExportChoice | null> {
     const folder = Boolean(this._deck.base && recordingStoreAvailable());
     const picker = typeof (window as SavePickerWindow).showSaveFilePicker === 'function';
+    const server = folder && this._render.ffmpeg;
     const dialog = el('dialog', { class: 'settings export' });
     const close = el('button', { class: 'close', 'aria-label': 'Close', text: '×' });
     const nameInput = el('input', { type: 'text', value: `${talk}.video`, 'aria-label': 'File name', spellcheck: 'false' });
+    // How the video is made, and separately where the file goes.
+    const how = el('select', { 'aria-label': 'How the video is made' });
+    if (server) how.append(el('option', { value: 'server', text: 'Off the clock, by the server (MP4; faster than real time, this page stays free)' }));
+    how.append(el('option', { value: 'page', text: 'In this page, in real time (WebM; takes as long as the talk)' }));
     const where = el('select', { 'aria-label': 'Where to save the video' });
-    if (folder && this._render.ffmpeg) where.append(el('option', { value: 'server', text: 'The recordings/ folder, as an MP4 rendered off the clock by the server (faster than real time)' }));
-    if (folder) where.append(el('option', { value: 'folder', text: 'The recordings/ folder next to the deck, exported from this page' }));
     if (picker) where.append(el('option', { value: 'pick', text: 'A folder of my choice (asked when the export starts)' }));
+    if (folder) where.append(el('option', { value: 'folder', text: 'The recordings/ folder next to the deck' }));
     where.append(el('option', { value: 'download', text: "The browser's downloads" }));
     const suffix = el('span', { class: 'note', text: '.webm' });
     const sizeSelect = this._sizeSelect('Size of the video', this._settings.recording.renderHeight);
@@ -2052,14 +2102,19 @@ export class PlayerUI {
     const chosenAspect = () => aspectSelect.value as AspectChoice;
     const status = el('p', { class: 'note' });
     const describe = () => {
-      const server = where.value === 'server';
-      suffix.textContent = server ? '.mp4' : '.webm';
+      const offline = how.value === 'server';
+      suffix.textContent = offline ? '.mp4' : '.webm';
       const frame = frameSize(chosenSize(), frameAspect(chosenAspect(), timeline, this._deckAspect));
       const size = `${frame.width} by ${frame.height} pixels`;
-      status.textContent = server
-        ? `The talk is rendered in a page of its own, off the clock and faster than real time, and ffmpeg lays the camera, the screen and the sound from the recording over the deck: an MP4 file (H.264 and AAC), ${size}. This page is free meanwhile; the list of talks shows the progress and opens the video.`
+      const made = offline
+        ? `The talk is rendered in a page of its own, off the clock and faster than real time, and ffmpeg lays the camera, the screen and the sound from the recording over the deck: an MP4 file (H.264 and AAC), ${size}. The list of talks shows the progress.`
         : `The recording plays from the start while the video is written, which takes as long as the talk; keep this window visible until it ends. The file is WebM (VP9 and Opus), ${size}, with the slides or the whiteboard and their ink, the camera in its corner or full frame, the pointer, and the sound.`;
+      const delivered = offline && where.value !== 'folder'
+        ? ` The server writes the video into the recordings/ folder, where the list of talks opens it; when the render ends, this page ${where.value === 'pick' ? 'writes a copy to the folder you chose' : 'offers a copy as a download'}, so keep this page open until then.`
+        : '';
+      status.textContent = made + delivered;
     };
+    how.addEventListener('change', describe);
     where.addEventListener('change', describe);
     sizeSelect.addEventListener('change', describe);
     aspectSelect.addEventListener('change', describe);
@@ -2070,6 +2125,7 @@ export class PlayerUI {
       el('header', {}, el('h2', { text: 'Export the talk as a video' }), close),
       el('section', {},
         el('div', { class: 'row' }, el('label', {}, 'Name ', nameInput), suffix),
+        ...(server ? [el('div', { class: 'row' }, el('label', {}, 'Made ', how))] : []),
         el('div', { class: 'row' }, el('label', {}, 'Save to ', where)),
         el('div', { class: 'row' }, el('label', {}, 'Size ', sizeSelect)),
         el('div', { class: 'row' }, el('label', {}, 'Proportions ', aspectSelect)),
@@ -2083,17 +2139,19 @@ export class PlayerUI {
           // Characters a file name or the server refuse become dashes; an empty name falls back to the talk's.
           const name = nameInput.value.trim().replace(/[^\w.-]+/g, '-').replace(/^[^A-Za-z0-9]+|-+$/g, '') || `${talk}.video`;
           const destination = where.value as ExportChoice['destination'];
+          const method = (how.value === 'server' ? 'server' : 'page') as ExportChoice['method'];
           let handle: FileSystemFileHandle | undefined;
           if (destination === 'pick') {
             try {
-              // The picker must follow the click directly; the file is written when the export ends.
-              handle = await (window as SavePickerWindow).showSaveFilePicker?.({ suggestedName: `${name}.webm`, types: [{ description: 'WebM video', accept: { 'video/webm': ['.webm'] } }] });
+              // The picker must follow the click directly; the file is written when the export, or the render, ends.
+              const extension = method === 'server' ? 'mp4' : 'webm';
+              handle = await (window as SavePickerWindow).showSaveFilePicker?.({ suggestedName: `${name}.${extension}`, types: [{ description: method === 'server' ? 'MP4 video' : 'WebM video', accept: { [method === 'server' ? 'video/mp4' : 'video/webm']: [`.${extension}`] } }] });
             } catch {
               return; // dismissed: the dialog stays
             }
             if (!handle) return;
           }
-          choice = { name, destination, handle, size: chosenSize(), aspect: chosenAspect() };
+          choice = { name, method, destination, handle, size: chosenSize(), aspect: chosenAspect() };
           dialog.close();
         })();
       });

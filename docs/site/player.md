@@ -382,16 +382,22 @@ page copy another page's pixels), so the rendered file shows its place as the de
 before the page is live; what happened inside it is in the talk only if the screen was filmed
 meanwhile, which a held share does by itself (see Away from the deck).
 
-**Exporting from the page.** Without ffmpeg, or when the file should go elsewhere, **Export video**
-renders the open recording in the page itself: the recording plays from the start while the
-frames are captured, so the export takes exactly as long as the talk, and the window must stay
-visible meanwhile (a hidden tab draws nothing); the playback controls and keys are off until it
-ends, so that nothing moves the talk while it is being filmed. A dialog first asks for the file's name and where
-it goes: the `recordings/` folder next to the deck (with the preview server), a folder of your
-choice through the browser's own save dialog (Chrome and Edge), or the browser's downloads. The
-result is a WebM file (VP9 and Opus), saved as `recordings/<name>.video.webm` next to the
-recording or downloaded; `ffmpeg -i talk.video.webm -c:v libx264 -c:a aac talk.mp4` turns it
-into an MP4 when a tool or a site wants one.
+**The Export dialog.** **Export video** in the playback bar asks, in separate rows, how the video
+is made and where the file goes. *Made*: off the clock by the server, as above, where it can;
+or in this page, in real time. *Save to*: a folder of your choice through the browser's own save
+dialog (Chrome and Edge; the first choice where it exists), the `recordings/` folder next to the
+deck, or the browser's downloads. A video the server renders always lands in the `recordings/`
+folder, where the list of talks opens it; chosen for a folder of yours or the downloads, it is
+copied there by this page when the render ends, so the page must stay open until then. The size
+and the proportions rows are the ones described above.
+
+**Exporting from the page.** Without ffmpeg, the page itself renders the open recording: the
+recording plays from the start while the frames are captured, so the export takes exactly as
+long as the talk, and the window must stay visible meanwhile (a hidden tab draws nothing); the
+playback controls and keys are off until it ends, so that nothing moves the talk while it is
+being filmed. The result is a WebM file (VP9 and Opus), `<name>.video.webm`; `ffmpeg -i
+talk.video.webm -c:v libx264 -c:a aac talk.mp4` turns it into an MP4 when a tool or a site wants
+one.
 
 **What travels where.** The folder export (`zoomdeck build … -o folder`) copies the `recordings/`
 folder, unpacking each bundle into its plain files, which a static host streams best, so a deck
