@@ -19,3 +19,6 @@ docs/lite/_output/
 .jupyterlite.doit.db
 docs/lite/wheels/
 docs/lite/jupyter-lite.json
+
+# Scratch decks (conversions, experiments): never versioned.
+examples/tmp/
