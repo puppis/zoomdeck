@@ -1219,17 +1219,19 @@ export class PlayerUI {
   /** Place the camera picture: hidden without a source, full frame when switched to, else in the chosen corner. */
   private _layoutCamera(): void {
     const camera = this._camera;
-    // Live: the camera while it is on. Playback: the camera lane's file, when it carries a picture.
-    const hasPicture = this._playback ? camera.videoWidth > 0 : Boolean(this._cameraStream);
+    // A filmed screen fills the frame, fitted rather than cropped: from the screen lane in its own
+    // element, or, for a recording made before the screen had a lane, from the camera lane's file.
+    // Either takes the frame the moment its part is chosen, before a frame has arrived, so that the
+    // live page underneath never shows its present content in place of the recorded picture.
+    const screenLane = Boolean(this._playback?.screenPart);
+    const oldScreen = Boolean(this._playback?.part?.source === 'screen');
+    // Live: the camera while it is on. Playback: the camera lane's file, when it carries a picture (a filmed screen counts from the start).
+    const hasPicture = this._playback ? camera.videoWidth > 0 || oldScreen : Boolean(this._cameraStream);
     camera.hidden = !hasPicture;
     const { corner, size, mirror } = this._settings.recording;
     camera.dataset.corner = corner;
     camera.style.setProperty('--pip-size', `${size * 100}%`);
     // The presenter's own picture mirrors like a mirror does; a recording is shown as recorded.
-    // A filmed screen fills the frame, fitted rather than cropped: from the screen lane in its own
-    // element, or, for a recording made before the screen had a lane, from the camera lane's file.
-    const screenLane = Boolean(this._playback?.screenPart);
-    const oldScreen = Boolean(this._playback?.part?.source === 'screen' && hasPicture);
     this._screen.hidden = !screenLane;
     camera.classList.toggle('mirror', mirror && !this._playback);
     camera.classList.toggle('screen', oldScreen);
