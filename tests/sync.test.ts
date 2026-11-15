@@ -149,3 +149,14 @@ describe('resolving a deck\'s imports from the package', () => {
     expect(calls).toEqual([['manim-web', '/checkout/Zoomdeck/src/index.ts', { isEntry: false, skipSelf: true }]]);
   });
 });
+
+describe('host names the server answers to', () => {
+  it('allows any .local name and the computer\'s own, so a tablet that pairs by name is let in', async () => {
+    const { allowedHosts } = await import('../bin/relay.mjs');
+    const { hostname } = await import('node:os');
+    const names = allowedHosts();
+    expect(names[0]).toBe('.local');
+    if (hostname() && !/^localhost$/i.test(hostname())) expect(names).toContain(hostname());
+    expect(names.every((name: string) => typeof name === 'string' && name.length > 0)).toBe(true);
+  });
+});

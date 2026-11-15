@@ -164,7 +164,9 @@ scrolls or zooms anything.
 
 1. Serve the deck so that other devices can reach it: `zoomdeck serve deck.json --host`, or
    `npm run dev -- --host` from the checkout. Pairing needs this server; an exported HTML file
-   opened from disk cannot pair.
+   opened from disk cannot pair. The server answers to its addresses, to any `.local` name and
+   to the computer's own host name; a request under another name is refused, as a guard against
+   DNS rebinding.
 2. On the presenting computer, open the settings and, under **Tablet**, choose "Show the pairing
    code". A QR code and an address appear: one for the computer's name on the network
    (`Name.local`, which finds the computer whatever its address), and one per network address.

@@ -17,7 +17,7 @@ import { dirname, resolve, relative, basename, extname, join, sep } from 'node:p
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { exec } from 'node:child_process';
 import { tmpdir } from 'node:os';
-import { lanAddresses, padRelay } from './relay.mjs';
+import { allowedHosts, lanAddresses, padRelay } from './relay.mjs';
 import { EDITOR_PRESETS, editorSync, previewsFor, requestJump } from './sync.mjs';
 import { FOLDER as RECORDINGS, isRecordingFile, recordingStore } from './recordings.mjs';
 import { resolveFromPackage } from './resolve.mjs';
@@ -236,6 +236,8 @@ export async function startPreview(options) {
     // through to the next free port instead of failing, so a second preview can always start.
     server: {
       host: options.host ? '0.0.0.0' : '127.0.0.1',
+      // A tablet reaches the server by the computer's name as well as by its address.
+      allowedHosts: allowedHosts(),
       port: options.port ?? 8000,
       strictPort: options.strictPort ?? (options.port !== null && options.port !== 0),
       fs: { allow: [packageRoot, ...watchRoots] },

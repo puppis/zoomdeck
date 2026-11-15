@@ -6,3 +6,6 @@ export function lanAddresses(): string[];
 export function listensOnLan(host: string | boolean | undefined): boolean;
 /** Relays companion-tablet messages between connected pages and serves `/__zoomdeck/pad.json`. */
 export function padRelay(): Plugin;
+
+/** The host names the server answers to besides localhost and plain addresses: any `.local` name and the computer's own. */
+export function allowedHosts(): string[];

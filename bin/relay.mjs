@@ -45,6 +45,24 @@ export function localNames() {
   return name ? [`${name}.local`] : [];
 }
 
+/**
+ * The host names the server answers to besides localhost and plain addresses: Vite refuses a
+ * request whose Host header it does not expect (a guard against DNS rebinding), which would turn
+ * away a tablet that reached the computer by the `Name.local` address the pairing panel offers,
+ * or by the computer's own host name. Any `.local` name is allowed, since a tablet on the same
+ * network may know the computer by one the panel did not list.
+ */
+export function allowedHosts() {
+  const names = ['.local'];
+  const host = hostname();
+  if (host && !/^localhost$/i.test(host)) {
+    names.push(host);
+    const short = host.split('.')[0];
+    if (short && short !== host) names.push(short);
+  }
+  return names;
+}
+
 /** Whether a Vite `server.host` value makes the server reachable from other machines. */
 export function listensOnLan(host) {
   if (host === true) return true;

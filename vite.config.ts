@@ -1,6 +1,6 @@
 import { defineConfig, type Plugin } from 'vite';
 import { resolve, sep } from 'node:path';
-import { padRelay } from './bin/relay.mjs';
+import { allowedHosts, padRelay } from './bin/relay.mjs';
 import { editorSync } from './bin/sync.mjs';
 import { isRecordingFile, recordingStore } from './bin/recordings.mjs';
 
@@ -58,7 +58,8 @@ export default defineConfig({
   // A deck's own modules import the package by name, as they do under the command and the app.
   resolve: { alias: { ...optionalStubs, zoomdeck: resolve(__dirname, 'src/index.ts') } },
   optimizeDeps: { entries: ['index.html'] },
-  server: { fs: { allow: [resolve(__dirname), resolve(__dirname, '..')] } },
+  // With --host, a tablet reaches the server by the computer's name (Name.local) as well as by its address.
+  server: { fs: { allow: [resolve(__dirname), resolve(__dirname, '..')] }, allowedHosts: allowedHosts() },
   build: {
     outDir: 'dist',
     emptyOutDir: true,
