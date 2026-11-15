@@ -172,6 +172,15 @@ export interface RenderPlanMedia {
   source: 'camera' | 'screen';
 }
 
+/** A video inside a slide that played with its sound on: its file and the stretch of the talk it ran for, from its start. */
+export interface RenderPlanClip {
+  /** The URL the page loaded the video from. */
+  src: string;
+  /** Milliseconds on the talk's clock. */
+  start: number;
+  duration: number;
+}
+
 /** What the server needs to compose the video: the frame rate and size of the deck frames, the media and where they go. */
 export interface RenderPlan {
   fps: number;
@@ -183,10 +192,12 @@ export interface RenderPlan {
   media: RenderPlanMedia[];
   /** When the camera fills the frame instead of sitting in its corner. */
   full: Array<[number, number]>;
+  /** The slides' own videos that played unmuted, for their sound. */
+  clips: RenderPlanClip[];
 }
 
 /** The plan for a timeline rendered at `width` pixels and `fps` frames a second. */
-export function renderPlan(timeline: Timeline, aspect: number, width: number, fps: number): RenderPlan {
+export function renderPlan(timeline: Timeline, aspect: number, width: number, fps: number, clips: RenderPlanClip[] = []): RenderPlan {
   return {
     fps,
     width,
@@ -195,7 +206,31 @@ export function renderPlan(timeline: Timeline, aspect: number, width: number, fp
     pip: timeline.pip,
     media: timeline.media.map((part) => ({ file: part.file, start: part.start, duration: part.duration, video: part.video, source: part.source ?? 'camera' })),
     full: cameraIntervals(timeline.events, timeline.duration),
+    clips,
   };
+}
+
+/** Collects the stretches during which the slides' videos played, from the clips' own reports, for the plan. */
+export class ClipLog {
+  private readonly _open = new Map<unknown, { src: string; start: number; muted: boolean }>();
+  readonly clips: RenderPlanClip[] = [];
+
+  played(clip: unknown, info: { src: string; start: number; muted: boolean }): void {
+    this._open.set(clip, info);
+  }
+
+  stopped(clip: unknown, end: number): void {
+    const info = this._open.get(clip);
+    if (!info) return;
+    this._open.delete(clip);
+    if (!info.muted && info.src && end - info.start >= 50) this.clips.push({ src: info.src, start: Math.round(info.start), duration: Math.round(end - info.start) });
+  }
+
+  /** Close what is still playing at the end of the talk. */
+  finish(end: number): RenderPlanClip[] {
+    for (const clip of [...this._open.keys()]) this.stopped(clip, end);
+    return this.clips.sort((a, b) => a.start - b.start);
+  }
 }
 
 export interface RenderOptions {
@@ -208,12 +243,18 @@ export interface RenderOptions {
   cancelled?(): boolean;
 }
 
+/** What a render produced: how many frames were sent (changed pictures) and the slides' videos that played with sound. */
+export interface RenderResult {
+  frames: number;
+  clips: RenderPlanClip[];
+}
+
 /**
  * Render the deck frames of a talk off the clock. `playback` must have no media element: its
  * clock is then the page's, which the virtual clock drives; `source` draws as the export does.
- * Resolves with the number of frames sent (changed pictures), or null when cancelled.
+ * Resolves with what was rendered, or null when cancelled.
  */
-export async function renderTalk(playback: Playback, player: Player, stage: Stage, source: Omit<ExportSource, 'stage' | 'camera'>, options: RenderOptions): Promise<number | null> {
+export async function renderTalk(playback: Playback, player: Player, stage: Stage, source: Omit<ExportSource, 'stage' | 'camera'>, options: RenderOptions): Promise<RenderResult | null> {
   const fps = options.fps ?? 30;
   const width = options.width ?? 1920;
   const height = Math.round(width / source.aspect / 2) * 2;
@@ -226,8 +267,11 @@ export async function renderTalk(playback: Playback, player: Player, stage: Stag
   if (!context) throw new Error('No drawing context');
   let sent = 0;
   let cancelled = false;
+  const log = new ClipLog();
   await stage.atPrintSize(width, height, async (capture) => {
     const clock = installVirtualClock();
+    // Videos in the slides seek to each frame instead of playing, and say when they run.
+    VideoClip.render = { onPlay: (clip, info) => log.played(clip, info), onStop: (clip, end) => log.stopped(clip, end) };
     try {
       playback.seek(0);
       await playback.play();
@@ -265,10 +309,12 @@ export async function renderTalk(playback: Playback, player: Player, stage: Stag
       options.onProgress?.(1);
     } finally {
       playback.pause();
+      log.finish(clock.now);
+      VideoClip.render = null;
       clock.uninstall();
     }
   });
-  return cancelled ? null : sent;
+  return cancelled ? null : { frames: sent, clips: log.clips };
 }
 
 const ENDPOINT = '/__zoomdeck/render';

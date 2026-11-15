@@ -25,6 +25,7 @@ import { exportMimeType, exportVideo, type ExportSource } from './export';
 import { PRINT_WIDTHS, printDeck, printPages, type PrintPages } from './print';
 import { zipFiles } from './zip';
 import { deleteRecording, describeMedia, download, listRecordings, loadTimeline, mediaFileName, mediaSource, recordingStoreAvailable, RecordingSession, recordingUrl, saveFile, type RecordingEntry } from './store';
+import { awayFromDeck } from './away';
 import { displayWidth, renderPageUrl, renderPlan, RenderSession, renderStatus, renderTalk, requestRender, VIDEO_WIDTHS, type RenderStatus } from './render';
 import { appendPart, formatTime, recordingName, stopRef, structureHash, type Corner, type PointerKind, type Timeline, type TimelineEvent, type TimelineMedia, type UntimedEvent } from './timeline';
 
@@ -414,6 +415,8 @@ export class PlayerUI {
     document.addEventListener('visibilitychange', () => this._checkAway(), { signal: this._abort.signal });
     window.addEventListener('blur', () => this._checkAway(), { signal: this._abort.signal });
     window.addEventListener('focus', () => this._checkAway(), { signal: this._abort.signal });
+    // The focus moving into or out of a live page (an iframe of the deck) counts as leaving and coming back.
+    document.addEventListener('focusin', () => this._checkAway(), { signal: this._abort.signal });
     if (deck.showOutline && this._features.has('outline')) this.toggleOutline();
     this._layoutCamera();
     this._updateSpotlight();
@@ -1010,7 +1013,7 @@ export class PlayerUI {
    */
   private _applyAway(): void {
     if (this._playback || this._prompting || !this._settings.recording.screenWhenAway || !this._screenHeld()) return;
-    const away = document.hidden || !document.hasFocus();
+    const away = awayFromDeck(this.stageHost);
     if (away) {
       if (this._screenFilming) {
         this._awayWhileFilming = true;
@@ -1706,7 +1709,7 @@ export class PlayerUI {
         await session.cancel();
         outcome = 'Rendering abandoned';
       } else {
-        await session.finish(renderPlan(timeline, aspect, width, fps));
+        await session.finish(renderPlan(timeline, aspect, width, fps, sent.clips));
         progress.textContent = `Composing ${output}.mp4…`;
         for (;;) {
           await new Promise((resolve) => setTimeout(resolve, 1000));

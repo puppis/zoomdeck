@@ -279,7 +279,10 @@ then asks again.
 
 **Away from the deck.** While a share is held, the deck films it by itself whenever you leave: switching to another tab,
 another application or another workspace starts the filming, setting the camera aside if it was
-on, and coming back to the deck stops it and brings the camera back as it was. A filming you
+on, and coming back to the deck stops it and brings the camera back as it was. A live page inside
+a slide counts as leaving too: a click into it gives it the focus and starts the filming, a click
+back on the slides ends it, so that what you do in the page is part of the talk, since the
+timeline keeps the deck's own events only and no player could replay clicks made inside a page. A filming you
 started by hand is left alone until you leave and come back, which ends it too; the button and
 `S` still work at any time. The setting "film it by itself whenever you leave the deck" under
 **Recording** turns this off, and "Ask for the screen when a recording starts" makes a recording
@@ -347,8 +350,12 @@ at once, in the background, while a browser, which may not open a tab without a 
 button. The setting "Render the talk as an MP4 video when a recording stops" under **Recording**
 turns this off. A render interrupted by quitting the desktop app is taken up again when the deck
 is opened next; stopping the computer right after a talk is therefore safe at any time, since the
-bundle itself is complete the moment the recording stops. Videos inside slides and live pages are
-drawn as the page shows them at each frame and do not play in time in the rendered file.
+bundle itself is complete the moment the recording stops. A video inside a slide is rendered frame
+by frame at the time it stood at, and one played with `muted=false` brings its sound into the
+file at its place in the talk. A live page cannot be drawn by the renderer (a browser never lets a
+page copy another page's pixels), so the rendered file shows its place as the deck shows it
+before the page is live; what happened inside it is in the talk only if the screen was filmed
+meanwhile, which a held share does by itself (see Away from the deck).
 
 **Exporting from the page.** Without ffmpeg, or when the file should go elsewhere, **Export video**
 renders the open recording in the page itself: the recording plays from the start while the

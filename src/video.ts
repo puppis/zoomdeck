@@ -13,10 +13,28 @@ export interface VideoClipOptions {
   muted?: boolean;
 }
 
+/**
+ * What an offline render learns about videos: when a clip starts playing and when it stops, on
+ * the page's clock (milliseconds), with its source and whether it is muted, so that the sound
+ * of an unmuted clip can be laid into the rendered file at the right place.
+ */
+export interface VideoRenderHooks {
+  onPlay?(clip: VideoClip, info: { src: string; start: number; muted: boolean }): void;
+  onStop?(clip: VideoClip, end: number): void;
+}
+
 /** A video on a plane; its current time is part of recorded snapshots. */
 export class VideoClip extends VideoMobject implements SnapshotExtra {
   /** Called when a seek has produced a new frame while nothing animates. */
   static onUpdate: (() => void) | null = null;
+  /**
+   * Set while a talk is rendered off the clock: the element is then never played, since the
+   * page's clock no longer runs at the speed of its media clock; the playing animation seeks it
+   * to the frame of the moment instead, and whoever draws waits for the frame (`settle`).
+   */
+  static render: VideoRenderHooks | null = null;
+  /** Whether a playing animation has this clip running, for the render hooks. */
+  private _playing = false;
   /** Seeks under way after a state was restored, for whoever must wait for their frames. */
   private static readonly _seeking = new Set<Promise<void>>();
   private _listening = false;
@@ -30,6 +48,7 @@ export class VideoClip extends VideoMobject implements SnapshotExtra {
   private _seekTo(time: number): void {
     const video = this._video;
     if (!video) return;
+    this._lastSeek = time;
     const seek = new Promise<void>((resolve) => {
       const done = () => {
         video.removeEventListener('seeked', done);
@@ -41,6 +60,31 @@ export class VideoClip extends VideoMobject implements SnapshotExtra {
     }).finally(() => VideoClip._seeking.delete(seek));
     VideoClip._seeking.add(seek);
     video.currentTime = time;
+  }
+
+  private _lastSeek: number | null = null;
+
+  /** Show the frame at `time` (seconds), waited for by `settle`; a time already shown is left alone. */
+  seekTo(time: number): void {
+    const video = this._video;
+    if (!video) return;
+    if (this._lastSeek !== null && Math.abs(this._lastSeek - time) < 1e-3 && Math.abs(video.currentTime - time) < 0.02) return;
+    this._seekTo(time);
+  }
+
+  /** A playing animation starts this clip (`start` on the page's clock, milliseconds), told to a render under way. */
+  renderPlaying(start: number): void {
+    if (this._playing) return;
+    this._playing = true;
+    const video = this._video;
+    VideoClip.render?.onPlay?.(this, { src: video?.currentSrc || video?.src || '', start, muted: video ? video.muted : true });
+  }
+
+  /** The clip stops, told to a render under way. */
+  renderStopped(end: number): void {
+    if (!this._playing) return;
+    this._playing = false;
+    VideoClip.render?.onStop?.(this, end);
   }
 
   constructor(src: string, options: VideoClipOptions = {}) {
@@ -110,6 +154,7 @@ export class VideoClip extends VideoMobject implements SnapshotExtra {
   rewind(): this {
     const video = this._video;
     if (video) {
+      if (VideoClip.render) this.renderStopped(performance.now());
       video.pause();
       this._seekTo(0);
       this.refresh();
@@ -126,6 +171,7 @@ export class VideoClip extends VideoMobject implements SnapshotExtra {
     const video = this._video;
     const state = value as { time: number } | null;
     if (!video || !state) return;
+    if (VideoClip.render) this.renderStopped(performance.now());
     video.pause();
     if (Math.abs(video.currentTime - state.time) > 0.02) this._seekTo(state.time);
   }
@@ -154,6 +200,13 @@ export class VideoPlay extends Animation {
     super.begin();
     const element = this.video.element;
     if (!element) return;
+    if (VideoClip.render) {
+      // Off the clock: the frames are asked for one by one, and the render learns when the clip runs.
+      element.pause();
+      this.video.seekTo(0);
+      this.video.renderPlaying(performance.now());
+      return;
+    }
     element.currentTime = 0;
     const started = element.play();
     if (started && typeof started.catch === 'function') started.catch(() => undefined);
@@ -162,6 +215,11 @@ export class VideoPlay extends Animation {
   interpolate(alpha: number): void {
     const element = this.video.element;
     if (!element) return;
+    if (VideoClip.render) {
+      this.video.seekTo(Math.max(0, Math.min(this.duration - 0.001, alpha * this.duration)));
+      this.video.refresh();
+      return;
+    }
     this.video.refresh();
     if (element.paused || alpha >= 1) return;
     // Keep the playhead near the clip's clock when the element stalls or the speed changes.
@@ -172,8 +230,10 @@ export class VideoPlay extends Animation {
   override finish(): void {
     const element = this.video.element;
     if (element) {
+      if (VideoClip.render) this.video.renderStopped(performance.now());
       element.pause();
-      element.currentTime = Math.max(0, this.duration - 0.001);
+      if (VideoClip.render) this.video.seekTo(Math.max(0, this.duration - 0.001));
+      else element.currentTime = Math.max(0, this.duration - 0.001);
       this.video.refresh();
     }
     super.finish();

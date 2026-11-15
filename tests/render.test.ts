@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cameraIntervals, displayWidth, installVirtualClock, renderPlan } from '../src/player/render';
+import { cameraIntervals, ClipLog, displayWidth, installVirtualClock, renderPlan } from '../src/player/render';
 import type { Timeline } from '../src/player/timeline';
 import { concatList, ffmpegArguments, splitInterval } from '../bin/render.mjs';
 
@@ -78,10 +78,39 @@ describe('render plans', () => {
         { file: 'a.part3.webm', start: 7000, duration: 3000, video: true, source: 'screen' },
       ],
       full: [[3000, 4000], [6500, 10_000]],
+      clips: [],
     });
     // The height is even, as the encoder wants, whatever the proportions.
     expect(renderPlan(timeline, 4 / 3, 1000, 30).height).toBe(750);
     expect(renderPlan(timeline, 16 / 10, 1000, 30).height % 2).toBe(0);
+  });
+
+  it('logs the stretches the slides\' videos played with sound, loops and all, and closes them at the end', () => {
+    const log = new ClipLog();
+    const loud = {};
+    const quiet = {};
+    log.played(loud, { src: 'http://h/deck/clip.mp4', start: 1000, muted: false });
+    log.played(quiet, { src: 'http://h/deck/silent.mp4', start: 1200, muted: true });
+    log.stopped(loud, 3000);
+    log.stopped(quiet, 3000);
+    // A loop: the same clip again and again, each cycle a stretch of its own; a stretch too short to hear is dropped.
+    log.played(loud, { src: 'http://h/deck/clip.mp4', start: 3000, muted: false });
+    log.stopped(loud, 5000);
+    log.played(loud, { src: 'http://h/deck/clip.mp4', start: 5000, muted: false });
+    log.stopped(loud, 5020);
+    log.played(loud, { src: 'http://h/deck/clip.mp4', start: 6000, muted: false });
+    expect(log.finish(8000)).toEqual([
+      { src: 'http://h/deck/clip.mp4', start: 1000, duration: 2000 },
+      { src: 'http://h/deck/clip.mp4', start: 3000, duration: 2000 },
+      { src: 'http://h/deck/clip.mp4', start: 6000, duration: 2000 },
+    ]);
+    const plan = renderPlan(timeline, 16 / 9, 1920, 30, log.clips);
+    expect(plan.clips).toHaveLength(3);
+    const args = ffmpegArguments(plan, '/w/frames.txt', plan.media.map((part) => ({ ...part, path: `/w/${part.file}`, audio: true })), '/w/v.mp4', [{ path: '/d/clip.mp4', start: 1000, duration: 2000 }]);
+    expect(args.slice(10, 18)).toEqual(['-i', '/w/a.webm', '-i', '/w/a.part2.webm', '-i', '/w/a.part3.webm', '-i', '/d/clip.mp4']);
+    const graph = args[args.indexOf('-filter_complex') + 1];
+    expect(graph).toContain('[4:a]atrim=0:2.000,asetpts=PTS-STARTPTS,aresample=48000,adelay=1000:all=1[a3]');
+    expect(graph).toContain('[a0][a1][a2][a3]amix=inputs=4');
   });
 
   it('splits a media file\'s stretch into the parts inside and outside the full-frame intervals', () => {

@@ -12,8 +12,8 @@
 import { promises as fs } from 'node:fs';
 import { existsSync } from 'node:fs';
 import { spawn, execFile } from 'node:child_process';
-import { basename, dirname, extname, join } from 'node:path';
-import { findExecutable } from './sync.mjs';
+import { basename, dirname, extname, join, resolve, sep } from 'node:path';
+import { documentPath, findExecutable, slashes } from './sync.mjs';
 import { FOLDER, NAME, deckFolderFor, writeIndex } from './recordings.mjs';
 import { readDirectory, readEntry } from './bundle.mjs';
 
@@ -86,12 +86,14 @@ export function concatList(frames, duration, fps) {
 /**
  * The ffmpeg arguments that compose the video. `plan` is the page's (src/player/render.ts),
  * `frames` the concat list's path, `parts` the media files in the plan's order with their
- * paths and whether each has sound, `output` the file to write.
+ * paths and whether each has sound, `clips` the slides' own videos that played with sound
+ * (path, start, duration), `output` the file to write.
  */
-export function ffmpegArguments(plan, frames, parts, output) {
+export function ffmpegArguments(plan, frames, parts, output, clips = []) {
   const { width: W, height: H, fps } = plan;
   const args = ['-y', '-v', 'error', '-stats', '-f', 'concat', '-safe', '0', '-i', frames];
   for (const part of parts) args.push('-i', part.path);
+  for (const clip of clips) args.push('-i', clip.path);
   const filters = [`[0:v]fps=${fps},format=rgba[deck]`];
   let current = 'deck';
   let label = 0;
@@ -148,6 +150,12 @@ export function ffmpegArguments(plan, frames, parts, output) {
   const sounds = parts.map((part, index) => ({ part, input: index + 1 })).filter(({ part }) => part.audio);
   sounds.forEach(({ part, input }, k) => {
     filters.push(`[${input}:a]aresample=48000,adelay=${Math.round(part.start)}:all=1[a${k}]`);
+  });
+  // A slide's video that played with its sound on: its sound from the start, for as long as it ran, at its place in the talk.
+  clips.forEach((clip, index) => {
+    const k = sounds.length + index;
+    filters.push(`[${parts.length + 1 + index}:a]atrim=0:${seconds(clip.duration)},asetpts=PTS-STARTPTS,aresample=48000,adelay=${Math.round(clip.start)}:all=1[a${k}]`);
+    sounds.push({ clip, input: parts.length + 1 + index });
   });
   if (sounds.length > 1) filters.push(`${sounds.map((_, k) => `[a${k}]`).join('')}amix=inputs=${sounds.length}:duration=longest:normalize=0[aout]`);
   args.push('-filter_complex', filters.join(';'), '-map', '[vout]');
@@ -258,8 +266,15 @@ async function compose(job, plan) {
     const ffprobe = findFfprobe(ffmpeg);
     const parts = [];
     for (const part of await mediaFiles(job, plan)) parts.push({ ...part, audio: await hasAudio(ffprobe, part.path) });
+    // The slides' own videos, by the files the page loaded them from; one that cannot be found or has no sound is left out.
+    const clips = [];
+    for (const clip of Array.isArray(plan.clips) ? plan.clips : []) {
+      const path = job.resolve ? job.resolve(clip.src) : null;
+      if (!path || !existsSync(path) || !(clip.duration > 0)) continue;
+      if (await hasAudio(ffprobe, path)) clips.push({ path, start: clip.start, duration: clip.duration });
+    }
     const temp = join(job.dir, 'video.mp4');
-    const args = ffmpegArguments(plan, list, parts, temp);
+    const args = ffmpegArguments(plan, list, parts, temp, clips);
     await fs.writeFile(join(job.dir, 'ffmpeg.txt'), args.join('\n'));
     await new Promise((done, fail) => {
       const child = spawn(ffmpeg, args, { stdio: ['ignore', 'ignore', 'pipe'] });
@@ -442,6 +457,14 @@ export function renderStore({ roots = [], openPage = null } = {}) {
           if (op === 'finish') {
             const plan = JSON.parse((await readBody(request, 16 * 1024 * 1024)).toString('utf8'));
             if (!plan || !Array.isArray(plan.media) || !(plan.fps > 0) || !(plan.width > 0) || !(plan.height > 0)) throw new Error('Not a render plan');
+            // A slide's video is a file this server shows: its URL leads to a path inside the served roots, or nowhere.
+            const allowed = (roots.length ? roots : [server.config.root]).map((candidate) => slashes(resolve(candidate)));
+            job.resolve = (src) => {
+              const path = documentPath(src, server.config.root);
+              if (!path) return null;
+              const normal = slashes(path);
+              return allowed.some((candidate) => normal === candidate || normal.startsWith(`${candidate}/`)) ? normal.split('/').join(sep) : null;
+            };
             void compose(job, plan);
             reply(response, 200, { ok: true });
             return;

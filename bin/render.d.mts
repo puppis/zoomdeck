@@ -19,6 +19,8 @@ export interface RenderPlan {
   pip: { corner: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'; size: number };
   media: Array<{ file: string; start: number; duration: number; video: boolean; source: 'camera' | 'screen' }>;
   full: Array<[number, number]>;
+  /** The slides' own videos that played with sound: their URLs and stretches. */
+  clips?: Array<{ src: string; start: number; duration: number }>;
 }
 
 /** The ffmpeg executable, or null when there is none. */
@@ -28,7 +30,7 @@ export function splitInterval(from: number, to: number, intervals: Array<[number
 /** The concat list for the deck frames. */
 export function concatList(frames: Array<{ n: number; t: number; file: string }>, duration: number, fps: number): string;
 /** The ffmpeg arguments that compose the video. */
-export function ffmpegArguments(plan: RenderPlan, frames: string, parts: Array<RenderPlan['media'][number] & { path: string; audio: boolean }>, output: string): string[];
+export function ffmpegArguments(plan: RenderPlan, frames: string, parts: Array<RenderPlan['media'][number] & { path: string; audio: boolean }>, output: string, clips?: Array<{ path: string; start: number; duration: number }>): string[];
 /** The jobs of a recordings folder, live and recorded. */
 export function listJobs(folder: string): Promise<RenderJobRecord[]>;
 /** Take up interrupted renders; resolves with the pages to open again. */
