@@ -51,6 +51,13 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 export type CameraMode = 'off' | 'corner' | 'full';
 
 /** What the export dialog settles: the file's name (without extension) and where it goes. */
+/** The document picture-in-picture API (Chromium): a small always-on-top window with a document of the page's own. */
+interface DocumentPictureInPicture {
+  requestWindow(options?: { width?: number; height?: number; disallowReturnToOpener?: boolean; preferInitialWindowPlacement?: boolean }): Promise<Window>;
+  readonly window: Window | null;
+}
+type PipWindow = Window & { documentPictureInPicture?: DocumentPictureInPicture };
+
 interface ExportChoice {
   name: string;
   /** `server`: rendered off the clock by the server into an MP4, not in this page. */
@@ -162,6 +169,8 @@ export class PlayerUI {
   private _screenDeclined = false;
   /** The offer to share the screen, while it is up. */
   private _screenOffer: HTMLElement | null = null;
+  /** The camera's floating window of the page's own (document picture-in-picture), while it is open. */
+  private _pipWindow: Window | null = null;
   /** Whether the deck was left while the screen was filmed by hand, so that coming back ends the filming too. */
   private _awayWhileFilming = false;
   /** Prompts of the browser open (its pickers for the screen and the camera), whose focus changes are no leave. */
@@ -909,7 +918,12 @@ export class PlayerUI {
   private _cameraInRecording(): boolean {
     if (this._cameraMode === 'off' || !this._cameraStream) return false;
     const wholeScreen = this._screenFilming && this._screenSurface() === 'monitor';
-    return !(wholeScreen && document.pictureInPictureElement === this._camera);
+    return !(wholeScreen && this._cameraFloating());
+  }
+
+  /** Whether the camera is in a floating window over the other applications now. */
+  private _cameraFloating(): boolean {
+    return this._pipWindow !== null || document.pictureInPictureElement === this._camera;
   }
 
   /**
@@ -955,11 +969,51 @@ export class PlayerUI {
 
   /** The camera into the browser's floating picture-in-picture window, where it stays in view while the deck is left; nothing where the browser does not allow it now. */
   private _enterPip(): void {
-    if (this._cameraMode === 'off' || !this._cameraStream || !document.pictureInPictureEnabled || document.pictureInPictureElement === this._camera) return;
-    void this._camera.requestPictureInPicture().catch(() => undefined);
+    const stream = this._cameraStream;
+    if (this._cameraMode === 'off' || !stream || this._cameraFloating()) return;
+    const documentPip = (window as PipWindow).documentPictureInPicture;
+    if (documentPip) {
+      // A window of the page's own, the size of the corner picture and styled like it (mirrored as the presenter sees
+      // it); the browser places it, usually at the bottom right, and keeps a close button of its own on it.
+      const rect = this._camera.getBoundingClientRect();
+      const width = Math.round(rect.width) || Math.round(this.stageHost.clientWidth * this._settings.recording.size) || 320;
+      const height = Math.round(rect.height) || Math.round((width * 9) / 16);
+      void documentPip.requestWindow({ width, height, disallowReturnToOpener: true }).then((pip) => {
+        this._pipWindow = pip;
+        const doc = pip.document;
+        doc.title = 'Camera';
+        const style = doc.createElement('style');
+        style.textContent = 'html,body{margin:0;height:100%;background:#000;overflow:hidden}video{display:block;width:100%;height:100%;object-fit:cover}video.mirror{transform:scaleX(-1)}';
+        doc.head.append(style);
+        const video = doc.createElement('video');
+        video.muted = true;
+        video.autoplay = true;
+        video.setAttribute('playsinline', '');
+        video.className = this._settings.recording.mirror ? 'mirror' : '';
+        video.srcObject = stream;
+        doc.body.append(video);
+        void video.play().catch(() => undefined);
+        // Closed by the browser's button, or by the camera going: the camera lane takes the picture back.
+        pip.addEventListener('pagehide', () => {
+          if (this._pipWindow === pip) this._pipWindow = null;
+          void this._recordPicture();
+        });
+        void this._recordPicture();
+      }).catch(() => {
+        // Not allowed now (no gesture): the browser's own video window, when it allows that.
+        if (document.pictureInPictureEnabled) void this._camera.requestPictureInPicture().catch(() => undefined);
+      });
+      return;
+    }
+    if (document.pictureInPictureEnabled) void this._camera.requestPictureInPicture().catch(() => undefined);
   }
 
   private _exitPip(): void {
+    const pip = this._pipWindow;
+    if (pip) {
+      this._pipWindow = null;
+      pip.close();
+    }
     if (document.pictureInPictureElement === this._camera) void document.exitPictureInPicture().catch(() => undefined);
   }
 
@@ -1065,7 +1119,7 @@ export class PlayerUI {
     const held = this._screenHeld();
     this._screenPickButton.hidden = !held;
     this._screenButton.classList.toggle('held', held);
-    this._screenButton.textContent = this._screenFilming ? 'Filming' : 'Screen';
+    this._screenButton.textContent = 'Screen';
     this._screenButton.title = this._screenFilming
       ? `Stop filming ${this._screenLabel()} (S); the share stays held`
       : held

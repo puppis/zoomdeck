@@ -233,8 +233,11 @@ you can record a talk without it even with a camera attached, or bring it in for
 only. The camera is yours alone: filming the screen (see Filming the screen under
 [Recording a talk](#recording-a-talk)) leaves it as you set it, in its corner, since the screen
 has the frame then (full frame is for the slides; `C` skips it while the screen is filmed), and
-while you are away from the deck the camera follows you in the browser's floating
-picture-in-picture window, where the browser allows a page to open one.
+while you are away from the deck the camera follows you in a floating window, the size of the
+corner picture and styled like it, mirrored as you see it; the browser places the window,
+usually at the bottom right of the screen, remembers where you drag it, and keeps a small close
+button of its own on it, which no page can remove. Where the browser allows a page no such
+window, its own video window stands in.
 
 ## Recording a talk
 
@@ -267,7 +270,7 @@ after the date and time, `talk-2026-11-13-1030`.
 
 **Filming the screen.** A talk may leave the deck for a while: a demonstration in another
 application, a terminal, a web page. **Screen** in the footer, or `S`, films the screen beside
-the camera until you press it again: the button reads Filming and the header says Screen exactly
+the camera until you press it again: the button looks the same meanwhile, the header says Screen exactly
 while the screen is filmed, and the camera stays as you set it. The screen is a lane of its own
 in the recording, overlapping the camera's files, so playback and the rendered video show it
 full frame with the camera in its corner over it; when the entire screen is filmed and the
