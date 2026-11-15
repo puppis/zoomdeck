@@ -12,8 +12,10 @@ import type { Corner } from './timeline';
 
 /** What the export draws from, supplied by the player interface. */
 export interface ExportSource {
-  /** Deck viewport proportions, width over height. */
+  /** Deck viewport proportions, width over height: the ink and the pointer are placed in a surface fitted to them. */
   aspect: number;
+  /** The frame's proportions, when they differ from the deck's (the window the talk was presented in, say). */
+  frameAspect?: number;
   background: string;
   foreground: string;
   penStyle: () => PenStyle;
@@ -84,8 +86,8 @@ export function drawFrame(context: CanvasRenderingContext2D, width: number, heig
     drawVideo(context, camera as HTMLVideoElement, 0, 0, width, height, source.mirror);
     return;
   }
-  // Surface units: the deck viewport is 1000 units tall, centered.
-  const k = height / 1000;
+  // Surface units: the deck viewport is 1000 units tall, fitted in the frame and centered, as the stage fits it in the window.
+  const k = Math.min(height / 1000, width / (1000 * source.aspect));
   if (state.board) {
     drawBoard(context, width, height, k, state.pan, source.foreground);
     drawStrokes(context, source.strokes('board'), source.penStyle(), k, width, height, state.pan);
@@ -200,7 +202,7 @@ export function exportVideo(playback: Playback, source: ExportSource, options: E
   const type = exportMimeType();
   if (!type) return Promise.reject(new Error('This browser cannot record video'));
   const width = options.width ?? 1920;
-  const height = Math.round(width / source.aspect / 2) * 2;
+  const height = Math.round(width / (source.frameAspect ?? source.aspect) / 2) * 2;
   const fps = options.fps ?? 30;
   const canvas = document.createElement('canvas');
   canvas.width = width;

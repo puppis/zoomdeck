@@ -338,13 +338,20 @@ ink and the pointer, in the deck's proportions) whenever it changes; the server
 then lays the camera, in its corner or full frame, and the filmed screen, whole, over those
 pictures with the recorded sound, straight from the bundle, and writes
 `recordings/<name>.video.mp4` (H.264 and AAC, which every player, phone and site reads). The
-list of talks shows the progress and opens the video (**Video**). The video is 1080p by default,
-the size of lecture recordings everywhere: 1080 pixels tall for a 16:9 deck, and for other
-proportions the frame of the same height, 1440 by 1080 for a 4:3 deck. The Export dialog offers
-1440p and 2160p for one video, for text-heavy decks watched full screen on sharp monitors or for
-an archive, at about twice and four times the encoding time and file size, and the display's own
-size for a frame exactly as the presenter's screen; the choice under **Recording** in the settings
-holds for every render. A render takes a fraction of
+list of talks shows the progress and opens the video (**Video**). The frame has the proportions
+the deck was *presented* in by default: a recording keeps the shape of the stage, the area of the
+window between header and footer or the whole screen in fullscreen, at its start and after every
+resize, and the video takes the shape that held for longest, so that everything the presenter
+saw is in it, drawings made in the margin beyond the slides and the surroundings of a child slide
+included, as a window of that shape shows them. The deck's own proportions and 16:9 are the
+other choices, for sites and players that want a standard frame, with the warning that drawings
+made beyond the slides may then be cropped; a recording made before the stage's shape was kept
+takes the deck's. The video is 1080p by default, the size of lecture recordings everywhere: 1080
+pixels tall for a 16:9 frame, and for other proportions the frame of the same height, 1440 by
+1080 for 4:3. The Export dialog offers 1440p and 2160p for one video, for text-heavy decks
+watched full screen on sharp monitors or for an archive, at about twice and four times the
+encoding time and file size, and the display's own size for a frame exactly as the presenter's
+screen; the choices under **Recording** in the settings hold for every render. A render takes a fraction of
 the talk's length, how small depending on how much moves in it, since ffmpeg's encoding of the
 frames takes most of the time. The desktop app renders in a
 hidden window of its own; a browser opens a tab for it, which closes itself when the video is

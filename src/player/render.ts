@@ -14,7 +14,7 @@ import { VideoClip } from '../video';
 import type { Playback } from './playback';
 import type { Player } from './player';
 import type { Stage } from './stage';
-import type { Corner, Timeline, TimelineEvent } from './timeline';
+import { presentedAspect, type Corner, type Timeline, type TimelineEvent } from './timeline';
 
 /** The page's clock under the renderer's control. */
 export interface VirtualClock {
@@ -145,6 +145,22 @@ export function videoWidthFor(height: number, aspect: number): number {
   return Math.max(2, Math.round((height * aspect) / 2) * 2);
 }
 
+/** How the frame's proportions are chosen: as the deck was presented (the recorded stage), the deck's own, or 16:9. */
+export type AspectChoice = 'presented' | 'deck' | 'wide';
+
+/** The frame's proportions for a choice; `presented` falls back to the deck's for a recording that kept none. */
+export function frameAspect(choice: AspectChoice, timeline: Timeline, deckAspect: number): number {
+  if (choice === 'wide') return 16 / 9;
+  if (choice === 'presented') return presentedAspect(timeline.events, timeline.duration) ?? deckAspect;
+  return deckAspect;
+}
+
+/** The size of a video's frame: `size` is a standard height (1080, 1440, 2160) or 'display' for the display's own width, in the proportions `aspect`. */
+export function frameSize(size: number | 'display', aspect: number): { width: number; height: number } {
+  const width = size === 'display' ? displayWidth() : videoWidthFor(size, aspect);
+  return { width, height: Math.max(2, Math.round(width / aspect / 2) * 2) };
+}
+
 /** The width of this display in device pixels, even, between 1280 and 3840, for a video sized exactly as the presenter's screen. */
 export function displayWidth(): number {
   const pixels = Math.round((typeof screen !== 'undefined' && screen.width ? screen.width : 1920) * (typeof window !== 'undefined' && window.devicePixelRatio ? window.devicePixelRatio : 1));
@@ -240,6 +256,8 @@ export class ClipLog {
 
 export interface RenderOptions {
   width?: number;
+  /** The frame's proportions; the deck's when absent. */
+  aspect?: number;
   fps?: number;
   /** Receives each frame: the picture when it changed, null when the previous one holds; `t` in milliseconds. */
   onFrame(blob: Blob | null, t: number, index: number): Promise<void> | void;
@@ -262,7 +280,8 @@ export interface RenderResult {
 export async function renderTalk(playback: Playback, player: Player, stage: Stage, source: Omit<ExportSource, 'stage' | 'camera'>, options: RenderOptions): Promise<RenderResult | null> {
   const fps = options.fps ?? 30;
   const width = options.width ?? 1920;
-  const height = Math.round(width / source.aspect / 2) * 2;
+  const aspect = options.aspect ?? source.aspect;
+  const height = Math.round(width / aspect / 2) * 2;
   const duration = playback.duration;
   const frames = Math.max(1, Math.ceil((duration / 1000) * fps));
   const canvas = document.createElement('canvas');
@@ -302,7 +321,7 @@ export async function renderTalk(playback: Playback, player: Player, stage: Stag
           continue;
         }
         const shot = capture();
-        drawFrame(context, width, height, { ...source, camera: null, stage: () => ({ canvas: shot, sx: 0, sy: 0, sw: shot.width, sh: shot.height }) }, state);
+        drawFrame(context, width, height, { ...source, frameAspect: aspect, camera: null, stage: () => ({ canvas: shot, sx: 0, sy: 0, sw: shot.width, sh: shot.height }) }, state);
         lastRenders = stage.renders;
         lastSignature = signature;
         const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
@@ -366,13 +385,14 @@ export async function requestRender(base: string, talk: string, output: string, 
   return Boolean(result.started);
 }
 
-/** The page that renders `talk` off the clock into `output`, given the deck page's own URL. */
-export function renderPageUrl(talk: string, output: string, fps = 30, width = 1920): string {
+/** The page that renders `talk` off the clock into `output`, given the deck page's own URL: the size and proportions are resolved there, where the timeline is. */
+export function renderPageUrl(talk: string, output: string, size: number | 'display', aspect: AspectChoice, fps = 30): string {
   const url = new URL(location.href);
   url.searchParams.set('render', talk);
   url.searchParams.set('as', output);
   url.searchParams.set('fps', String(fps));
-  url.searchParams.set('width', String(width));
+  url.searchParams.set('size', String(size));
+  url.searchParams.set('aspect', aspect);
   url.hash = '';
   return url.href;
 }

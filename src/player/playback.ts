@@ -244,7 +244,7 @@ export class Playback {
       case 'camera': state.camera = event.on; break;
       case 'pointer': state.pointer = { mode: event.mode, x: event.x, y: event.y, r: event.r }; break;
       case 'pointer-off': state.pointer = null; break;
-      case 'ink': case 'cut': break;
+      case 'ink': case 'cut': case 'stage': break;
     }
   }
 

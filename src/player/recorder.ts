@@ -242,8 +242,9 @@ export class Recorder {
 }
 
 /** The first navigation event of a recording: where the deck stood when it began. */
-export function initialEvents(stop: StopRef | null, board: boolean, pan: { x: number; y: number }, camera: boolean, speed: number): UntimedEvent[] {
+export function initialEvents(stop: StopRef | null, board: boolean, pan: { x: number; y: number }, camera: boolean, speed: number, aspect: number | null = null): UntimedEvent[] {
   const events: UntimedEvent[] = [];
+  if (aspect && aspect > 0) events.push({ type: 'stage', aspect });
   if (stop) events.push({ type: 'go', stop, autoplay: false });
   if (speed !== 1) events.push({ type: 'speed', value: speed });
   if (board) events.push({ type: 'board', on: true });

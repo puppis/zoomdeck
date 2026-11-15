@@ -296,7 +296,11 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
   if (useLocation) {
     const params = new URLSearchParams(location.search);
     const talk = params.get('render');
-    if (talk) void ui.renderTalkOffline(talk, params.get('as') || `${talk}.video`, Number(params.get('fps')) || 30, Number(params.get('width')) || 1920);
+    if (talk) {
+      const size = params.get('size') === 'display' ? 'display' : Number(params.get('size')) || 1080;
+      const aspect = params.get('aspect');
+      void ui.renderTalkOffline(talk, params.get('as') || `${talk}.video`, Number(params.get('fps')) || 30, size, aspect === 'deck' || aspect === 'wide' ? aspect : 'presented');
+    }
   }
   let destroyed = false;
   const destroy = () => {

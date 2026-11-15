@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { cameraIntervals, ClipLog, displayWidth, installVirtualClock, renderPlan, videoWidthFor } from '../src/player/render';
+import { cameraIntervals, ClipLog, displayWidth, frameAspect, frameSize, installVirtualClock, renderPlan, videoWidthFor } from '../src/player/render';
+import { aspectName, presentedAspect } from '../src/player/timeline';
 import type { Timeline } from '../src/player/timeline';
 import { concatList, ffmpegArguments, splitInterval } from '../bin/render.mjs';
 
@@ -64,6 +65,21 @@ describe('render plans', () => {
     expect(width % 2).toBe(0);
     expect(width).toBeGreaterThanOrEqual(1280);
     expect(width).toBeLessThanOrEqual(3840);
+  });
+
+  it('takes the proportions the deck was presented in, the deck\'s own or 16:9, and names them', () => {
+    const presented: Timeline = { ...timeline, events: [{ t: 0, type: 'stage', aspect: 1.6 }, { t: 2000, type: 'stage', aspect: 4 / 3 }, { t: 9000, type: 'stage', aspect: 1.6 }] };
+    // The window was 4:3 for seven of the ten seconds.
+    expect(presentedAspect(presented.events, 10_000)).toBe(1.333);
+    expect(presentedAspect(timeline.events, 10_000)).toBeNull();
+    expect(frameAspect('presented', presented, 16 / 9)).toBe(1.333);
+    expect(frameAspect('presented', timeline, 16 / 9)).toBe(16 / 9);
+    expect(frameAspect('deck', presented, 4 / 3)).toBe(4 / 3);
+    expect(frameAspect('wide', presented, 4 / 3)).toBe(16 / 9);
+    expect(frameSize(1080, 16 / 9)).toEqual({ width: 1920, height: 1080 });
+    expect(frameSize(1080, 1.333)).toEqual({ width: 1440, height: 1080 });
+    expect(frameSize('display', 16 / 9).width).toBe(displayWidth());
+    expect([aspectName(16 / 9), aspectName(1.6), aspectName(1.333), aspectName(2)]).toEqual(['16:9', '16:10', '4:3', '2.00:1']);
   });
 
   it('lists when the camera fills the frame', () => {

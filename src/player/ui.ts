@@ -26,8 +26,8 @@ import { PRINT_WIDTHS, printDeck, printPages, type PrintPages } from './print';
 import { zipFiles } from './zip';
 import { deleteRecording, describeMedia, download, listRecordings, loadTimeline, mediaFileName, mediaSource, recordingStoreAvailable, RecordingSession, recordingUrl, saveFile, type RecordingEntry } from './store';
 import { awayFromDeck } from './away';
-import { displayWidth, renderPageUrl, renderPlan, RenderSession, renderStatus, renderTalk, requestRender, VIDEO_HEIGHTS, videoWidthFor, type RenderStatus } from './render';
-import { appendPart, formatTime, recordingName, stopRef, structureHash, type Corner, type PointerKind, type Timeline, type TimelineEvent, type TimelineMedia, type UntimedEvent } from './timeline';
+import { displayWidth, frameAspect, frameSize, renderPageUrl, renderPlan, RenderSession, renderStatus, renderTalk, requestRender, VIDEO_HEIGHTS, type AspectChoice, type RenderStatus } from './render';
+import { appendPart, aspectName, formatTime, presentedAspect, recordingName, stopRef, structureHash, type Corner, type PointerKind, type Timeline, type TimelineEvent, type TimelineMedia, type UntimedEvent } from './timeline';
 
 /** A tablet page known to the presenter. */
 interface PadEntry {
@@ -55,8 +55,9 @@ interface ExportChoice {
   name: string;
   /** `server`: rendered off the clock by the server into an MP4, not in this page. */
   destination: 'server' | 'folder' | 'pick' | 'download';
-  /** Frame width in pixels. */
-  width: number;
+  /** The frame: a standard height or the display's own width, in the chosen proportions. */
+  size: number | 'display';
+  aspect: AspectChoice;
   /** The file chosen through the browser's save dialog, where it offers one. */
   handle?: FileSystemFileHandle;
 }
@@ -186,10 +187,18 @@ export class PlayerUI {
   private _render: RenderStatus = { ffmpeg: false, desktop: false, jobs: [] };
   private _renderToggle!: HTMLInputElement;
   private _renderSizeSelect!: HTMLSelectElement;
+  private _renderAspectSelect!: HTMLSelectElement;
 
-  /** The frame width of a video of the given size (a 16:9 height, or null for the display's own) in the deck's proportions. */
-  private _videoWidth(height: number | null = this._settings.recording.renderHeight): number {
-    return height === null ? displayWidth() : videoWidthFor(height, this._deck.viewport.width / this._deck.viewport.height);
+  /** The deck viewport's proportions, width over height. */
+  private get _deckAspect(): number {
+    return this._deck.viewport.width / this._deck.viewport.height;
+  }
+
+  /** The stage's proportions as the window shows it now; null before the stage has a size. */
+  private _stageAspect(): number | null {
+    const width = this.stageHost.clientWidth;
+    const height = this.stageHost.clientHeight;
+    return width > 0 && height > 0 ? Math.round((width / height) * 1000) / 1000 : null;
   }
 
   /** A select of video sizes: the standard ones by name, then the display's own; '' stands for the display. */
@@ -198,6 +207,17 @@ export class PlayerUI {
     for (const [height, text] of VIDEO_HEIGHTS) select.append(el('option', { value: String(height), text }));
     select.append(el('option', { value: '', text: `The display's own size (${displayWidth()} px wide)` }));
     select.value = current === null ? '' : String(current);
+    return select;
+  }
+
+  /** A select of frame proportions; `presented` names the recorded ones when a timeline is given. */
+  private _aspectSelect(label: string, current: AspectChoice, timeline: Timeline | null): HTMLSelectElement {
+    const select = el('select', { 'aria-label': label });
+    const presented = timeline ? presentedAspect(timeline.events, timeline.duration) : null;
+    select.append(el('option', { value: 'presented', text: `As presented${presented ? ` (${aspectName(presented)}, the window's)` : timeline ? ` (not kept by this recording: the deck's, ${aspectName(this._deckAspect)})` : ''}` }));
+    select.append(el('option', { value: 'deck', text: `The deck's (${aspectName(this._deckAspect)}; drawings made beyond the slides may be cropped)` }));
+    select.append(el('option', { value: 'wide', text: '16:9 (drawings made beyond the slides may be cropped)' }));
+    select.value = current;
     return select;
   }
   private readonly _recordButton: HTMLButtonElement;
@@ -318,7 +338,7 @@ export class PlayerUI {
     this._playToggle = el('button', { class: 'play-toggle', 'aria-label': 'Play or pause the recording', text: '▶' });
     this._playRange = el('input', { type: 'range', min: '0', max: '1000', value: '0', 'aria-label': 'Position in the recording' });
     this._playTime = el('span', { class: 'play-time', text: '0:00 / 0:00' });
-    this._exportButton = el('button', { class: 'export-button', text: 'Export video', title: 'Render this recording as a video file, in real time' });
+    this._exportButton = el('button', { class: 'export-button', text: 'Export video', title: 'Render or export this recording as a video file' });
     const talks = el('button', { class: 'talks-button', text: 'Talks…', title: 'Choose, continue or delete a recorded talk' });
     talks.addEventListener('click', () => this.openRecordingList());
     const closePlayback = el('button', { class: 'close-playback', 'aria-label': 'Leave the recording', title: 'Leave the recording (Esc)', text: '×' });
@@ -548,6 +568,16 @@ export class PlayerUI {
     this._player = player;
     this._stage = stage;
     this._navigation = navigation;
+    // A recording keeps the stage's proportions, so that a video can show what the window showed.
+    let resized: number | null = null;
+    stage.afterResize.push(() => {
+      if (resized !== null) clearTimeout(resized);
+      resized = window.setTimeout(() => {
+        resized = null;
+        const aspect = this._stageAspect();
+        if (aspect && this._recorder) this._note({ type: 'stage', aspect });
+      }, 300);
+    });
     if (this._settings.reversePlayback !== null) player.reversePlayback = this._settings.reversePlayback;
     this._syncSettingsForm();
     const slides = new Map(navigation.slides.map((slide) => [slide.id, slide]));
@@ -1219,7 +1249,7 @@ export class PlayerUI {
     this._talkName = name;
     this._draftTick = 0;
     this._pointerMarked = false;
-    for (const event of initialEvents(stopRef(this._navigation, this._player.index), this._boardOn, this._boardTarget, this._cameraFull, this._player.speed)) recorder.mark(event);
+    for (const event of initialEvents(stopRef(this._navigation, this._player.index), this._boardOn, this._boardTarget, this._cameraFull, this._player.speed, this._stageAspect())) recorder.mark(event);
     this._recordButton.textContent = '■ Stop';
     this._recordButton.setAttribute('aria-pressed', 'true');
     this._pauseButton.hidden = false;
@@ -1592,10 +1622,10 @@ export class PlayerUI {
    * render page in a hidden window of its own; a browser opens it in a new tab (from a click,
    * or the tab is blocked). The list of talks shows the progress and opens the video.
    */
-  async startRender(talk: string, output: string, width = this._videoWidth()): Promise<void> {
+  async startRender(talk: string, output: string, size: number | 'display' = this._settings.recording.renderHeight ?? 'display', aspect: AspectChoice = this._settings.recording.renderAspect): Promise<void> {
     const base = this._deck.base;
     if (!base || !recordingStoreAvailable()) return;
-    const url = renderPageUrl(talk, output, 30, width);
+    const url = renderPageUrl(talk, output, size, aspect);
     try {
       const taken = await requestRender(base, talk, output, url);
       if (!taken && !window.open(url, '_blank')) {
@@ -1639,7 +1669,7 @@ export class PlayerUI {
    * the deck frames go out as they are drawn, the plan at the end, and the page waits for the
    * video before closing itself where it was opened for this alone.
    */
-  async renderTalkOffline(talk: string, output: string, fps = 30, width = 1920): Promise<void> {
+  async renderTalkOffline(talk: string, output: string, fps = 30, size: number | 'display' = 1080, aspectChoice: AspectChoice = 'presented'): Promise<void> {
     const base = this._deck.base;
     const player = this._player;
     const navigation = this._navigation;
@@ -1676,9 +1706,10 @@ export class PlayerUI {
     this._playbackName = talk;
     this.root.classList.add('playing-back');
     const session = new RenderSession(base, talk, output);
-    const aspect = this._deck.viewport.width / this._deck.viewport.height;
+    const aspect = frameAspect(aspectChoice, timeline, this._deckAspect);
+    const { width } = frameSize(size, aspect);
     const source = {
-      aspect,
+      aspect: this._deckAspect,
       background: this._deck.background,
       foreground: this._deck.foreground,
       penStyle: () => this._settings.pen,
@@ -1694,6 +1725,7 @@ export class PlayerUI {
       const sent = await renderTalk(playback, player, stage, source, {
         fps,
         width,
+        aspect,
         onFrame: async (blob, t, index) => {
           if (blob) await session.frame(index, t, blob);
         },
@@ -1763,7 +1795,7 @@ export class PlayerUI {
         this.stageHost.classList.remove('spotlight-active');
         this._updateSpotlight();
         break;
-      case 'go': case 'rewind': case 'speed': case 'cut': break;
+      case 'go': case 'rewind': case 'speed': case 'cut': case 'stage': break;
     }
   }
 
@@ -1772,23 +1804,26 @@ export class PlayerUI {
     const playback = this._playback;
     const talk = this._playbackName;
     if (!playback || !talk || this._exporting) return;
-    const choice = await this._confirmExport(talk);
+    const choice = await this._confirmExport(talk, playback.timeline);
     if (!choice || this._exporting || this._playback !== playback) return;
     const name = choice.name;
     if (choice.destination === 'server') {
-      await this.startRender(talk, name, choice.width);
+      await this.startRender(talk, name, choice.size, choice.aspect);
       return;
     }
+    const aspect = frameAspect(choice.aspect, playback.timeline, this._deckAspect);
+    const { width } = frameSize(choice.size, aspect);
     this._exporting = true;
     this._exportButton.disabled = true;
     this._playRange.disabled = true;
     const source: ExportSource = {
-      aspect: this._deck.viewport.width / this._deck.viewport.height,
+      aspect: this._deckAspect,
+      frameAspect: aspect,
       background: this._deck.background,
       foreground: this._deck.foreground,
       penStyle: () => this._settings.pen,
       strokes: (surface) => this._surface(surface).strokes,
-      stage: () => this._stageCrop(),
+      stage: () => this._stageCrop(aspect),
       camera: playback.timeline.media.length ? this._camera : null,
       screen: () => playback.part?.source === 'screen',
       mirror: false,
@@ -1796,7 +1831,7 @@ export class PlayerUI {
     };
     try {
       const blob = await exportVideo(playback, source, {
-        width: choice.width,
+        width,
         onProgress: (fraction) => {
           this._exportButton.textContent = `Exporting… ${Math.round(fraction * 100)}%`;
         },
@@ -1824,7 +1859,7 @@ export class PlayerUI {
   }
 
   /** Ask for the video's name and where it goes, and for the go-ahead; null when the dialog is dismissed. */
-  private _confirmExport(talk: string): Promise<ExportChoice | null> {
+  private _confirmExport(talk: string, timeline: Timeline): Promise<ExportChoice | null> {
     const folder = Boolean(this._deck.base && recordingStoreAvailable());
     const picker = typeof (window as SavePickerWindow).showSaveFilePicker === 'function';
     const dialog = el('dialog', { class: 'settings export' });
@@ -1837,19 +1872,22 @@ export class PlayerUI {
     where.append(el('option', { value: 'download', text: "The browser's downloads" }));
     const suffix = el('span', { class: 'note', text: '.webm' });
     const sizeSelect = this._sizeSelect('Size of the video', this._settings.recording.renderHeight);
-    const chosenWidth = () => this._videoWidth(Number(sizeSelect.value) || null);
+    const aspectSelect = this._aspectSelect('Proportions of the video', this._settings.recording.renderAspect, timeline);
+    const chosenSize = (): number | 'display' => Number(sizeSelect.value) || 'display';
+    const chosenAspect = () => aspectSelect.value as AspectChoice;
     const status = el('p', { class: 'note' });
     const describe = () => {
       const server = where.value === 'server';
       suffix.textContent = server ? '.mp4' : '.webm';
-      const width = chosenWidth();
-      const size = `${width} by ${Math.round(width / (this._deck.viewport.width / this._deck.viewport.height) / 2) * 2} pixels`;
+      const frame = frameSize(chosenSize(), frameAspect(chosenAspect(), timeline, this._deckAspect));
+      const size = `${frame.width} by ${frame.height} pixels`;
       status.textContent = server
         ? `The talk is rendered in a page of its own, off the clock and faster than real time, and ffmpeg lays the camera, the screen and the sound from the recording over the deck: an MP4 file (H.264 and AAC), ${size}. This page is free meanwhile; the list of talks shows the progress and opens the video.`
         : `The recording plays from the start while the video is written, which takes as long as the talk; keep this window visible until it ends. The file is WebM (VP9 and Opus), ${size}, with the slides or the whiteboard and their ink, the camera in its corner or full frame, the pointer, and the sound.`;
     };
     where.addEventListener('change', describe);
     sizeSelect.addEventListener('change', describe);
+    aspectSelect.addEventListener('change', describe);
     describe();
     const run = el('button', { class: 'add', text: 'Export', autofocus: '' });
     const cancel = el('button', { text: 'Cancel' });
@@ -1859,6 +1897,7 @@ export class PlayerUI {
         el('div', { class: 'row' }, el('label', {}, 'Name ', nameInput), suffix),
         el('div', { class: 'row' }, el('label', {}, 'Save to ', where)),
         el('div', { class: 'row' }, el('label', {}, 'Size ', sizeSelect)),
+        el('div', { class: 'row' }, el('label', {}, 'Proportions ', aspectSelect)),
         status,
         el('div', { class: 'row' }, run, cancel)),
     );
@@ -1879,7 +1918,7 @@ export class PlayerUI {
             }
             if (!handle) return;
           }
-          choice = { name, destination, handle, width: chosenWidth() };
+          choice = { name, destination, handle, size: chosenSize(), aspect: chosenAspect() };
           dialog.close();
         })();
       });
@@ -1985,15 +2024,15 @@ export class PlayerUI {
   }
 
   /** The WebGL canvas and the device-pixel rectangle of the deck's viewport in it, after a fresh render. */
-  private _stageCrop(): { canvas: HTMLCanvasElement; sx: number; sy: number; sw: number; sh: number } | null {
+  /** The live canvas, freshly rendered, and the centered part of it in the proportions `aspect` (the deck's by default), as large as the canvas allows. */
+  private _stageCrop(aspect = this._deckAspect): { canvas: HTMLCanvasElement; sx: number; sy: number; sw: number; sh: number } | null {
     const stage = this._stage;
     const canvas = this.stageHost.querySelector('canvas');
     if (!stage || !canvas || canvas.width === 0) return null;
     stage.render();
-    const { width, height, scale } = this._highlightGeometry();
-    const ratio = canvas.width / Math.max(1, this.stageHost.clientWidth);
-    const sw = Math.max(1, Math.round(width * scale * ratio));
-    const sh = Math.max(1, Math.round(height * scale * ratio));
+    const wide = canvas.width / canvas.height > aspect;
+    const sw = Math.max(1, Math.round(wide ? canvas.height * aspect : canvas.width));
+    const sh = Math.max(1, Math.round(wide ? canvas.height : canvas.width / aspect));
     return { canvas, sx: Math.round((canvas.width - sw) / 2), sy: Math.round((canvas.height - sh) / 2), sw, sh };
   }
 
@@ -2204,6 +2243,11 @@ export class PlayerUI {
       this._settings.recording.renderHeight = Number(this._renderSizeSelect.value) || null;
       saveSettings(this._settings);
     });
+    this._renderAspectSelect = this._aspectSelect('Proportions of rendered and exported videos', DEFAULT_RECORDING.renderAspect, null);
+    this._renderAspectSelect.addEventListener('change', () => {
+      this._settings.recording.renderAspect = this._renderAspectSelect.value as AspectChoice;
+      saveSettings(this._settings);
+    });
     this._mirrorToggle = el('input', { type: 'checkbox' });
     this._mirrorToggle.addEventListener('change', () => {
       this._settings.recording.mirror = this._mirrorToggle.checked;
@@ -2235,6 +2279,7 @@ export class PlayerUI {
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Ask for the screen when a recording starts, so that a share is held from the start' }), this._screenAskToggle),
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Render the talk as an MP4 video when a recording stops, off the clock, where the server has ffmpeg (the desktop app does it in the background; a browser offers a button, since it opens a tab for it)' }), this._renderToggle),
       el('div', { class: 'row' }, el('label', {}, 'Size of rendered and exported videos ', this._renderSizeSelect)),
+      el('div', { class: 'row' }, el('label', {}, 'Proportions of rendered and exported videos ', this._renderAspectSelect)),
     );
     const resetRecording = el('button', { text: 'Restore the default recording settings' });
     resetRecording.addEventListener('click', () => {
@@ -2562,6 +2607,7 @@ export class PlayerUI {
     this._screenAskToggle.checked = recording.screenOnRecord;
     this._renderToggle.checked = recording.renderOnStop;
     this._renderSizeSelect.value = recording.renderHeight === null ? '' : String(recording.renderHeight);
+    this._renderAspectSelect.value = recording.renderAspect;
     this._antialiasToggle.checked = this._settings.rendering.antialias;
     this._resolutionSelect.value = String(this._settings.rendering.resolution);
     this._renderingChanged();

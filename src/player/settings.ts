@@ -31,16 +31,19 @@ export interface RecordingSettings {
   renderOnStop: boolean;
   /** Height in pixels of rendered and exported videos, as of a 16:9 frame (1080, 1440 or 2160); null for the display's own size. */
   renderHeight: number | null;
+  /** The proportions of rendered and exported videos: those the deck was presented in, the deck's own, or 16:9. */
+  renderAspect: 'presented' | 'deck' | 'wide';
 }
 
 export const RENDER_HEIGHTS = [1080, 1440, 2160];
+export const RENDER_ASPECTS = ['presented', 'deck', 'wide'] as const;
 
 export const SCREEN_SURFACES = ['monitor', 'window', 'browser'] as const;
 
 export const CORNERS: Corner[] = ['bottom-right', 'bottom-left', 'top-right', 'top-left'];
 export const PIP_SIZES: Array<[number, string]> = [[0.12, 'Small'], [0.18, 'Medium'], [0.25, 'Large']];
 
-export const DEFAULT_RECORDING: RecordingSettings = { microphone: null, camera: null, mirror: true, corner: 'bottom-right', size: 0.18, screenWhenAway: true, screenOnRecord: false, screenSurface: 'monitor', renderOnStop: true, renderHeight: 1080 };
+export const DEFAULT_RECORDING: RecordingSettings = { microphone: null, camera: null, mirror: true, corner: 'bottom-right', size: 0.18, screenWhenAway: true, screenOnRecord: false, screenSurface: 'monitor', renderOnStop: true, renderHeight: 1080, renderAspect: 'presented' };
 
 export function sanitizeRecording(value: unknown): RecordingSettings {
   const result = { ...DEFAULT_RECORDING };
@@ -58,6 +61,7 @@ export function sanitizeRecording(value: unknown): RecordingSettings {
   if (typeof saved.screenSurface === 'string' && (SCREEN_SURFACES as readonly string[]).includes(saved.screenSurface)) result.screenSurface = saved.screenSurface as RecordingSettings['screenSurface'];
   if (typeof saved.renderOnStop === 'boolean') result.renderOnStop = saved.renderOnStop;
   if (saved.renderHeight === null || (typeof saved.renderHeight === 'number' && RENDER_HEIGHTS.includes(saved.renderHeight))) result.renderHeight = saved.renderHeight as number | null;
+  if (typeof saved.renderAspect === 'string' && (RENDER_ASPECTS as readonly string[]).includes(saved.renderAspect)) result.renderAspect = saved.renderAspect as RecordingSettings['renderAspect'];
   // The short-lived width setting of a 16:9 frame maps to the height of the same frame.
   else if (typeof (saved as { renderWidth?: unknown }).renderWidth === 'number') result.renderHeight = { 1920: 1080, 2560: 1440, 3840: 2160 }[(saved as { renderWidth: number }).renderWidth] ?? 1080;
   return result;

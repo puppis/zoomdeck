@@ -73,7 +73,9 @@ export type TimelineEvent =
   | { t: number; type: 'pointer'; mode: PointerKind; x: number; y: number; r: number }
   | { t: number; type: 'pointer-off' }
   /** Where the recording was paused and resumed; the gap is not in the recording. */
-  | { t: number; type: 'cut' };
+  | { t: number; type: 'cut' }
+  /** The proportions (width over height) of the stage the deck was presented on, at the start and after each resize. */
+  | { t: number; type: 'stage'; aspect: number };
 
 /** An event without its time stamp, as the recorder receives them (distributes over the union). */
 export type UntimedEvent = TimelineEvent extends infer E ? (E extends TimelineEvent ? Omit<E, 't'> : never) : never;
@@ -95,6 +97,36 @@ export interface TimelineMedia {
   source?: 'camera' | 'screen';
   start: number;
   duration: number;
+}
+
+/**
+ * The proportions the deck was presented in for the longest stretch of the talk (a window
+ * resized during the talk changes them), or null for a recording made before they were kept.
+ */
+export function presentedAspect(events: TimelineEvent[], duration: number): number | null {
+  const stretches = new Map<number, number>();
+  let current: number | null = null;
+  let since = 0;
+  const close = (until: number) => {
+    if (current !== null) stretches.set(current, (stretches.get(current) ?? 0) + Math.max(0, until - since));
+  };
+  for (const event of events) {
+    if (event.type !== 'stage' || !(event.aspect > 0)) continue;
+    close(event.t);
+    current = Math.round(event.aspect * 1000) / 1000;
+    since = event.t;
+  }
+  close(Math.max(duration, since));
+  let best: number | null = null;
+  for (const [aspect, length] of stretches) if (best === null || length > (stretches.get(best) ?? 0)) best = aspect;
+  return best;
+}
+
+/** A name for proportions: 16:9, 16:10, 4:3, 3:2, 21:9, or the ratio to one. */
+export function aspectName(aspect: number): string {
+  const named: Array<[number, string]> = [[16 / 9, '16:9'], [16 / 10, '16:10'], [4 / 3, '4:3'], [3 / 2, '3:2'], [21 / 9, '21:9'], [1, '1:1'], [9 / 16, '9:16'], [5 / 4, '5:4']];
+  for (const [value, name] of named) if (Math.abs(value - aspect) < 0.01) return name;
+  return `${aspect.toFixed(2)}:1`;
 }
 
 /** The media part that covers time `t`, or the last one at the very end; null without media. */
@@ -144,7 +176,7 @@ export function stateAt(events: TimelineEvent[], t: number): TimelineState {
       case 'camera': state.camera = event.on; break;
       case 'pointer': state.pointer = { mode: event.mode, x: event.x, y: event.y, r: event.r }; break;
       case 'pointer-off': state.pointer = null; break;
-      case 'ink': case 'cut': break;
+      case 'ink': case 'cut': case 'stage': break;
     }
   }
   return state;

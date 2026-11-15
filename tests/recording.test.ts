@@ -119,7 +119,7 @@ describe('timelines', () => {
   it('stamps events on a clock that skips pauses, without any media', async () => {
     const recorder = new Recorder({ stream: null });
     await recorder.start();
-    for (const event of initialEvents({ key: 'markup:root', step: 0 }, true, { x: 10, y: 0 }, false, 1)) recorder.mark(event);
+    for (const event of initialEvents({ key: 'markup:root', step: 0 }, true, { x: 10, y: 0 }, false, 1, 1.6)) recorder.mark(event);
     await new Promise((resolve) => setTimeout(resolve, 30));
     recorder.pause();
     const paused = recorder.elapsed;
@@ -130,14 +130,15 @@ describe('timelines', () => {
     recorder.mark({ type: 'camera', on: true });
     const result = await recorder.stop();
     const types = result.part.events.map((event) => event.type);
-    // The board toggle during the pause is dropped; the cut marks where the gap was.
-    expect(types).toEqual(['go', 'board', 'pan', 'cut', 'camera']);
+    // The board toggle during the pause is dropped; the cut marks where the gap was; the stage's proportions come first.
+    expect(types).toEqual(['stage', 'go', 'board', 'pan', 'cut', 'camera']);
+    expect(result.part.events[0]).toMatchObject({ type: 'stage', aspect: 1.6 });
     expect(result.part.duration).toBeGreaterThanOrEqual(30);
     expect(result.part.duration).toBeLessThan(80);
     expect(result.media).toEqual([]);
     expect(recorder.capturing).toBe(false);
-    const camera = result.part.events[4];
-    expect(camera.t).toBeGreaterThanOrEqual(result.part.events[3].t);
+    const camera = result.part.events[5];
+    expect(camera.t).toBeGreaterThanOrEqual(result.part.events[4].t);
   });
 
   it('keeps valid recording settings and drops the rest', () => {
@@ -159,6 +160,9 @@ describe('timelines', () => {
     expect(sanitizeRecording({ renderHeight: 1000 }).renderHeight).toBe(1080);
     expect(sanitizeRecording({ renderWidth: 2560 }).renderHeight).toBe(1440);
     expect(sanitizeRecording({ renderWidth: null }).renderHeight).toBe(1080);
+    expect(fixed.renderAspect).toBe('presented');
+    expect(sanitizeRecording({ renderAspect: 'wide' }).renderAspect).toBe('wide');
+    expect(sanitizeRecording({ renderAspect: 'square' }).renderAspect).toBe('presented');
     expect(fixed.mirror).toBe(false);
     expect(fixed.microphone).toBeNull();
   });
