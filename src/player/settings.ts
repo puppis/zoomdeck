@@ -29,14 +29,18 @@ export interface RecordingSettings {
   screenSurface: 'monitor' | 'window' | 'browser';
   /** Render a talk as an MP4 video by itself when its recording stops, where the server has ffmpeg. */
   renderOnStop: boolean;
+  /** Width in pixels of rendered and exported videos; null for the display's own width. */
+  renderWidth: number | null;
 }
+
+export const RENDER_WIDTHS = [1920, 2560, 3840];
 
 export const SCREEN_SURFACES = ['monitor', 'window', 'browser'] as const;
 
 export const CORNERS: Corner[] = ['bottom-right', 'bottom-left', 'top-right', 'top-left'];
 export const PIP_SIZES: Array<[number, string]> = [[0.12, 'Small'], [0.18, 'Medium'], [0.25, 'Large']];
 
-export const DEFAULT_RECORDING: RecordingSettings = { microphone: null, camera: null, mirror: true, corner: 'bottom-right', size: 0.18, screenWhenAway: true, screenOnRecord: false, screenSurface: 'monitor', renderOnStop: true };
+export const DEFAULT_RECORDING: RecordingSettings = { microphone: null, camera: null, mirror: true, corner: 'bottom-right', size: 0.18, screenWhenAway: true, screenOnRecord: false, screenSurface: 'monitor', renderOnStop: true, renderWidth: null };
 
 export function sanitizeRecording(value: unknown): RecordingSettings {
   const result = { ...DEFAULT_RECORDING };
@@ -53,6 +57,7 @@ export function sanitizeRecording(value: unknown): RecordingSettings {
   else if (typeof (saved as { screenWhenHidden?: unknown }).screenWhenHidden === 'boolean') result.screenOnRecord = (saved as { screenWhenHidden: boolean }).screenWhenHidden;
   if (typeof saved.screenSurface === 'string' && (SCREEN_SURFACES as readonly string[]).includes(saved.screenSurface)) result.screenSurface = saved.screenSurface as RecordingSettings['screenSurface'];
   if (typeof saved.renderOnStop === 'boolean') result.renderOnStop = saved.renderOnStop;
+  if (saved.renderWidth === null || (typeof saved.renderWidth === 'number' && RENDER_WIDTHS.includes(saved.renderWidth))) result.renderWidth = saved.renderWidth as number | null;
   return result;
 }
 

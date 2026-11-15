@@ -52,8 +52,8 @@ The gear button (or the `,` key) opens the settings dialog, in six parts:
 - **Pen**: how pressure and motion shape a stroke; see [The pen](#the-pen).
 - **Recording**: the microphone and camera, where the camera picture sits, whether a held screen
   share is filmed by itself while you are away from the deck, whether a recording asks for the
-  screen when it starts, and whether a talk is rendered as a video when its recording stops; see
-  [Recording a talk](#recording-a-talk).
+  screen when it starts, whether a talk is rendered as a video when its recording stops, and how
+  wide rendered and exported videos are; see [Recording a talk](#recording-a-talk).
 - **Tablet**: pairing a companion tablet, the tablets connected and the trusted ones; see
   [A tablet as a drawing pad](#a-tablet-as-a-drawing-pad).
 - **Keyboard**: every action with its keys, in three groups: the keys while presenting, the keys
@@ -331,11 +331,14 @@ and the computer has [ffmpeg](https://ffmpeg.org), **Render video** in the list 
 the first choice of the Export dialog) renders the talk *off the clock*: a page of its own
 replays the timeline on a virtual clock, as fast as the machine draws rather than as long as the
 talk lasted, and sends the server a picture of the deck (the slides or the whiteboard with their
-ink and the pointer, 1920 pixels wide in the deck's proportions) whenever it changes; the server
+ink and the pointer, as wide as the display by default, in the deck's proportions) whenever it changes; the server
 then lays the camera, in its corner or full frame, and the filmed screen, whole, over those
 pictures with the recorded sound, straight from the bundle, and writes
 `recordings/<name>.video.mp4` (H.264 and AAC, which every player, phone and site reads). The
-list of talks shows the progress and opens the video (**Video**); a render takes a fraction of
+list of talks shows the progress and opens the video (**Video**). The width of the video is the
+display's own by default, so that what you saw is what the viewer sees, and can be set to 1920,
+2560 or 3840 pixels in the Export dialog for one video or under **Recording** in the settings for
+all; the height follows the deck's proportions. A render takes a fraction of
 the talk's length, how small depending on how much moves in it, since ffmpeg's encoding of the
 frames takes most of the time. The desktop app renders in a
 hidden window of its own; a browser opens a tab for it, which closes itself when the video is

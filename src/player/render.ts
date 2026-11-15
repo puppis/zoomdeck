@@ -137,6 +137,15 @@ export function installVirtualClock(): VirtualClock {
   };
 }
 
+/** The widths a video may be rendered at, besides the display's own: Full HD, QHD, 4K. */
+export const VIDEO_WIDTHS: Array<[number, string]> = [[1920, 'Full HD (1920 px)'], [2560, 'QHD (2560 px)'], [3840, '4K (3840 px)']];
+
+/** The width of this display in device pixels, even, between 1280 and 3840: the default width of a rendered video. */
+export function displayWidth(): number {
+  const pixels = Math.round((typeof screen !== 'undefined' && screen.width ? screen.width : 1920) * (typeof window !== 'undefined' && window.devicePixelRatio ? window.devicePixelRatio : 1));
+  return Math.min(3840, Math.max(1280, Math.round(pixels / 2) * 2));
+}
+
 /** The stretches of a talk during which the camera fills the frame, in milliseconds. */
 export function cameraIntervals(events: TimelineEvent[], duration: number): Array<[number, number]> {
   const intervals: Array<[number, number]> = [];

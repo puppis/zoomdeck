@@ -152,6 +152,10 @@ describe('timelines', () => {
     expect(sanitizeRecording({ screenWhenHidden: true }).screenOnRecord).toBe(true);
     expect(sanitizeRecording({ screenWhenHidden: true, screenOnRecord: false }).screenOnRecord).toBe(false);
     expect(sanitizeRecording({ screenWhenAway: false }).screenWhenAway).toBe(false);
+    // The video width: the display's by default, one of the fixed widths when chosen, anything else dropped.
+    expect(fixed.renderWidth).toBeNull();
+    expect(sanitizeRecording({ renderWidth: 2560 }).renderWidth).toBe(2560);
+    expect(sanitizeRecording({ renderWidth: 1000 }).renderWidth).toBeNull();
     expect(fixed.mirror).toBe(false);
     expect(fixed.microphone).toBeNull();
   });

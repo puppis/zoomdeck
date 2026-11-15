@@ -25,7 +25,7 @@ import { exportMimeType, exportVideo, type ExportSource } from './export';
 import { PRINT_WIDTHS, printDeck, printPages, type PrintPages } from './print';
 import { zipFiles } from './zip';
 import { deleteRecording, describeMedia, download, listRecordings, loadTimeline, mediaFileName, mediaSource, recordingStoreAvailable, RecordingSession, recordingUrl, saveFile, type RecordingEntry } from './store';
-import { renderPageUrl, renderPlan, RenderSession, renderStatus, renderTalk, requestRender, type RenderStatus } from './render';
+import { displayWidth, renderPageUrl, renderPlan, RenderSession, renderStatus, renderTalk, requestRender, VIDEO_WIDTHS, type RenderStatus } from './render';
 import { appendPart, formatTime, recordingName, stopRef, structureHash, type Corner, type PointerKind, type Timeline, type TimelineEvent, type TimelineMedia, type UntimedEvent } from './timeline';
 
 /** A tablet page known to the presenter. */
@@ -54,6 +54,8 @@ interface ExportChoice {
   name: string;
   /** `server`: rendered off the clock by the server into an MP4, not in this page. */
   destination: 'server' | 'folder' | 'pick' | 'download';
+  /** Frame width in pixels. */
+  width: number;
   /** The file chosen through the browser's save dialog, where it offers one. */
   handle?: FileSystemFileHandle;
 }
@@ -182,6 +184,21 @@ export class PlayerUI {
   /** What the server says about rendering videos: whether it can (ffmpeg), whether it opens render pages itself, and the jobs of this deck's talks. */
   private _render: RenderStatus = { ffmpeg: false, desktop: false, jobs: [] };
   private _renderToggle!: HTMLInputElement;
+  private _renderWidthSelect!: HTMLSelectElement;
+
+  /** The width of a rendered or exported video: the setting's, or the display's own. */
+  private _videoWidth(): number {
+    return this._settings.recording.renderWidth ?? displayWidth();
+  }
+
+  /** A select of video widths: the display's own (named with its pixels), then the fixed ones; '' stands for the display. */
+  private _widthSelect(label: string, current: number | null): HTMLSelectElement {
+    const select = el('select', { 'aria-label': label });
+    select.append(el('option', { value: '', text: `The display's (${displayWidth()} px)` }));
+    for (const [width, text] of VIDEO_WIDTHS) select.append(el('option', { value: String(width), text }));
+    select.value = current === null ? '' : String(current);
+    return select;
+  }
   private readonly _recordButton: HTMLButtonElement;
   private readonly _pauseButton: HTMLButtonElement;
   private readonly _recordLabel: HTMLElement;
@@ -1572,10 +1589,10 @@ export class PlayerUI {
    * render page in a hidden window of its own; a browser opens it in a new tab (from a click,
    * or the tab is blocked). The list of talks shows the progress and opens the video.
    */
-  async startRender(talk: string, output: string): Promise<void> {
+  async startRender(talk: string, output: string, width = this._videoWidth()): Promise<void> {
     const base = this._deck.base;
     if (!base || !recordingStoreAvailable()) return;
-    const url = renderPageUrl(talk, output);
+    const url = renderPageUrl(talk, output, 30, width);
     try {
       const taken = await requestRender(base, talk, output, url);
       if (!taken && !window.open(url, '_blank')) {
@@ -1756,7 +1773,7 @@ export class PlayerUI {
     if (!choice || this._exporting || this._playback !== playback) return;
     const name = choice.name;
     if (choice.destination === 'server') {
-      await this.startRender(talk, name);
+      await this.startRender(talk, name, choice.width);
       return;
     }
     this._exporting = true;
@@ -1776,6 +1793,7 @@ export class PlayerUI {
     };
     try {
       const blob = await exportVideo(playback, source, {
+        width: choice.width,
         onProgress: (fraction) => {
           this._exportButton.textContent = `Exporting… ${Math.round(fraction * 100)}%`;
         },
@@ -1815,15 +1833,19 @@ export class PlayerUI {
     if (picker) where.append(el('option', { value: 'pick', text: 'A folder of my choice (asked when the export starts)' }));
     where.append(el('option', { value: 'download', text: "The browser's downloads" }));
     const suffix = el('span', { class: 'note', text: '.webm' });
+    const widthSelect = this._widthSelect('Width of the video', this._settings.recording.renderWidth);
+    const chosenWidth = () => Number(widthSelect.value) || displayWidth();
     const status = el('p', { class: 'note' });
     const describe = () => {
       const server = where.value === 'server';
       suffix.textContent = server ? '.mp4' : '.webm';
+      const size = `${chosenWidth()} pixels wide in the deck's proportions`;
       status.textContent = server
-        ? 'The talk is rendered in a page of its own, off the clock and faster than real time, and ffmpeg lays the camera, the screen and the sound from the recording over the deck: an MP4 file (H.264 and AAC), 1920 pixels wide in the deck\'s proportions. This page is free meanwhile; the list of talks shows the progress and opens the video.'
-        : 'The recording plays from the start while the video is written, which takes as long as the talk; keep this window visible until it ends. The file is WebM (VP9 and Opus), 1920 pixels wide in the deck\'s proportions, with the slides or the whiteboard and their ink, the camera in its corner or full frame, the pointer, and the sound.';
+        ? `The talk is rendered in a page of its own, off the clock and faster than real time, and ffmpeg lays the camera, the screen and the sound from the recording over the deck: an MP4 file (H.264 and AAC), ${size}. This page is free meanwhile; the list of talks shows the progress and opens the video.`
+        : `The recording plays from the start while the video is written, which takes as long as the talk; keep this window visible until it ends. The file is WebM (VP9 and Opus), ${size}, with the slides or the whiteboard and their ink, the camera in its corner or full frame, the pointer, and the sound.`;
     };
     where.addEventListener('change', describe);
+    widthSelect.addEventListener('change', describe);
     describe();
     const run = el('button', { class: 'add', text: 'Export', autofocus: '' });
     const cancel = el('button', { text: 'Cancel' });
@@ -1832,6 +1854,7 @@ export class PlayerUI {
       el('section', {},
         el('div', { class: 'row' }, el('label', {}, 'Name ', nameInput), suffix),
         el('div', { class: 'row' }, el('label', {}, 'Save to ', where)),
+        el('div', { class: 'row' }, el('label', {}, 'Width ', widthSelect)),
         status,
         el('div', { class: 'row' }, run, cancel)),
     );
@@ -1852,7 +1875,7 @@ export class PlayerUI {
             }
             if (!handle) return;
           }
-          choice = { name, destination, handle };
+          choice = { name, destination, handle, width: chosenWidth() };
           dialog.close();
         })();
       });
@@ -2172,6 +2195,11 @@ export class PlayerUI {
       this._settings.recording.renderOnStop = this._renderToggle.checked;
       saveSettings(this._settings);
     });
+    this._renderWidthSelect = this._widthSelect('Width of rendered and exported videos', null);
+    this._renderWidthSelect.addEventListener('change', () => {
+      this._settings.recording.renderWidth = Number(this._renderWidthSelect.value) || null;
+      saveSettings(this._settings);
+    });
     this._mirrorToggle = el('input', { type: 'checkbox' });
     this._mirrorToggle.addEventListener('change', () => {
       this._settings.recording.mirror = this._mirrorToggle.checked;
@@ -2202,6 +2230,7 @@ export class PlayerUI {
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'While a screen share is held, film it by itself whenever you leave the deck for another tab, application or workspace, and come back to the camera on return' }), this._screenAwayToggle),
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Ask for the screen when a recording starts, so that a share is held from the start' }), this._screenAskToggle),
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Render the talk as an MP4 video when a recording stops, off the clock, where the server has ffmpeg (the desktop app does it in the background; a browser offers a button, since it opens a tab for it)' }), this._renderToggle),
+      el('div', { class: 'row' }, el('label', {}, 'Width of rendered and exported videos ', this._renderWidthSelect)),
     );
     const resetRecording = el('button', { text: 'Restore the default recording settings' });
     resetRecording.addEventListener('click', () => {
@@ -2528,6 +2557,7 @@ export class PlayerUI {
     this._screenAwayToggle.checked = recording.screenWhenAway;
     this._screenAskToggle.checked = recording.screenOnRecord;
     this._renderToggle.checked = recording.renderOnStop;
+    this._renderWidthSelect.value = recording.renderWidth === null ? '' : String(recording.renderWidth);
     this._antialiasToggle.checked = this._settings.rendering.antialias;
     this._resolutionSelect.value = String(this._settings.rendering.resolution);
     this._renderingChanged();
