@@ -121,7 +121,7 @@ talk/
 ├── artworks/        optional: artworks of your own, name.svg or name.ts, for [[artwork: name]]
 ├── snippets/, directives/, fonts/, effects/, …  optional: markup used many times, directives, fonts, effects, camera transitions, chart types, languages, code themes, themes, slide classes
 ├── code-slides.ts   optional: Slide classes used by [[subslide: Name]]
-└── recordings/      talks recorded by the player, when the deck is served
+└── recordings/      talks recorded by the player (one zip bundle each), when the deck is served
 ```
 
 Paths in `slides.md` resolve relative to the Markdown file, then in the folders `paths` names

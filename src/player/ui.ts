@@ -24,8 +24,8 @@ import { Playback } from './playback';
 import { exportMimeType, exportVideo, type ExportSource } from './export';
 import { PRINT_WIDTHS, printDeck, printPages, type PrintPages } from './print';
 import { zipFiles } from './zip';
-import { deleteRecording, describeMedia, download, listRecordings, loadTimeline, mediaFileName, recordingStoreAvailable, recordingUrl, saveFile, saveMedia, saveTimeline, type RecordingEntry } from './store';
-import { appendPart, formatTime, recordingName, stopRef, structureHash, type Corner, type PointerKind, type Timeline, type TimelineEvent, type UntimedEvent } from './timeline';
+import { deleteRecording, describeMedia, download, listRecordings, loadTimeline, mediaFileName, mediaSource, recordingStoreAvailable, RecordingSession, saveFile, type RecordingEntry } from './store';
+import { appendPart, formatTime, recordingName, stopRef, structureHash, type Corner, type PointerKind, type Timeline, type TimelineEvent, type TimelineMedia, type UntimedEvent } from './timeline';
 
 /** A tablet page known to the presenter. */
 interface PadEntry {
@@ -172,6 +172,11 @@ export class PlayerUI {
   private _recordStream: MediaStream | null = null;
   /** The recording being continued, when the current one appends to an earlier talk. */
   private _appendTo: { name: string; timeline: Timeline } | null = null;
+  /** The server writing the talk's bundle while it is recorded; null without the server. */
+  private _session: RecordingSession | null = null;
+  /** The name of the talk being recorded, chosen when it starts. */
+  private _talkName: string | null = null;
+  private _draftTick = 0;
   private readonly _recordButton: HTMLButtonElement;
   private readonly _pauseButton: HTMLButtonElement;
   private readonly _recordLabel: HTMLElement;
@@ -1133,7 +1138,7 @@ export class PlayerUI {
     let append: { name: string; timeline: Timeline } | null = null;
     if (choice) {
       try {
-        append = { name: choice.name, timeline: await loadTimeline(this._deck.base as string, choice.name) };
+        append = { name: choice.name, timeline: await loadTimeline(this._deck.base as string, choice) };
       } catch (error) {
         this.notice((error as Error).message);
         return;
@@ -1157,17 +1162,37 @@ export class PlayerUI {
     if (stream && this._settings.recording.screenOnRecord && !this._screenStream) await this._acquireScreen();
     const screenTracks = this._screenFilming ? this._screenStream?.getVideoTracks() ?? [] : [];
     const videoTracks = screenTracks.length ? screenTracks : this._cameraStream?.getVideoTracks() ?? [];
-    const recorder = new Recorder({ stream: stream && videoTracks.length ? new MediaStream([...stream.getAudioTracks(), ...videoTracks]) : stream, source: screenTracks.length ? 'screen' : 'camera' });
+    // The talk's bundle is opened now and written as the talk goes; without the server, or when it refuses, the talk is kept in memory for a download.
+    const name = append?.name ?? recordingName(new Date());
+    let session: RecordingSession | null = null;
+    if (this._deck.base && recordingStoreAvailable()) {
+      session = new RecordingSession(this._deck.base, name);
+      try {
+        await session.open();
+      } catch (error) {
+        this.notice(`The server cannot keep the talk (${(error as Error).message}); it will be offered as a download`);
+        session = null;
+      }
+    }
+    let number = (append?.timeline.media.length ?? 0) + 1;
+    const sink = session ? { begin: (capture: { type: string }) => session.begin(number++, capture.type), write: (chunk: Blob) => session.chunk(chunk), end: () => session.end() } : undefined;
+    const recorder = new Recorder({ stream: stream && videoTracks.length ? new MediaStream([...stream.getAudioTracks(), ...videoTracks]) : stream, source: screenTracks.length ? 'screen' : 'camera', sink });
     try {
       await recorder.start();
     } catch (error) {
       this.notice((error as Error).message);
       for (const track of stream?.getTracks() ?? []) track.stop();
+      // The bundle opened for nothing: a continued talk gets its timeline back, a new one is removed.
+      if (session && append) await session.finish(append.timeline).catch(() => undefined);
+      else if (session) await deleteRecording(this._deck.base as string, name).catch(() => undefined);
       return;
     }
     this._recorder = recorder;
     this._recordStream = stream;
     this._appendTo = append;
+    this._session = session;
+    this._talkName = name;
+    this._draftTick = 0;
     this._pointerMarked = false;
     for (const event of initialEvents(stopRef(this._navigation, this._player.index), this._boardOn, this._boardTarget, this._cameraFull, this._player.speed)) recorder.mark(event);
     this._recordButton.textContent = '■ Stop';
@@ -1194,8 +1219,8 @@ export class PlayerUI {
         ? `the camera (${option(this._cameraSelect)}) while it is on: it is off now, and the Camera button or C turns it on whenever you want it in the recording`
         : `the camera (${option(this._cameraSelect)}), on now ${this._cameraMode === 'full' ? 'full frame' : 'in a corner'}, for as long as it stays on`;
     const where = this._deck.base && recordingStoreAvailable()
-      ? 'saves it in the recordings/ folder next to the deck'
-      : 'offers it as a zip file to download, to unzip into a recordings/ folder next to the deck';
+      ? 'completes the talk\'s bundle in the recordings/ folder next to the deck, which is written while you talk, so nothing is left to do'
+      : 'offers the talk as a zip bundle to download, to put in a recordings/ folder next to the deck as it is';
     const dialog = el('dialog', { class: 'settings record' });
     const close = el('button', { class: 'close', 'aria-label': 'Close', text: '×' });
     // What to record: a new talk, or more of a saved one (only where the server keeps them).
@@ -1251,6 +1276,34 @@ export class PlayerUI {
     this._recordLabel.textContent = `${recorder.state === 'paused' ? '❚❚' : '●'} ${formatTime(offset + recorder.elapsed)}`;
     this._recordLabel.classList.toggle('paused', recorder.state === 'paused');
     this._renderState();
+    // Every ten seconds the server gets a draft of the timeline, so that a talk cut short by a crash is closed from it.
+    if (this._session && this._talkName && recorder.state === 'recording' && ++this._draftTick % 20 === 0) {
+      void this._session.draft(this._timelineSoFar(recorder, this._talkName)).catch(() => undefined);
+    }
+  }
+
+  /** A fresh timeline for a talk that began at `started`. */
+  private _freshTimeline(started: Date): Timeline {
+    return {
+      version: 1,
+      deck: { title: this._deck.title, hash: structureHash(this._navigation as NavigationData) },
+      recorded: started.toISOString(),
+      duration: 0,
+      media: [],
+      pip: { corner: this._settings.recording.corner, size: this._settings.recording.size },
+      events: [],
+    };
+  }
+
+  /** Describe captured media files as the timeline lists them, numbered after the talk's existing ones (name.webm, name.part2.webm, …). */
+  private _describeParts(name: string, first: number, parts: ReadonlyArray<Omit<CapturedMedia, 'blob'>>): TimelineMedia[] {
+    return parts.map((captured, index) => ({ ...describeMedia(name, captured.type, first + index, captured.duration), start: captured.start, ...(captured.source === 'screen' ? { source: 'screen' as const } : {}) }));
+  }
+
+  /** The timeline as it would be if the talk stopped now. */
+  private _timelineSoFar(recorder: Recorder, name: string): Timeline {
+    const previous = this._appendTo?.timeline ?? this._freshTimeline(new Date());
+    return appendPart(previous, { events: [...recorder.events], duration: Math.round(recorder.elapsed), media: this._describeParts(name, previous.media.length + 1, recorder.parts) });
   }
 
   /** Pause the recording, or resume it; the gap is left out of the talk. */
@@ -1294,28 +1347,20 @@ export class PlayerUI {
     // A new talk, or the one being continued: the part is appended either way.
     const append = this._appendTo;
     this._appendTo = null;
-    const name = append?.name ?? recordingName(result.started);
-    const previous: Timeline = append?.timeline ?? {
-      version: 1,
-      deck: { title: this._deck.title, hash: structureHash(this._navigation as NavigationData) },
-      recorded: result.started.toISOString(),
-      duration: 0,
-      media: [],
-      pip: { corner: this._settings.recording.corner, size: this._settings.recording.size },
-      events: [],
-    };
-    // Each file captured is numbered after the talk's existing ones (name.webm, name.part2.webm, …).
+    const session = this._session;
+    this._session = null;
+    const name = this._talkName ?? append?.name ?? recordingName(result.started);
+    this._talkName = null;
+    const previous = append?.timeline ?? this._freshTimeline(result.started);
     const first = previous.media.length + 1;
-    const files = result.media.map((captured, index) => ({ captured, number: first + index, media: { ...describeMedia(name, captured.type, first + index, captured.duration), start: captured.start, ...(captured.source === 'screen' ? { source: 'screen' as const } : {}) } }));
-    const timeline = appendPart(previous, { ...result.part, media: files.map((file) => file.media) });
-    const base = this._deck.base;
-    if (base && recordingStoreAvailable()) {
-      this.notice('Saving the recording…');
+    const files = result.media.map((captured, index) => ({ captured, number: first + index }));
+    const timeline = appendPart(previous, { ...result.part, media: this._describeParts(name, first, result.media) });
+    if (session) {
+      // The media is in the bundle already: the timeline and the directory close it.
       try {
-        for (const file of files) await saveMedia(base, name, file.number, file.captured.blob, file.captured.type);
-        await saveTimeline(base, name, timeline);
+        await session.finish(timeline);
         await this._refreshRecordings();
-        this.notice(append ? `Continued recordings/${name}, now ${formatTime(timeline.duration)}` : `Saved as recordings/${name}`);
+        this.notice(append ? `Continued recordings/${name}.zip, now ${formatTime(timeline.duration)}` : `Saved as recordings/${name}.zip`);
       } catch (error) {
         this.notice(`Could not save: ${(error as Error).message}`);
         await this._offerDownload(name, timeline, files);
@@ -1325,7 +1370,7 @@ export class PlayerUI {
     }
   }
 
-  /** Offer the recording as one zip file to download: its media files and timeline; one by one only when too large for an archive. */
+  /** Offer the recording as its bundle to download, the same zip the server keeps; the files one by one only when the archive cannot be made. */
   private async _offerDownload(name: string, timeline: Timeline, files: Array<{ captured: CapturedMedia; number: number }>): Promise<void> {
     const entries = [
       ...files.map((file) => ({ name: mediaFileName(name, file.captured.type, file.number), blob: file.captured.blob })),
@@ -1333,7 +1378,7 @@ export class PlayerUI {
     ];
     try {
       download(await zipFiles(entries), `${name}.zip`);
-      this.notice(`${name}.zip downloaded: unzip it into a recordings/ folder next to the deck`);
+      this.notice(`${name}.zip downloaded: put it in a recordings/ folder next to the deck`);
     } catch {
       for (const entry of entries) download(entry.blob, entry.name);
       this.notice('Recording downloaded: put the files in a recordings/ folder next to the deck');
@@ -1415,7 +1460,7 @@ export class PlayerUI {
     this.closeRecording();
     let timeline;
     try {
-      timeline = await loadTimeline(base, entry.name);
+      timeline = await loadTimeline(base, entry);
     } catch (error) {
       this.notice((error as Error).message);
       return;
@@ -1434,7 +1479,7 @@ export class PlayerUI {
       navigation,
       player,
       media: timeline.media.length ? camera : null,
-      mediaUrl: (part) => recordingUrl(base, part.file),
+      mediaUrl: (part) => mediaSource(base, entry, part),
       apply: (event, instant) => this._applyTimelineEvent(event, instant),
       resetInk: () => {
         this._slideInk.reset();
@@ -2275,8 +2320,8 @@ export class PlayerUI {
     this._cornerSelect.value = recording.corner;
     this._pipSizeSelect.value = String(recording.size);
     this._recordingStatus.textContent = this._deck.base && recordingStoreAvailable()
-      ? 'Recordings are saved in a recordings/ folder next to the deck.'
-      : 'Without the preview server a recording is offered as a zip file to download (its media files and timeline), to unzip into a recordings/ folder next to the deck.';
+      ? 'Recordings are saved in a recordings/ folder next to the deck, one zip bundle per talk (its media files and timeline), written while the talk is recorded.'
+      : 'Without the preview server a recording is offered as a zip bundle to download (its media files and timeline), to put in a recordings/ folder next to the deck as it is.';
     this._pointerModeSelect.value = this._settings.pointerMode;
     for (const [action, select] of this._pointerSelects) select.value = this._settings.pointer[action] ?? 'off';
     const pen = this._settings.pen;

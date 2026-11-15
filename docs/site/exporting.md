@@ -57,9 +57,9 @@ cd out && python3 -m http.server 8000
 | `--without-notes` | leave the presenter's `::: notes` out of the export, for a deck handed to the audience ([Presenter notes](slides.html#presenter-notes) are otherwise part of the deck's files) |
 | `-o <folder>` | output folder (required); it is created and existing files are kept |
 
-The folder export also copies the deck's `recordings/` folder, so a published deck shows its
-Talk button and plays its [recorded talks](player.html#recording-a-talk); a static host serves
-them like any other file.
+The folder export also copies the deck's `recordings/` folder, unpacking each talk's bundle into
+its media files and timeline, so a published deck shows its Talk button and plays its
+[recorded talks](player.html#recording-a-talk); a static host serves them like any other file.
 
 The deck argument is a `deck.json`, a Markdown file (default settings), a PDF (its pages, with the
 file copied next to the page or embedded in the single file) or a JS/TS module exporting a deck

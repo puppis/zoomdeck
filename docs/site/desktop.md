@@ -40,8 +40,8 @@ tour inside the app is only the source of these copies. The window shows the dec
 would, and the menus add Open Deck, Open Recent, Reload Deck, Reveal Deck Folder, full screen, zoom
 and the developer tools. Links to other pages open in your browser. Recordings and exported videos
 go to a `recordings/` folder next to the deck, as with `zoomdeck serve`; **Reveal Deck Folder**
-opens the folder that holds it, which is where the timeline (`.json`) and media files of a talk
-can be picked up.
+opens the folder that holds it, which is where a talk's bundle (`.zip`, its media files and
+timeline) can be picked up.
 
 The command line takes the preview's flags:
 

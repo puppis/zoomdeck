@@ -21,11 +21,24 @@ export function recordingMimeType(video: boolean): string | null {
 /** What a captured picture shows. */
 export type PictureSource = 'camera' | 'screen';
 
+/**
+ * Where the media goes as it is captured, besides memory: the server writing the talk's bundle.
+ * A file begins before its first chunk and ends after its last; the sink keeps the order and
+ * its own failures (the recorder goes on and keeps everything in memory regardless).
+ */
+export interface MediaSink {
+  begin(capture: { type: string; video: boolean; source: PictureSource; start: number }): Promise<unknown> | void;
+  write(chunk: Blob): Promise<unknown> | void;
+  end(): Promise<unknown> | void;
+}
+
 export interface RecorderOptions {
   /** The microphone (and the camera or the screen, when one is on) at the start; null records the timeline alone (no sound). */
   stream: MediaStream | null;
   /** What the picture in `stream` shows, when it has one. */
   source?: PictureSource;
+  /** Receives every media file as it is captured. */
+  sink?: MediaSink;
 }
 
 /** One media file captured during a part. */
@@ -90,6 +103,14 @@ export class Recorder {
   /** Whether the file being written has a camera picture. */
   get video(): boolean {
     return Boolean(this._capture?.video);
+  }
+
+  /** The media files so far, the one being written included (its duration up to now), for a draft of the timeline. */
+  get parts(): Array<Omit<CapturedMedia, 'blob'>> {
+    const parts: Array<Omit<CapturedMedia, 'blob'>> = this._captured.map(({ type, video, source, start, duration }) => ({ type, video, source, start, duration }));
+    const open = this._capture;
+    if (open && open.chunks.length) parts.push({ type: open.type, video: open.video, source: open.source, start: open.start, duration: Math.max(0, Math.round(this.elapsed) - open.start) });
+    return parts;
   }
 
   /** Start capturing; resolves once the media recorder runs, so the clocks line up. */
@@ -164,14 +185,24 @@ export class Recorder {
     // A screen is large and mostly still: a capped bitrate keeps its files within reason.
     const recorder = new MediaRecorder(stream, source === 'screen' && video ? { mimeType: type, videoBitsPerSecond: 2_500_000 } : { mimeType: type });
     const capture: Capture = { recorder, chunks: [], type, video, source, start };
+    // The sink's file is begun before the first chunk can arrive; a sink that fails is left to itself.
+    const sink = this.options.sink;
+    if (sink) await Promise.resolve(sink.begin({ type, video, source, start })).catch(() => undefined);
     recorder.addEventListener('dataavailable', (event) => {
-      if (event.data.size) capture.chunks.push(event.data);
+      if (!event.data.size) return;
+      capture.chunks.push(event.data);
+      if (sink) void Promise.resolve(sink.write(event.data)).catch(() => undefined);
     });
-    await new Promise<void>((resolve, reject) => {
-      recorder.addEventListener('start', () => resolve(), { once: true });
-      recorder.addEventListener('error', () => reject(new Error('The recording could not start')), { once: true });
-      recorder.start(1000);
-    });
+    try {
+      await new Promise<void>((resolve, reject) => {
+        recorder.addEventListener('start', () => resolve(), { once: true });
+        recorder.addEventListener('error', () => reject(new Error('The recording could not start')), { once: true });
+        recorder.start(1000);
+      });
+    } catch (error) {
+      if (sink) await Promise.resolve(sink.end()).catch(() => undefined);
+      throw error;
+    }
     if (this.state === 'paused') recorder.pause();
     this._capture = capture;
   }
@@ -203,6 +234,9 @@ export class Recorder {
     if (capture.chunks.length) {
       this._captured.push({ blob: new Blob(capture.chunks, { type: capture.type }), type: capture.type, video: capture.video, source: capture.source, start: capture.start, duration: Math.max(0, end - capture.start) });
     }
+    // The last chunk came with the stop event, so the sink's file can close after it.
+    const sink = this.options.sink;
+    if (sink) await Promise.resolve(sink.end()).catch(() => undefined);
     return end;
   }
 }

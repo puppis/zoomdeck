@@ -1,27 +1,59 @@
 /**
- * Recordings of talks, kept in a `recordings/` folder next to the deck. The player saves a
- * recording through `PUT /__zoomdeck/recordings` (the media file, then the timeline) and
- * removes one through `DELETE`; the folder's `recordings/index.json`, rewritten after every
- * change, is what players read, served here like any file of the deck and copied by the
- * folder export.
+ * Recordings of talks, kept in a `recordings/` folder next to the deck, one bundle
+ * `<name>.zip` each (see bundle.mjs): the media files and the timeline. The player writes a
+ * bundle through `POST /__zoomdeck/recordings` while the talk runs (open, begin a media file,
+ * its chunks, end it, drafts of the timeline, finish), so that stopping leaves nothing to copy;
+ * `GET` with a file name streams one entry of a bundle, with ranges, for playback; `PUT` keeps a
+ * file the player produced (an exported video) beside the bundle; `DELETE` removes a talk. The
+ * folder's `recordings/index.json`, rewritten after every change, is what players read, served
+ * here like any file of the deck and copied by the folder export, which also unpacks the
+ * bundles for viewers' browsers. Talks saved as plain files by earlier versions are still read.
  */
 import { promises as fs } from 'node:fs';
-import { existsSync } from 'node:fs';
-import { execFile } from 'node:child_process';
+import { createReadStream, existsSync } from 'node:fs';
 import { basename, dirname, extname, join, resolve, sep } from 'node:path';
-import { documentPath, findExecutable, slashes } from './sync.mjs';
+import { documentPath, slashes } from './sync.mjs';
+import { BundleWriter, isJournal, readDirectory, readEntry, recoverBundle } from './bundle.mjs';
 
 export const FOLDER = 'recordings';
 
 /** Names a recording may have: letters, digits, dots, dashes and underscores, starting with a letter or digit. */
 export const NAME = /^[A-Za-z0-9][\w.-]*$/;
 
-/** The media and timeline files a recording consists of, by its name. */
+/** The files a recording consists of, by its name: its bundle and journal, exported videos, and the plain files of an older talk. */
 export function recordingFiles(name, entries) {
   return entries.filter((file) => file === `${name}.json` || file.startsWith(`${name}.`) && file !== 'index.json');
 }
 
-/** Build the index of a recordings folder from the timelines it holds. */
+/** The entry in the index for a timeline, read from a bundle (`file` names it) or from a plain file. */
+function indexEntry(name, timeline, file) {
+  if (timeline?.version !== 1 || !Array.isArray(timeline.events)) return null;
+  const media = Array.isArray(timeline.media) ? timeline.media : [];
+  return {
+    name,
+    title: timeline.deck?.title ?? '',
+    recorded: timeline.recorded ?? '',
+    duration: Number(timeline.duration) || 0,
+    media: media.length ? media[0].file : null,
+    video: media.some((part) => part?.video),
+    parts: media.length,
+    ...(file ? { file } : {}),
+  };
+}
+
+/** The timeline inside a bundle, or null when the file is not a complete bundle holding one. */
+async function bundleTimeline(path, name) {
+  const listing = await readDirectory(path);
+  const entry = listing?.entries.find((candidate) => candidate.name === `${name}.json`);
+  if (!entry) return null;
+  try {
+    return JSON.parse((await readEntry(path, entry)).toString('utf8'));
+  } catch {
+    return null;
+  }
+}
+
+/** Build the index of a recordings folder from the bundles and timelines it holds; a bundle cut short is closed first. */
 export async function buildIndex(folder) {
   const recordings = [];
   let entries = [];
@@ -30,24 +62,29 @@ export async function buildIndex(folder) {
   } catch {
     return { recordings };
   }
+  const bundled = new Set();
   for (const file of entries.sort()) {
-    if (extname(file) !== '.json' || file === 'index.json') continue;
+    if (extname(file) !== '.zip') continue;
+    const name = basename(file, '.zip');
+    const path = join(folder, file);
+    // A talk being recorded right now has no directory yet and is not to be closed by the index.
+    if (sessions.has(path)) continue;
+    if (!(await readDirectory(path))) await recoverBundle(path).catch(() => false);
+    const entry = indexEntry(name, await bundleTimeline(path, name), file);
+    if (!entry) continue;
+    recordings.push(entry);
+    bundled.add(name);
+  }
+  for (const file of entries) {
+    if (extname(file) !== '.json' || file === 'index.json' || bundled.has(basename(file, '.json'))) continue;
     try {
-      const timeline = JSON.parse(await fs.readFile(join(folder, file), 'utf8'));
-      if (timeline?.version !== 1 || !Array.isArray(timeline.events)) continue;
-      recordings.push({
-        name: basename(file, '.json'),
-        title: timeline.deck?.title ?? '',
-        recorded: timeline.recorded ?? '',
-        duration: Number(timeline.duration) || 0,
-        media: Array.isArray(timeline.media) && timeline.media.length ? timeline.media[0].file : null,
-        video: Array.isArray(timeline.media) && timeline.media.some((part) => part?.video),
-        parts: Array.isArray(timeline.media) ? timeline.media.length : 0,
-      });
+      const entry = indexEntry(basename(file, '.json'), JSON.parse(await fs.readFile(join(folder, file), 'utf8')), null);
+      if (entry) recordings.push(entry);
     } catch {
       /* not a timeline */
     }
   }
+  recordings.sort((a, b) => a.name.localeCompare(b.name));
   return { recordings };
 }
 
@@ -83,7 +120,7 @@ function readBody(request, limit) {
     request.on('data', (chunk) => {
       size += chunk.length;
       if (size > limit) {
-        fail(new Error('The recording is too large'));
+        fail(new Error('The request is too large'));
         request.destroy();
         return;
       }
@@ -95,37 +132,65 @@ function readBody(request, limit) {
 }
 
 const MEDIA_EXTENSIONS = { 'video/webm': 'webm', 'audio/webm': 'webm', 'video/mp4': 'mp4', 'audio/mp4': 'm4a' };
+const CONTENT_TYPES = { webm: 'video/webm', mp4: 'video/mp4', m4a: 'audio/mp4', json: 'application/json' };
 
-/**
- * A file written by the browser's recorder lacks its duration and seek index, so players show
- * no length and cannot seek. When ffmpeg is installed, rewriting the container (no re-encoding,
- * a second's work) puts them in; without it the file is kept as it is.
- */
-export function finishMediaFile(file) {
-  const ffmpeg = findExecutable(['ffmpeg']);
-  if (!ffmpeg || !/\.(webm|mp4|m4a)$/.test(file)) return Promise.resolve(false);
-  const temp = `${file}.tmp${extname(file)}`;
-  return new Promise((done) => {
-    execFile(ffmpeg, ['-y', '-v', 'error', '-i', file, '-c', 'copy', temp], { timeout: 120_000 }, async (error) => {
-      if (error) {
-        await fs.rm(temp, { force: true });
-        done(false);
-        return;
-      }
-      try {
-        await fs.rename(temp, file);
-        done(true);
-      } catch {
-        await fs.rm(temp, { force: true });
-        done(false);
-      }
-    });
-  });
+/** The name of a talk's media file inside its bundle: `name.webm` for the first part, `name.part2.webm` from the second on. */
+export function mediaFileName(name, type, part) {
+  return `${name}.${part > 1 ? `part${part}.` : ''}${MEDIA_EXTENSIONS[type] ?? 'webm'}`;
 }
 
 /** Whether a changed file belongs to a recordings folder, which must not reload the preview. */
 export function isRecordingFile(file) {
   return slashes(file).includes(`/${FOLDER}/`);
+}
+
+/** Stream one entry of a bundle, honoring a byte range, as the player's media element asks for it. */
+async function serveEntry(response, path, file, range, headOnly = false) {
+  const listing = await readDirectory(path);
+  const entry = listing?.entries.find((candidate) => candidate.name === file);
+  if (!entry || !entry.stored) {
+    reply(response, 404, { ok: false, error: `${file} is not in the bundle` });
+    return;
+  }
+  let from = 0;
+  let to = entry.size - 1;
+  const match = /^bytes=(\d*)-(\d*)$/.exec(range ?? '');
+  const partial = Boolean(match) && entry.size > 0;
+  if (partial) {
+    if (match[1]) from = Math.min(Number(match[1]), entry.size);
+    if (match[2]) to = Math.min(Number(match[2]), entry.size - 1);
+    else if (!match[1]) from = 0;
+    if (from > to) {
+      response.statusCode = 416;
+      response.setHeader('Content-Range', `bytes */${entry.size}`);
+      response.end();
+      return;
+    }
+  }
+  response.statusCode = partial ? 206 : 200;
+  response.setHeader('Content-Type', CONTENT_TYPES[extname(file).slice(1)] ?? 'application/octet-stream');
+  response.setHeader('Accept-Ranges', 'bytes');
+  response.setHeader('Cache-Control', 'no-store');
+  response.setHeader('Content-Length', String(entry.size ? to - from + 1 : 0));
+  if (partial) response.setHeader('Content-Range', `bytes ${from}-${to}/${entry.size}`);
+  if (!entry.size || headOnly) {
+    response.end();
+    return;
+  }
+  const stream = createReadStream(path, { start: entry.dataOffset + from, end: entry.dataOffset + to });
+  stream.on('error', () => response.destroy());
+  stream.pipe(response);
+}
+
+/** The bundles being written, by path: a talk is written by one page at a time. */
+const sessions = new Map();
+
+/** Let go of every bundle being written (the server stops); their journals keep them recoverable. */
+export async function releaseBundles() {
+  for (const [path, writer] of sessions) {
+    sessions.delete(path);
+    await writer.release().catch(() => undefined);
+  }
 }
 
 /**
@@ -136,6 +201,7 @@ export function recordingStore({ roots = [], limit = 4 * 1024 * 1024 * 1024 } = 
   return {
     name: 'zoomdeck-recordings',
     configureServer(server) {
+      server.httpServer?.on('close', () => void releaseBundles());
       server.middlewares.use('/__zoomdeck/recordings', async (request, response) => {
         const url = new URL(request.url ?? '/', 'http://localhost');
         const name = url.searchParams.get('name') ?? '';
@@ -150,32 +216,85 @@ export function recordingStore({ roots = [], limit = 4 * 1024 * 1024 * 1024 } = 
             return;
           }
           const target = join(folder, FOLDER);
+          const bundle = join(target, `${name}.zip`);
+          if (request.method === 'POST') {
+            const op = url.searchParams.get('op') ?? '';
+            if (op === 'open') {
+              // Starting a talk, or continuing one: the bundle is created, or cut back to its media.
+              const previous = sessions.get(bundle);
+              if (previous) {
+                sessions.delete(bundle);
+                await previous.release();
+              }
+              const writer = await BundleWriter.open(bundle, `${name}.json`);
+              sessions.set(bundle, writer);
+              console.log(`[zoomdeck] ${writer.names.length ? 'Continuing' : 'Recording'} ${join(FOLDER, `${name}.zip`)}`);
+              reply(response, 200, { ok: true, file: `${name}.zip`, parts: writer.names.length });
+              return;
+            }
+            const writer = sessions.get(bundle);
+            if (!writer) {
+              reply(response, 409, { ok: false, error: 'This talk is not being recorded here (the server may have restarted)' });
+              return;
+            }
+            if (op === 'begin') {
+              const part = Number(url.searchParams.get('part') ?? '1');
+              const file = mediaFileName(name, (request.headers['content-type'] ?? '').split(';')[0].trim(), part);
+              await writer.begin(file);
+              reply(response, 200, { ok: true, file });
+              return;
+            }
+            if (op === 'chunk') {
+              await writer.write(await readBody(request, 256 * 1024 * 1024));
+              reply(response, 200, { ok: true });
+              return;
+            }
+            if (op === 'end') {
+              const entry = await writer.end();
+              reply(response, 200, { ok: true, file: entry?.name ?? null, size: entry?.size ?? 0 });
+              return;
+            }
+            if (op === 'draft' || op === 'finish') {
+              const timeline = JSON.parse((await readBody(request, 256 * 1024 * 1024)).toString('utf8'));
+              if (timeline?.version !== 1 || !Array.isArray(timeline.events)) throw new Error('Not a timeline');
+              if (op === 'draft') {
+                await writer.draft(timeline);
+                reply(response, 200, { ok: true });
+                return;
+              }
+              sessions.delete(bundle);
+              await writer.putFile(`${name}.json`, Buffer.from(JSON.stringify(timeline), 'utf8'));
+              await writer.finish();
+              const index = await writeIndex(target);
+              const { size } = await fs.stat(bundle);
+              console.log(`[zoomdeck] Saved ${join(FOLDER, `${name}.zip`)} (${(size / 1e6).toFixed(1)} MB, ${writer.names.length - 1} media file${writer.names.length === 2 ? '' : 's'})`);
+              reply(response, 200, { ok: true, file: `${name}.zip`, index });
+              return;
+            }
+            reply(response, 400, { ok: false, error: 'Unknown operation' });
+            return;
+          }
           if (request.method === 'PUT') {
-            const kind = url.searchParams.get('kind') ?? 'timeline';
-            const part = Number(url.searchParams.get('part') ?? '0');
-            const type = (request.headers['content-type'] ?? '').split(';')[0].trim();
-            let file;
-            if (kind === 'timeline') file = `${name}.json`;
-            else if (kind === 'media') file = `${name}.${part > 1 ? `part${part}.` : ''}${MEDIA_EXTENSIONS[type] ?? 'webm'}`;
-            else if (/^[a-z0-9]{1,5}$/.test(kind)) file = `${name}.${kind}`;
-            else {
+            // A file the player produced (an exported video), kept beside the talk's bundle.
+            const kind = url.searchParams.get('kind') ?? '';
+            if (!/^[a-z0-9]{1,5}$/.test(kind) || kind === 'zip' || kind === 'json') {
               reply(response, 400, { ok: false, error: 'Unknown kind' });
               return;
             }
+            const file = `${name}.${kind}`;
             const body = await readBody(request, limit);
-            if (kind === 'timeline') {
-              const timeline = JSON.parse(body.toString('utf8'));
-              if (timeline?.version !== 1 || !Array.isArray(timeline.events)) throw new Error('Not a timeline');
-            }
             await fs.mkdir(target, { recursive: true });
             await fs.writeFile(join(target, file), body);
-            const finished = kind === 'timeline' ? false : await finishMediaFile(join(target, file));
-            const index = kind === 'timeline' ? await writeIndex(target) : null;
-            console.log(`[zoomdeck] Saved ${join(FOLDER, file)} (${(body.length / 1e6).toFixed(1)} MB${finished ? ', duration and seek index written' : ''})`);
-            reply(response, 200, { ok: true, file, index, finished });
+            console.log(`[zoomdeck] Saved ${join(FOLDER, file)} (${(body.length / 1e6).toFixed(1)} MB)`);
+            reply(response, 200, { ok: true, file });
             return;
           }
           if (request.method === 'DELETE') {
+            const writer = sessions.get(bundle);
+            if (writer) {
+              sessions.delete(bundle);
+              await writer.release();
+            }
             if (existsSync(target)) {
               for (const file of recordingFiles(name, await fs.readdir(target))) await fs.rm(join(target, file), { force: true });
               await writeIndex(target);
@@ -183,7 +302,16 @@ export function recordingStore({ roots = [], limit = 4 * 1024 * 1024 * 1024 } = 
             reply(response, 200, { ok: true });
             return;
           }
-          if (request.method === 'GET') {
+          if (request.method === 'GET' || request.method === 'HEAD') {
+            const file = url.searchParams.get('file');
+            if (file) {
+              if (!/^[\w.-]+$/.test(file) || isJournal(file)) {
+                reply(response, 400, { ok: false, error: 'Invalid file name' });
+                return;
+              }
+              await serveEntry(response, bundle, file, request.headers.range, request.method === 'HEAD');
+              return;
+            }
             reply(response, 200, { ok: true, ...(await buildIndex(target)) });
             return;
           }

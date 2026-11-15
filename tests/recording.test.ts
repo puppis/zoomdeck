@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { appendPart, eventsBetween, formatTime, inkUpTo, isTimeline, mediaAt, recordingName, stateAt, stopIndex, stopRef, structureHash, type Timeline, type TimelineEvent, type TimelineMedia } from '../src/player/timeline';
@@ -7,7 +7,8 @@ import { Recorder, initialEvents } from '../src/player/recorder';
 import { Playback } from '../src/player/playback';
 import type { Player } from '../src/player/player';
 import { sanitizeRecording, DEFAULT_RECORDING } from '../src/player/settings';
-import { buildIndex, deckFolderFor, isRecordingFile, recordingFiles, NAME } from '../bin/recordings.mjs';
+import { buildIndex, deckFolderFor, isRecordingFile, mediaFileName, recordingFiles, NAME } from '../bin/recordings.mjs';
+import { BundleWriter } from '../bin/bundle.mjs';
 import type { NavigationData } from '../src/runtime';
 
 const navigation: NavigationData = {
@@ -214,5 +215,34 @@ describe('the recordings folder', () => {
     expect(deckFolderFor(`${folder}/slides.md`, [folder], '/x')).toBe(folder);
     expect(deckFolderFor(`${folder}/`, [folder], '/x')).toBe(folder);
     expect(deckFolderFor('/elsewhere/slides.md', [folder], '/x')).toBeNull();
+  });
+
+  it('indexes the talks kept as bundles, names their file, and closes a bundle cut short on the way', async () => {
+    folder = mkdtempSync(join(tmpdir(), 'zoomdeck-rec-'));
+    const recordings = join(folder, 'recordings');
+    const timeline: Timeline = { version: 1, deck: { title: 'Deck', hash: 'x' }, recorded: '2026-11-14T09:05:00.000Z', duration: 2000, media: [{ file: 'b.webm', type: 'video/webm', video: true, start: 0, duration: 2000 }], pip: { corner: 'bottom-right', size: 0.25 }, events: [] };
+    const writer = await BundleWriter.open(join(recordings, 'b.zip'), 'b.json');
+    await writer.putFile('b.webm', Buffer.from('media'));
+    await writer.putFile('b.json', Buffer.from(JSON.stringify(timeline)));
+    await writer.finish();
+    // A second talk whose server went away mid-way, with a draft in its journal.
+    const cut = await BundleWriter.open(join(recordings, 'c.zip'), 'c.json');
+    await cut.begin('c.webm');
+    await cut.write(Buffer.from('some media'));
+    await cut.draft({ ...timeline, recorded: '2026-11-14T10:00:00.000Z', duration: 700, media: [{ file: 'c.webm', type: 'audio/webm', video: false, start: 0, duration: 700 }] });
+    await cut.release();
+    // A plain-file talk from an earlier version sits beside them, and a plain file shadowed by a bundle of the same name is ignored.
+    writeFileSync(join(recordings, 'a.json'), JSON.stringify({ ...timeline, recorded: '2026-11-13T09:05:00.000Z', media: [] }));
+    writeFileSync(join(recordings, 'b.json'), '{"version":1,"events":[],"deck":{"title":"stale"}}');
+    const index = await buildIndex(recordings);
+    expect(index.recordings.map((entry) => [entry.name, entry.file ?? null, entry.title, entry.duration, entry.video])).toEqual([
+      ['a', null, 'Deck', 2000, false],
+      ['b', 'b.zip', 'Deck', 2000, true],
+      ['c', 'c.zip', 'Deck', 700, false],
+    ]);
+    expect(existsSync(join(recordings, 'c.zip.journal'))).toBe(false);
+    expect(recordingFiles('b', ['b.zip', 'b.zip.journal', 'b.json', 'b.video.webm', 'bc.zip', 'index.json'])).toEqual(['b.zip', 'b.zip.journal', 'b.json', 'b.video.webm']);
+    expect(mediaFileName('talk', 'video/webm', 1)).toBe('talk.webm');
+    expect(mediaFileName('talk', 'audio/mp4', 3)).toBe('talk.part3.m4a');
   });
 });

@@ -62,8 +62,9 @@ search box on every page finds any name. `docs/markup.md` is the compact dialect
   move on the deck (stops, strokes, whiteboard, pointer, camera switches) is stamped on a timeline;
   the slides are never filmed. Once the screen is shared (`S`), leaving the deck for another application, workspace or tab
   films it by itself and coming back returns to the camera. A stopped recording can be continued later from the same dialog. A recording plays back on the deck itself and exports as a video
-  (slides or whiteboard with ink, camera in a corner or full frame, sound); recordings live in a
-  `recordings/` folder next to the deck and travel with the folder export.
+  (slides or whiteboard with ink, camera in a corner or full frame, sound); a recording is one zip
+  bundle in a `recordings/` folder next to the deck, written while the talk runs, and travels with
+  the folder export.
 - **A desktop app** for macOS, Linux and Windows (`desktop/`, built with electron-builder; installers
   under the repository's releases, or built locally with `npm run desktop:build`, see below): the
   same player and preview server in a window, with menus, native dialogs and the command's flags.
@@ -192,7 +193,7 @@ explains how, and `examples/tree-deck.ts` shows an entire deck written that way.
 
 ```text
 Zoomdeck/
-├── bin/                      zoomdeck.mjs (serve / build / jump, Vite based), the sync, relay and recordings endpoints
+├── bin/                      zoomdeck.mjs (serve / build / jump, Vite based), the sync, relay and recordings endpoints, the talk bundles
 ├── src/
 │   ├── slides.ts             Slide, PlaceholderSlide, Visit, walk, pageSequence
 │   ├── runtime.ts            SlideContext, Presenter, clips, snapshots, PresenterConfig

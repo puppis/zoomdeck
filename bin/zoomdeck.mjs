@@ -19,7 +19,8 @@ import { exec } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { allowedHosts, lanAddresses, padRelay } from './relay.mjs';
 import { EDITOR_PRESETS, editorSync, previewsFor, requestJump } from './sync.mjs';
-import { FOLDER as RECORDINGS, isRecordingFile, recordingStore } from './recordings.mjs';
+import { FOLDER as RECORDINGS, isRecordingFile, recordingStore, writeIndex } from './recordings.mjs';
+import { extractBundle, isJournal } from './bundle.mjs';
 import { resolveFromPackage } from './resolve.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -373,6 +374,7 @@ runDeck(await pdfDeck({
         }
       }
     }
+    const unpackedRecordings = new Set();
     for (const { root, key, copyTo } of sources) {
       for (const file of await collectAssets(root)) {
         if (file === markupPath) continue;
@@ -391,10 +393,23 @@ runDeck(await pdfDeck({
           if (!recording && (['.ts', '.js', '.mjs'].includes(ext) || file === deckPath || /^(tsconfig|package|jsconfig)[^/]*\.json$/.test(basename(file)))) continue;
           const target = copyTo(file);
           await fs.mkdir(dirname(target), { recursive: true });
+          if (recording && (isJournal(file) || basename(file) === 'index.json')) continue;
+          if (recording && ext === '.zip') {
+            // A talk's bundle is unpacked for the viewers' browsers, which stream plain files best; the index is rebuilt below.
+            try {
+              await extractBundle(file, dirname(target));
+              if (basename(dirname(file)) === RECORDINGS) unpackedRecordings.add(dirname(target));
+            } catch {
+              await fs.copyFile(file, target);
+            }
+            continue;
+          }
+          if (recording && basename(dirname(file)) === RECORDINGS) unpackedRecordings.add(dirname(target));
           await fs.copyFile(file, target);
         }
       }
     }
+    for (const folder of unpackedRecordings) await writeIndex(folder);
     const classesModule = config.classes ?? config.imports;
     const moduleMap = (kind) => `{ ${moduleImports[kind].map(({ name, variable }) => `${JSON.stringify(name)}: ${variable}`).join(', ')} }`;
     const importsLine = [

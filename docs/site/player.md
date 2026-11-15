@@ -242,21 +242,26 @@ and everything you do on the deck, each on the same clock: the stops you move th
 (played forwards, backwards or jumped to), every pen and highlighter stroke as it is drawn, undo
 and clear, the whiteboard with its scrolling, the laser or spotlight while it is shown, the
 playback speed and the camera switches. The slides themselves are not filmed. A recording is
-therefore a few files: the sound or video from the microphone and camera (WebM, or MP4 in Safari;
-a further file each time the camera is turned on or off, since a picture cannot join a file
-being written, and when the talk is continued after a stop), and a small *timeline* of what happened,
-naming each stop by its slide and step. It plays back on the deck itself, as sharp as the live
-deck at any window size, and survives edits to the deck that leave its slides in place; the
-player warns when the deck changed since the talk was recorded.
+therefore one *bundle*, a zip file `recordings/talk-2026-11-13-1030.zip` holding a few files: the
+sound or video from the microphone and camera (WebM, or MP4 in Safari; a further file each time
+the camera is turned on or off, since a picture cannot join a media file being written, and when
+the talk is continued after a stop), and a small *timeline* of what happened, naming each stop by
+its slide and step. The files are stored in the bundle as they are, not compressed, so any zip
+tool opens it. A talk plays back on the deck itself, as sharp as the live deck at any window size,
+and survives edits to the deck that leave its slides in place; the player warns when the deck
+changed since the talk was recorded.
 
 The header shows the running time while recording. **Pause** stops both the microphone and the
-clock, and resuming leaves the gap out of the talk. **Stop** saves the recording in a
-`recordings/` folder next to the deck when the deck is served by `zoomdeck serve` or the
-development page; otherwise the files are offered as one zip archive to download, to unzip into
-such a folder by hand (a recording too large for an archive, beyond four gigabytes, comes as
-separate files). When `ffmpeg` is installed, the server also rewrites the media file so that it carries its
-duration and can be seeked in any player. The recording is named after the date and time,
-`talk-2026-11-13-1030`.
+clock, and resuming leaves the gap out of the talk. When the deck is served by `zoomdeck serve`,
+the desktop app or the development page, the bundle is written in the `recordings/` folder next
+to the deck *while you talk*: each media file begins in it as its capture starts and receives its
+chunks second by second, and **Stop** only adds the timeline and the archive's directory, a few
+kilobytes, so that nothing is copied or compressed afterwards and the computer can be shut the
+moment the talk is over. A talk cut short by a crash, a dead battery or a closed laptop is closed
+from what reached the disk the next time its folder is read, including a draft of the timeline
+kept every ten seconds. Without the server the same bundle is built in memory and offered as a
+download, to put into a `recordings/` folder next to the deck as it is. The recording is named
+after the date and time, `talk-2026-11-13-1030`.
 
 **Filming the screen.** A talk may leave the deck for a while: a demonstration in another
 application, a terminal, a web page. **Screen** in the footer, or `S`, films the screen in place
@@ -287,9 +292,10 @@ camera files, about twenty megabytes a minute.
 **Continuing a talk.** A stopped recording can be taken up again later, even after closing the
 browser: the Record dialog offers every saved talk to continue, and so does the **Continue**
 button in the list of talks. What follows is stamped after the end of the earlier part, with a cut
-marking the seam, and is kept as a further media file of the same recording (`talk.part2.webm`,
-since a browser cannot append to a finished file); playback and the export run through the
-parts as one talk. The header counts from where the talk stood. Stop and Continue therefore
+marking the seam, and is kept as a further media file in the same bundle (`talk.part2.webm`,
+since a browser cannot append to a finished media file; the bundle itself only ever grows at its
+end, the earlier files are not touched); playback and the export run through the parts as one
+talk. The header counts from where the talk stood. Stop and Continue therefore
 also serve as a pause that outlives the page, and the deck may be edited in between, as long as
 the slides already visited stay.
 
@@ -332,8 +338,10 @@ one. The timeline is independent of the clock that produced it, so the desktop a
 the same recording off line as well, faster than real time, into one flat video file.
 
 **What travels where.** The folder export (`zoomdeck build … -o folder`) copies the `recordings/`
-folder, so a deck published that way shows its Talk button to viewers; the single-file export
-leaves recordings out, since a talk's media would not fit in a page. Playback needs a browser that
+folder, unpacking each bundle into its plain files, which a static host streams best, so a deck
+published that way shows its Talk button to viewers (a bundle copied as it is next to a deck
+plays too: the player reads it by byte ranges, fetching each media file whole); the single-file
+export leaves recordings out, since a talk's media would not fit in a page. Playback needs a browser that
 can play the recorded file: a WebM from Chrome or Firefox plays in those two, an MP4 from Safari
 plays everywhere.
 

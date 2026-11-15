@@ -13,8 +13,8 @@ export interface PlaybackHost {
   player: Player;
   /** The element playing the recording's media, when it has any; its time drives the playback. */
   media: HTMLMediaElement | null;
-  /** The URL of a media part's file. */
-  mediaUrl?: (part: TimelineMedia) => string;
+  /** The URL of a media part's file; a promise when the part is first fetched (a bundle on a static host). */
+  mediaUrl?: (part: TimelineMedia) => string | Promise<string>;
   /** Apply an event other than a navigation; `instant` means no animation (a seek is rebuilding state). */
   apply(event: TimelineEvent, instant: boolean): void;
   /** Remove every stroke from both surfaces before a seek replays the ink. */
@@ -40,6 +40,8 @@ export class Playback {
   private _runFrom = 0;
   /** The media part loaded in the element. */
   private _part: TimelineMedia | null = null;
+  /** The time last asked for, applied once a part still being fetched is in the element. */
+  private _pendingSeek = 0;
   private readonly _onEnded = () => this._partEnded();
 
   constructor(readonly timeline: Timeline, private readonly host: PlaybackHost) {
@@ -78,16 +80,27 @@ export class Playback {
     return Math.min(this.duration, this._runFrom + performance.now() - this._runStart);
   }
 
-  /** Load the media part that covers `time` into the element, when it is not the current one, and position it. */
-  private _loadPart(time: number): void {
+  /**
+   * Load the media part that covers `time` into the element, when it is not the current one,
+   * and position it; resolves once the element has its source (at once, unless the source is
+   * still being fetched, in which case a seek meanwhile wins).
+   */
+  private async _loadPart(time: number): Promise<void> {
     const media = this.host.media;
     if (!media) return;
     const part = mediaAt(this.timeline.media, time);
     if (!part) return;
+    this._pendingSeek = time;
     if (part !== this._part) {
       this._part = part;
-      media.src = this.host.mediaUrl ? this.host.mediaUrl(part) : part.file;
+      const source = this.host.mediaUrl ? this.host.mediaUrl(part) : part.file;
+      const url = typeof source === 'string' ? source : await source.catch(() => null);
+      // Another part was asked for while this one was fetched: it has taken over.
+      if (this._part !== part) return;
+      if (url === null) return;
+      media.src = url;
       media.load();
+      time = this._pendingSeek;
     }
     media.currentTime = Math.max(0, (time - part.start) / 1000);
   }
@@ -99,7 +112,7 @@ export class Playback {
     this._playing = true;
     const media = this.host.media;
     if (media) {
-      if (!this._part) this._loadPart(0);
+      if (!this._part) await this._loadPart(0);
       try {
         await media.play();
       } catch {
@@ -142,7 +155,7 @@ export class Playback {
     const wasPlaying = this._playing;
     if (wasPlaying) this.pause();
     this._ended = false;
-    if (this.host.media) this._loadPart(target);
+    if (this.host.media) void this._loadPart(target);
     else this._runFrom = target;
     const events = this.timeline.events;
     const state = stateAt(events, target);
@@ -244,8 +257,7 @@ export class Playback {
       return;
     }
     this._advance(next.start);
-    this._loadPart(next.start);
-    void this.host.media?.play().catch(() => this._end());
+    void this._loadPart(next.start).then(() => this.host.media?.play()).catch(() => this._end());
   }
 
   private _end(): void {
