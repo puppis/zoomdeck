@@ -525,40 +525,35 @@ Paragraphs wrap to `width`. Use **bold**, *italic*,
 [CSS colors]{style="color:#15803D"} or hex values
 and [nest **emphasis** and $\sqrt{2}$]{color=GOLD_E}.
 
-First line.\\
-Second line after an explicit break.
-
 - Bullet items are prose with a marker
   - Nested items indent
     1. Numbered lists nest too
 - Headings set size only: `#` to `######`
 
-### A level-3 heading
-
 Links like [this one](https://vite.dev) are clickable.
 
-<!-- HTML comments are discarded. -->
+Name   && **bold**  && $x^2$
+longer && *italic*  && `&&` aligns columns
 ```
 
 Paragraphs wrap to `width`. Use **bold**, *italic*, `inline code` and math $e^{i\pi}+1=0$. {x=0.6 width=9}
 
 [Colored spans]{color=ORANGE} take palette names, [CSS colors]{style="color:#15803D"} or hex values and [nest **emphasis** and $\sqrt{2}$]{color=GOLD_E}. {x=0.6 width=9}
 
-First line.\\
-Second line after an explicit break. {x=0.6 width=9}
-
 - Bullet items are prose with a marker {x=0.6 width=9}
   - Nested items indent {x=0.6 width=8.4}
     1. Numbered lists nest too {x=0.6 width=7.8}
 - Headings set size only: `#` to `######` {x=0.6 width=9}
 
-### A level-3 heading {x=0.6}
-
 Links like [this one](https://vite.dev) are clickable. {x=0.6 width=9}
+
+Name   && **bold**  && $x^2$
+longer && *italic*  && `&&` aligns columns
+{x=0.6 width=9}
 
 Blank lines separate elements, and the attributes in braces at the end of a block apply to it: `{#id x= y= width= font_size= color= step=}`. {#prose-key x=-9.35 y=-4.2 width=18.7 font_size=20}
 
-Headings `#` to `######` set the size only; HTML comments are discarded. A `::: styles` block or deck.json can restyle every role at once, see Anchor expressions and styles. {#prose-more x=-9.35 y=-5.05 width=18.7 font_size=16 color=GRAY}
+Headings `#` to `######` set the size only; `\\` breaks a line; HTML comments are discarded; `&&` between pieces of text aligns them in columns across the lines, see Columns. A `::: styles` block or deck.json can restyle every role at once. {#prose-more x=-9.35 y=-5.05 width=18.7 font_size=16 color=GRAY}
 :::
 
 ::: slide {#math width=20}
