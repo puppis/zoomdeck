@@ -15,6 +15,8 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve, basename } from 'node:path';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { startPreview, parseArgs, resolveDeckPath, deckKind } from '../bin/zoomdeck.mjs';
+import { FOLDER as RECORDINGS } from '../bin/recordings.mjs';
+import { listJobs, resumeRenders } from '../bin/render.mjs';
 import { copyTour, TOUR_FOLDER } from './tour.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -57,6 +59,58 @@ const smokeShot = process.env.ZOOMDECK_SMOKE || null;
 let win = null;
 let preview = null;
 let current = null;
+
+/**
+ * Rendering a talk as a video happens in a hidden window of its own: the render page draws the
+ * deck off the clock and the server composes the file with ffmpeg (bin/render.mjs). The window
+ * stays until the job is over or fails; one talk is rendered at a time, the others wait.
+ */
+const renderWindows = new Map();
+let renderQueue = Promise.resolve();
+function openRenderPage(url, job) {
+  const run = async () => {
+    if (!preview) return;
+    // The page's address follows the server of this run, whatever port an earlier run had.
+    const target = new URL(url);
+    const origin = new URL(preview.url);
+    target.protocol = origin.protocol;
+    target.host = origin.host;
+    const window = new BrowserWindow({ show: false, width: 1920, height: 1200, webPreferences: { contextIsolation: true, sandbox: true, backgroundThrottling: false } });
+    renderWindows.set(job.output, window);
+    try {
+      await window.loadURL(target.href);
+      await new Promise((resolve) => {
+        const timer = setInterval(async () => {
+          const mine = (await listJobs(job.folder)).find((candidate) => candidate.output === job.output);
+          if (!mine || mine.status === 'done' || mine.status === 'failed') {
+            clearInterval(timer);
+            resolve();
+          }
+        }, 2000);
+        window.on('closed', () => {
+          clearInterval(timer);
+          resolve();
+        });
+      });
+    } finally {
+      renderWindows.delete(job.output);
+      if (!window.isDestroyed()) window.destroy();
+    }
+  };
+  const queued = renderQueue.then(run, run);
+  renderQueue = queued.catch(() => undefined);
+  return queued;
+}
+
+/** Take up the renders the deck's folder was left with by an earlier run. */
+async function resumePendingRenders(deckPath) {
+  const folder = join(dirname(deckPath), RECORDINGS);
+  try {
+    for (const page of await resumeRenders(folder)) void openRenderPage(page.url, { folder, talk: page.talk, output: page.output });
+  } catch (error) {
+    console.error('Renders left over:', error);
+  }
+}
 
 
 /** The decks opened lately, and the folder of the last one, where the next Open dialog starts. */
@@ -110,6 +164,7 @@ async function openDeck(deckPath) {
       port: options.port ?? DESKTOP_PORT,
       strictPort: options.port !== null,
       cacheDir: join(app.getPath('userData'), 'vite-cache'),
+      openRenderPage,
     });
   } catch (error) {
     dialog.showErrorBox('Zoomdeck', `The deck could not be served:\n${error.message}`);
@@ -120,6 +175,7 @@ async function openDeck(deckPath) {
   remember(target);
   if (!win) createWindow();
   await win.loadURL(preview.url);
+  void resumePendingRenders(target);
 }
 
 function createWindow() {
@@ -371,6 +427,8 @@ if (!lock) {
     if (process.platform !== 'darwin') app.quit();
   });
   app.on('before-quit', () => {
+    // A render under way is left for the next run, which takes it up again.
+    for (const window of renderWindows.values()) if (!window.isDestroyed()) window.destroy();
     if (preview) void preview.server.close().catch(() => undefined);
   });
 }

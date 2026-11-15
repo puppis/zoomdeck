@@ -24,7 +24,8 @@ import { Playback } from './playback';
 import { exportMimeType, exportVideo, type ExportSource } from './export';
 import { PRINT_WIDTHS, printDeck, printPages, type PrintPages } from './print';
 import { zipFiles } from './zip';
-import { deleteRecording, describeMedia, download, listRecordings, loadTimeline, mediaFileName, mediaSource, recordingStoreAvailable, RecordingSession, saveFile, type RecordingEntry } from './store';
+import { deleteRecording, describeMedia, download, listRecordings, loadTimeline, mediaFileName, mediaSource, recordingStoreAvailable, RecordingSession, recordingUrl, saveFile, type RecordingEntry } from './store';
+import { renderPageUrl, renderPlan, RenderSession, renderStatus, renderTalk, requestRender, type RenderStatus } from './render';
 import { appendPart, formatTime, recordingName, stopRef, structureHash, type Corner, type PointerKind, type Timeline, type TimelineEvent, type TimelineMedia, type UntimedEvent } from './timeline';
 
 /** A tablet page known to the presenter. */
@@ -51,7 +52,8 @@ export type CameraMode = 'off' | 'corner' | 'full';
 /** What the export dialog settles: the file's name (without extension) and where it goes. */
 interface ExportChoice {
   name: string;
-  destination: 'folder' | 'pick' | 'download';
+  /** `server`: rendered off the clock by the server into an MP4, not in this page. */
+  destination: 'server' | 'folder' | 'pick' | 'download';
   /** The file chosen through the browser's save dialog, where it offers one. */
   handle?: FileSystemFileHandle;
 }
@@ -177,6 +179,9 @@ export class PlayerUI {
   /** The name of the talk being recorded, chosen when it starts. */
   private _talkName: string | null = null;
   private _draftTick = 0;
+  /** What the server says about rendering videos: whether it can (ffmpeg), whether it opens render pages itself, and the jobs of this deck's talks. */
+  private _render: RenderStatus = { ffmpeg: false, desktop: false, jobs: [] };
+  private _renderToggle!: HTMLInputElement;
   private readonly _recordButton: HTMLButtonElement;
   private readonly _pauseButton: HTMLButtonElement;
   private readonly _recordLabel: HTMLElement;
@@ -1361,6 +1366,7 @@ export class PlayerUI {
         await session.finish(timeline);
         await this._refreshRecordings();
         this.notice(append ? `Continued recordings/${name}.zip, now ${formatTime(timeline.duration)}` : `Saved as recordings/${name}.zip`);
+        if (this._settings.recording.renderOnStop) void this._offerRender(name);
       } catch (error) {
         this.notice(`Could not save: ${(error as Error).message}`);
         await this._offerDownload(name, timeline, files);
@@ -1393,6 +1399,7 @@ export class PlayerUI {
     const base = this._deck.base;
     // Without the recorder there is no Talk button either: a deck in a page is not asked about its recordings.
     this._recordings = base && this._features.has('record') ? await listRecordings(base) : [];
+    this._render = base && this._features.has('record') && recordingStoreAvailable() ? await renderStatus(base).catch(() => ({ ffmpeg: false, desktop: false, jobs: [] })) : { ffmpeg: false, desktop: false, jobs: [] };
     this._recordingsButton.hidden = this._recordings.length === 0;
     this._recordingsButton.textContent = this._recordings.length > 1 ? `▶ Talks (${this._recordings.length})` : '▶ Talk';
   }
@@ -1428,6 +1435,22 @@ export class PlayerUI {
         dialog.close();
         void this.continueRecording(entry);
       });
+      // The rendered video, and rendering it (off the clock, by the server with ffmpeg), with the progress of a render under way.
+      const video = el('button', { text: 'Video', title: 'Open the rendered video' });
+      video.hidden = !entry.movie;
+      video.addEventListener('click', () => window.open(recordingUrl(this._deck.base as string, entry.movie as string), '_blank', 'noopener'));
+      const job = this._render.jobs.find((candidate) => candidate.talk === entry.name && candidate.status !== 'done') ?? null;
+      const busy = Boolean(job && ['queued', 'rendering', 'composing'].includes(job.status));
+      const render = el('button', {
+        text: job?.status === 'composing' ? `Composing ${Math.round(job.progress * 100)}%` : busy ? `Rendering ${Math.round((job as NonNullable<typeof job>).progress * 100)}%` : job?.status === 'failed' ? 'Render again' : job?.status === 'interrupted' ? 'Resume render' : entry.movie ? 'Render again' : 'Render video',
+        title: job?.error ? `The last render failed: ${job.error}` : 'Render this talk as an MP4 video off the clock, faster than real time',
+      });
+      render.hidden = !(this._deck.base && recordingStoreAvailable() && this._render.ffmpeg);
+      render.disabled = busy;
+      render.addEventListener('click', () => {
+        dialog.close();
+        void this.startRender(entry.name, `${entry.name}.video`);
+      });
       const remove = el('button', { class: 'add', text: 'Delete' });
       remove.hidden = !(this._deck.base && recordingStoreAvailable());
       remove.addEventListener('click', () => {
@@ -1440,7 +1463,16 @@ export class PlayerUI {
         }).catch((error: Error) => this.notice(error.message));
       });
       list.append(el('div', { class: 'binding recording' },
-        el('span', { class: 'action', text: `${when} · ${formatTime(entry.duration)}${entry.video ? ' · camera' : entry.media ? ' · sound' : ''}` }), play, more, remove));
+        el('span', { class: 'action', text: `${when} · ${formatTime(entry.duration)}${entry.video ? ' · camera' : entry.media ? ' · sound' : ''}${entry.movie ? ' · video' : ''}` }), play, video, render, more, remove));
+    }
+    // While a render runs, the list follows its progress.
+    if (this._render.jobs.some((job) => ['queued', 'rendering', 'composing'].includes(job.status))) {
+      const timer = window.setInterval(() => {
+        void this._refreshRecordings().then(() => {
+          if (dialog.open) this.openRecordingList();
+        });
+      }, 3000);
+      dialog.addEventListener('close', () => clearInterval(timer));
     }
     const done = el('button', { class: 'done', text: 'Close' });
     done.addEventListener('click', () => dialog.close());
@@ -1535,6 +1567,166 @@ export class PlayerUI {
     this._updateSpotlight();
   }
 
+  /**
+   * Have `talk` rendered into `recordings/<output>.mp4` off the clock: the desktop app opens the
+   * render page in a hidden window of its own; a browser opens it in a new tab (from a click,
+   * or the tab is blocked). The list of talks shows the progress and opens the video.
+   */
+  async startRender(talk: string, output: string): Promise<void> {
+    const base = this._deck.base;
+    if (!base || !recordingStoreAvailable()) return;
+    const url = renderPageUrl(talk, output);
+    try {
+      const taken = await requestRender(base, talk, output, url);
+      if (!taken && !window.open(url, '_blank')) {
+        this.notice('The browser blocked the render page; allow pop-ups for this site, or open it yourself from the list of talks');
+        return;
+      }
+      this.notice(`Rendering ${talk} to recordings/${output}.mp4 in the background; the list of talks shows the progress`);
+      await this._refreshRecordings();
+    } catch (error) {
+      this.notice(`Cannot render: ${(error as Error).message}`);
+    }
+  }
+
+  /** After a recording: the talk is rendered by itself in the desktop app; a browser, which cannot open a tab without a click, offers a button. */
+  private async _offerRender(talk: string): Promise<void> {
+    const base = this._deck.base;
+    if (!base || !recordingStoreAvailable()) return;
+    const status = await renderStatus(base).catch(() => null);
+    if (!status?.ffmpeg) return;
+    this._render = status;
+    if (status.desktop) {
+      await this.startRender(talk, `${talk}.video`);
+      return;
+    }
+    for (const stale of this.root.querySelectorAll('.render-offer')) stale.remove();
+    const offer = el('div', { class: 'render-offer', role: 'status' });
+    const go = el('button', { class: 'add', text: 'Render the video now' });
+    const later = el('button', { text: 'Later' });
+    go.addEventListener('click', () => {
+      offer.remove();
+      void this.startRender(talk, `${talk}.video`);
+    });
+    later.addEventListener('click', () => offer.remove());
+    offer.append(el('span', { text: `Render ${talk} as an MP4 video? It runs in a tab of its own, faster than real time; the list of talks shows the progress and can start it later too.` }), go, later);
+    this.root.append(offer);
+  }
+
+  /**
+   * Render `talk` off the clock in this page, for the server to compose into
+   * `recordings/<output>.mp4` (the page opened with `?render=` does this and nothing else):
+   * the deck frames go out as they are drawn, the plan at the end, and the page waits for the
+   * video before closing itself where it was opened for this alone.
+   */
+  async renderTalkOffline(talk: string, output: string, fps = 30, width = 1920): Promise<void> {
+    const base = this._deck.base;
+    const player = this._player;
+    const navigation = this._navigation;
+    const stage = this._stage;
+    if (!base || !player || !navigation || !stage || !recordingStoreAvailable()) return;
+    await this._refreshRecordings();
+    const entry = this._recordings.find((candidate) => candidate.name === talk) ?? { name: talk, title: '', recorded: '', duration: 0, media: null, video: false };
+    let timeline: Timeline;
+    try {
+      timeline = await loadTimeline(base, entry);
+    } catch (error) {
+      this.notice((error as Error).message);
+      return;
+    }
+    if (this._recorder) await this.stopRecording();
+    this.closeRecording();
+    this._setCameraStream(null);
+    this._cameraButton.disabled = true;
+    const progress = el('div', { class: 'render-progress', text: `Rendering ${talk}…` });
+    this.root.append(progress);
+    // Without a media element the playback runs on the page's clock, which the renderer drives.
+    const playback = new Playback(timeline, {
+      navigation,
+      player,
+      media: null,
+      apply: (event, instant) => this._applyTimelineEvent(event, instant),
+      resetInk: () => {
+        this._slideInk.reset();
+        this._boardInk.reset();
+      },
+      onMissingStop: (key) => this.notice(`The slide ${key.replace(/^markup:/, '')} is no longer in the deck`),
+    });
+    this._playback = playback;
+    this._playbackName = talk;
+    this.root.classList.add('playing-back');
+    const session = new RenderSession(base, talk, output);
+    const aspect = this._deck.viewport.width / this._deck.viewport.height;
+    const source = {
+      aspect,
+      background: this._deck.background,
+      foreground: this._deck.foreground,
+      penStyle: () => this._settings.pen,
+      strokes: (surface: InkSurfaceName) => this._surface(surface).strokes,
+      screen: () => false,
+      mirror: false,
+      pip: timeline.pip,
+    };
+    let outcome = '';
+    try {
+      await session.open();
+      let reported = 0;
+      const sent = await renderTalk(playback, player, stage, source, {
+        fps,
+        width,
+        onFrame: async (blob, t, index) => {
+          if (blob) await session.frame(index, t, blob);
+        },
+        onProgress: (fraction) => {
+          progress.textContent = `Rendering ${talk}: ${Math.round(fraction * 100)}%`;
+          if (fraction - reported >= 0.02 || fraction === 1) {
+            reported = fraction;
+            void session.progress(fraction);
+          }
+        },
+      });
+      if (sent === null) {
+        await session.cancel();
+        outcome = 'Rendering abandoned';
+      } else {
+        await session.finish(renderPlan(timeline, aspect, width, fps));
+        progress.textContent = `Composing ${output}.mp4…`;
+        for (;;) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          const status = await renderStatus(base, talk).catch(() => null);
+          const job = status?.jobs.find((candidate) => candidate.output === output) ?? null;
+          if (!job || job.status === 'done') {
+            outcome = `Rendered recordings/${output}.mp4`;
+            break;
+          }
+          if (job.status === 'failed') {
+            outcome = `Rendering failed: ${job.error ?? 'unknown error'}`;
+            break;
+          }
+          progress.textContent = `Composing ${output}.mp4: ${Math.round(job.progress * 100)}%`;
+        }
+      }
+    } catch (error) {
+      outcome = `Rendering failed: ${(error as Error).message}`;
+      await session.cancel();
+    } finally {
+      playback.dispose();
+      this._playback = null;
+      this._playbackName = null;
+      this._playbackPointer = null;
+      this.root.classList.remove('playing-back');
+      this._cameraButton.disabled = false;
+      this._layoutCamera();
+      this._updateSpotlight();
+    }
+    progress.textContent = outcome;
+    this.notice(outcome);
+    await this._refreshRecordings();
+    // A page opened for this alone (a tab from the list of talks, the desktop app's window) is done.
+    if (window.opener) setTimeout(() => window.close(), 2000);
+    else setTimeout(() => progress.remove(), 6000);
+  }
+
   /** Apply a recorded event (other than a navigation) to this page. */
   private _applyTimelineEvent(event: TimelineEvent, instant: boolean): void {
     switch (event.type) {
@@ -1563,6 +1755,10 @@ export class PlayerUI {
     const choice = await this._confirmExport(talk);
     if (!choice || this._exporting || this._playback !== playback) return;
     const name = choice.name;
+    if (choice.destination === 'server') {
+      await this.startRender(talk, name);
+      return;
+    }
     this._exporting = true;
     this._exportButton.disabled = true;
     this._playRange.disabled = true;
@@ -1614,16 +1810,27 @@ export class PlayerUI {
     const close = el('button', { class: 'close', 'aria-label': 'Close', text: '×' });
     const nameInput = el('input', { type: 'text', value: `${talk}.video`, 'aria-label': 'File name', spellcheck: 'false' });
     const where = el('select', { 'aria-label': 'Where to save the video' });
-    if (folder) where.append(el('option', { value: 'folder', text: 'The recordings/ folder next to the deck' }));
+    if (folder && this._render.ffmpeg) where.append(el('option', { value: 'server', text: 'The recordings/ folder, as an MP4 rendered off the clock by the server (faster than real time)' }));
+    if (folder) where.append(el('option', { value: 'folder', text: 'The recordings/ folder next to the deck, exported from this page' }));
     if (picker) where.append(el('option', { value: 'pick', text: 'A folder of my choice (asked when the export starts)' }));
     where.append(el('option', { value: 'download', text: "The browser's downloads" }));
-    const status = el('p', { class: 'note', text: 'The recording plays from the start while the video is written, which takes as long as the talk; keep this window visible until it ends. The file is WebM (VP9 and Opus), 1920 pixels wide in the deck\'s proportions, with the slides or the whiteboard and their ink, the camera in its corner or full frame, the pointer, and the sound.' });
+    const suffix = el('span', { class: 'note', text: '.webm' });
+    const status = el('p', { class: 'note' });
+    const describe = () => {
+      const server = where.value === 'server';
+      suffix.textContent = server ? '.mp4' : '.webm';
+      status.textContent = server
+        ? 'The talk is rendered in a page of its own, off the clock and faster than real time, and ffmpeg lays the camera, the screen and the sound from the recording over the deck: an MP4 file (H.264 and AAC), 1920 pixels wide in the deck\'s proportions. This page is free meanwhile; the list of talks shows the progress and opens the video.'
+        : 'The recording plays from the start while the video is written, which takes as long as the talk; keep this window visible until it ends. The file is WebM (VP9 and Opus), 1920 pixels wide in the deck\'s proportions, with the slides or the whiteboard and their ink, the camera in its corner or full frame, the pointer, and the sound.';
+    };
+    where.addEventListener('change', describe);
+    describe();
     const run = el('button', { class: 'add', text: 'Export', autofocus: '' });
     const cancel = el('button', { text: 'Cancel' });
     dialog.append(
       el('header', {}, el('h2', { text: 'Export the talk as a video' }), close),
       el('section', {},
-        el('div', { class: 'row' }, el('label', {}, 'Name ', nameInput), el('span', { class: 'note', text: '.webm' })),
+        el('div', { class: 'row' }, el('label', {}, 'Name ', nameInput), suffix),
         el('div', { class: 'row' }, el('label', {}, 'Save to ', where)),
         status,
         el('div', { class: 'row' }, run, cancel)),
@@ -1960,6 +2167,11 @@ export class PlayerUI {
       this._settings.recording.screenOnRecord = this._screenAskToggle.checked;
       saveSettings(this._settings);
     });
+    this._renderToggle = el('input', { type: 'checkbox' });
+    this._renderToggle.addEventListener('change', () => {
+      this._settings.recording.renderOnStop = this._renderToggle.checked;
+      saveSettings(this._settings);
+    });
     this._mirrorToggle = el('input', { type: 'checkbox' });
     this._mirrorToggle.addEventListener('change', () => {
       this._settings.recording.mirror = this._mirrorToggle.checked;
@@ -1989,6 +2201,7 @@ export class PlayerUI {
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Mirror my own picture while presenting' }), this._mirrorToggle),
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'While a screen share is held, film it by itself whenever you leave the deck for another tab, application or workspace, and come back to the camera on return' }), this._screenAwayToggle),
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Ask for the screen when a recording starts, so that a share is held from the start' }), this._screenAskToggle),
+      el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Render the talk as an MP4 video when a recording stops, off the clock, where the server has ffmpeg (the desktop app does it in the background; a browser offers a button, since it opens a tab for it)' }), this._renderToggle),
     );
     const resetRecording = el('button', { text: 'Restore the default recording settings' });
     resetRecording.addEventListener('click', () => {
@@ -2314,6 +2527,7 @@ export class PlayerUI {
     this._mirrorToggle.checked = recording.mirror;
     this._screenAwayToggle.checked = recording.screenWhenAway;
     this._screenAskToggle.checked = recording.screenOnRecord;
+    this._renderToggle.checked = recording.renderOnStop;
     this._antialiasToggle.checked = this._settings.rendering.antialias;
     this._resolutionSelect.value = String(this._settings.rendering.resolution);
     this._renderingChanged();

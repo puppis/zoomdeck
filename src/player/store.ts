@@ -20,6 +20,8 @@ export interface RecordingEntry {
   parts?: number;
   /** The bundle holding the talk (`name.zip`); absent when the talk lies in plain files. */
   file?: string;
+  /** The talk's rendered video in the recordings folder (`name.video.mp4`), when there is one. */
+  movie?: string;
 }
 
 export interface RecordingIndex {

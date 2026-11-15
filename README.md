@@ -64,7 +64,8 @@ search box on every page finds any name. `docs/markup.md` is the compact dialect
   films it by itself and coming back returns to the camera. A stopped recording can be continued later from the same dialog. A recording plays back on the deck itself and exports as a video
   (slides or whiteboard with ink, camera in a corner or full frame, sound); a recording is one zip
   bundle in a `recordings/` folder next to the deck, written while the talk runs, and travels with
-  the folder export.
+  the folder export. With `ffmpeg` on the machine, a talk is also rendered off the clock, faster
+  than real time, into an MP4 that plays anywhere, by itself when the recording stops.
 - **A desktop app** for macOS, Linux and Windows (`desktop/`, built with electron-builder; installers
   under the repository's releases, or built locally with `npm run desktop:build`, see below): the
   same player and preview server in a window, with menus, native dialogs and the command's flags.

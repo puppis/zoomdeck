@@ -51,8 +51,9 @@ The gear button (or the `,` key) opens the settings dialog, in six parts:
   used by another gesture frees them from it.
 - **Pen**: how pressure and motion shape a stroke; see [The pen](#the-pen).
 - **Recording**: the microphone and camera, where the camera picture sits, whether a held screen
-  share is filmed by itself while you are away from the deck, and whether a recording asks for the
-  screen when it starts; see [Recording a talk](#recording-a-talk).
+  share is filmed by itself while you are away from the deck, whether a recording asks for the
+  screen when it starts, and whether a talk is rendered as a video when its recording stops; see
+  [Recording a talk](#recording-a-talk).
 - **Tablet**: pairing a companion tablet, the tablets connected and the trusted ones; see
   [A tablet as a drawing pad](#a-tablet-as-a-drawing-pad).
 - **Keyboard**: every action with its keys, in three groups: the keys while presenting, the keys
@@ -324,18 +325,37 @@ recorded with, or full frame where the presenter switched to it. Your keys, taps
 deck, the pen, the whiteboard, the spotlight, links and the outline are off until you leave the
 recording, so that nothing of yours gets mixed with what the timeline replays.
 
-**Exporting a video.** Export video renders the open recording as a video file: the slides or the
-whiteboard with their ink, the camera in its corner or full frame, the pointer, and the recorded
-sound, at 1920 pixels wide in the deck's proportions. A dialog first asks for the file's name
-and where it goes: the `recordings/` folder next to the deck (with the preview server), a folder
-of your choice through the browser's own save dialog (Chrome and Edge), or the browser's
-downloads. The recording plays from the start while
-the frames are captured, so the export takes exactly as long as the talk, and the window must
-stay visible meanwhile (a hidden tab draws nothing). The result is a WebM file (VP9 and Opus),
-saved as `recordings/<name>.video.webm` next to the recording or downloaded; `ffmpeg -i
-talk.video.webm -c:v libx264 -c:a aac talk.mp4` turns it into an MP4 when a tool or a site wants
-one. The timeline is independent of the clock that produced it, so the desktop app is to render
-the same recording off line as well, faster than real time, into one flat video file.
+**Rendering a video.** A talk is a bundle that only Zoomdeck plays; a flat video file plays
+anywhere. Where the deck is served by `zoomdeck serve`, the desktop app or the development page
+and the computer has [ffmpeg](https://ffmpeg.org), **Render video** in the list of talks (and
+the first choice of the Export dialog) renders the talk *off the clock*: a page of its own
+replays the timeline on a virtual clock, as fast as the machine draws rather than as long as the
+talk lasted, and sends the server a picture of the deck (the slides or the whiteboard with their
+ink and the pointer, 1920 pixels wide in the deck's proportions) whenever it changes; the server
+then lays the camera, in its corner or full frame, and the filmed screen, whole, over those
+pictures with the recorded sound, straight from the bundle, and writes
+`recordings/<name>.video.mp4` (H.264 and AAC, which every player, phone and site reads). The
+list of talks shows the progress and opens the video (**Video**); a render takes a fraction of
+the talk's length, how small depending on how much moves in it, since ffmpeg's encoding of the
+frames takes most of the time. The desktop app renders in a
+hidden window of its own; a browser opens a tab for it, which closes itself when the video is
+done. By default a talk is rendered by itself when its recording stops: the desktop app starts
+at once, in the background, while a browser, which may not open a tab without a click, offers a
+button. The setting "Render the talk as an MP4 video when a recording stops" under **Recording**
+turns this off. A render interrupted by quitting the desktop app is taken up again when the deck
+is opened next; stopping the computer right after a talk is therefore safe at any time, since the
+bundle itself is complete the moment the recording stops. Videos inside slides and live pages are
+drawn as the page shows them at each frame and do not play in time in the rendered file.
+
+**Exporting from the page.** Without ffmpeg, or when the file should go elsewhere, **Export video**
+renders the open recording in the page itself: the recording plays from the start while the
+frames are captured, so the export takes exactly as long as the talk, and the window must stay
+visible meanwhile (a hidden tab draws nothing). A dialog first asks for the file's name and where
+it goes: the `recordings/` folder next to the deck (with the preview server), a folder of your
+choice through the browser's own save dialog (Chrome and Edge), or the browser's downloads. The
+result is a WebM file (VP9 and Opus), saved as `recordings/<name>.video.webm` next to the
+recording or downloaded; `ffmpeg -i talk.video.webm -c:v libx264 -c:a aac talk.mp4` turns it
+into an MP4 when a tool or a site wants one.
 
 **What travels where.** The folder export (`zoomdeck build … -o folder`) copies the `recordings/`
 folder, unpacking each bundle into its plain files, which a static host streams best, so a deck

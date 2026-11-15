@@ -20,13 +20,13 @@ export const FOLDER = 'recordings';
 /** Names a recording may have: letters, digits, dots, dashes and underscores, starting with a letter or digit. */
 export const NAME = /^[A-Za-z0-9][\w.-]*$/;
 
-/** The files a recording consists of, by its name: its bundle and journal, exported videos, and the plain files of an older talk. */
+/** The files a recording consists of, by its name: its bundle and journal, exported and rendered videos (with a render's working folder), and the plain files of an older talk. */
 export function recordingFiles(name, entries) {
-  return entries.filter((file) => file === `${name}.json` || file.startsWith(`${name}.`) && file !== 'index.json');
+  return entries.filter((file) => file === `${name}.json` || file.startsWith(`${name}.`) && file !== 'index.json' || file.startsWith(`.render-${name}.`));
 }
 
-/** The entry in the index for a timeline, read from a bundle (`file` names it) or from a plain file. */
-function indexEntry(name, timeline, file) {
+/** The entry in the index for a timeline, read from a bundle (`file` names it) or from a plain file; `movie` is its rendered video, when there is one. */
+function indexEntry(name, timeline, file, movie = null) {
   if (timeline?.version !== 1 || !Array.isArray(timeline.events)) return null;
   const media = Array.isArray(timeline.media) ? timeline.media : [];
   return {
@@ -38,7 +38,13 @@ function indexEntry(name, timeline, file) {
     video: media.some((part) => part?.video),
     parts: media.length,
     ...(file ? { file } : {}),
+    ...(movie ? { movie } : {}),
   };
+}
+
+/** The rendered video of a talk among a folder's files: `name.video.mp4` as the player names it, or `name.mp4`. */
+function movieOf(name, entries) {
+  return [`${name}.video.mp4`, `${name}.mp4`].find((candidate) => entries.includes(candidate)) ?? null;
 }
 
 /** The timeline inside a bundle, or null when the file is not a complete bundle holding one. */
@@ -70,7 +76,7 @@ export async function buildIndex(folder) {
     // A talk being recorded right now has no directory yet and is not to be closed by the index.
     if (sessions.has(path)) continue;
     if (!(await readDirectory(path))) await recoverBundle(path).catch(() => false);
-    const entry = indexEntry(name, await bundleTimeline(path, name), file);
+    const entry = indexEntry(name, await bundleTimeline(path, name), file, movieOf(name, entries));
     if (!entry) continue;
     recordings.push(entry);
     bundled.add(name);
@@ -78,7 +84,7 @@ export async function buildIndex(folder) {
   for (const file of entries) {
     if (extname(file) !== '.json' || file === 'index.json' || bundled.has(basename(file, '.json'))) continue;
     try {
-      const entry = indexEntry(basename(file, '.json'), JSON.parse(await fs.readFile(join(folder, file), 'utf8')), null);
+      const entry = indexEntry(basename(file, '.json'), JSON.parse(await fs.readFile(join(folder, file), 'utf8')), null, movieOf(basename(file, '.json'), entries));
       if (entry) recordings.push(entry);
     } catch {
       /* not a timeline */
@@ -296,7 +302,7 @@ export function recordingStore({ roots = [], limit = 4 * 1024 * 1024 * 1024 } = 
               await writer.release();
             }
             if (existsSync(target)) {
-              for (const file of recordingFiles(name, await fs.readdir(target))) await fs.rm(join(target, file), { force: true });
+              for (const file of recordingFiles(name, await fs.readdir(target))) await fs.rm(join(target, file), { recursive: true, force: true });
               await writeIndex(target);
             }
             reply(response, 200, { ok: true });

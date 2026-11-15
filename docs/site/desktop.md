@@ -41,7 +41,10 @@ would, and the menus add Open Deck, Open Recent, Reload Deck, Reveal Deck Folder
 and the developer tools. Links to other pages open in your browser. Recordings and exported videos
 go to a `recordings/` folder next to the deck, as with `zoomdeck serve`; **Reveal Deck Folder**
 opens the folder that holds it, which is where a talk's bundle (`.zip`, its media files and
-timeline) can be picked up.
+timeline) and its rendered video (`.mp4`) can be picked up. When the computer has `ffmpeg` (on
+the PATH, in Homebrew's or `/usr/local/bin`, or named by `ZOOMDECK_FFMPEG`), the app renders
+each talk as an MP4 video by itself after the recording stops, in a hidden window, and takes up
+again any render that quitting interrupted; see [Rendering a video](player.html#recording-a-talk).
 
 The command line takes the preview's flags:
 

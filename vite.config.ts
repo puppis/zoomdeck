@@ -3,6 +3,7 @@ import { resolve, sep } from 'node:path';
 import { allowedHosts, padRelay } from './bin/relay.mjs';
 import { editorSync } from './bin/sync.mjs';
 import { isRecordingFile, recordingStore } from './bin/recordings.mjs';
+import { renderStore } from './bin/render.mjs';
 
 // Development server: serves the player page and the example decks from this checkout.
 const optionalStubs = Object.fromEntries(
@@ -54,6 +55,7 @@ export default defineConfig({
     // Editor jumps for the example decks; ZOOMDECK_EDITOR names the editor the player opens.
     editorSync({ editor: process.env.ZOOMDECK_EDITOR ?? null, roots: [resolve(__dirname, 'examples')] }),
     recordingStore({ roots: [resolve(__dirname, 'examples')] }),
+    renderStore({ roots: [resolve(__dirname, 'examples')] }),
   ],
   // A deck's own modules import the package by name, as they do under the command and the app.
   resolve: { alias: { ...optionalStubs, zoomdeck: resolve(__dirname, 'src/index.ts') } },

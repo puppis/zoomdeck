@@ -20,6 +20,7 @@ import { tmpdir } from 'node:os';
 import { allowedHosts, lanAddresses, padRelay } from './relay.mjs';
 import { EDITOR_PRESETS, editorSync, previewsFor, requestJump } from './sync.mjs';
 import { FOLDER as RECORDINGS, isRecordingFile, recordingStore, writeIndex } from './recordings.mjs';
+import { renderStore } from './render.mjs';
 import { extractBundle, isJournal } from './bundle.mjs';
 import { resolveFromPackage } from './resolve.mjs';
 
@@ -231,7 +232,7 @@ export async function startPreview(options) {
     ...(options.cacheDir ? { cacheDir: options.cacheDir } : {}),
     resolve: { alias: optionalStubs },
     optimizeDeps: { entries: ['index.html'] },
-    plugins: [resolveDeps, dropEngineMuxers, reloadPlugin, padRelay(), editorSync({ editor: options.editor, roots: watchRoots, deck: deckPath }), recordingStore({ roots: watchRoots })],
+    plugins: [resolveDeps, dropEngineMuxers, reloadPlugin, padRelay(), editorSync({ editor: options.editor, roots: watchRoots, deck: deckPath }), recordingStore({ roots: watchRoots }), renderStore({ roots: watchRoots, openPage: options.openRenderPage ?? null })],
     // Bind the IPv4 loopback explicitly: "localhost" may resolve to ::1 only, which would leave
     // the printed 127.0.0.1 address refusing connections. Without --port, a busy 8000 falls
     // through to the next free port instead of failing, so a second preview can always start.

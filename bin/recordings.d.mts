@@ -13,6 +13,8 @@ export interface RecordingIndexEntry {
   parts: number;
   /** The bundle holding the talk (`name.zip`); absent for a talk kept in plain files. */
   file?: string;
+  /** The talk's rendered video (`name.video.mp4` or `name.mp4`), when there is one. */
+  movie?: string;
 }
 
 /** The files a recording consists of, among a folder's entries: bundle, journal, exported videos, plain files. */

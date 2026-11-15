@@ -293,10 +293,14 @@ export class Stage {
     }
   }
 
+  /** How many times the stage was drawn; a capture that finds the count unchanged knows the picture is the same. */
+  renders = 0;
+
   /** Draw the current presenter state. */
   render(): void {
     const presenter = this.presenter;
     if (!presenter) return;
+    this.renders += 1;
     const view = this._view();
     const camera = presenter.camera;
     const threeCamera = this.scene.camera;

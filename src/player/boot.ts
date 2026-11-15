@@ -292,6 +292,12 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
   stage.fit();
   await player.goTo(initial >= 0 && initial < navigation.clips.length ? initial : 0, false);
   stage.refreshText();
+  // `?render=<talk>&as=<name>`: the page renders the talk off the clock for the server instead of presenting (src/player/render.ts).
+  if (useLocation) {
+    const params = new URLSearchParams(location.search);
+    const talk = params.get('render');
+    if (talk) void ui.renderTalkOffline(talk, params.get('as') || `${talk}.video`, Number(params.get('fps')) || 30, Number(params.get('width')) || 1920);
+  }
   let destroyed = false;
   const destroy = () => {
     if (destroyed) return;

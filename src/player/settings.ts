@@ -27,6 +27,8 @@ export interface RecordingSettings {
   screenOnRecord: boolean;
   /** The kind of surface shared last time (a whole screen, a window or a tab), which the browser's picker opens on. */
   screenSurface: 'monitor' | 'window' | 'browser';
+  /** Render a talk as an MP4 video by itself when its recording stops, where the server has ffmpeg. */
+  renderOnStop: boolean;
 }
 
 export const SCREEN_SURFACES = ['monitor', 'window', 'browser'] as const;
@@ -34,7 +36,7 @@ export const SCREEN_SURFACES = ['monitor', 'window', 'browser'] as const;
 export const CORNERS: Corner[] = ['bottom-right', 'bottom-left', 'top-right', 'top-left'];
 export const PIP_SIZES: Array<[number, string]> = [[0.12, 'Small'], [0.18, 'Medium'], [0.25, 'Large']];
 
-export const DEFAULT_RECORDING: RecordingSettings = { microphone: null, camera: null, mirror: true, corner: 'bottom-right', size: 0.18, screenWhenAway: true, screenOnRecord: false, screenSurface: 'monitor' };
+export const DEFAULT_RECORDING: RecordingSettings = { microphone: null, camera: null, mirror: true, corner: 'bottom-right', size: 0.18, screenWhenAway: true, screenOnRecord: false, screenSurface: 'monitor', renderOnStop: true };
 
 export function sanitizeRecording(value: unknown): RecordingSettings {
   const result = { ...DEFAULT_RECORDING };
@@ -50,6 +52,7 @@ export function sanitizeRecording(value: unknown): RecordingSettings {
   // The setting of the hidden-page mode, before the deck filmed the screen by itself whenever it was left.
   else if (typeof (saved as { screenWhenHidden?: unknown }).screenWhenHidden === 'boolean') result.screenOnRecord = (saved as { screenWhenHidden: boolean }).screenWhenHidden;
   if (typeof saved.screenSurface === 'string' && (SCREEN_SURFACES as readonly string[]).includes(saved.screenSurface)) result.screenSurface = saved.screenSurface as RecordingSettings['screenSurface'];
+  if (typeof saved.renderOnStop === 'boolean') result.renderOnStop = saved.renderOnStop;
   return result;
 }
 
