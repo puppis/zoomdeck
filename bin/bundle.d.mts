@@ -56,6 +56,11 @@ export class BundleWriter {
   end(): Promise<WrittenEntry | null>;
   /** Add a whole file at once. */
   putFile(name: string, data: Uint8Array): Promise<WrittenEntry | null>;
+  /** Begin an entry of the side lane (the filmed screen), kept in a file beside the bundle until the main lane is between entries. */
+  beginSide(name: string): Promise<void>;
+  writeSide(chunk: Uint8Array): Promise<void>;
+  /** Close the side lane's file; it joins the bundle as soon as the main lane allows, or at the end. */
+  endSide(): Promise<void>;
   /** Keep the latest draft of the timeline in the journal. */
   draft(timeline: unknown): Promise<void>;
   /** Write the directory, close the file and remove the journal. */

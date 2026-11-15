@@ -54,6 +54,37 @@ describe('talk bundles', () => {
     expect(statSync(join(dir, 'out', 'talk.webm')).size).toBe(70_000);
   });
 
+  it('keeps a side lane in a file beside the bundle and appends it once the main lane is between entries', async () => {
+    dir = mkdtempSync(join(tmpdir(), 'zoomdeck-bundle-'));
+    const file = join(dir, 'talk.zip');
+    const writer = await BundleWriter.open(file, 'talk.json');
+    await writer.begin('talk.webm');
+    await writer.write(Buffer.from('camera one '));
+    // The screen lane begins while the camera lane's file is open: its chunks wait beside the bundle.
+    await writer.beginSide('talk.part2.webm');
+    await writer.writeSide(Buffer.from('screen '));
+    await writer.writeSide(Buffer.from('frames'));
+    await writer.endSide();
+    expect(existsSync(`${file}.talk.part2.webm.side`)).toBe(true);
+    expect(writer.names).toEqual([]);
+    await writer.write(Buffer.from('camera two'));
+    // The camera lane's file ends: the screen's file joins at once.
+    await writer.end();
+    expect(writer.names).toEqual(['talk.webm', 'talk.part2.webm']);
+    expect(existsSync(`${file}.talk.part2.webm.side`)).toBe(false);
+    // A side lane still open at the end joins too.
+    await writer.beginSide('talk.part3.webm');
+    await writer.writeSide(Buffer.from('late screen'));
+    await writer.putFile('talk.json', Buffer.from('{"version":1}'));
+    await writer.finish();
+    const listing = await readDirectory(file);
+    expect(listing?.entries.map((entry) => [entry.name, entry.size])).toEqual([['talk.webm', 21], ['talk.part2.webm', 13], ['talk.json', 13], ['talk.part3.webm', 11]]);
+    expect((await readEntry(file, listing!.entries[1])).toString()).toBe('screen frames');
+    expect((await readEntry(file, listing!.entries[3])).toString()).toBe('late screen');
+    const listed = listedByPython(file);
+    if (listed) expect(listed.map(([name]) => name)).toEqual(['talk.webm', 'talk.part2.webm', 'talk.json', 'talk.part3.webm']);
+  });
+
   it('continues a talk by cutting the timeline and directory away and appending more', async () => {
     dir = mkdtempSync(join(tmpdir(), 'zoomdeck-bundle-'));
     const file = join(dir, 'talk.zip');

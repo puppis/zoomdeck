@@ -60,8 +60,8 @@ search box on every page finds any name. `docs/markup.md` is the compact dialect
   `href=` links on any element, loops and automatic advancement.
 - **Recording a talk** (`R`): the microphone, and the camera or the screen while they are on, go into media files while every
   move on the deck (stops, strokes, whiteboard, pointer, camera switches) is stamped on a timeline;
-  the slides are never filmed. Once the screen is shared (`S`), leaving the deck for another application, workspace or tab
-  films it by itself and coming back returns to the camera. A stopped recording can be continued later from the same dialog. A recording plays back on the deck itself and exports as a video
+  the slides are never filmed. Once the screen is shared (`S`), leaving the deck for another application, workspace, tab or live page
+  films it by itself, beside the camera, and coming back stops the filming. A stopped recording can be continued later from the same dialog. A recording plays back on the deck itself and exports as a video
   (slides or whiteboard with ink, camera in a corner or full frame, sound); a recording is one zip
   bundle in a `recordings/` folder next to the deck, written while the talk runs, and travels with
   the folder export. With `ffmpeg` on the machine, a talk is also rendered off the clock, faster

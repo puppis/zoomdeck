@@ -149,10 +149,10 @@ The camera (C) shows you next to or over the slides, as a picture in a corner or
 A recording (R) keeps the whole talk: your voice, the camera and every move on the deck,
 strokes included; it plays back on the deck itself, where it stays navigable, and exports as a
 plain video file. A shared screen (S), another application say, can be filmed as part of the
-talk, and once the screen is shared the switch is automatic: leaving the deck for another
-application, workspace or tab films the screen in place of the camera, and coming back returns
-to the camera. A later version of the desktop app will render a recording offline as well, faster than
-real time, into one flat video file. The deck below has these controls on; each asks the browser for permission
+talk, beside the camera, and once the screen is shared the filming is automatic: leaving the deck
+for another application, workspace, tab or live page films the screen, and coming back stops it.
+With ffmpeg on the computer a talk is also rendered off the clock, faster than real time, into
+one MP4 file. The deck below has these controls on; each asks the browser for permission
 the first time.
 
 ```zoomdeck without=none code=hidden

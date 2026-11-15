@@ -96,6 +96,8 @@ body.zd-page { margin: 0; height: 100vh; overflow: hidden; background: var(--bac
   width: var(--pip-size, 18%); aspect-ratio: 16 / 9; height: auto; border-radius: 6px; box-shadow: 0 2px 12px rgba(0, 0, 0, .35);
 }
 .zd-stage .camera[hidden] { display: none; }
+.zd-stage .screen { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; z-index: 2; pointer-events: none; }
+.zd-stage .screen[hidden] { display: none; }
 .zd-stage .camera.mirror { transform: scaleX(-1); }
 .zd-stage .camera[data-corner=bottom-right] { right: 1.5%; bottom: 1.5%; }
 .zd-stage .camera[data-corner=bottom-left] { left: 1.5%; bottom: 1.5%; }
@@ -105,9 +107,6 @@ body.zd-page { margin: 0; height: 100vh; overflow: hidden; background: var(--bac
 .zd-stage .camera.screen { object-fit: contain; }
 .zd-stage.camera-on .highlights, .zd-stage.camera-on .whiteboard, .zd-stage.camera-on .links, .zd-stage.camera-on .iframes { visibility: hidden; }
 /* A dot in the top right corner of the stage stands in for the buttons and the header in fullscreen: green while the camera is on, red while the screen is filmed, nothing otherwise. It sits where the system puts its own camera light, so that the two overlap rather than stand side by side. */
-.zd-stage .live-dot { display: none; position: absolute; top: 3px; right: 3px; z-index: 6; width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 0 2px rgba(0, 0, 0, .35); pointer-events: none; }
-.zd-app:fullscreen .live-dot[data-live=camera] { display: block; background: #2c2; }
-.zd-app:fullscreen .live-dot[data-live=screen] { display: block; background: #d22; }
 /* During a playback the bar takes the whole footer in place of the controls: nothing else can be used meanwhile. */
 .zd-app footer .playback-bar { display: flex; align-items: center; gap: 10px; width: 100%; font-size: 12px; color: var(--foreground); }
 .zd-app footer .playback-bar[hidden] { display: none; }
@@ -168,8 +167,8 @@ body.zd-page { margin: 0; height: 100vh; overflow: hidden; background: var(--bac
 .zd-app dialog.settings input[type=text] { font: inherit; padding: 5px 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--background); color: var(--foreground); min-width: 260px; }
 .zd-app dialog.export .row .note { margin: 0; }
 /* Camera, Screen and Record turn red while they are at work (the camera on, the screen filmed, a recording running). */
-.zd-app .record-button[aria-pressed=true], .zd-app .camera-button[aria-pressed=true], .zd-app .screen-button[aria-pressed=true] { background: #d22; color: #fff; border-color: #d22; }
-.zd-app .record-button[aria-pressed=true]:hover, .zd-app .camera-button[aria-pressed=true]:hover, .zd-app .screen-button[aria-pressed=true]:hover { background: #b11; }
+.zd-app .record-button[aria-pressed=true], .zd-app .camera-button[aria-pressed=true], .zd-app .screen-button.held { background: #d22; color: #fff; border-color: #d22; }
+.zd-app .record-button[aria-pressed=true]:hover, .zd-app .camera-button[aria-pressed=true]:hover, .zd-app .screen-button.held:hover { background: #b11; }
 /* The arrow beside Screen, shown while a share is held, opens the picker for another screen. */
 .zd-app footer .group .screen-pick { padding: 5px 7px; margin-left: -4px; }
 .zd-app .screen-pick[hidden] { display: none; }

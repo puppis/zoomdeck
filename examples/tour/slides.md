@@ -245,7 +245,7 @@ A tablet or an iPad pairs with the player from the settings (Tablet) and becomes
 
 [[snippet: docs id=feat-recording page=features.html#camera-recording-and-video]]
 
-The camera (**C**) shows you next to or over the slides, in a corner or full screen. A recording (**R**) keeps the whole talk on one clock: your voice, the camera and every move on the deck, strokes included; it plays back on the deck itself, where it stays navigable, as the **▶ Talk** button beside Record, and exports as a plain video file. A shared screen (**S**) is filmed as part of the talk: once shared, it is filmed by itself whenever you leave the deck for another application, and the camera comes back when you return. **P** prints the deck to a PDF. {x=-9.35 y=3.9 width=11.2 font_size=19}
+The camera (**C**) shows you next to or over the slides, in a corner or full screen. A recording (**R**) keeps the whole talk on one clock: your voice, the camera and every move on the deck, strokes included; it plays back on the deck itself, where it stays navigable, as the **▶ Talk** button beside Record, and exports as a plain video file. A shared screen (**S**) is filmed as part of the talk, beside the camera: once shared, it is filmed by itself whenever you leave the deck for another application, and the filming stops when you return. **P** prints the deck to a PDF. {x=-9.35 y=3.9 width=11.2 font_size=19}
 
 [[icon: user #feat-rec-you x=-7.6 y=-1.6 size=2 color=GRAY]]
 [[icon: desktop #feat-rec-deck x=-3.6 y=-1.6 size=2 color=GRAY]]

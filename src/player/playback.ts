@@ -5,7 +5,7 @@
  */
 import type { NavigationData } from '../runtime';
 import type { Player } from './player';
-import { eventsBetween, mediaAt, stateAt, stopIndex, type Timeline, type TimelineEvent, type TimelineMedia, type TimelineState } from './timeline';
+import { eventsBetween, mediaAt, screenAt, stateAt, stopIndex, type Timeline, type TimelineEvent, type TimelineMedia, type TimelineState } from './timeline';
 
 /** What a playback needs from the page: the deck, and the things the player interface controls. */
 export interface PlaybackHost {
@@ -13,6 +13,10 @@ export interface PlaybackHost {
   player: Player;
   /** The element playing the recording's media, when it has any; its time drives the playback. */
   media: HTMLMediaElement | null;
+  /** The element showing the filmed screen, when the recording has a screen lane beside the camera; it follows the clock. */
+  screen?: HTMLVideoElement | null;
+  /** The screen lane's part shown changed (null: none at this time). */
+  onScreen?: (part: TimelineMedia | null) => void;
   /** The URL of a media part's file; a promise when the part is first fetched (a bundle on a static host). */
   mediaUrl?: (part: TimelineMedia) => string | Promise<string>;
   /** Apply an event other than a navigation; `instant` means no animation (a seek is rebuilding state). */
@@ -40,6 +44,8 @@ export class Playback {
   private _runFrom = 0;
   /** The media part loaded in the element. */
   private _part: TimelineMedia | null = null;
+  /** The screen lane's part loaded in the screen element. */
+  private _screenPart: TimelineMedia | null = null;
   /** The time last asked for, applied once a part still being fetched is in the element. */
   private _pendingSeek = 0;
   private readonly _onEnded = () => this._partEnded();
@@ -57,6 +63,38 @@ export class Playback {
   /** The media file loaded in the element, when the recording has any. */
   get part(): TimelineMedia | null {
     return this._part;
+  }
+
+  /** The filmed screen shown now, from the screen lane; null when none covers this moment. */
+  get screenPart(): TimelineMedia | null {
+    return this._screenPart;
+  }
+
+  /** Keep the screen element on the screen lane's part that covers `time`, at the right place in it, playing or paused as the talk is. */
+  private async _syncScreen(time: number): Promise<void> {
+    const screen = this.host.screen;
+    if (!screen) return;
+    const part = screenAt(this.timeline.media, time);
+    if (part !== this._screenPart) {
+      this._screenPart = part;
+      this.host.onScreen?.(part);
+      if (!part) {
+        screen.pause();
+        screen.removeAttribute('src');
+        screen.load();
+        return;
+      }
+      const source = this.host.mediaUrl ? this.host.mediaUrl(part) : part.file;
+      const url = typeof source === 'string' ? source : await source.catch(() => null);
+      if (this._screenPart !== part || url === null) return;
+      screen.src = url;
+      screen.load();
+    }
+    if (!part) return;
+    const want = Math.max(0, (time - part.start) / 1000);
+    if (Math.abs(screen.currentTime - want) > 0.4) screen.currentTime = want;
+    if (this._playing && screen.paused) void screen.play().catch(() => undefined);
+    else if (!this._playing && !screen.paused) screen.pause();
   }
 
   get playing(): boolean {
@@ -124,6 +162,7 @@ export class Playback {
       this._runStart = performance.now();
     }
     if (this._timer === null) this._timer = window.setInterval(() => this._tick(), 30);
+    void this._syncScreen(this.time);
   }
 
   pause(): void {
@@ -135,6 +174,7 @@ export class Playback {
       this._runFrom = this.time;
       this._runStart = null;
     }
+    this.host.screen?.pause();
     this._stopTimer();
     this.host.player.runner.cancel();
   }
@@ -157,6 +197,7 @@ export class Playback {
     this._ended = false;
     if (this.host.media) void this._loadPart(target);
     else this._runFrom = target;
+    void this._syncScreen(target);
     const events = this.timeline.events;
     const state = stateAt(events, target);
     this.state = state;
@@ -200,6 +241,7 @@ export class Playback {
     if (!this._playing) return;
     const now = this.time;
     this._advance(now);
+    void this._syncScreen(now);
     this.host.onTime?.(now);
     if (now >= this.duration) this._end();
   }

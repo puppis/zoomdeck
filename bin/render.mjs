@@ -103,7 +103,9 @@ export function ffmpegArguments(plan, frames, parts, output, clips = []) {
   const corner = plan.pip.corner;
   const pipX = corner.endsWith('right') ? `main_w-overlay_w-${margin}` : String(margin);
   const pipY = corner.startsWith('bottom') ? `main_h-overlay_h-${margin}` : String(margin);
-  parts.forEach((part, index) => {
+  // The filmed screen goes under everything else, then the camera over it: the screen parts first, whatever their order in the plan.
+  const ordered = [...parts.map((part, index) => ({ part, index }))].sort((a, b) => Number(b.part.source === 'screen') - Number(a.part.source === 'screen'));
+  ordered.forEach(({ part, index }) => {
     if (!part.video) return;
     const input = index + 1;
     const from = part.start;

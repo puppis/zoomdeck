@@ -24,8 +24,8 @@ export interface ExportSource {
   stage: () => { canvas: HTMLCanvasElement; sx: number; sy: number; sw: number; sh: number } | null;
   /** The recording's picture, when it has one. */
   camera: HTMLVideoElement | null;
-  /** Whether the picture playing now is the screen (shown whole, full frame) rather than the camera. */
-  screen?: () => boolean;
+  /** The element showing the filmed screen at this moment (shown whole, full frame), or null; it may be the camera element itself for a recording made before the screen had a lane of its own. */
+  screen?: () => HTMLVideoElement | null;
   mirror: boolean;
   pip: { corner: Corner; size: number };
 }
@@ -71,15 +71,16 @@ export function drawFrame(context: CanvasRenderingContext2D, width: number, heig
   context.fillRect(0, 0, width, height);
   const camera = source.camera;
   const cameraReady = camera !== null && camera.videoWidth > 0;
-  if (cameraReady && source.screen?.()) {
-    // Another application's window must stay whole: the screen is fitted, not cropped.
-    const video = camera as HTMLVideoElement;
-    const scale = Math.min(width / video.videoWidth, height / video.videoHeight);
-    const w = Math.round(video.videoWidth * scale);
-    const h = Math.round(video.videoHeight * scale);
+  const screen = source.screen?.() ?? null;
+  if (screen && screen.videoWidth > 0) {
+    // Another application's window must stay whole: the screen is fitted, not cropped; the camera, when its own file has a picture, keeps its corner over it.
+    const scale = Math.min(width / screen.videoWidth, height / screen.videoHeight);
+    const w = Math.round(screen.videoWidth * scale);
+    const h = Math.round(screen.videoHeight * scale);
     context.fillStyle = '#000';
     context.fillRect(0, 0, width, height);
-    context.drawImage(video, Math.round((width - w) / 2), Math.round((height - h) / 2), w, h);
+    context.drawImage(screen, Math.round((width - w) / 2), Math.round((height - h) / 2), w, h);
+    if (cameraReady && camera !== screen) drawPip(context, width, height, camera as HTMLVideoElement, source);
     return;
   }
   if (state.camera && cameraReady) {
@@ -103,14 +104,17 @@ export function drawFrame(context: CanvasRenderingContext2D, width: number, heig
     drawStrokes(context, source.strokes('slide'), source.penStyle(), k, width, height, { x: 0, y: 0 });
   }
   if (state.pointer) drawPointer(context, width, height, k, state.pointer);
-  if (cameraReady) {
-    const w = Math.round(width * source.pip.size);
-    const h = Math.round((w * (camera as HTMLVideoElement).videoHeight) / (camera as HTMLVideoElement).videoWidth);
-    const margin = Math.round(width * 0.015);
-    const x = source.pip.corner.endsWith('right') ? width - w - margin : margin;
-    const y = source.pip.corner.startsWith('bottom') ? height - h - margin : margin;
-    drawVideo(context, camera as HTMLVideoElement, x, y, w, h, source.mirror);
-  }
+  if (cameraReady) drawPip(context, width, height, camera as HTMLVideoElement, source);
+}
+
+/** The camera in its corner. */
+function drawPip(context: CanvasRenderingContext2D, width: number, height: number, camera: HTMLVideoElement, source: ExportSource): void {
+  const w = Math.round(width * source.pip.size);
+  const h = Math.round((w * camera.videoHeight) / camera.videoWidth);
+  const margin = Math.round(width * 0.015);
+  const x = source.pip.corner.endsWith('right') ? width - w - margin : margin;
+  const y = source.pip.corner.startsWith('bottom') ? height - h - margin : margin;
+  drawVideo(context, camera, x, y, w, h, source.mirror);
 }
 
 function drawVideo(context: CanvasRenderingContext2D, video: HTMLVideoElement, x: number, y: number, w: number, h: number, mirror: boolean): void {

@@ -284,6 +284,12 @@ export async function recoverBundle(path) {
   const writer = new BundleWriter(path, journal.entries ?? [], journal.date ? new Date(journal.date) : new Date());
   writer._timelineName = journal.timelineName ?? null;
   await writer._reopen(journal.open ?? null);
+  // Side files cut short (the filmed screen) join as they are, in the order they were begun.
+  for (const side of [...(journal.pending ?? []), ...(journal.side ? [journal.side] : [])]) {
+    if (!side?.path || !existsSync(side.path) || writer.entries.some((entry) => entry.name === side.name)) continue;
+    writer._pending.push({ name: side.name, path: side.path, size: 0 });
+  }
+  await writer._appendPending();
   if (journal.draft && !writer.entries.some((entry) => entry.name === journal.timelineName)) {
     const draft = journal.draft;
     // The draft stops where the media present ends: events after the last chunk written are kept, the clock is not stretched.
@@ -340,9 +346,70 @@ export class BundleWriter {
     this._offset = 0;
     /** The entry being written: its header offset, data offset, running size and checksum. */
     this._open = null;
+    /**
+     * A second lane (the filmed screen, recorded beside the camera): its chunks go to a file
+     * beside the bundle while the main lane's entry is open, and the file is appended as an
+     * entry of its own as soon as the main lane is between entries, or at the end.
+     */
+    this._side = null;
+    this._pending = [];
     this._timelineName = null;
     this._draft = null;
     this._closed = false;
+  }
+
+  /** The file a side lane's chunks go to until they can join the bundle. */
+  _sidePath(name) {
+    return `${this.path}.${name}.side`;
+  }
+
+  /** Begin an entry of the side lane, whose chunks go to a file beside the bundle for now. */
+  async beginSide(name) {
+    if (this._side) throw new Error(`${this._side.name} is still being written`);
+    if (this.entries.some((entry) => entry.name === name) || this._pending.some((side) => side.name === name)) throw new Error(`${name} is already in the bundle`);
+    const path = this._sidePath(name);
+    const handle = await fs.open(path, 'w');
+    this._side = { name, path, handle, size: 0 };
+    await this._journal();
+  }
+
+  async writeSide(chunk) {
+    if (!this._side) throw new Error('No side entry is being written');
+    await this._side.handle.write(chunk, 0, chunk.length);
+    this._side.size += chunk.length;
+  }
+
+  /** Close the side lane's file; it joins the bundle when the main lane is between entries (now, if it is). */
+  async endSide() {
+    const side = this._side;
+    if (!side) return;
+    this._side = null;
+    await side.handle.close();
+    this._pending.push({ name: side.name, path: side.path, size: side.size });
+    await this._journal();
+    if (!this._open) await this._appendPending();
+  }
+
+  /** Append the side files waiting, each as an entry, and remove them. */
+  async _appendPending() {
+    while (this._pending.length) {
+      const side = this._pending[0];
+      await this.begin(side.name);
+      const source = await fs.open(side.path, 'r');
+      try {
+        const chunk = Buffer.alloc(8 * 1024 * 1024);
+        for (;;) {
+          const { bytesRead } = await source.read(chunk, 0, chunk.length, null);
+          if (!bytesRead) break;
+          await this.write(chunk.subarray(0, bytesRead));
+        }
+      } finally {
+        await source.close();
+      }
+      this._pending.shift();
+      await this.end();
+      await fs.rm(side.path, { force: true });
+    }
   }
 
   /** Open `path` for writing (creating it, or continuing the talk it holds); `timelineName` is the entry the directory ends with. */
@@ -421,7 +488,7 @@ export class BundleWriter {
     this._offset += chunk.length;
   }
 
-  /** Close the entry being written: its header, already in the file, receives the size and checksum. */
+  /** Close the entry being written: its header, already in the file, receives the size and checksum; side files waiting then join. */
   async end() {
     const open = this._open;
     if (!open) return null;
@@ -431,6 +498,7 @@ export class BundleWriter {
     const entry = { name: open.name, size: open.size, crc: open.crc, offset: open.offset };
     this.entries.push(entry);
     await this._journal();
+    if (this._pending.length) await this._appendPending();
     return entry;
   }
 
@@ -450,6 +518,8 @@ export class BundleWriter {
   /** Write the directory, close the file and remove the journal: the bundle is complete. */
   async finish() {
     if (this._open) await this.end();
+    if (this._side) await this.endSide();
+    await this._appendPending();
     const tail = directory(this.entries, this._offset, this.date);
     await this._handle.write(tail, 0, tail.length, this._offset);
     await this._handle.truncate(this._offset + tail.length);
@@ -463,10 +533,17 @@ export class BundleWriter {
   async release() {
     if (this._handle) await this._handle.close();
     this._handle = null;
+    if (this._side) {
+      await this._side.handle.close().catch(() => undefined);
+      this._pending.push({ name: this._side.name, path: this._side.path, size: this._side.size });
+      this._side = null;
+      await this._journal();
+    }
   }
 
   async _journal() {
-    const journal = { date: this.date.toISOString(), timelineName: this._timelineName, entries: this.entries, open: this._open, draft: this._draft };
+    const side = this._side ? { name: this._side.name, path: this._side.path } : null;
+    const journal = { date: this.date.toISOString(), timelineName: this._timelineName, entries: this.entries, open: this._open, draft: this._draft, side, pending: this._pending.map(({ name, path }) => ({ name, path })) };
     await fs.writeFile(journalPath(this.path), JSON.stringify(journal));
   }
 }

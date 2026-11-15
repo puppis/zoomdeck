@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { existsSync, mkdtempSync, rmSync, writeFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { appendPart, eventsBetween, formatTime, inkUpTo, isTimeline, mediaAt, recordingName, stateAt, stopIndex, stopRef, structureHash, timeOfStop, type Timeline, type TimelineEvent, type TimelineMedia } from '../src/player/timeline';
+import { appendPart, eventsBetween, formatTime, inkUpTo, isTimeline, mediaAt, recordingName, screenAt, screenIntervals, stateAt, stopIndex, stopRef, structureHash, timeOfStop, type Timeline, type TimelineEvent, type TimelineMedia } from '../src/player/timeline';
 import { Recorder, initialEvents } from '../src/player/recorder';
 import { Playback } from '../src/player/playback';
 import type { Player } from '../src/player/player';
@@ -165,6 +165,25 @@ describe('timelines', () => {
     expect(sanitizeRecording({ renderAspect: 'square' }).renderAspect).toBe('presented');
     expect(fixed.mirror).toBe(false);
     expect(fixed.microphone).toBeNull();
+  });
+});
+
+describe('the screen lane', () => {
+  it('runs beside the camera lane: the camera lane covers the talk, the screen lane overlaps it', () => {
+    const media: TimelineMedia[] = [
+      { file: 'a.webm', type: 'video/webm', video: true, start: 0, duration: 5000 },
+      { file: 'a.part2.webm', type: 'video/webm', video: true, source: 'screen', lane: 'screen', start: 1000, duration: 2500 },
+      { file: 'a.part3.webm', type: 'audio/webm', video: false, start: 5000, duration: 3000 },
+      // An earlier recording's screen file, in the camera lane, one picture at a time.
+      { file: 'a.part4.webm', type: 'video/webm', video: true, source: 'screen', start: 8000, duration: 1000 },
+    ];
+    expect(mediaAt(media, 2000)?.file).toBe('a.webm');
+    expect(mediaAt(media, 6000)?.file).toBe('a.part3.webm');
+    expect(mediaAt(media, 8500)?.file).toBe('a.part4.webm');
+    expect(screenAt(media, 2000)?.file).toBe('a.part2.webm');
+    expect(screenAt(media, 500)).toBeNull();
+    expect(screenAt(media, 8500)).toBeNull();
+    expect(screenIntervals(media)).toEqual([[1000, 3500], [8000, 9000]]);
   });
 });
 

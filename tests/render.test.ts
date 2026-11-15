@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cameraIntervals, ClipLog, displayWidth, frameAspect, frameSize, installVirtualClock, renderPlan, videoWidthFor } from '../src/player/render';
+import { cameraIntervals, ClipLog, displayWidth, frameAspect, frameSize, installVirtualClock, renderPlan, subtractIntervals, videoWidthFor } from '../src/player/render';
 import { aspectName, presentedAspect } from '../src/player/timeline';
 import type { Timeline } from '../src/player/timeline';
 import { concatList, ffmpegArguments, splitInterval } from '../bin/render.mjs';
@@ -82,6 +82,27 @@ describe('render plans', () => {
     expect([aspectName(16 / 9), aspectName(1.6), aspectName(1.333), aspectName(2)]).toEqual(['16:9', '16:10', '4:3', '2.00:1']);
   });
 
+  it('keeps the camera out of the frame while the screen is filmed, and lays the screen under it', () => {
+    expect(subtractIntervals([[0, 10], [20, 30]], [[5, 25]])).toEqual([[0, 5], [25, 30]]);
+    expect(subtractIntervals([[0, 10]], [[2, 3], [4, 5]])).toEqual([[0, 2], [3, 4], [5, 10]]);
+    expect(subtractIntervals([[0, 10]], [])).toEqual([[0, 10]]);
+    const lanes: Timeline = {
+      ...timeline,
+      media: [
+        { file: 'a.webm', type: 'video/webm', video: true, start: 0, duration: 10_000 },
+        { file: 'a.part2.webm', type: 'video/webm', video: true, source: 'screen', lane: 'screen', start: 3500, duration: 3000 },
+      ],
+    };
+    const plan = renderPlan(lanes, 16 / 9, 1920, 30);
+    // The camera filled the frame from 3000 to 4000 and from 6500 on; the screen had the frame from 3500 to 6500.
+    expect(plan.full).toEqual([[3000, 3500], [6500, 10_000]]);
+    const args = ffmpegArguments(plan, '/w/f.txt', plan.media.map((part) => ({ ...part, path: `/w/${part.file}`, audio: !part.source })), '/w/v.mp4');
+    const graph = args[args.indexOf('-filter_complex') + 1];
+    // The screen part, second in the plan, is laid first; the camera's corner and full frame come after, over it.
+    expect(graph.indexOf('[2:v]setpts')).toBeLessThan(graph.indexOf('[1:v]setpts'));
+    expect(graph).toContain("enable='between(t,3.500,6.500)'");
+  });
+
   it('lists when the camera fills the frame', () => {
     expect(cameraIntervals(timeline.events, 10_000)).toEqual([[3000, 4000], [6500, 10_000]]);
     expect(cameraIntervals([], 10_000)).toEqual([]);
@@ -97,7 +118,8 @@ describe('render plans', () => {
         { file: 'a.part2.webm', start: 2000, duration: 5000, video: true, source: 'camera' },
         { file: 'a.part3.webm', start: 7000, duration: 3000, video: true, source: 'screen' },
       ],
-      full: [[3000, 4000], [6500, 10_000]],
+      // The camera filled the frame from 3000 to 4000 and from 6500 on, but the screen had the frame from 7000.
+      full: [[3000, 4000], [6500, 7000]],
       clips: [],
     });
     // The height is even, as the encoder wants, whatever the proportions.
@@ -149,13 +171,14 @@ describe('render plans', () => {
     const filters = graph.split(';');
     expect(filters[0]).toBe('[0:v]fps=30,format=rgba[deck]');
     // The camera part, split between its corner and the full frame by the camera intervals, at the top-left corner, a quarter wide.
-    expect(graph).toContain('[2:v]setpts=PTS-STARTPTS+2.000/TB,fps=30[v0]');
+    expect(graph).toContain('[2:v]setpts=PTS-STARTPTS+2.000/TB,fps=30');
     expect(graph).toContain('scale=480:-2');
     expect(graph).toContain("overlay=29:29:eof_action=pass:enable='between(t,2.000,3.000)+between(t,4.000,6.500)'");
     expect(graph).toContain("scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080");
     expect(graph).toContain("overlay=0:0:eof_action=pass:enable='between(t,3.000,4.000)+between(t,6.500,7.000)'");
-    // The screen part, fitted whole on black for its own stretch.
+    // The screen part, fitted whole on black for its own stretch, laid before the camera whatever its place in the plan.
     expect(graph).toContain('[3:v]setpts=PTS-STARTPTS+7.000/TB,fps=30');
+    expect(graph.indexOf('[3:v]setpts')).toBeLessThan(graph.indexOf('[2:v]setpts'));
     expect(graph).toContain('scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2:color=black');
     expect(graph).toContain("enable='between(t,7.000,10.000)'");
     // The sound: the parts with a sound track, each delayed to its start, mixed; the silent one left out.

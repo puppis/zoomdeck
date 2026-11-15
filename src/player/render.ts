@@ -14,7 +14,7 @@ import { VideoClip } from '../video';
 import type { Playback } from './playback';
 import type { Player } from './player';
 import type { Stage } from './stage';
-import { presentedAspect, type Corner, type Timeline, type TimelineEvent } from './timeline';
+import { presentedAspect, screenIntervals, type Corner, type Timeline, type TimelineEvent } from './timeline';
 
 /** The page's clock under the renderer's control. */
 export interface VirtualClock {
@@ -167,6 +167,21 @@ export function displayWidth(): number {
   return Math.min(3840, Math.max(1280, Math.round(pixels / 2) * 2));
 }
 
+/** The parts of the intervals `a` that lie outside the intervals `b`. */
+export function subtractIntervals(a: Array<[number, number]>, b: Array<[number, number]>): Array<[number, number]> {
+  const result: Array<[number, number]> = [];
+  for (const [from, to] of a) {
+    let cursor = from;
+    for (const [cutFrom, cutTo] of [...b].sort((x, y) => x[0] - y[0])) {
+      if (cutTo <= cursor || cutFrom >= to) continue;
+      if (cutFrom > cursor) result.push([cursor, cutFrom]);
+      cursor = Math.max(cursor, cutTo);
+    }
+    if (cursor < to) result.push([cursor, to]);
+  }
+  return result;
+}
+
 /** The stretches of a talk during which the camera fills the frame, in milliseconds. */
 export function cameraIntervals(events: TimelineEvent[], duration: number): Array<[number, number]> {
   const intervals: Array<[number, number]> = [];
@@ -226,7 +241,8 @@ export function renderPlan(timeline: Timeline, aspect: number, width: number, fp
     duration: timeline.duration,
     pip: timeline.pip,
     media: timeline.media.map((part) => ({ file: part.file, start: part.start, duration: part.duration, video: part.video, source: part.source ?? 'camera' })),
-    full: cameraIntervals(timeline.events, timeline.duration),
+    // While the screen is filmed it fills the frame; the camera keeps its corner over it, never the frame.
+    full: subtractIntervals(cameraIntervals(timeline.events, timeline.duration), screenIntervals(timeline.media)),
     clips,
   };
 }

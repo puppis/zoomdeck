@@ -230,10 +230,11 @@ deck), and off. The first step asks the browser for the camera chosen in the set
 the corner, the size and the mirroring are settings. The pen never draws on the camera: strokes
 belong to slides and to the whiteboard. A recording keeps the camera exactly while it is on, so
 you can record a talk without it even with a camera attached, or bring it in for some moments
-only. The camera and the screen (see Filming the screen under [Recording a talk](#recording-a-talk)) are one picture at
-a time: turning the camera on stops the filming of the screen, and filming the screen sets the
-camera aside, to come back when the filming stops. Once the screen is shared, the two trade
-places by themselves as you leave the deck and come back to it.
+only. The camera is yours alone: filming the screen (see Filming the screen under
+[Recording a talk](#recording-a-talk)) leaves it as you set it, in its corner, since the screen
+has the frame then (full frame is for the slides; `C` skips it while the screen is filmed), and
+while you are away from the deck the camera follows you in the browser's floating
+picture-in-picture window, where the browser allows a page to open one.
 
 ## Recording a talk
 
@@ -265,21 +266,30 @@ download, to put into a `recordings/` folder next to the deck as it is. The reco
 after the date and time, `talk-2026-11-13-1030`.
 
 **Filming the screen.** A talk may leave the deck for a while: a demonstration in another
-application, a terminal, a web page. **Screen** in the footer, or `S`, films the screen in place
-of the camera until you press it again; the button is red, and the header says Screen, exactly
-while the screen is filmed, and the camera, if it was on, is set aside meanwhile and comes back
-after. The first time, the browser asks which screen or window to share: its picker is the
+application, a terminal, a web page. **Screen** in the footer, or `S`, films the screen beside
+the camera until you press it again: the button reads Filming and the header says Screen exactly
+while the screen is filmed, and the camera stays as you set it. The screen is a lane of its own
+in the recording, overlapping the camera's files, so playback and the rendered video show it
+full frame with the camera in its corner over it; when the entire screen is filmed and the
+camera floats over it in the browser's picture-in-picture window, the camera lane keeps the
+sound alone, since the picture is in the filmed screen already. The first time, the browser asks which screen or window to share: its picker is the
 browser's own, which a page can neither skip, fill in nor confirm, though it opens on the kind of
 surface you chose last time (the entire screen at first; choose that to follow yourself across
 applications). Stopping the filming keeps the share, so that the next `S` films the same screen
 again without asking; the small arrow beside **Screen**, shown while a share is held, opens the
-picker again to film something else instead. Ending the share from the browser's own bar
-(Chrome's "Stop sharing", Firefox's and Safari's sharing indicators) works too, and the next `S`
-then asks again.
+picker again to film something else instead. The **Screen** button is red exactly while the
+browser lets the page capture a screen, that is, while a share is held, filmed or not; ending
+the share from the browser's own bar (Chrome's "Stop sharing", Firefox's and Safari's sharing
+indicators) turns it back, and the next `S` then asks again. The system's own indicator of a
+captured screen is the one to watch for; the deck adds none.
 
 **Away from the deck.** While a share is held, the deck films it by itself whenever you leave: switching to another tab,
-another application or another workspace starts the filming, setting the camera aside if it was
-on, and coming back to the deck stops it and brings the camera back as it was. A live page inside
+another application or another workspace starts the filming, and coming back to the deck stops
+it; the camera is not touched. Without a share, nothing outside the window and nothing inside a
+live page can be in the recording: the Record dialog says so when none is held, and the first
+time you leave the deck during a recording without one, a panel offers to share the screen (the
+browser's picker needs a click, so the deck cannot open it by itself); declining holds for the
+rest of the session. A live page inside
 a slide counts as leaving too: a click into it gives it the focus and starts the filming, a click
 back on the slides ends it, so that what you do in the page is part of the talk, since the
 timeline keeps the deck's own events only and no player could replay clicks made inside a page. A filming you

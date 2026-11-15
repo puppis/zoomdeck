@@ -25,6 +25,11 @@ export function recordingFiles(name, entries) {
   return entries.filter((file) => file === `${name}.json` || file.startsWith(`${name}.`) && file !== 'index.json' || file.startsWith(`.render-${name}.`));
 }
 
+/** Whether a file in a recordings folder is a side lane's file, waiting to join its bundle. */
+export function isSideFile(file) {
+  return file.endsWith('.side');
+}
+
 /** The entry in the index for a timeline, read from a bundle (`file` names it) or from a plain file; `movie` is its rendered video, when there is one. */
 function indexEntry(name, timeline, file, movie = null) {
   if (timeline?.version !== 1 || !Array.isArray(timeline.events)) return null;
@@ -70,7 +75,7 @@ export async function buildIndex(folder) {
   }
   const bundled = new Set();
   for (const file of entries.sort()) {
-    if (extname(file) !== '.zip') continue;
+    if (extname(file) !== '.zip' || isSideFile(file)) continue;
     const name = basename(file, '.zip');
     const path = join(folder, file);
     // A talk being recorded right now has no directory yet and is not to be closed by the index.
@@ -243,19 +248,29 @@ export function recordingStore({ roots = [], limit = 4 * 1024 * 1024 * 1024 } = 
               reply(response, 409, { ok: false, error: 'This talk is not being recorded here (the server may have restarted)' });
               return;
             }
+            // The filmed screen is a lane of its own, recorded beside the camera: its chunks wait in a file beside the bundle.
+            const side = url.searchParams.get('lane') === 'screen';
             if (op === 'begin') {
               const part = Number(url.searchParams.get('part') ?? '1');
               const file = mediaFileName(name, (request.headers['content-type'] ?? '').split(';')[0].trim(), part);
-              await writer.begin(file);
+              if (side) await writer.beginSide(file);
+              else await writer.begin(file);
               reply(response, 200, { ok: true, file });
               return;
             }
             if (op === 'chunk') {
-              await writer.write(await readBody(request, 256 * 1024 * 1024));
+              const body = await readBody(request, 256 * 1024 * 1024);
+              if (side) await writer.writeSide(body);
+              else await writer.write(body);
               reply(response, 200, { ok: true });
               return;
             }
             if (op === 'end') {
+              if (side) {
+                await writer.endSide();
+                reply(response, 200, { ok: true });
+                return;
+              }
               const entry = await writer.end();
               reply(response, 200, { ok: true, file: entry?.name ?? null, size: entry?.size ?? 0 });
               return;

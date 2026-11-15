@@ -6,7 +6,7 @@
  * versions are read the same way. Without the server (an exported deck, a file opened from
  * disk) a new recording is offered as the same bundle to download.
  */
-import { isTimeline, type Timeline, type TimelineMedia } from './timeline';
+import { isTimeline, type MediaLane, type Timeline, type TimelineMedia } from './timeline';
 import { openRemoteZip, type RemoteZip } from './zip';
 
 export interface RecordingEntry {
@@ -153,22 +153,22 @@ export class RecordingSession {
     return this._run(async () => Number((await call('POST', this.base, this.name, { op: 'open' })).parts) || 0);
   }
 
-  /** Begin media file number `part` (1 for the first); resolves with its name in the bundle. */
-  begin(part: number, type: string): Promise<string> {
-    return this._run(async () => String((await call('POST', this.base, this.name, { op: 'begin', part: String(part) }, undefined, type)).file));
+  /** Begin media file number `part` (1 for the first) in a lane (the camera's, or the screen's beside it); resolves with its name in the bundle. */
+  begin(part: number, type: string, lane: MediaLane = 'camera'): Promise<string> {
+    return this._run(async () => String((await call('POST', this.base, this.name, { op: 'begin', part: String(part), lane }, undefined, type)).file));
   }
 
-  /** Append a chunk to the media file being written. */
-  chunk(data: Blob): Promise<void> {
+  /** Append a chunk to the media file being written in a lane. */
+  chunk(data: Blob, lane: MediaLane = 'camera'): Promise<void> {
     return this._run(async () => {
-      await call('POST', this.base, this.name, { op: 'chunk' }, data, data.type || 'application/octet-stream');
+      await call('POST', this.base, this.name, { op: 'chunk', lane }, data, data.type || 'application/octet-stream');
     });
   }
 
-  /** End the media file being written; its size and checksum are written into its header. */
-  end(): Promise<void> {
+  /** End the media file being written in a lane; its size and checksum are written into its header. */
+  end(lane: MediaLane = 'camera'): Promise<void> {
     return this._run(async () => {
-      await call('POST', this.base, this.name, { op: 'end' });
+      await call('POST', this.base, this.name, { op: 'end', lane });
     });
   }
 
