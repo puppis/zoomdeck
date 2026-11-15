@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { existsSync, mkdtempSync, rmSync, writeFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { appendPart, eventsBetween, formatTime, inkUpTo, isTimeline, mediaAt, recordingName, stateAt, stopIndex, stopRef, structureHash, type Timeline, type TimelineEvent, type TimelineMedia } from '../src/player/timeline';
+import { appendPart, eventsBetween, formatTime, inkUpTo, isTimeline, mediaAt, recordingName, stateAt, stopIndex, stopRef, structureHash, timeOfStop, type Timeline, type TimelineEvent, type TimelineMedia } from '../src/player/timeline';
 import { Recorder, initialEvents } from '../src/player/recorder';
 import { Playback } from '../src/player/playback';
 import type { Player } from '../src/player/player';
@@ -165,6 +165,20 @@ describe('timelines', () => {
     expect(sanitizeRecording({ renderAspect: 'square' }).renderAspect).toBe('presented');
     expect(fixed.mirror).toBe(false);
     expect(fixed.microphone).toBeNull();
+  });
+});
+
+describe('where a talk reached a stop', () => {
+  it('finds the first move to the stop, forwards or backwards, or nothing', () => {
+    const events: TimelineEvent[] = [
+      { t: 0, type: 'go', stop: { key: 'markup:a', step: 0 }, autoplay: false },
+      { t: 1500, type: 'go', stop: { key: 'markup:a', step: 1 }, autoplay: true },
+      { t: 4000, type: 'rewind', stop: { key: 'markup:a', step: 0 } },
+      { t: 6000, type: 'go', stop: { key: 'markup:a', step: 1 }, autoplay: true },
+    ];
+    expect(timeOfStop(events, { key: 'markup:a', step: 1 })).toBe(1500);
+    expect(timeOfStop(events, { key: 'markup:a', step: 0 })).toBe(0);
+    expect(timeOfStop(events, { key: 'markup:b', step: 0 })).toBeNull();
   });
 });
 

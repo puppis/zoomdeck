@@ -259,7 +259,7 @@ The camera (**C**) shows you next to or over the slides, in a corner or full scr
 
 [a talk (R), a video]{#feat-rec-cap-file at=left:#feat-rec-file.right dx=0.25 font_size=15 color=GRAY}
 
-Try it here: press R, speak, draw, turn the camera on with C, stop, then press ▶ Talk; each asks the browser for permission the first time. A later version of the desktop app will render a recording offline as well, faster than real time, into one flat video file. {x=2.3 y=-0.4 width=7.0 font_size=17 color=GRAY}
+Try it here: press R, speak, draw, turn the camera on with C, stop, then press ▶ Talk; each asks the browser for permission the first time. ▶ Talk starts where the deck stands, and with ffmpeg on the computer a talk is also rendered off the clock, faster than real time, into one MP4 file. {x=2.3 y=-0.4 width=7.0 font_size=17 color=GRAY}
 :::
 
 ::: slide {#feat-math width=20}

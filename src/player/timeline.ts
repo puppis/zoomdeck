@@ -122,6 +122,14 @@ export function presentedAspect(events: TimelineEvent[], duration: number): numb
   return best;
 }
 
+/** When the talk first reached `stop` (a move to it, forwards or backwards), in milliseconds; null when it never did. */
+export function timeOfStop(events: TimelineEvent[], stop: StopRef): number | null {
+  for (const event of events) {
+    if ((event.type === 'go' || event.type === 'rewind') && event.stop.key === stop.key && event.stop.step === stop.step) return event.t;
+  }
+  return null;
+}
+
 /** A name for proportions: 16:9, 16:10, 4:3, 3:2, 21:9, or the ratio to one. */
 export function aspectName(aspect: number): string {
   const named: Array<[number, string]> = [[16 / 9, '16:9'], [16 / 10, '16:10'], [4 / 3, '4:3'], [3 / 2, '3:2'], [21 / 9, '21:9'], [1, '1:1'], [9 / 16, '9:16'], [5 / 4, '5:4']];

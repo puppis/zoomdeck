@@ -27,7 +27,7 @@ import { zipFiles } from './zip';
 import { deleteRecording, describeMedia, download, listRecordings, loadTimeline, mediaFileName, mediaSource, recordingStoreAvailable, RecordingSession, recordingUrl, saveFile, type RecordingEntry } from './store';
 import { awayFromDeck } from './away';
 import { displayWidth, frameAspect, frameSize, renderPageUrl, renderPlan, RenderSession, renderStatus, renderTalk, requestRender, VIDEO_HEIGHTS, type AspectChoice, type RenderStatus } from './render';
-import { appendPart, aspectName, formatTime, presentedAspect, recordingName, stopRef, structureHash, type Corner, type PointerKind, type Timeline, type TimelineEvent, type TimelineMedia, type UntimedEvent } from './timeline';
+import { appendPart, aspectName, formatTime, presentedAspect, recordingName, stopRef, structureHash, timeOfStop, type Corner, type PointerKind, type Timeline, type TimelineEvent, type TimelineMedia, type UntimedEvent } from './timeline';
 
 /** A tablet page known to the presenter. */
 interface PadEntry {
@@ -1581,7 +1581,11 @@ export class PlayerUI {
     this._playbackBar.hidden = false;
     this._exportButton.hidden = !exportMimeType();
     this._layoutCamera();
-    this._playback.seek(0);
+    // The talk starts where the deck stands: the moment it first reached the stop shown now, or its start when it never did.
+    const here = stopRef(navigation, player.index);
+    const from = here ? timeOfStop(timeline.events, here) : null;
+    if (from === null && here && player.index > 0) this.notice('The talk never reached this stop; playing it from the start');
+    this._playback.seek(from ?? 0);
     void this._playback.play();
   }
 
