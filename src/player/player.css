@@ -214,7 +214,7 @@ body.zd-page { margin: 0; height: 100vh; overflow: hidden; background: var(--bac
 .zd-app dialog.settings .categories button[aria-selected=true] { background: var(--hover); font-weight: 600; }
 .zd-app dialog.settings .categories button:focus-visible { outline: 2px solid var(--accent, #3b82f6); outline-offset: -2px; }
 .zd-app dialog.settings .panes { flex: 1; min-width: 0; overflow: auto; }
-.zd-app dialog.settings .binding select { max-width: 58%; }
+.zd-app dialog.settings .binding select { min-width: 0; max-width: 22em; }
 @media (max-width: 640px) {
   .zd-app dialog.settings .layout { flex-direction: column; }
   .zd-app dialog.settings .categories { flex-direction: row; width: auto; border-right: 0; border-bottom: 1px solid var(--border); padding: 8px; }

@@ -2612,9 +2612,11 @@ export class PlayerUI {
         el('h3', { text: 'Recording' }),
         el('p', { class: 'note', text: 'Record (R, or the button in the bar) keeps your voice, the camera while it is on (the Camera button or C), and everything you do on the deck: stops, ink, the whiteboard, the pointer and the camera switches. The slides are not filmed; a recording replays on the deck itself and exports as a video. Pause leaves a gap out.' }),
         this._recordingStatus,
-        recordingRows,
-        el('div', { class: 'row' }, detect, this._testButton, resetRecording),
+        // Finding the devices comes first: the lists below are empty until they are detected.
+        el('div', { class: 'row' }, detect, this._testButton),
         this._testPanel,
+        recordingRows,
+        el('div', { class: 'row' }, resetRecording),
       )],
       ['tablet', 'Tablet', el('section', { class: 'tablet', role: 'tabpanel', id: 'zd-settings-tablet' },
         el('h3', { text: 'Tablet' }),

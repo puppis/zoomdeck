@@ -245,19 +245,23 @@ A tablet or an iPad pairs with the player from the settings (Tablet) and becomes
 
 [[snippet: docs id=feat-recording page=features.html#camera-recording-and-video]]
 
-The camera (**C**) shows you next to or over the slides, in a corner or full screen. A recording (**R**) keeps the whole talk on one clock: your voice, the camera and every move on the deck, strokes included; it plays back on the deck itself, where it stays navigable, as the **▶ Talk** button beside Record, and exports as a plain video file. A shared screen (**S**) is filmed as part of the talk, beside the camera: once shared, it is filmed by itself whenever you leave the deck for another application, and the filming stops when you return. **P** prints the deck to a PDF. {x=-9.35 y=3.9 width=11.2 font_size=19}
+The camera (**C**) shows you next to or over the slides, in a corner or full screen. A recording (**R**) keeps the whole talk on one clock: your voice, the camera and every move on the deck, strokes included; it plays back on the deck itself, where it stays navigable, as the **▶ Talk** button beside Record, and exports as a plain video file. A shared screen (**S**) is a video stream of its own in the talk, beside the camera's: it is filmed by itself from the moment the deck loses the focus, to another application, a tab or a live page, until it has it back; the computer's sound, when the share carries it, is a track of its own too. **P** prints the deck to a PDF. {x=-9.35 y=3.9 width=11.2 font_size=19}
 
-[[icon: user #feat-rec-you x=-7.6 y=-1.6 size=2 color=GRAY]]
-[[icon: desktop #feat-rec-deck x=-3.6 y=-1.6 size=2 color=GRAY]]
-[[icon: document #feat-rec-file x=-5.6 y=-4.2 size=1.6 color=GRAY]]
+[[icon: user #feat-rec-you x=-8.4 y=-2.0 size=1.8 color=GRAY]]
+[[icon: desktop #feat-rec-deck x=-5.6 y=-2.0 size=1.8 color=GRAY]]
+[[icon: client #feat-rec-screen x=-2.8 y=-2.0 size=1.8 color=GRAY]]
+[[icon: document #feat-rec-file x=-5.6 y=-4.5 size=1.5 color=GRAY]]
 [[arrow: #feat-rec-you -> #feat-rec-file, #feat-rec-a, color=GRAY, stroke_width=1]]
 [[arrow: #feat-rec-deck -> #feat-rec-file, #feat-rec-b, color=GRAY, stroke_width=1]]
+[[arrow: #feat-rec-screen -> #feat-rec-file, #feat-rec-c, color=GRAY, stroke_width=1]]
 
-[voice, camera (C)]{#feat-rec-cap-you at=bottom:#feat-rec-you.top dy=0.15 font_size=15 color=GRAY}
+[voice, camera (C)]{#feat-rec-cap-you at=bottom:#feat-rec-you.top dy=0.15 width=2.6 font_size=15 color=GRAY}
 
-[moves on the deck]{#feat-rec-cap-deck at=bottom:#feat-rec-deck.top dy=0.15 font_size=15 color=GRAY}
+[moves on the deck]{#feat-rec-cap-deck at=bottom:#feat-rec-deck.top dy=0.15 width=2.6 font_size=15 color=GRAY}
 
-[a talk (R), a video]{#feat-rec-cap-file at=left:#feat-rec-file.right dx=0.25 font_size=15 color=GRAY}
+[screen (S), when the deck loses the focus]{#feat-rec-cap-screen at=bottom:#feat-rec-screen.top dy=0.15 width=2.6 font_size=15 color=GRAY}
+
+[a talk (R): streams kept apart, a video]{#feat-rec-cap-file at=left:#feat-rec-file.right dx=0.25 font_size=15 color=GRAY}
 
 Try it here: press R, speak, draw, turn the camera on with C, stop, then press ▶ Talk; each asks the browser for permission the first time. ▶ Talk starts where the deck stands, and with ffmpeg on the computer a talk is also rendered off the clock, faster than real time, into one MP4 file. {x=2.3 y=-0.4 width=7.0 font_size=17 color=GRAY}
 :::
@@ -688,20 +692,24 @@ Without a tablet the same checks work with a mouse, whose strokes take their wid
 
 A recording keeps your voice, the camera while you have it on, and every move on the deck on one clock: stops, strokes, the whiteboard, the pointer and the camera switch. The slides are never filmed, so the talk plays back on the deck itself and exports as a video. {x=-9.35 y=3.9 width=11.2 font_size=19}
 
-[[icon: user #recording-you x=-7.6 y=-0.6 size=2 color=GRAY]]
-[[icon: desktop #recording-deck x=-3.6 y=-0.6 size=2 color=GRAY]]
-[[icon: document #recording-file x=-5.6 y=-3.4 size=1.8 color=GRAY]]
+[[icon: user #recording-you x=-8.4 y=-0.6 size=1.8 color=GRAY]]
+[[icon: desktop #recording-deck x=-5.6 y=-0.6 size=1.8 color=GRAY]]
+[[icon: client #recording-screen x=-2.8 y=-0.6 size=1.8 color=GRAY]]
+[[icon: document #recording-file x=-5.6 y=-3.2 size=1.8 color=GRAY]]
 [[arrow: #recording-you -> #recording-file, #recording-flow-a, color=GRAY, stroke_width=1]]
 [[arrow: #recording-deck -> #recording-file, #recording-flow-b, color=GRAY, stroke_width=1]]
+[[arrow: #recording-screen -> #recording-file, #recording-flow-c, color=GRAY, stroke_width=1]]
 
 [voice, camera]{#recording-cap-you at=bottom:#recording-you.top dy=0.15 font_size=15 color=GRAY}
 
 [moves on the deck]{#recording-cap-deck at=bottom:#recording-deck.top dy=0.15 font_size=15 color=GRAY}
 
-[media + timeline]{#recording-cap-file at=left:#recording-file.right dx=0.25 font_size=15 color=GRAY}
+[screen, its sound]{#recording-cap-screen at=bottom:#recording-screen.top dy=0.15 font_size=15 color=GRAY}
+
+[one bundle: timeline + a media file per stream]{#recording-cap-file at=left:#recording-file.right dx=0.25 font_size=15 color=GRAY}
 
 1. **Set up** once: ⚙ settings ▸ Recording ▸ Detect devices; choose the microphone and the camera, test them, and pick the corner and size of your picture. {x=2.3 width=7.4 font_size=17}
-2. **Record** with R or the ● Record button; a dialog says what will be kept, then the header counts the time. Present as usual: keys, pen, W for the whiteboard, the Camera button or C for the camera (in a corner, full frame, off), recorded while it is on; S shares the screen, filmed by itself whenever you leave the deck for another application, the camera coming back on your return. A pause leaves no gap: the talk resumes where it stopped. {x=2.3 width=7.4 font_size=17}
+2. **Record** with R or the ● Record button; a dialog says what will be kept, then the header counts the time. Present as usual: keys, pen, W for the whiteboard, the Camera button or C for the camera (in a corner, full frame, off), recorded while it is on; S shares the screen, which is filmed as a stream of its own whenever the deck loses the focus, to another application, a tab or a live page, and until it gets it back, the camera staying as you set it; the computer's sound comes with the share where the browser offers it. A pause leaves no gap: the talk resumes where it stopped. {x=2.3 width=7.4 font_size=17}
 3. **Stop** saves the talk in `recordings/` next to the deck when the deck is served by `zoomdeck serve` (a zip to download otherwise). R later offers to continue it where it stopped. {x=2.3 width=7.4 font_size=17}
 4. **Play** it with ▶ Talk in the footer: the deck follows the recording; Space pauses, ← and → seek, Esc leaves. {x=2.3 width=7.4 font_size=17}
 5. **Flatten and export** in the playback bar makes one video file of it: slides or whiteboard with ink, camera in a corner or full frame, and the sound. {x=2.3 width=7.4 font_size=17}
