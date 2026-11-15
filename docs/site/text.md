@@ -47,6 +47,34 @@ keep their indentation to its right.
 HTML comments are discarded and raw HTML is shown as text. Soft line breaks in the source are
 joined; an explicit break takes two trailing spaces, a backslash before the newline, or `\\`.
 
+## Columns
+
+Pieces of text align across lines with `&&` between them, as in a table without rules or in a
+LaTeX `align`: in a block that contains `&&`, every line of the source is a row and `&&` ends a
+cell, each column is as wide as its widest cell, and a cell starts where the columns before it
+end, plus a gap of one em. Spaces around `&&` are free, so the source itself can be aligned:
+
+```zoomdeck {height=4}
+::: slide {#columns width=16 height=4}
+
+This is a         && test             && (be careful) \\
+                  && the second column && and then the third
+                  &&                   && the third again
+**Name**          && *Value*           && $x^2$
+{x=-7 y=1 font_size=22}
+
+:::
+```
+
+A row with fewer cells leaves the rest empty, and an empty cell (a line that starts with `&&`,
+or two `&&` in a row) skips a column. A row without `&&` is one cell of the first column and
+counts toward its width, as in LaTeX, so a long line of prose in such a block pushes the other
+columns to its right; keep such lines in a block of their own. Cells do not
+wrap: a block wider than its width shrinks as a whole, as a single overlong word does, so give a
+wide one a `width`. Styles, formulas, code and links work inside cells. A literal double
+ampersand is written `\&&`; a single `&` is ordinary text everywhere. `\\` still breaks a row,
+which lets two rows share a source line.
+
 ## Inline styling
 
 Bold, italic, nested emphasis, code spans and inline math (`$…$`) can be combined freely. A

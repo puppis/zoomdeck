@@ -125,7 +125,9 @@ function spans(tokens: Token[], bold = false, italic = false, color: string | nu
       case 'hardbreak': {
         const kind = token.type === 'math_inline' ? 'math' : token.type === 'code_inline' ? 'code' : 'text';
         const content = token.type === 'softbreak' ? ' ' : token.type === 'hardbreak' ? '\n' : token.content;
-        result.push(span(content, kind, strong > 0, emphasis > 0, color, currentHref()));
+        const piece = span(content, kind, strong > 0, emphasis > 0, color, currentHref());
+        if (token.type === 'softbreak') piece.soft = true;
+        result.push(piece);
         break;
       }
       case 'link_open': {
@@ -155,6 +157,8 @@ export class MarkupParser {
     this.blockMarkdown = new MarkdownIt('commonmark', { html: false });
     this.blockMarkdown.enable('table');
     this.markdown = new MarkdownIt('commonmark', { html: false });
+    // An escaped character stays a token of its own, so that `\&&` never reads as a column separator.
+    this.markdown.core.ruler.disable('text_join');
     this.markdown.inline.ruler.before('escape', 'dollar_math', dollarMath);
     this.markdown.inline.ruler.before('escape', 'hard_line_break', hardLineBreak);
     this.markdown.inline.ruler.before('link', 'colored_span', coloredSpan);

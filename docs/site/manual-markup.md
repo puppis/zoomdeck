@@ -277,6 +277,7 @@ or icon:
 | `[text](https://…)` | a link; targets as under [Links](#links) |
 | `[text]{color=RED}` | a colored span; `color` is the only attribute an inline span takes |
 | `\\` | a hard line break; a lone newline inside a paragraph is a space |
+| `&&` | a column separator: in a block that contains one, every source line is a row and the cells align in columns across the rows, each as wide as its widest cell, an em apart ([Columns](text.html#columns)); `\&&` is a literal |
 
 A `[text]{…}` at the end of a block with any attribute other than `color` is the block's
 attribute list, not a span. Raw HTML is not interpreted.

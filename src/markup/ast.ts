@@ -35,6 +35,8 @@ export interface InlineSpan {
   color: string | null;
   /** Link target when the span sits inside a Markdown link. */
   href?: string | null;
+  /** A line end of the source (a space in prose; a row break in a block with `&&` columns). */
+  soft?: boolean;
 }
 
 export function span(

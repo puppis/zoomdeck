@@ -480,26 +480,54 @@ export interface ParagraphOptions {
 type Atom = InlineSpan;
 type Word = Atom[];
 
-/** Split spans into paragraphs of words. */
-export function inlineWords(spans: InlineSpan[]): Word[][] {
-  const paragraphs: Word[][] = [];
+/** A line of a block: its cells, one unless the block has `&&` columns. */
+export type Row = Word[][];
+
+/** Whether a block has columns: an unescaped `&&` in its prose (an escaped `\&&` arrives as two separate spans). */
+export function hasColumns(spans: InlineSpan[]): boolean {
+  return spans.some((s) => s.kind === 'text' && s.content.includes('&&'));
+}
+
+/**
+ * Split spans into rows of cells of words. A row ends at a hard break (`\\`); in a block with
+ * `&&` columns a line end of the source ends a row too, and `&&` ends a cell. Without columns
+ * every row has one cell.
+ */
+export function inlineRows(spans: InlineSpan[]): Row[] {
+  const columns = hasColumns(spans);
+  const rows: Row[] = [];
+  let cells: Word[][] = [];
   let words: Word[] = [];
   let current: Atom[] = [];
   let gap: Atom[] = [];
+  const endWord = () => {
+    if (current.length) {
+      words.push(current);
+      current = [];
+    }
+  };
+  const endCell = () => {
+    endWord();
+    cells.push(words);
+    words = [];
+    gap = [];
+  };
+  const endRow = () => {
+    endCell();
+    rows.push(cells);
+    cells = [];
+  };
+  const pattern = columns ? /\n|&&|[^\S\n]+|(?:[^\s&]|&(?!&))+/g : /\n|[^\S\n]+|[^\s]+/g;
   for (const s of spans) {
-    const atoms = s.kind === 'math' ? [s.content] : s.content.match(/\n|[^\S\n]+|[^\s]+/g) ?? [];
+    const atoms = s.kind === 'math' ? [s.content] : (columns && s.soft ? '\n' : s.content).match(pattern) ?? [];
     for (const atom of atoms) {
       const part: Atom = { ...s, content: atom };
-      if (s.kind !== 'math' && !atom.trim()) {
-        if (current.length) {
-          words.push(current);
-          current = [];
-        }
-        if (atom === '\n') {
-          paragraphs.push(words);
-          words = [];
-          gap = [];
-        } else if (s.kind === 'code') gap.push(part);
+      if (s.kind === 'text' && columns && atom === '&&') {
+        endCell();
+      } else if (s.kind !== 'math' && !atom.trim()) {
+        endWord();
+        if (atom === '\n') endRow();
+        else if (s.kind === 'code') gap.push(part);
         else gap = [{ content: ' ', kind: 'text', bold: false, italic: false, color: null, href: s.href ?? null }];
       } else {
         current.push(...gap);
@@ -508,9 +536,13 @@ export function inlineWords(spans: InlineSpan[]): Word[][] {
       }
     }
   }
-  if (current.length) words.push(current);
-  paragraphs.push(words);
-  return paragraphs;
+  endRow();
+  return rows;
+}
+
+/** Split spans into paragraphs of words, the cells of a row run together. */
+export function inlineWords(spans: InlineSpan[]): Word[][] {
+  return inlineRows(spans).map((row) => row.flat());
 }
 
 function runsOf(atoms: Atom[], defaultColor: string): TextRun[] {
@@ -590,8 +622,79 @@ export async function layoutParagraph(spans: InlineSpan[], options: ParagraphOpt
     const first = words[0]?.[0];
     return { parts, advance, keepIndent: Boolean(first && first.kind === 'code' && !first.content.trim()) };
   };
+  const rows = inlineRows(spans);
+  // Columns: each row's cells are shaped unwrapped, every column is as wide as its widest cell,
+  // and a cell starts where the columns before it end, plus a gap of an em; a row with fewer
+  // cells leaves the rest empty, a row with one cell spans from the first column.
+  if (rows.some((row) => row.length > 1)) {
+    const em = ((fontSize * 4) / 3) / PX_PER_WORLD_BASE;
+    const shaped: Array<ShapedLine[] | null> = [];
+    const widths: number[] = [];
+    for (const row of rows) {
+      if (row.every((cell) => !cell.length)) {
+        shaped.push(null);
+        continue;
+      }
+      const cells: ShapedLine[] = [];
+      for (const [index, cell] of row.entries()) {
+        const line = cell.length ? await shape(cell) : { parts: [], advance: 0, keepIndent: false };
+        cells.push(line);
+        widths[index] = Math.max(widths[index] ?? 0, line.advance);
+      }
+      shaped.push(cells);
+    }
+    const starts: number[] = [];
+    let x = 0;
+    widths.forEach((width, index) => {
+      starts[index] = x;
+      x += width + em;
+    });
+    const groups: Group[] = [];
+    let ascent = 0;
+    let descent = 0;
+    let rowNumber = 0;
+    for (const cells of shaped) {
+      const members: Mobject[] = [];
+      let right = 0;
+      for (const [index, cell] of (cells ?? []).entries()) {
+        let cursor = starts[index];
+        for (const part of cell.parts) {
+          if (part.kind === 'text') {
+            part.line.placeOrigin(cursor, 0);
+            cursor += part.line.advance;
+            ascent = Math.max(ascent, part.line.inkAscent, part.line.fontAscent);
+            descent = Math.max(descent, part.line.inkDescent, part.line.fontDescent);
+            members.push(part.line);
+          } else {
+            part.piece.mobject.shift([cursor, 0, 0]);
+            cursor += part.piece.advance;
+            ascent = Math.max(ascent, part.piece.ascent);
+            descent = Math.max(descent, part.piece.descent);
+            members.push(part.piece.mobject);
+          }
+        }
+        right = Math.max(right, cursor);
+      }
+      if (cells && members.length) {
+        const group = new Group(...members);
+        // A block wider than its width shrinks as a whole row, as an overlong word does.
+        if (right > maxWidth + 1e-6) group.scale(maxWidth / right, { aboutPoint: [0, 0, 0] });
+        (group as Group & { rowNumber?: number }).rowNumber = rowNumber;
+        groups.push(group);
+      }
+      rowNumber += 1;
+    }
+    if (!groups.length) return new Group();
+    const spacing = ascent + descent + lineGap;
+    for (const group of groups) group.shift([0, -((group as Group & { rowNumber?: number }).rowNumber ?? 0) * spacing, 0]);
+    const block = new Group(...groups) as Group & { markupBaselineFraction: number };
+    const height = block.getHeight();
+    block.markupBaselineFraction = height > 0 ? -block.getCenter()[1] / height : 0;
+    block.center();
+    return block;
+  }
   const lines: Array<ShapedLine | null> = [];
-  for (const words of inlineWords(spans)) {
+  for (const words of rows.map((row) => row.flat())) {
     if (!words.length) {
       lines.push(null);
       continue;
