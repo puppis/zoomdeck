@@ -19,8 +19,8 @@ cell) run in the self-contained player, `dist/standalone/`, which the build copi
 pages; `npm run docs:lite` (JupyterLite, a Python tool) adds the notebooks as an editable
 in-browser lab, and the Pages workflow publishes all of it.
 `npm install` builds the pages (through the `prepare` script) and `npm run docs` rebuilds them; open
-`docs/html/index.html` in a browser (or `/docs/html/` on the dev server). The pages are
-committed, the tour file (about 18 MB) is generated. The site covers getting started, concepts,
+`docs/html/index.html` in a browser (or `/docs/html/` on the dev server). The built site is not
+committed: every checkout builds its own, and the Pages workflow builds and publishes it. The site covers getting started, concepts,
 every part of the dialect, code-authored slides, the player, the editors, the desktop app,
 exporting, extending and embedding a deck, the configuration, a one-page reference and two
 reference manuals, [the markup language in full](https://puppis.github.io/zoomdeck/manual-markup.html)
@@ -206,7 +206,7 @@ Zoomdeck/
 │   ├── deck.ts, index.ts     deck definitions and the public API (`engine` re-exports the renderer)
 │   └── dev.ts                the development page (index.html and pad.html sit at the root)
 ├── scripts/                  build-docs.ts, api-reference.ts, check-node.mjs
-├── docs/site/, docs/html/    documentation sources (pages and notebooks) and the built site
+├── docs/site/                documentation sources (pages and notebooks); docs/html/ is the built site, not committed
 ├── docs/markup.md            compact reference of the Markdown dialect; docs/roadmap.md the plan
 ├── examples/                 the tour deck, a flat document, an embedding page, a code-authored deck
 ├── editors/, desktop/        editor setups; the Electron app

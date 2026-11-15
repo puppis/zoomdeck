@@ -6,15 +6,14 @@ release/
 .claude/
 *.log
 .DS_Store
-docs/html/tour.html
+# The built documentation site: npm install (prepare) and npm run docs write it, the Pages workflow publishes it.
+docs/html/
 examples/*/recordings/
 
 # Recorded talks the player writes next to the example decks: never published.
 examples/**/recordings/
 .venv/
 docs/book/_build/
-docs/html/zoomdeck/
-docs/html/lite/
 docs/lite/.jupyterlite.doit.db
 docs/lite/_output/
 .jupyterlite.doit.db
