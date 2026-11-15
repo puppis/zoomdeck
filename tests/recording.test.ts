@@ -148,11 +148,9 @@ describe('timelines', () => {
     expect(fixed.corner).toBe('top-left');
     expect(fixed.size).toBe(DEFAULT_RECORDING.size);
     // The screen is filmed by itself while the deck is left unless said otherwise; the old hidden-page setting asked for the screen at the start of a recording.
-    expect(fixed.screenWhenAway).toBe(true);
     expect(fixed.screenOnRecord).toBe(false);
     expect(sanitizeRecording({ screenWhenHidden: true }).screenOnRecord).toBe(true);
     expect(sanitizeRecording({ screenWhenHidden: true, screenOnRecord: false }).screenOnRecord).toBe(false);
-    expect(sanitizeRecording({ screenWhenAway: false }).screenWhenAway).toBe(false);
     // The video size: 1080p by default, one of the standard heights or the display (null) when chosen, anything else dropped; the earlier width maps over.
     expect(fixed.renderHeight).toBe(1080);
     expect(sanitizeRecording({ renderHeight: 1440 }).renderHeight).toBe(1440);

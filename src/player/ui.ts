@@ -506,7 +506,7 @@ export class PlayerUI {
     if (this._frameTimer !== null) clearTimeout(this._frameTimer);
     this._finishStroke();
     if (this._recorder) void this.toggleRecording();
-    if (this._screenFilming) void this.toggleScreen(false);
+    if (this._screenHeld()) void this.toggleScreen();
     this._exitPip();
     if (this._cameraMode !== 'off') void this.toggleCamera('off');
     this.closeRecording();
@@ -539,7 +539,7 @@ export class PlayerUI {
       ...gestures,
       `${keys('undo')}: undo stroke`, `${keys('redo')}: redo stroke`, `${keys('clear')}: clear strokes`,
       `${keys('whiteboard')}: whiteboard (${(['boardLeft', 'boardRight', 'boardUp', 'boardDown'] as const).map(keys).join(' ')}, scrolling or two fingers move it)`,
-      `${keys('camera')}: camera in a corner, then full frame (not while the screen is filmed), then off`, `${keys('screen')}: film the screen beside the camera (asked which the first time), or stop`, `${keys('record')}: record the talk, or continue a saved one`,
+      `${keys('camera')}: camera in a corner, then full frame (not while the screen is filmed), then off`, `${keys('screen')}: hold a screen share (the browser asks which) or let it go; leaving the deck films it`, `${keys('record')}: record the talk, or continue a saved one`,
       ...(this._editSource ? [`${keys('edit')}: open this stop's source in the editor`] : []),
       `${keys('settings')}: settings`,
     ];
@@ -1030,10 +1030,17 @@ export class PlayerUI {
    * then asks again. The Screen button is red exactly while a share is held, and the header
    * says when the screen is filmed; there is no notice.
    */
-  async toggleScreen(on = !this._screenFilming): Promise<void> {
-    if (this._playback || on === this._screenFilming) return;
-    if (on && !this._screenHeld() && !(await this._acquireScreen())) return;
-    await this._setScreenFilming(on);
+  async toggleScreen(): Promise<void> {
+    if (this._playback) return;
+    if (this._screenHeld()) {
+      // Letting the share go ends a filming under way with it.
+      if (this._screenFilming) await this._setScreenFilming(false);
+      this._releaseScreen();
+      return;
+    }
+    if (!(await this._acquireScreen())) return;
+    // The deck may be left already (a live page has the focus, say): the new share films from now on.
+    this._checkAway();
   }
 
   /** Ask the browser for another screen or window in place of the share held, and film it. */
@@ -1120,11 +1127,9 @@ export class PlayerUI {
     this._screenPickButton.hidden = !held;
     this._screenButton.classList.toggle('held', held);
     this._screenButton.textContent = 'Screen';
-    this._screenButton.title = this._screenFilming
-      ? `Stop filming ${this._screenLabel()} (S); the share stays held`
-      : held
-        ? `Film ${this._screenLabel()} (S); the arrow beside picks another, the browser's own bar ends the share`
-        : 'Film the screen, beside the camera, for the time spent in another application (S); the browser asks which';
+    this._screenButton.title = held
+      ? `Let the share of ${this._screenLabel()} go (S); while it is held, leaving the deck films it; the arrow beside picks another`
+      : 'Share a screen (S): the browser asks which; while the share is held, leaving the deck for another application or a live page films it, beside the camera';
   }
 
   /**
@@ -1186,7 +1191,6 @@ export class PlayerUI {
       if (away && this._recorder && !this._screenDeclined && !this._screenOffer) this._offerScreen();
       return;
     }
-    if (!this._settings.recording.screenWhenAway) return;
     if (away) {
       if (this._screenFilming) {
         this._awayWhileFilming = true;
@@ -1461,9 +1465,7 @@ export class PlayerUI {
         ...(continuable.length ? [el('div', { class: 'row' }, el('label', {}, 'Record ', what))] : []),
         el('p', { class: 'note', text: `The recording keeps your voice through the microphone (${option(this._micSelect)}), ${camera}, and every move on the deck: the stops, the ink, the whiteboard, the pointer and the camera switches. The slides themselves are not filmed; the talk plays back on the deck and exports as a video.` }),
         ...(this._screenHeld() ? [] : [el('p', { class: 'note' }, el('strong', { text: 'No screen share is held: ' }), 'the recording cannot include anything outside this window, nor what happens inside a live page, until the screen is shared. Share it with Screen or S, now or during the talk; the first time you leave the deck during the talk, the deck offers it.')]),
-        el('p', { class: 'note', text: this._settings.recording.screenWhenAway
-          ? `The Screen button or S films the screen beside the camera${this._settings.recording.screenOnRecord ? ' (the browser asks which screen when the recording starts)' : ', once the browser has asked which screen'}; while a share is held, leaving the deck for another tab, application, workspace or live page films it by itself, and coming back stops the filming. The camera stays as you set it, in its corner, and follows you out in the browser's floating window.`
-          : 'The Screen button or S films the screen beside the camera, for the time you spend in another application; the settings (Recording) can make that happen by itself whenever you leave the deck.' }),
+        el('p', { class: 'note', text: `The Screen button or S holds a screen share${this._settings.recording.screenOnRecord ? ' (the browser asks which screen when the recording starts)' : ' (the browser asks which screen)'} and lets it go again; while a share is held, leaving the deck for another tab, application, workspace or live page films the screen by itself, beside the camera, and coming back stops the filming. The camera stays as you set it, in its corner, and follows you out in a floating window.` }),
         el('p', { class: 'note', text: `The header counts the time. Pause leaves a gap out of the talk; Stop (the same key or button) ends the recording and ${where}. A stopped talk can be continued later from this dialog or from the list of talks.` }),
         seam,
         el('div', { class: 'row' }, start, cancel)),
@@ -2394,12 +2396,6 @@ export class PlayerUI {
       this._testVideo,
       el('div', { class: 'sound' }, el('div', { class: 'meter', role: 'meter', 'aria-label': 'Sound level' }, this._testLevel), this._listenButton),
       this._testStatus);
-    this._screenAwayToggle = el('input', { type: 'checkbox' });
-    this._screenAwayToggle.addEventListener('change', () => {
-      this._settings.recording.screenWhenAway = this._screenAwayToggle.checked;
-      saveSettings(this._settings);
-      this._checkAway();
-    });
     this._screenAskToggle = el('input', { type: 'checkbox' });
     this._screenAskToggle.addEventListener('change', () => {
       this._settings.recording.screenOnRecord = this._screenAskToggle.checked;
@@ -2447,7 +2443,6 @@ export class PlayerUI {
       el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Corner of the camera picture' }), this._cornerSelect),
       el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Size of the camera picture' }), this._pipSizeSelect),
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Mirror my own picture while presenting' }), this._mirrorToggle),
-      el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'While a screen share is held, film it by itself whenever you leave the deck for another tab, application or workspace, and come back to the camera on return' }), this._screenAwayToggle),
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Ask for the screen when a recording starts, so that a share is held from the start' }), this._screenAskToggle),
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Render the talk as an MP4 video when a recording stops, off the clock, where the server has ffmpeg (the desktop app does it in the background; a browser offers a button, since it opens a tab for it)' }), this._renderToggle),
       el('div', { class: 'row' }, el('label', {}, 'Size of rendered and exported videos ', this._renderSizeSelect)),
@@ -2536,7 +2531,6 @@ export class PlayerUI {
   private _cameraSelect!: HTMLSelectElement;
   private _mirrorToggle!: HTMLInputElement;
   private _padNotesToggle!: HTMLInputElement;
-  private _screenAwayToggle!: HTMLInputElement;
   private _screenAskToggle!: HTMLInputElement;
   private _antialiasToggle!: HTMLInputElement;
   private _resolutionSelect!: HTMLSelectElement;
@@ -2775,7 +2769,6 @@ export class PlayerUI {
     this._micSelect.value = recording.microphone ?? '';
     this._cameraSelect.value = recording.camera ?? '';
     this._mirrorToggle.checked = recording.mirror;
-    this._screenAwayToggle.checked = recording.screenWhenAway;
     this._screenAskToggle.checked = recording.screenOnRecord;
     this._renderToggle.checked = recording.renderOnStop;
     this._renderSizeSelect.value = recording.renderHeight === null ? '' : String(recording.renderHeight);

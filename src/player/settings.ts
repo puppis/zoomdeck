@@ -18,11 +18,6 @@ export interface RecordingSettings {
   corner: Corner;
   /** Width of the camera picture as a share of the frame width. */
   size: number;
-  /**
-   * While a screen share is held, film it by itself whenever the deck is left (another tab,
-   * application or workspace) and go back to the camera on return.
-   */
-  screenWhenAway: boolean;
   /** Ask for the screen when a recording starts, so that a share is held from the start. */
   screenOnRecord: boolean;
   /** The kind of surface shared last time (a whole screen, a window or a tab), which the browser's picker opens on. */
@@ -43,7 +38,7 @@ export const SCREEN_SURFACES = ['monitor', 'window', 'browser'] as const;
 export const CORNERS: Corner[] = ['bottom-right', 'bottom-left', 'top-right', 'top-left'];
 export const PIP_SIZES: Array<[number, string]> = [[0.12, 'Small'], [0.18, 'Medium'], [0.25, 'Large']];
 
-export const DEFAULT_RECORDING: RecordingSettings = { microphone: null, camera: null, mirror: true, corner: 'bottom-right', size: 0.18, screenWhenAway: true, screenOnRecord: false, screenSurface: 'monitor', renderOnStop: true, renderHeight: 1080, renderAspect: 'presented' };
+export const DEFAULT_RECORDING: RecordingSettings = { microphone: null, camera: null, mirror: true, corner: 'bottom-right', size: 0.18, screenOnRecord: false, screenSurface: 'monitor', renderOnStop: true, renderHeight: 1080, renderAspect: 'presented' };
 
 export function sanitizeRecording(value: unknown): RecordingSettings {
   const result = { ...DEFAULT_RECORDING };
@@ -54,7 +49,6 @@ export function sanitizeRecording(value: unknown): RecordingSettings {
   if (typeof saved.mirror === 'boolean') result.mirror = saved.mirror;
   if (typeof saved.corner === 'string' && CORNERS.includes(saved.corner as Corner)) result.corner = saved.corner as Corner;
   if (typeof saved.size === 'number' && PIP_SIZES.some(([size]) => size === saved.size)) result.size = saved.size;
-  if (typeof saved.screenWhenAway === 'boolean') result.screenWhenAway = saved.screenWhenAway;
   if (typeof saved.screenOnRecord === 'boolean') result.screenOnRecord = saved.screenOnRecord;
   // The setting of the hidden-page mode, before the deck filmed the screen by itself whenever it was left.
   else if (typeof (saved as { screenWhenHidden?: unknown }).screenWhenHidden === 'boolean') result.screenOnRecord = (saved as { screenWhenHidden: boolean }).screenWhenHidden;

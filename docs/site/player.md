@@ -50,10 +50,10 @@ The gear button (or the `,` key) opens the settings dialog, in six parts:
   (no key), one of Shift, Control, Alt, ⌘/Win or a pair of them, or "Off"; choosing keys already
   used by another gesture frees them from it.
 - **Pen**: how pressure and motion shape a stroke; see [The pen](#the-pen).
-- **Recording**: the microphone and camera, where the camera picture sits, whether a held screen
-  share is filmed by itself while you are away from the deck, whether a recording asks for the
-  screen when it starts, whether a talk is rendered as a video when its recording stops, and how
-  wide rendered and exported videos are; see [Recording a talk](#recording-a-talk).
+- **Recording**: the microphone and camera, where the camera picture sits, whether a recording
+  asks for the screen when it starts, whether a talk is rendered as a video when its recording
+  stops, and the size and proportions of rendered and exported videos; see
+  [Recording a talk](#recording-a-talk).
 - **Tablet**: pairing a companion tablet, the tablets connected and the trusted ones; see
   [A tablet as a drawing pad](#a-tablet-as-a-drawing-pad).
 - **Keyboard**: every action with its keys, in three groups: the keys while presenting, the keys
@@ -269,24 +269,23 @@ download, to put into a `recordings/` folder next to the deck as it is. The reco
 after the date and time, `talk-2026-11-13-1030`.
 
 **Filming the screen.** A talk may leave the deck for a while: a demonstration in another
-application, a terminal, a web page. **Screen** in the footer, or `S`, films the screen beside
-the camera until you press it again: the button looks the same meanwhile, the header says Screen exactly
-while the screen is filmed, and the camera stays as you set it. The screen is a lane of its own
-in the recording, overlapping the camera's files, so playback and the rendered video show it
-full frame with the camera in its corner over it; when the entire screen is filmed and the
-camera floats over it in the browser's picture-in-picture window, the camera lane keeps the
-sound alone, since the picture is in the filmed screen already. The first time, the browser asks which screen or window to share: its picker is the
-browser's own, which a page can neither skip, fill in nor confirm, though it opens on the kind of
-surface you chose last time (the entire screen at first; choose that to follow yourself across
-applications). Stopping the filming keeps the share, so that the next `S` films the same screen
-again without asking; the small arrow beside **Screen**, shown while a share is held, opens the
-picker again to film something else instead. The **Screen** button is red exactly while the
-browser lets the page capture a screen, that is, while a share is held, filmed or not; ending
-the share from the browser's own bar (Chrome's "Stop sharing", Firefox's and Safari's sharing
-indicators) turns it back, and the next `S` then asks again. The system's own indicator of a
-captured screen is the one to watch for; the deck adds none.
+application, a terminal, a web page. **Screen** in the footer, or `S`, holds a screen share, or
+lets it go: the browser asks which screen or window to share, with a picker of its own that a
+page can neither skip, fill in nor confirm, though it opens on the kind of surface you chose
+last time (the entire screen at first; choose that to follow yourself across applications). The
+button is red exactly while the browser lets the page capture a screen, that is, while a share
+is held, and the small arrow beside it opens the picker again for another screen or window;
+ending the share from the browser's own bar (Chrome's "Stop sharing", Firefox's and Safari's
+sharing indicators) lets it go as well. The filming itself needs no hand: while a share is held,
+the screen is filmed exactly while you are away from the deck (see below), the header says
+Screen meanwhile, the button looks the same, and the camera stays as you set it. The system's
+own indicator of a captured screen is the one to watch for; the deck adds none. The screen is a
+lane of its own in the recording, overlapping the camera's files, so playback and the rendered
+video show it full frame with the camera in its corner over it; when the entire screen is filmed
+and the camera floats over it in its window, the camera lane keeps the sound alone, since the
+picture is in the filmed screen already.
 
-**Away from the deck.** While a share is held, the deck films it by itself whenever you leave: switching to another tab,
+**Away from the deck.** While a share is held, the deck films it whenever you leave: switching to another tab,
 another application or another workspace starts the filming, and coming back to the deck stops
 it; the camera is not touched. Without a share, nothing outside the window and nothing inside a
 live page can be in the recording: the Record dialog says so when none is held, and the first
@@ -295,11 +294,9 @@ browser's picker needs a click, so the deck cannot open it by itself); declining
 rest of the session. A live page inside
 a slide counts as leaving too: a click into it gives it the focus and starts the filming, a click
 back on the slides ends it, so that what you do in the page is part of the talk, since the
-timeline keeps the deck's own events only and no player could replay clicks made inside a page. A filming you
-started by hand is left alone until you leave and come back, which ends it too; the button and
-`S` still work at any time. The setting "film it by itself whenever you leave the deck" under
-**Recording** turns this off, and "Ask for the screen when a recording starts" makes a recording
-ask for the share as it starts, so that the first leave is filmed without a press of `S`. A filmed
+timeline keeps the deck's own events only and no player could replay clicks made inside a page.
+"Ask for the screen when a recording starts", under **Recording**, makes a recording ask for the
+share as it starts, so that the first leave is filmed without a press of `S`. A filmed
 stretch is a further media file of the talk; in playback and in the exported
 video it fills the frame, whole, and the deck stands still meanwhile. Your voice goes on through
 the microphone, while the sound of other applications is not captured. The browser needs the
