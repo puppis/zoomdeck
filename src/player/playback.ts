@@ -5,7 +5,10 @@
  */
 import type { NavigationData } from '../runtime';
 import type { Player } from './player';
-import { eventsBetween, mediaAt, screenAt, stateAt, stopIndex, type Timeline, type TimelineEvent, type TimelineMedia, type TimelineState } from './timeline';
+import { eventsBetween, inCameraLane, laneAt, mediaAt, stateAt, stopIndex, type Timeline, type TimelineEvent, type TimelineMedia, type TimelineState } from './timeline';
+
+/** The lanes played beside the camera lane, each in an element of its own. */
+type SideLane = 'screen' | 'system';
 
 /** What a playback needs from the page: the deck, and the things the player interface controls. */
 export interface PlaybackHost {
@@ -15,6 +18,8 @@ export interface PlaybackHost {
   media: HTMLMediaElement | null;
   /** The element showing the filmed screen, when the recording has a screen lane beside the camera; it follows the clock. */
   screen?: HTMLVideoElement | null;
+  /** The element playing the computer's sound, when the recording has a system lane; it follows the clock too. */
+  system?: HTMLMediaElement | null;
   /** The screen lane's part shown changed (null: none at this time). */
   onScreen?: (part: TimelineMedia | null) => void;
   /** The URL of a media part's file; a promise when the part is first fetched (a bundle on a static host). */
@@ -44,8 +49,8 @@ export class Playback {
   private _runFrom = 0;
   /** The media part loaded in the element. */
   private _part: TimelineMedia | null = null;
-  /** The screen lane's part loaded in the screen element. */
-  private _screenPart: TimelineMedia | null = null;
+  /** The side lanes' parts loaded in their elements. */
+  private readonly _sideParts: Record<SideLane, TimelineMedia | null> = { screen: null, system: null };
   /** The time last asked for, applied once a part still being fetched is in the element. */
   private _pendingSeek = 0;
   private readonly _onEnded = () => this._partEnded();
@@ -67,34 +72,44 @@ export class Playback {
 
   /** The filmed screen shown now, from the screen lane; null when none covers this moment. */
   get screenPart(): TimelineMedia | null {
-    return this._screenPart;
+    return this._sideParts.screen;
   }
 
-  /** Keep the screen element on the screen lane's part that covers `time`, at the right place in it, playing or paused as the talk is. */
-  private async _syncScreen(time: number): Promise<void> {
-    const screen = this.host.screen;
-    if (!screen) return;
-    const part = screenAt(this.timeline.media, time);
-    if (part !== this._screenPart) {
-      this._screenPart = part;
-      this.host.onScreen?.(part);
+  /** The computer's sound playing now, from the system lane; null when none covers this moment. */
+  get systemPart(): TimelineMedia | null {
+    return this._sideParts.system;
+  }
+
+  /** Keep each side lane's element on the lane's part that covers `time`. */
+  private _syncSides(time: number): void {
+    void this._syncSide('screen', this.host.screen ?? null, time);
+    void this._syncSide('system', this.host.system ?? null, time);
+  }
+
+  /** Keep an element on a side lane's part that covers `time`, at the right place in it, playing or paused as the talk is. */
+  private async _syncSide(lane: SideLane, element: HTMLMediaElement | null, time: number): Promise<void> {
+    if (!element) return;
+    const part = laneAt(this.timeline.media, lane, time);
+    if (part !== this._sideParts[lane]) {
+      this._sideParts[lane] = part;
+      if (lane === 'screen') this.host.onScreen?.(part);
       if (!part) {
-        screen.pause();
-        screen.removeAttribute('src');
-        screen.load();
+        element.pause();
+        element.removeAttribute('src');
+        element.load();
         return;
       }
       const source = this.host.mediaUrl ? this.host.mediaUrl(part) : part.file;
       const url = typeof source === 'string' ? source : await source.catch(() => null);
-      if (this._screenPart !== part || url === null) return;
-      screen.src = url;
-      screen.load();
+      if (this._sideParts[lane] !== part || url === null) return;
+      element.src = url;
+      element.load();
     }
     if (!part) return;
     const want = Math.max(0, (time - part.start) / 1000);
-    if (Math.abs(screen.currentTime - want) > 0.4) screen.currentTime = want;
-    if (this._playing && screen.paused) void screen.play().catch(() => undefined);
-    else if (!this._playing && !screen.paused) screen.pause();
+    if (Math.abs(element.currentTime - want) > 0.4) element.currentTime = want;
+    if (this._playing && element.paused) void element.play().catch(() => undefined);
+    else if (!this._playing && !element.paused) element.pause();
   }
 
   get playing(): boolean {
@@ -162,7 +177,7 @@ export class Playback {
       this._runStart = performance.now();
     }
     if (this._timer === null) this._timer = window.setInterval(() => this._tick(), 30);
-    void this._syncScreen(this.time);
+    this._syncSides(this.time);
   }
 
   pause(): void {
@@ -175,6 +190,7 @@ export class Playback {
       this._runStart = null;
     }
     this.host.screen?.pause();
+    this.host.system?.pause();
     this._stopTimer();
     this.host.player.runner.cancel();
   }
@@ -197,7 +213,7 @@ export class Playback {
     this._ended = false;
     if (this.host.media) void this._loadPart(target);
     else this._runFrom = target;
-    void this._syncScreen(target);
+    this._syncSides(target);
     const events = this.timeline.events;
     const state = stateAt(events, target);
     this.state = state;
@@ -241,7 +257,7 @@ export class Playback {
     if (!this._playing) return;
     const now = this.time;
     this._advance(now);
-    void this._syncScreen(now);
+    this._syncSides(now);
     this.host.onTime?.(now);
     if (now >= this.duration) this._end();
   }
@@ -290,10 +306,10 @@ export class Playback {
     }
   }
 
-  /** A camera-lane part ran out: the lane's next one follows (the screen lane's parts overlap and are not in this row), or the talk is over. */
+  /** A camera-lane part ran out: the lane's next one follows (the side lanes' parts overlap and are not in this row), or the talk is over. */
   private _partEnded(): void {
     if (!this._playing || !this._part) return;
-    const lane = this.timeline.media.filter((part) => part.lane !== 'screen');
+    const lane = this.timeline.media.filter(inCameraLane);
     const next = lane[lane.indexOf(this._part) + 1];
     if (!next) {
       this._end();
@@ -301,7 +317,7 @@ export class Playback {
     }
     this._advance(next.start);
     void this._loadPart(next.start).then(() => {
-      void this._syncScreen(next.start);
+      this._syncSides(next.start);
       return this.host.media?.play();
     }).catch(() => this._end());
   }

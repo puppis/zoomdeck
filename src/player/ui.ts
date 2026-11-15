@@ -165,6 +165,8 @@ export class PlayerUI {
   private _screenFilming = false;
   /** The element showing a recording's filmed screen, full frame under the camera's corner picture. */
   private readonly _screen: HTMLVideoElement;
+  /** The element playing a recording's system lane: the computer's sound, captured with the screen share. */
+  private readonly _system: HTMLAudioElement;
   /** Whether the filming began by itself when the deck was left, so that coming back ends it. */
   private _autoFilming = false;
   /** The presenter declined to share the screen when the deck was left during a recording: not asked again in this session. */
@@ -346,6 +348,7 @@ export class PlayerUI {
     this._screen = el('video', { class: 'screen', hidden: '', playsinline: '', 'aria-label': 'The filmed screen' });
     this._screen.muted = true;
     this._screen.addEventListener('loadedmetadata', () => this._layoutCamera());
+    this._system = el('audio', { class: 'system', hidden: '', 'aria-label': "The computer's sound" }) as HTMLAudioElement;
     this._error = el('p', { class: 'error', role: 'alert', hidden: '' });
     // While the deck loads: a bar and the slide count, nothing more.
     this._loadingBar = el('progress', { max: '1', value: '0', 'aria-label': 'Loading the deck' });
@@ -369,7 +372,7 @@ export class PlayerUI {
     this._exportButton.addEventListener('click', () => void this.exportRecording());
     closePlayback.addEventListener('click', () => this.closeRecording());
     this._padRequest = el('div', { class: 'pad-request', role: 'dialog', 'aria-label': 'A tablet asks to draw here', hidden: '' });
-    this.stageHost.append(this._boardLayer, this._highlights, this._screen, this._camera, this._spotlight, this._remoteCursor, this._error, this._loading, this._padRequest);
+    this.stageHost.append(this._boardLayer, this._highlights, this._screen, this._system, this._camera, this._spotlight, this._remoteCursor, this._error, this._loading, this._padRequest);
 
     this._previous = el('button', { class: 'previous', 'aria-label': 'Previous stop', title: 'Previous stop (←)', text: '←' });
     this._next = el('button', { class: 'next', 'aria-label': 'Next stop', title: 'Next stop (→)', text: '→' });
@@ -969,7 +972,7 @@ export class PlayerUI {
       close();
       this._screenDeclined = true;
     });
-    offer.append(el('span', { text: 'The recording cannot include what happens outside this window, or inside a live page, unless the screen is shared. Share it now? The browser asks which; with the share held, leaving the deck films it by itself.' }), share, later);
+    offer.append(el('span', { text: "The recording cannot include what happens outside this window, or inside a live page, nor the computer's sound, unless the screen is shared. Share it now? The browser asks which; with the share held, leaving the deck films it by itself." }), share, later);
     this.root.append(offer);
     this._screenOffer = offer;
   }
@@ -1096,7 +1099,9 @@ export class PlayerUI {
     }
     try {
       // The picker opens on the kind of surface chosen last time (a whole screen at first) and leaves this tab out.
-      const options = { video: { displaySurface: this._settings.recording.screenSurface, frameRate: { ideal: 15 } }, audio: false, selfBrowserSurface: 'exclude' };
+      // The computer's sound comes with the share where the browser offers it (a whole screen or a tab, with the box ticked), untouched by the microphone's processing.
+      const audio = this._settings.recording.systemAudio ? { echoCancellation: false, noiseSuppression: false, autoGainControl: false } : false;
+      const options = { video: { displaySurface: this._settings.recording.screenSurface, frameRate: { ideal: 15 } }, audio, systemAudio: 'include', selfBrowserSurface: 'exclude' };
       this._prompting++;
       let stream: MediaStream;
       try {
@@ -1119,7 +1124,10 @@ export class PlayerUI {
           void this._setScreenFilming(false).then(() => this._releaseScreen());
         });
       }
+      // The sound alone may end too (the browser's bar has a control for it): its lane closes.
+      for (const track of stream.getAudioTracks()) track.addEventListener('ended', () => void this._syncSystemLane());
       this._updateScreenButton();
+      void this._syncSystemLane();
       return true;
     } catch (error) {
       this.notice(`No screen: ${(error as Error).message}`);
@@ -1128,9 +1136,35 @@ export class PlayerUI {
   }
 
   private _releaseScreen(): void {
-    for (const track of this._screenStream?.getTracks() ?? []) track.stop();
+    const stream = this._screenStream;
     this._screenStream = null;
+    for (const track of stream?.getVideoTracks() ?? []) track.stop();
+    // The sound's track outlives the share until its lane has closed its file, so that the file ends cleanly.
+    const audio = stream?.getAudioTracks() ?? [];
+    const closing = this._recorder?.systemSound ? this._recorder.stopSystem() : Promise.resolve();
+    void closing.catch(() => undefined).finally(() => {
+      for (const track of audio) track.stop();
+    });
     this._updateScreenButton();
+  }
+
+  /**
+   * Record the computer's sound exactly while a recording captures and the share held carries
+   * it (and the setting asks for it): in a lane of its own, all along, whatever the screen
+   * lane does, so that the sound of a demonstration is kept also while the deck has the focus.
+   */
+  private async _syncSystemLane(): Promise<void> {
+    const recorder = this._recorder;
+    if (!recorder?.capturing) return;
+    const audio = this._screenStream?.getAudioTracks().filter((track) => track.readyState === 'live') ?? [];
+    const want = audio.length > 0 && this._settings.recording.systemAudio;
+    if (want && !recorder.systemSound) await recorder.startSystem(new MediaStream(audio)).catch((error: Error) => this.notice(`The computer's sound could not be recorded: ${error.message}`));
+    else if (!want && recorder.systemSound) await recorder.stopSystem();
+  }
+
+  /** Whether the share held carries the computer's sound. */
+  private _systemSoundHeld(): boolean {
+    return Boolean(this._screenStream?.getAudioTracks().some((track) => track.readyState === 'live'));
   }
 
   /** The Screen button: red exactly while the browser lets this page capture a screen (a share held), "Filming" while the screen is filmed. */
@@ -1408,6 +1442,7 @@ export class PlayerUI {
     }
     this._recorder = recorder;
     this._recordStream = stream;
+    void this._syncSystemLane();
     this._appendTo = append;
     this._session = session;
     this._talkName = name;
@@ -1467,8 +1502,9 @@ export class PlayerUI {
       el('section', {},
         ...(continuable.length ? [el('div', { class: 'row' }, el('label', {}, 'Record ', what))] : []),
         el('p', { class: 'note', text: `The recording keeps your voice through the microphone (${option(this._micSelect)}), ${camera}, and every move on the deck: the stops, the ink, the whiteboard, the pointer and the camera switches. The slides themselves are not filmed; the talk plays back on the deck and exports as a video.` }),
-        ...(this._screenHeld() ? [] : [el('p', { class: 'note' }, el('strong', { text: 'No screen share is held: ' }), 'the recording cannot include anything outside this window, nor what happens inside a live page, until the screen is shared. Share it with Screen or S, now or during the talk; the first time you leave the deck during the talk, the deck offers it.')]),
-        el('p', { class: 'note', text: `The Screen button or S holds a screen share${this._settings.recording.screenOnRecord ? ' (the browser asks which screen when the recording starts)' : ' (the browser asks which screen)'} and lets it go again; while a share is held, leaving the deck for another tab, application, workspace or live page films the screen by itself, beside the camera, and coming back stops the filming. The camera stays as you set it, in its floating window.` }),
+        ...(this._screenHeld() ? [] : [el('p', { class: 'note' }, el('strong', { text: 'No screen share is held: ' }), 'the recording cannot include anything outside this window, nor what happens inside a live page, nor the computer\'s sound, until the screen is shared. Share it with Screen or S, now or during the talk; the first time you leave the deck during the talk, the deck offers it.')]),
+        ...(this._screenHeld() && this._settings.recording.systemAudio && !this._systemSoundHeld() ? [el('p', { class: 'note' }, el('strong', { text: 'The share carries no sound: ' }), 'the computer\'s sound will not be in the recording. The browser offers it for a whole screen or a tab, with its box ticked in the share dialog; the arrow beside Screen opens the dialog again.')] : []),
+        el('p', { class: 'note', text: `The Screen button or S holds a screen share${this._settings.recording.screenOnRecord ? ' (the browser asks which screen when the recording starts)' : ' (the browser asks which screen)'} and lets it go again; while a share is held, leaving the deck for another tab, application, workspace or live page films the screen by itself, beside the camera, and coming back stops the filming. The computer's sound, when the share carries it, is recorded all along, also while you are on the deck. The camera stays as you set it, in its floating window.` }),
         el('p', { class: 'note', text: `The header counts the time. Pause leaves a gap out of the talk; Stop (the same key or button) ends the recording and ${where}. A stopped talk can be continued later from this dialog or from the list of talks.` }),
         seam,
         el('div', { class: 'row' }, start, cancel)),
@@ -1515,7 +1551,7 @@ export class PlayerUI {
 
   /** Describe captured media files as the timeline lists them, numbered after the talk's existing ones (name.webm, name.part2.webm, …). */
   private _describeParts(name: string, first: number, parts: ReadonlyArray<Omit<CapturedMedia, 'blob'>>): TimelineMedia[] {
-    return parts.map((captured, index) => ({ ...describeMedia(name, captured.type, first + index, captured.duration), start: captured.start, ...(captured.source === 'screen' ? { source: 'screen' as const } : {}), ...(captured.lane === 'screen' ? { lane: 'screen' as const } : {}) }));
+    return parts.map((captured, index) => ({ ...describeMedia(name, captured.type, first + index, captured.duration), start: captured.start, ...(captured.source === 'screen' ? { source: 'screen' as const } : {}), ...(captured.lane ? { lane: captured.lane } : {}) }));
   }
 
   /** The timeline as it would be if the talk stopped now. */
@@ -1668,7 +1704,7 @@ export class PlayerUI {
         }).catch((error: Error) => this.notice(error.message));
       });
       list.append(el('div', { class: 'binding recording' },
-        el('span', { class: 'action', text: `${when} · ${formatTime(entry.duration)}${entry.video ? ' · camera' : entry.media ? ' · sound' : ''}${entry.movie ? ' · video' : ''}${progress}`, title: job?.error ?? '' }), play, video, more, remove));
+        el('span', { class: 'action', text: `${when} · ${formatTime(entry.duration)}${entry.video ? ' · camera' : entry.media ? ' · sound' : ''}${entry.system ? " · computer's sound" : ''}${entry.movie ? ' · video' : ''}${progress}`, title: job?.error ?? '' }), play, video, more, remove));
     }
     // While a render runs, the list follows its progress.
     if (this._render.jobs.some((job) => ['queued', 'rendering', 'composing'].includes(job.status))) {
@@ -1717,6 +1753,7 @@ export class PlayerUI {
       player,
       media: timeline.media.length ? camera : null,
       screen: timeline.media.some((part) => part.lane === 'screen') ? this._screen : null,
+      system: timeline.media.some((part) => part.lane === 'system') ? this._system : null,
       onScreen: () => this._layoutCamera(),
       mediaUrl: (part) => mediaSource(base, entry, part),
       apply: (event, instant) => this._applyTimelineEvent(event, instant),
@@ -1774,6 +1811,9 @@ export class PlayerUI {
     this._screen.removeAttribute('src');
     this._screen.load();
     this._screen.hidden = true;
+    this._system.pause();
+    this._system.removeAttribute('src');
+    this._system.load();
     if (this._cameraFull) this._setCameraFull(false);
     this._cameraButton.disabled = false;
     this._playbackBar.hidden = true;
@@ -2036,6 +2076,7 @@ export class PlayerUI {
       stage: () => this._stageCrop(aspect),
       camera: playback.timeline.media.length ? this._camera : null,
       screen: () => this._screenVideo(),
+      system: playback.timeline.media.some((part) => part.lane === 'system') ? this._system : null,
       mirror: false,
       pip: playback.timeline.pip,
     };
@@ -2472,6 +2513,12 @@ export class PlayerUI {
       this._settings.recording.screenOnRecord = this._screenAskToggle.checked;
       saveSettings(this._settings);
     });
+    this._systemAudioToggle = el('input', { type: 'checkbox' });
+    this._systemAudioToggle.addEventListener('change', () => {
+      this._settings.recording.systemAudio = this._systemAudioToggle.checked;
+      saveSettings(this._settings);
+      void this._syncSystemLane();
+    });
     this._renderToggle = el('input', { type: 'checkbox' });
     this._renderToggle.addEventListener('change', () => {
       this._settings.recording.renderOnStop = this._renderToggle.checked;
@@ -2520,6 +2567,7 @@ export class PlayerUI {
       el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Size of the camera picture' }), this._pipSizeSelect),
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Mirror my own picture while presenting' }), this._mirrorToggle),
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Ask for the screen when a recording starts, so that a share is held from the start' }), this._screenAskToggle),
+      el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: "Record the computer's sound with the screen share, in a track of its own, when the browser offers it (a whole screen or a tab, with the box ticked in the share dialog)" }), this._systemAudioToggle),
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Render the talk as an MP4 video when a recording stops, off the clock, where the server has ffmpeg (the desktop app does it in the background; a browser offers a button, since it opens a tab for it)' }), this._renderToggle),
       el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Size of rendered and exported videos' }), this._renderSizeSelect),
       el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Proportions of rendered and exported videos' }), this._renderAspectSelect),
@@ -2636,6 +2684,7 @@ export class PlayerUI {
   private _mirrorToggle!: HTMLInputElement;
   private _padNotesToggle!: HTMLInputElement;
   private _screenAskToggle!: HTMLInputElement;
+  private _systemAudioToggle!: HTMLInputElement;
   private _antialiasToggle!: HTMLInputElement;
   private _resolutionSelect!: HTMLSelectElement;
   private _renderingNote!: HTMLElement;
@@ -2874,6 +2923,7 @@ export class PlayerUI {
     this._cameraSelect.value = recording.camera ?? '';
     this._mirrorToggle.checked = recording.mirror;
     this._screenAskToggle.checked = recording.screenOnRecord;
+    this._systemAudioToggle.checked = recording.systemAudio;
     this._renderToggle.checked = recording.renderOnStop;
     this._renderSizeSelect.value = recording.renderHeight === null ? '' : String(recording.renderHeight);
     this._renderAspectSelect.value = recording.renderAspect;

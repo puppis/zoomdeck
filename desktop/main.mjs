@@ -384,7 +384,12 @@ function allowMedia() {
       const display = win ? screen.getDisplayMatching(win.getBounds()) : screen.getPrimaryDisplay();
       const source = sources.find((candidate) => candidate.display_id === String(display.id)) ?? sources[0];
       if (!source) throw new Error('No screen to capture');
-      callback({ video: source, audio: 'loopback' in request ? undefined : undefined });
+      // The computer's sound comes with the screen as a loopback of the output, where the platform allows it (Windows; macOS 13 and later).
+      try {
+        callback({ video: source, ...(request.audioRequested ? { audio: 'loopback' } : {}) });
+      } catch {
+        callback({ video: source });
+      }
     } catch (error) {
       console.error('Screen capture:', error);
       callback({});

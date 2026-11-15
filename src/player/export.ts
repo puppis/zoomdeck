@@ -26,6 +26,8 @@ export interface ExportSource {
   camera: HTMLVideoElement | null;
   /** The element showing the filmed screen at this moment (shown whole, full frame), or null; it may be the camera element itself for a recording made before the screen had a lane of its own. */
   screen?: () => HTMLVideoElement | null;
+  /** The element playing the computer's sound (the system lane), when the recording has one; its sound joins the camera's in the export. */
+  system?: HTMLMediaElement | null;
   mirror: boolean;
   pip: { corner: Corner; size: number };
 }
@@ -44,24 +46,27 @@ export function exportMimeType(): string | null {
   return ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4'].find((type) => MediaRecorder.isTypeSupported(type)) ?? null;
 }
 
-const audioNodes = new WeakMap<HTMLMediaElement, { context: AudioContext; destination: MediaStreamAudioDestinationNode }>();
+/** The page's one mixer: the elements tapped feed a single destination, whose track the export records. */
+let mixer: { context: AudioContext; destination: MediaStreamAudioDestinationNode } | null = null;
+const tapped = new WeakSet<HTMLMediaElement>();
 
-/** The sound of a media element as a stream, keeping it audible; an element can be tapped only once, so the tap is kept. */
-function audioTrackOf(media: HTMLMediaElement): MediaStreamTrack | null {
-  let nodes = audioNodes.get(media);
-  if (!nodes) {
+/** The sound of media elements, mixed, as a track, keeping them audible; an element can be tapped only once, so each tap is kept. */
+function audioTrackOf(elements: HTMLMediaElement[]): MediaStreamTrack | null {
+  if (!mixer) {
     const AudioContextClass = window.AudioContext ?? (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!AudioContextClass) return null;
     const context = new AudioContextClass();
-    const source = context.createMediaElementSource(media);
-    const destination = context.createMediaStreamDestination();
-    source.connect(destination);
-    source.connect(context.destination);
-    nodes = { context, destination };
-    audioNodes.set(media, nodes);
+    mixer = { context, destination: context.createMediaStreamDestination() };
   }
-  void nodes.context.resume();
-  return nodes.destination.stream.getAudioTracks()[0] ?? null;
+  for (const media of elements) {
+    if (tapped.has(media)) continue;
+    const source = mixer.context.createMediaElementSource(media);
+    source.connect(mixer.destination);
+    source.connect(mixer.context.destination);
+    tapped.add(media);
+  }
+  void mixer.context.resume();
+  return mixer.destination.stream.getAudioTracks()[0] ?? null;
 }
 
 /** Draw one frame of the talk as a viewer sees it. */
@@ -214,9 +219,10 @@ export function exportVideo(playback: Playback, source: ExportSource, options: E
   const context = canvas.getContext('2d');
   if (!context) return Promise.reject(new Error('No drawing context'));
   const stream = canvas.captureStream(fps);
-  const media = source.camera;
-  if (media && media.src) {
-    const track = audioTrackOf(media);
+  // The recording's sound: the camera lane's, and the computer's own from the system lane when there is one.
+  const sounding = [source.camera, source.system ?? null].filter((media): media is HTMLMediaElement => Boolean(media && media.src));
+  if (sounding.length) {
+    const track = audioTrackOf(sounding);
     if (track) stream.addTrack(track);
   }
   return new Promise<Blob>((resolve, reject) => {

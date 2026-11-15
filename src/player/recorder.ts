@@ -5,7 +5,10 @@
  * closes the file so far and begins another on the same clock, since a browser cannot add
  * a picture to a file being written: a part is therefore one or more media files in a row.
  */
-import type { RecordedPart, StopRef, TimelineEvent, UntimedEvent } from './timeline';
+import type { MediaLane, RecordedPart, StopRef, TimelineEvent, UntimedEvent } from './timeline';
+
+/** The lanes recorded beside the camera lane, in files that overlap its own. */
+export type SideLane = 'screen' | 'system';
 
 export type RecorderState = 'idle' | 'recording' | 'paused' | 'stopping';
 
@@ -27,9 +30,9 @@ export type PictureSource = 'camera' | 'screen';
  * its own failures (the recorder goes on and keeps everything in memory regardless).
  */
 export interface MediaSink {
-  begin(capture: { type: string; video: boolean; source: PictureSource; start: number; lane: 'camera' | 'screen' }): Promise<unknown> | void;
-  write(chunk: Blob, lane: 'camera' | 'screen'): Promise<unknown> | void;
-  end(lane: 'camera' | 'screen'): Promise<unknown> | void;
+  begin(capture: { type: string; video: boolean; source: PictureSource; start: number; lane: MediaLane }): Promise<unknown> | void;
+  write(chunk: Blob, lane: MediaLane): Promise<unknown> | void;
+  end(lane: MediaLane): Promise<unknown> | void;
 }
 
 export interface RecorderOptions {
@@ -48,8 +51,8 @@ export interface CapturedMedia {
   /** Whether the file has a picture besides the sound, and what it shows. */
   video: boolean;
   source: PictureSource;
-  /** The screen lane runs beside the camera lane, overlapping it; absent for the camera lane. */
-  lane?: 'screen';
+  /** The side lane the file belongs to (the screen, or the computer's sound), beside the camera lane and overlapping it; absent for the camera lane. */
+  lane?: SideLane;
   /** Where the file begins on the part's clock, and how long it runs there. */
   start: number;
   duration: number;
@@ -70,8 +73,13 @@ interface Capture {
   type: string;
   video: boolean;
   source: PictureSource;
-  lane: 'camera' | 'screen';
+  lane: MediaLane;
   start: number;
+}
+
+/** The lane of a captured file as the timeline records it: named for a side lane, absent for the camera lane. */
+function laneOf(lane: MediaLane): { lane: SideLane } | Record<string, never> {
+  return lane === 'camera' ? {} : { lane };
 }
 
 /** One recording in progress. */
@@ -79,8 +87,8 @@ export class Recorder {
   state: RecorderState = 'idle';
   private readonly _events: TimelineEvent[] = [];
   private _capture: Capture | null = null;
-  /** The screen lane's file being written, beside the camera lane's. */
-  private _screen: Capture | null = null;
+  /** The side lanes' files being written, beside the camera lane's: the filmed screen, the computer's sound. */
+  private readonly _sides: Record<SideLane, Capture | null> = { screen: null, system: null };
   private readonly _captured: CapturedMedia[] = [];
   /** Stream changes are applied one after the other, in the order asked. */
   private _switching: Promise<void> = Promise.resolve();
@@ -113,15 +121,25 @@ export class Recorder {
   /** The media files so far, the ones being written included (their duration up to now), for a draft of the timeline. */
   get parts(): Array<Omit<CapturedMedia, 'blob'>> {
     const parts: Array<Omit<CapturedMedia, 'blob'>> = this._captured.map(({ type, video, source, lane, start, duration }) => ({ type, video, source, ...(lane ? { lane } : {}), start, duration }));
-    for (const open of [this._capture, this._screen]) {
-      if (open && open.chunks.length) parts.push({ type: open.type, video: open.video, source: open.source, ...(open.lane === 'screen' ? { lane: 'screen' as const } : {}), start: open.start, duration: Math.max(0, Math.round(this.elapsed) - open.start) });
+    for (const open of this._captures()) {
+      if (open.chunks.length) parts.push({ type: open.type, video: open.video, source: open.source, ...laneOf(open.lane), start: open.start, duration: Math.max(0, Math.round(this.elapsed) - open.start) });
     }
     return parts;
   }
 
   /** Whether the screen lane is being written. */
   get filming(): boolean {
-    return this._screen !== null;
+    return this._sides.screen !== null;
+  }
+
+  /** Whether the system lane (the computer's sound) is being written. */
+  get systemSound(): boolean {
+    return this._sides.system !== null;
+  }
+
+  /** The files being written, in every lane. */
+  private _captures(): Capture[] {
+    return [this._capture, this._sides.screen, this._sides.system].filter((capture): capture is Capture => capture !== null);
   }
 
   /** Start capturing; resolves once the media recorder runs, so the clocks line up. */
@@ -144,12 +162,12 @@ export class Recorder {
     this._elapsedBefore = this.elapsed;
     this._runStart = null;
     this.state = 'paused';
-    for (const capture of [this._capture, this._screen]) if (capture?.recorder.state === 'recording') capture.recorder.pause();
+    for (const capture of this._captures()) if (capture.recorder.state === 'recording') capture.recorder.pause();
   }
 
   resume(): void {
     if (this.state !== 'paused') return;
-    for (const capture of [this._capture, this._screen]) if (capture?.recorder.state === 'paused') capture.recorder.resume();
+    for (const capture of this._captures()) if (capture.recorder.state === 'paused') capture.recorder.resume();
     this._runStart = performance.now();
     this.state = 'recording';
     this._events.push({ t: Math.round(this.elapsed), type: 'cut' });
@@ -161,22 +179,45 @@ export class Recorder {
    * recording without a microphone keeps the timeline alone).
    */
   startScreen(stream: MediaStream): Promise<void> {
+    return this._startSide('screen', stream.getVideoTracks(), 'screen');
+  }
+
+  /** Stop filming the screen; the camera lane goes on. */
+  stopScreen(): Promise<void> {
+    return this._stopSide('screen');
+  }
+
+  /**
+   * Record the computer's own sound from now on (the audio track of a screen share), in a lane
+   * of its own beside the camera lane, whatever the screen lane does; nothing while the
+   * recorder captures nothing.
+   */
+  startSystem(stream: MediaStream): Promise<void> {
+    return this._startSide('system', stream.getAudioTracks(), 'camera');
+  }
+
+  /** Stop recording the computer's sound. */
+  stopSystem(): Promise<void> {
+    return this._stopSide('system');
+  }
+
+  /** Open a side lane's file from `tracks`, unless the lane is being written or nothing is captured. */
+  private _startSide(lane: SideLane, tracks: MediaStreamTrack[], source: PictureSource): Promise<void> {
     const run = async () => {
-      if ((this.state !== 'recording' && this.state !== 'paused') || !this._capture || this._screen) return;
-      const video = stream.getVideoTracks();
-      if (!video.length) return;
-      this._screen = await this._openCapture(new MediaStream(video), Math.round(this.elapsed), 'screen', 'screen');
+      if ((this.state !== 'recording' && this.state !== 'paused') || !this._capture || this._sides[lane]) return;
+      if (!tracks.length) return;
+      this._sides[lane] = await this._openCapture(new MediaStream(tracks), Math.round(this.elapsed), source, lane);
     };
     this._switching = this._switching.then(run, run);
     return this._switching;
   }
 
-  /** Stop filming the screen; the camera lane goes on. */
-  stopScreen(): Promise<void> {
+  /** Close a side lane's file; the other lanes go on. */
+  private _stopSide(lane: SideLane): Promise<void> {
     const run = async () => {
-      const capture = this._screen;
+      const capture = this._sides[lane];
       if (!capture) return;
-      this._screen = null;
+      this._sides[lane] = null;
       await this._closeCapture(capture);
     };
     this._switching = this._switching.then(run, run);
@@ -209,9 +250,11 @@ export class Recorder {
     this._elapsedBefore = duration;
     this.state = 'stopping';
     await this._endCapture();
-    const screen = this._screen;
-    this._screen = null;
-    if (screen) await this._closeCapture(screen);
+    for (const lane of ['screen', 'system'] as const) {
+      const side = this._sides[lane];
+      this._sides[lane] = null;
+      if (side) await this._closeCapture(side);
+    }
     this.state = 'idle';
     return { part: { events: this._events, duration, media: [] }, media: this._captured, started: this._started ?? new Date() };
   }
@@ -223,7 +266,7 @@ export class Recorder {
   }
 
   /** Open a media file from `stream` in a lane: the recorder runs, the sink's file is begun. */
-  private async _openCapture(stream: MediaStream, start: number, source: PictureSource, lane: 'camera' | 'screen'): Promise<Capture> {
+  private async _openCapture(stream: MediaStream, start: number, source: PictureSource, lane: MediaLane): Promise<Capture> {
     const video = stream.getVideoTracks().length > 0;
     const type = recordingMimeType(video);
     if (!type) throw new Error('This browser cannot record audio or video');
@@ -282,7 +325,7 @@ export class Recorder {
     }
     const end = Math.round(this.elapsed);
     if (capture.chunks.length) {
-      this._captured.push({ blob: new Blob(capture.chunks, { type: capture.type }), type: capture.type, video: capture.video, source: capture.source, ...(capture.lane === 'screen' ? { lane: 'screen' as const } : {}), start: capture.start, duration: Math.max(0, end - capture.start) });
+      this._captured.push({ blob: new Blob(capture.chunks, { type: capture.type }), type: capture.type, video: capture.video, source: capture.source, ...laneOf(capture.lane), start: capture.start, duration: Math.max(0, end - capture.start) });
     }
     // The last chunk came with the stop event, so the sink's file can close after it.
     const sink = this.options.sink;

@@ -206,6 +206,8 @@ export interface RenderPlanMedia {
   duration: number;
   video: boolean;
   source: 'camera' | 'screen';
+  /** The lane: absent for the camera lane; 'screen' for the filmed screen, 'system' for the computer's sound (no picture). */
+  lane?: 'screen' | 'system';
 }
 
 /** A video inside a slide that played with its sound on: its file and the stretch of the talk it ran for, from its start. */
@@ -240,7 +242,7 @@ export function renderPlan(timeline: Timeline, aspect: number, width: number, fp
     height: Math.round(width / aspect / 2) * 2,
     duration: timeline.duration,
     pip: timeline.pip,
-    media: timeline.media.map((part) => ({ file: part.file, start: part.start, duration: part.duration, video: part.video, source: part.source ?? 'camera' })),
+    media: timeline.media.map((part) => ({ file: part.file, start: part.start, duration: part.duration, video: part.video, source: part.source ?? 'camera', ...(part.lane === 'screen' || part.lane === 'system' ? { lane: part.lane } : {}) })),
     // While the screen is filmed it fills the frame; the camera keeps its corner over it, never the frame.
     full: subtractIntervals(cameraIntervals(timeline.events, timeline.duration), screenIntervals(timeline.media)),
     clips,

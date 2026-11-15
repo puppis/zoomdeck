@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { cameraIntervals, ClipLog, displayWidth, frameAspect, frameSize, installVirtualClock, renderPlan, subtractIntervals, videoWidthFor } from '../src/player/render';
 import { aspectName, presentedAspect } from '../src/player/timeline';
 import type { Timeline } from '../src/player/timeline';
-import { concatList, ffmpegArguments, splitInterval } from '../bin/render.mjs';
+import { clipsToMix, concatList, ffmpegArguments, splitInterval } from '../bin/render.mjs';
 
 describe('the virtual clock', () => {
   it('stands still, fires timers in order at their own times and frames at the target, then goes away', async () => {
@@ -153,6 +153,23 @@ describe('render plans', () => {
     const graph = args[args.indexOf('-filter_complex') + 1];
     expect(graph).toContain('[4:a]atrim=0:2.000,asetpts=PTS-STARTPTS,aresample=48000,adelay=1000:all=1[a3]');
     expect(graph).toContain('[a0][a1][a2][a3]amix=inputs=4');
+  });
+
+  it('leaves out of the mix the slide videos whose sound the system lane recorded already', () => {
+    const clips = [{ path: '/d/a.mp4', start: 1000, duration: 2000 }, { path: '/d/b.mp4', start: 5000, duration: 1000 }, { path: '/d/c.mp4', start: 8000, duration: 500 }];
+    const media = [
+      { file: 'a.webm', start: 0, duration: 9000, video: false, source: 'camera' as const },
+      { file: 'a.part2.webm', start: 4000, duration: 3000, video: false, source: 'camera' as const, lane: 'system' as const },
+    ];
+    expect(clipsToMix({ media }, clips).map((clip) => clip.path)).toEqual(['/d/a.mp4', '/d/c.mp4']);
+    expect(clipsToMix({ media: media.slice(0, 1) }, clips)).toHaveLength(3);
+    // A system-lane part is an ordinary sound input of the graph, delayed to its place.
+    const plan = renderPlan({ ...timeline, media: [{ file: 'a.webm', type: 'audio/webm', video: false, start: 0, duration: 9000 }, { file: 'a.part2.webm', type: 'audio/webm', video: false, lane: 'system', start: 4000, duration: 3000 }] }, 16 / 9, 1920, 30);
+    expect(plan.media[1].lane).toBe('system');
+    const args = ffmpegArguments(plan, '/w/frames.txt', plan.media.map((part) => ({ ...part, path: `/w/${part.file}`, audio: true })), '/w/v.mp4');
+    const graph = args[args.indexOf('-filter_complex') + 1];
+    expect(graph).toContain('[2:a]aresample=48000,adelay=4000:all=1[a1]');
+    expect(graph).toContain('[a0][a1]amix=inputs=2');
   });
 
   it('splits a media file\'s stretch into the parts inside and outside the full-frame intervals', () => {

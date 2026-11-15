@@ -89,6 +89,16 @@ export function concatList(frames, duration, fps) {
  * paths and whether each has sound, `clips` the slides' own videos that played with sound
  * (path, start, duration), `output` the file to write.
  */
+/**
+ * The slides' videos whose sound must come from their files: the ones that played while the
+ * computer's sound was not being recorded. Where a system-lane part covers a clip's start, the
+ * recording has its sound already, and adding the file's would double it.
+ */
+export function clipsToMix(plan, clips) {
+  const system = (plan.media ?? []).filter((part) => part.lane === 'system');
+  return clips.filter((clip) => !system.some((part) => clip.start >= part.start && clip.start < part.start + part.duration));
+}
+
 export function ffmpegArguments(plan, frames, parts, output, clips = []) {
   const { width: W, height: H, fps } = plan;
   const args = ['-y', '-v', 'error', '-stats', '-f', 'concat', '-safe', '0', '-i', frames];
@@ -276,7 +286,7 @@ async function compose(job, plan) {
       if (await hasAudio(ffprobe, path)) clips.push({ path, start: clip.start, duration: clip.duration });
     }
     const temp = join(job.dir, 'video.mp4');
-    const args = ffmpegArguments(plan, list, parts, temp, clips);
+    const args = ffmpegArguments(plan, list, parts, temp, clipsToMix(plan, clips));
     await fs.writeFile(join(job.dir, 'ffmpeg.txt'), args.join('\n'));
     await new Promise((done, fail) => {
       const child = spawn(ffmpeg, args, { stdio: ['ignore', 'ignore', 'pipe'] });

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { existsSync, mkdtempSync, rmSync, writeFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { appendPart, eventsBetween, formatTime, inkUpTo, isTimeline, mediaAt, recordingName, screenAt, screenIntervals, stateAt, stopIndex, stopRef, structureHash, timeOfStop, type Timeline, type TimelineEvent, type TimelineMedia } from '../src/player/timeline';
+import { appendPart, eventsBetween, formatTime, inCameraLane, inkUpTo, isTimeline, mediaAt, recordingName, screenAt, screenIntervals, stateAt, stopIndex, stopRef, structureHash, systemAt, timeOfStop, type Timeline, type TimelineEvent, type TimelineMedia } from '../src/player/timeline';
 import { Recorder, initialEvents } from '../src/player/recorder';
 import { Playback } from '../src/player/playback';
 import type { Player } from '../src/player/player';
@@ -219,6 +219,54 @@ describe('the screen lane', () => {
     expect(screenAt(media, 500)).toBeNull();
     expect(screenAt(media, 8500)).toBeNull();
     expect(screenIntervals(media)).toEqual([[1000, 3500], [8000, 9000]]);
+  });
+});
+
+describe('the system lane', () => {
+  it('carries the computer\'s sound beside the camera lane, all along, and never drives the clock', async () => {
+    const media: TimelineMedia[] = [
+      { file: 'a.webm', type: 'audio/webm', video: false, start: 0, duration: 4000 },
+      { file: 'a.part2.webm', type: 'audio/webm', video: false, lane: 'system', start: 0, duration: 9000 },
+      { file: 'a.part3.webm', type: 'video/webm', video: true, source: 'screen', lane: 'screen', start: 2000, duration: 1500 },
+      { file: 'a.part4.webm', type: 'audio/webm', video: false, start: 4000, duration: 5000 },
+    ];
+    expect(media.map(inCameraLane)).toEqual([true, false, false, true]);
+    expect(mediaAt(media, 5000)?.file).toBe('a.part4.webm');
+    expect(systemAt(media, 5000)?.file).toBe('a.part2.webm');
+    expect(systemAt(media, 9000)).toBeNull();
+    expect(screenAt(media, 5000)).toBeNull();
+    // No picture in it: the filmed stretches are the screen lane's alone.
+    expect(screenIntervals(media)).toEqual([[2000, 3500]]);
+    class FakeMedia extends EventTarget {
+      currentTime = 0;
+      src = '';
+      paused = true;
+      load(): void {}
+      pause(): void { this.paused = true; }
+      play(): Promise<void> { this.paused = false; return Promise.resolve(); }
+      removeAttribute(): void { this.src = ''; }
+    }
+    const voice = new FakeMedia();
+    const system = new FakeMedia();
+    const player = { goTo: async () => undefined, rewindTo: async () => undefined, speed: 1, runner: { cancel: () => undefined } } as unknown as Player;
+    const timeline: Timeline = { version: 1, deck: { title: 't', hash: 'x' }, recorded: '2026-11-15T09:00:00.000Z', duration: 9000, media, pip: { corner: 'bottom-right', size: 0.18 }, events: [] };
+    const playback = new Playback(timeline, { navigation, player, media: voice as unknown as HTMLMediaElement, system: system as unknown as HTMLMediaElement, apply: () => undefined, resetInk: () => undefined });
+    await playback.play();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    // The sound element follows the clock in its own file, from the start.
+    expect(playback.systemPart?.file).toBe('a.part2.webm');
+    expect(system.src).toBe('a.part2.webm');
+    expect(system.paused).toBe(false);
+    // The camera lane's first file runs out: the next camera-lane file follows, the system lane's file is skipped as a candidate and stays loaded.
+    voice.currentTime = 3.98;
+    voice.dispatchEvent(new Event('ended'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(playback.part?.file).toBe('a.part4.webm');
+    expect(playback.systemPart?.file).toBe('a.part2.webm');
+    expect(Math.abs(system.currentTime - 4)).toBeLessThan(0.5);
+    playback.pause();
+    expect(system.paused).toBe(true);
+    playback.dispose();
   });
 });
 

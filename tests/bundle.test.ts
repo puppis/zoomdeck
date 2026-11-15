@@ -85,6 +85,32 @@ describe('talk bundles', () => {
     if (listed) expect(listed.map(([name]) => name)).toEqual(['talk.webm', 'talk.part2.webm', 'talk.json', 'talk.part3.webm']);
   });
 
+  it('keeps two side lanes at once, each in its own file, and the journal names both', async () => {
+    dir = mkdtempSync(join(tmpdir(), 'zoomdeck-bundle-'));
+    const file = join(dir, 'talk.zip');
+    const writer = await BundleWriter.open(file, 'talk.json');
+    await writer.begin('talk.webm');
+    await writer.write(Buffer.from('voice'));
+    // The computer's sound runs from the start; the screen joins later, while the sound lane is still open.
+    await writer.beginSide('talk.part2.webm', 'system');
+    await writer.writeSide(Buffer.from('system '), 'system');
+    await writer.beginSide('talk.part3.webm', 'screen');
+    await writer.writeSide(Buffer.from('screen'), 'screen');
+    await expect(writer.beginSide('talk.part4.webm', 'screen')).rejects.toThrow(/still being written/);
+    const journal = JSON.parse(readFileSync(`${file}.journal`, 'utf8'));
+    expect(journal.sides.map((side: { lane: string; name: string }) => [side.lane, side.name])).toEqual([['system', 'talk.part2.webm'], ['screen', 'talk.part3.webm']]);
+    await writer.endSide('screen');
+    await writer.writeSide(Buffer.from('sound'), 'system');
+    await writer.endSide('system');
+    await writer.end();
+    expect(writer.names).toEqual(['talk.webm', 'talk.part3.webm', 'talk.part2.webm']);
+    await writer.putFile('talk.json', Buffer.from('{"version":1}'));
+    await writer.finish();
+    const listing = await readDirectory(file);
+    expect((await readEntry(file, listing!.entries[1])).toString()).toBe('screen');
+    expect((await readEntry(file, listing!.entries[2])).toString()).toBe('system sound');
+  });
+
   it('continues a talk by cutting the timeline and directory away and appending more', async () => {
     dir = mkdtempSync(join(tmpdir(), 'zoomdeck-bundle-'));
     const file = join(dir, 'talk.zip');

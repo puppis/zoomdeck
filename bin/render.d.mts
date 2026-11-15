@@ -30,6 +30,8 @@ export function splitInterval(from: number, to: number, intervals: Array<[number
 /** The concat list for the deck frames. */
 export function concatList(frames: Array<{ n: number; t: number; file: string }>, duration: number, fps: number): string;
 /** The ffmpeg arguments that compose the video. */
+/** The slide videos whose sound comes from their files: those not covered by a system-lane part of the plan. */
+export function clipsToMix<T extends { start: number }>(plan: { media?: Array<{ start: number; duration: number; lane?: string }> }, clips: T[]): T[];
 export function ffmpegArguments(plan: RenderPlan, frames: string, parts: Array<RenderPlan['media'][number] & { path: string; audio: boolean }>, output: string, clips?: Array<{ path: string; start: number; duration: number }>): string[];
 /** The jobs of a recordings folder, live and recorded. */
 export function listJobs(folder: string): Promise<RenderJobRecord[]>;

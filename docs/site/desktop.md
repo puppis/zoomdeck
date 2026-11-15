@@ -67,7 +67,9 @@ The server's address is in the Help menu and on the terminal, and `zoomdeck jump
 reaches it like any preview.
 
 **Filming the screen** uses the system's own picker on macOS 15 and later; elsewhere the app films
-the screen the window is on, whole.
+the screen the window is on, whole. The computer's sound comes with it as a loopback of the
+output where the platform allows it (Windows, and macOS 13 and later), without a virtual audio
+device; where it does not, the share carries the picture alone.
 
 ## Building it yourself
 

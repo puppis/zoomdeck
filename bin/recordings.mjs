@@ -41,6 +41,7 @@ function indexEntry(name, timeline, file, movie = null) {
     duration: Number(timeline.duration) || 0,
     media: media.length ? media[0].file : null,
     video: media.some((part) => part?.video),
+    ...(media.some((part) => part?.lane === 'system') ? { system: true } : {}),
     parts: media.length,
     ...(file ? { file } : {}),
     ...(movie ? { movie } : {}),
@@ -248,26 +249,27 @@ export function recordingStore({ roots = [], limit = 4 * 1024 * 1024 * 1024 } = 
               reply(response, 409, { ok: false, error: 'This talk is not being recorded here (the server may have restarted)' });
               return;
             }
-            // The filmed screen is a lane of its own, recorded beside the camera: its chunks wait in a file beside the bundle.
-            const side = url.searchParams.get('lane') === 'screen';
+            // The filmed screen and the computer's sound are lanes of their own, recorded beside the camera: their chunks wait in files beside the bundle.
+            const lane = url.searchParams.get('lane');
+            const side = lane === 'screen' || lane === 'system' ? lane : null;
             if (op === 'begin') {
               const part = Number(url.searchParams.get('part') ?? '1');
               const file = mediaFileName(name, (request.headers['content-type'] ?? '').split(';')[0].trim(), part);
-              if (side) await writer.beginSide(file);
+              if (side) await writer.beginSide(file, side);
               else await writer.begin(file);
               reply(response, 200, { ok: true, file });
               return;
             }
             if (op === 'chunk') {
               const body = await readBody(request, 256 * 1024 * 1024);
-              if (side) await writer.writeSide(body);
+              if (side) await writer.writeSide(body, side);
               else await writer.write(body);
               reply(response, 200, { ok: true });
               return;
             }
             if (op === 'end') {
               if (side) {
-                await writer.endSide();
+                await writer.endSide(side);
                 reply(response, 200, { ok: true });
                 return;
               }

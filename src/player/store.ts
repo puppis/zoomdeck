@@ -17,6 +17,8 @@ export interface RecordingEntry {
   /** The first media file's name, or null for a timeline without sound. */
   media: string | null;
   video: boolean;
+  /** Whether the talk has a system lane: the computer's sound, recorded with the screen share. */
+  system?: boolean;
   parts?: number;
   /** The bundle holding the talk (`name.zip`); absent when the talk lies in plain files. */
   file?: string;

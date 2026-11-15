@@ -287,6 +287,22 @@ and the camera's floating window is on it, the camera lane keeps the sound alone
 picture is in the filmed screen already; with the camera full frame the screen is not filmed, and
 the filming takes up again when the camera leaves full frame.
 
+**The computer's sound.** The share can carry the computer's own sound besides the picture:
+what a demonstration plays, a video inside a live page, another application's audio. Where the
+browser offers it (Chrome, for a whole screen or a tab, with the "share system audio" box of its
+dialog ticked; not for a window, and not in Firefox or Safari), the deck asks for it and records
+it in a third lane, `talk.part3.webm` say, from the moment the share is held to the moment it is
+let go, *all along*: unlike the screen, which is filmed only while you are away, the sound is
+kept also while the deck has the focus, since the clock is the same. In playback and in the
+flattened video it is mixed with your voice; the bundle keeps it apart. A slide's own videos
+that played while the sound was recorded are heard through it, so the flattened video does not
+add their sound from the files a second time. With headphones the microphone does not hear the
+speakers; without, your voice lane carries an echo of the computer's sound, as in any call. The
+Record dialog says when the share held carries no sound, and "Record the computer's sound with
+the screen share", under **Recording**, turns the whole thing off. Where the browser offers no
+system audio, a virtual loopback device (BlackHole on macOS, a "Stereo Mix" input on Windows)
+chosen as the microphone is the usual way around, at the cost of mixing the two at the source.
+
 **Away from the deck.** While a share is held, the deck films it whenever you leave: switching to another tab,
 another application or another workspace starts the filming, and coming back to the deck stops
 it; the camera is not touched. Without a share, nothing outside the window and nothing inside a
@@ -301,9 +317,9 @@ timeline keeps the deck's own events only and no player could replay clicks made
 share as it starts, so that the first leave is filmed without a press of `S`. A filmed
 stretch is a further media file of the talk; in playback and in the exported
 video it fills the frame, whole, and the deck stands still meanwhile. Your voice goes on through
-the microphone, while the sound of other applications is not captured. The browser needs the
-system's permission to record the screen (macOS asks once), and screen files are larger than
-camera files, about twenty megabytes a minute.
+the microphone, and the computer's sound through the share's own lane when it carries one. The
+browser needs the system's permission to record the screen (macOS asks once), and screen files
+are larger than camera files, about twenty megabytes a minute.
 
 **Continuing a talk.** A stopped recording can be taken up again later, even after closing the
 browser: the Record dialog offers every saved talk to continue, and so does the **Continue**

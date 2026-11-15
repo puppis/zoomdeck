@@ -87,8 +87,18 @@ export type UntimedEvent = TimelineEvent extends infer E ? (E extends TimelineEv
  * picture cannot join a file being written. `start` is where the file begins on the timeline's
  * clock; the files cover the talk from its start, one after the other.
  */
-/** The two lanes of a recording: the camera lane carries the microphone and the camera, in files one after the other covering the talk; the screen lane carries the filmed screen, in files that overlap them. */
-export type MediaLane = 'camera' | 'screen';
+/**
+ * The lanes of a recording: the camera lane carries the microphone and the camera, in files one
+ * after the other covering the talk; the side lanes overlap them: the screen lane carries the
+ * filmed screen, the system lane the computer's own sound, captured with the screen share.
+ */
+export type MediaLane = 'camera' | 'screen' | 'system';
+/** The lanes recorded beside the camera lane. */
+export const SIDE_LANES: readonly MediaLane[] = ['screen', 'system'];
+/** Whether a media file belongs to the camera lane (also when it names no lane, as earlier recordings did). */
+export function inCameraLane(part: Pick<TimelineMedia, 'lane'>): boolean {
+  return !part.lane || part.lane === 'camera';
+}
 
 export interface TimelineMedia {
   /** File name next to the timeline, in the deck's recordings folder. */
@@ -144,15 +154,25 @@ export function aspectName(aspect: number): string {
 
 /** The camera-lane part that covers time `t` (the sound and the camera), or the last one at the very end; null without media. */
 export function mediaAt(media: TimelineMedia[], t: number): TimelineMedia | null {
-  const lane = media.filter((part) => part.lane !== 'screen');
+  const lane = media.filter(inCameraLane);
   if (!lane.length) return null;
   for (const part of lane) if (t < part.start + part.duration) return part;
   return lane[lane.length - 1];
 }
 
+/** The part of a side lane that covers time `t`, or null. */
+export function laneAt(media: TimelineMedia[], lane: MediaLane, t: number): TimelineMedia | null {
+  return media.find((part) => part.lane === lane && t >= part.start && t < part.start + part.duration) ?? null;
+}
+
 /** The screen-lane part that covers time `t` (the filmed screen beside the camera), or null. */
 export function screenAt(media: TimelineMedia[], t: number): TimelineMedia | null {
-  return media.find((part) => part.lane === 'screen' && t >= part.start && t < part.start + part.duration) ?? null;
+  return laneAt(media, 'screen', t);
+}
+
+/** The system-lane part that covers time `t` (the computer's sound, recorded with the screen share), or null. */
+export function systemAt(media: TimelineMedia[], t: number): TimelineMedia | null {
+  return laneAt(media, 'system', t);
 }
 
 /** The stretches of the talk during which the screen was filmed, in either lane, as `[from, to]` in milliseconds. */
