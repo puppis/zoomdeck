@@ -198,14 +198,28 @@ body.zd-page { margin: 0; height: 100vh; overflow: hidden; background: var(--bac
 .zd-app:fullscreen aside, .zd-app:fullscreen header, .zd-app:fullscreen footer { display: none; }
 /* The gear is a glyph: larger type than the labels, at the same button height. */
 .zd-app footer .group .settings-button { font-size: 20px; line-height: 1; padding: 4px 9px; }
-.zd-app dialog.settings { border: 1px solid var(--border); border-radius: 12px; padding: 0; width: min(640px, 92vw); max-height: 86vh; color: var(--foreground); background: var(--background); }
+.zd-app dialog.settings { border: 1px solid var(--border); border-radius: 14px; padding: 0; width: min(640px, 92vw); max-height: 88vh; color: var(--foreground); background: var(--background); }
 .zd-app dialog.settings::backdrop { background: rgba(0, 0, 0, 0.45); }
 .zd-app dialog.settings header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); }
 .zd-app dialog.settings h2 { margin: 0; font-size: 18px; }
-.zd-app dialog.settings h3 { margin: 0 0 8px; font-size: 14px; letter-spacing: .05em; text-transform: uppercase; opacity: .7; }
-.zd-app dialog.settings section { padding: 14px 18px; border-bottom: 1px solid var(--border); }
-.zd-app dialog.settings section:last-of-type { border-bottom: 0; }
-.zd-app dialog.settings header { position: sticky; top: 0; z-index: 1; background: var(--background); }
+.zd-app dialog.settings h3 { margin: 0 0 10px; font-size: 17px; font-weight: 600; }
+.zd-app dialog.settings section { padding: 18px 24px 24px; }
+.zd-app dialog.settings section[hidden] { display: none; }
+.zd-app dialog.settings.main[open] { display: flex; flex-direction: column; height: min(680px, 88vh); }
+.zd-app dialog.settings.main { width: min(920px, 94vw); }
+.zd-app dialog.settings .layout { display: flex; flex: 1; min-height: 0; }
+.zd-app dialog.settings .categories { display: flex; flex-direction: column; gap: 2px; width: 172px; flex-shrink: 0; padding: 12px 10px; border-right: 1px solid var(--border); overflow: auto; }
+.zd-app dialog.settings .categories button { text-align: left; border: 0; background: transparent; font: inherit; font-size: 14px; padding: 8px 12px; border-radius: 8px; color: var(--foreground); cursor: pointer; }
+.zd-app dialog.settings .categories button:hover { background: var(--hover); }
+.zd-app dialog.settings .categories button[aria-selected=true] { background: var(--hover); font-weight: 600; }
+.zd-app dialog.settings .categories button:focus-visible { outline: 2px solid var(--accent, #3b82f6); outline-offset: -2px; }
+.zd-app dialog.settings .panes { flex: 1; min-width: 0; overflow: auto; }
+.zd-app dialog.settings .binding select { max-width: 58%; }
+@media (max-width: 640px) {
+  .zd-app dialog.settings .layout { flex-direction: column; }
+  .zd-app dialog.settings .categories { flex-direction: row; width: auto; border-right: 0; border-bottom: 1px solid var(--border); padding: 8px; }
+  .zd-app dialog.settings .categories button { white-space: nowrap; }
+}
 .zd-app dialog.settings .actions { position: sticky; bottom: 0; display: flex; justify-content: flex-end; padding: 10px 18px; border-top: 1px solid var(--border); background: var(--background); }
 .zd-app dialog.settings .device-test { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 14px; margin-top: 12px; }
 .zd-app dialog.settings .device-test[hidden] { display: none; }

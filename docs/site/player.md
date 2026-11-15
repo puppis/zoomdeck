@@ -42,7 +42,7 @@ screen is filmed.
 
 ## Settings
 
-The gear button (or the `,` key) opens the settings dialog, in six parts:
+The gear button (or the `,` key) opens the settings dialog: six categories listed on the left, one shown at a time (the arrow keys move along the list, and the dialog reopens on the category last looked at):
 
 - **Pointer**: the tool shown by the pointer gesture (spotlight or laser) and the modifier keys
   of each gesture: the pen, the spotlight/highlighter, click-to-advance and the click that opens

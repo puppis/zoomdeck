@@ -2230,14 +2230,36 @@ export class PlayerUI {
     return this._settings;
   }
 
-  openSettings(): void {
+  /** Open the settings, on the category last looked at (or `category`: pointer, pen, recording, tablet, keyboard, advanced). */
+  openSettings(category?: string): void {
     this._syncSettingsForm();
     this._renderBindings();
+    if (category) this._showSettingsCategory(category);
     if (!this._dialog.open) this._dialog.showModal();
   }
 
+  /** The settings' categories: a list on the left, one pane shown at a time; the choice is kept in this browser. */
+  private _settingsCategories: Array<{ id: string; tab: HTMLButtonElement; pane: HTMLElement }> = [];
+
+  private _showSettingsCategory(id: string): void {
+    const categories = this._settingsCategories;
+    const chosen = categories.find((category) => category.id === id) ?? categories[0];
+    if (!chosen) return;
+    for (const category of categories) {
+      const on = category === chosen;
+      category.tab.setAttribute('aria-selected', String(on));
+      category.tab.tabIndex = on ? 0 : -1;
+      category.pane.hidden = !on;
+    }
+    try {
+      localStorage.setItem('zoomdeck:settings-category', chosen.id);
+    } catch {
+      /* storage unavailable */
+    }
+  }
+
   private _buildSettingsDialog(): HTMLDialogElement {
-    const dialog = el('dialog', { class: 'settings' });
+    const dialog = el('dialog', { class: 'settings main' });
     const close = el('button', { class: 'close', 'aria-label': 'Close settings', text: '×' });
     close.addEventListener('click', () => dialog.close());
     const done = el('button', { class: 'done', text: 'Close' });
@@ -2451,8 +2473,8 @@ export class PlayerUI {
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Mirror my own picture while presenting' }), this._mirrorToggle),
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Ask for the screen when a recording starts, so that a share is held from the start' }), this._screenAskToggle),
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Render the talk as an MP4 video when a recording stops, off the clock, where the server has ffmpeg (the desktop app does it in the background; a browser offers a button, since it opens a tab for it)' }), this._renderToggle),
-      el('div', { class: 'row' }, el('label', {}, 'Size of rendered and exported videos ', this._renderSizeSelect)),
-      el('div', { class: 'row' }, el('label', {}, 'Proportions of rendered and exported videos ', this._renderAspectSelect)),
+      el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Size of rendered and exported videos' }), this._renderSizeSelect),
+      el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Proportions of rendered and exported videos' }), this._renderAspectSelect),
     );
     const resetRecording = el('button', { text: 'Restore the default recording settings' });
     resetRecording.addEventListener('click', () => {
@@ -2477,29 +2499,28 @@ export class PlayerUI {
     });
     const padNotesRow = el('p', { class: 'note' }, el('label', {}, this._padNotesToggle, ' Show the presenter notes (::: notes blocks of the deck) on the tablet, under the picture'));
 
-    dialog.append(
-      el('header', {}, el('h2', { text: 'Settings' }), close),
-      el('section', {},
+    const categories: Array<[string, string, HTMLElement]> = [
+      ['pointer', 'Pointer', el('section', { role: 'tabpanel', id: 'zd-settings-pointer' },
         el('h3', { text: 'Pointer' }),
         el('p', { class: 'note', text: 'Each gesture is the mouse used with the chosen keys held. Scrolling while the spotlight or laser is shown resizes it. The pen colors are in the bar at the bottom, where the color in use is pressed while drawing is on; the tip size is under Pen below. Strokes belong to the slide they were drawn on and clear when you move to another slide; the whiteboard keeps its own.' }),
         gestures,
         resetPointer,
-      ),
-      el('section', {},
+      )],
+      ['pen', 'Pen', el('section', { role: 'tabpanel', id: 'zd-settings-pen' },
         el('h3', { text: 'Pen' }),
         el('p', { class: 'note', text: 'A pen or stylus with a pressure sensor (Apple Pencil, Wacom) shapes the line as you press; the sliders tune how. Changes also redraw the strokes already on screen.' }),
         penRows,
         resetPen,
-      ),
-      el('section', { class: 'recording' },
+      )],
+      ['recording', 'Recording', el('section', { class: 'recording', role: 'tabpanel', id: 'zd-settings-recording' },
         el('h3', { text: 'Recording' }),
         el('p', { class: 'note', text: 'Record (R, or the button in the bar) keeps your voice, the camera while it is on (the Camera button or C), and everything you do on the deck: stops, ink, the whiteboard, the pointer and the camera switches. The slides are not filmed; a recording replays on the deck itself and exports as a video. Pause leaves a gap out.' }),
         this._recordingStatus,
         recordingRows,
         el('div', { class: 'row' }, detect, this._testButton, resetRecording),
         this._testPanel,
-      ),
-      el('section', { class: 'tablet' },
+      )],
+      ['tablet', 'Tablet', el('section', { class: 'tablet', role: 'tabpanel', id: 'zd-settings-tablet' },
         el('h3', { text: 'Tablet' }),
         el('p', { class: 'note', text: 'A tablet on the same network can show this deck and draw on it: open the code or address below on the tablet. It follows the presentation and cannot move it; strokes drawn on either device appear on both. The code admits a tablet for this session; a tablet you trust (from the prompt on the deck, or here) comes back on its own, without the code. Pairing needs the preview server started with --host (zoomdeck serve --host, or npm run dev -- --host); the desktop app listens on the network by itself.' }),
         this._pairingStatus,
@@ -2507,14 +2528,14 @@ export class PlayerUI {
         pairButton,
         this._pairingPanel,
         padNotesRow,
-      ),
-      el('section', {},
+      )],
+      ['keyboard', 'Keyboard', el('section', { role: 'tabpanel', id: 'zd-settings-keyboard' },
         el('h3', { text: 'Keyboard' }),
         el('p', { class: 'note', text: 'Click a key to remove it, or “Add key” and press the new combination (Esc cancels); a key already used in the same group moves to the new action. Settings are kept in this browser.' }),
         this._bindingsTable,
         resetKeys,
-      ),
-      el('section', {},
+      )],
+      ['advanced', 'Advanced', el('section', { role: 'tabpanel', id: 'zd-settings-advanced' },
         el('h3', { text: 'Advanced' }),
         el('div', { class: 'bindings' },
           el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Playback speed of the animations' }), this._speed),
@@ -2523,9 +2544,38 @@ export class PlayerUI {
         ),
         this._renderingNote,
         el('label', { class: 'row' }, this._reverseToggle, ' Going to the previous stop plays the current stop backwards (off: jump straight to it)'),
-      ),
+      )],
+    ];
+    // The categories as a list on the left, one pane at a time; arrows move along the list, as in a tab list.
+    const list = el('nav', { class: 'categories', role: 'tablist', 'aria-label': 'Settings categories' });
+    this._settingsCategories = categories.map(([id, label, pane]) => {
+      const tab = el('button', { role: 'tab', text: label, 'aria-controls': pane.id, 'aria-selected': 'false' });
+      tab.addEventListener('click', () => this._showSettingsCategory(id));
+      list.append(tab);
+      return { id, tab, pane };
+    });
+    list.addEventListener('keydown', (event) => {
+      const ids = this._settingsCategories.map((category) => category.id);
+      const current = ids.indexOf(this._settingsCategories.find((category) => category.tab.getAttribute('aria-selected') === 'true')?.id ?? ids[0]);
+      const step = event.key === 'ArrowDown' || event.key === 'ArrowRight' ? 1 : event.key === 'ArrowUp' || event.key === 'ArrowLeft' ? -1 : 0;
+      if (!step) return;
+      event.preventDefault();
+      const next = this._settingsCategories[(current + step + ids.length) % ids.length];
+      this._showSettingsCategory(next.id);
+      next.tab.focus();
+    });
+    let remembered: string | null = null;
+    try {
+      remembered = localStorage.getItem('zoomdeck:settings-category');
+    } catch {
+      /* storage unavailable */
+    }
+    dialog.append(
+      el('header', {}, el('h2', { text: 'Settings' }), close),
+      el('div', { class: 'layout' }, list, el('div', { class: 'panes' }, ...categories.map(([, , pane]) => pane))),
       el('div', { class: 'actions' }, done),
     );
+    this._showSettingsCategory(remembered ?? 'pointer');
     dialog.addEventListener('close', () => {
       this._capturing = null;
       this._stopDeviceTest();
