@@ -355,7 +355,7 @@ export class PlayerUI {
     this._playToggle = el('button', { class: 'play-toggle', 'aria-label': 'Play or pause the recording', text: '▶' });
     this._playRange = el('input', { type: 'range', min: '0', max: '1000', value: '0', 'aria-label': 'Position in the recording' });
     this._playTime = el('span', { class: 'play-time', text: '0:00 / 0:00' });
-    this._exportButton = el('button', { class: 'export-button', text: 'Export video', title: 'Render or export this recording as a video file' });
+    this._exportButton = el('button', { class: 'export-button', text: 'Flatten and export', title: 'Flatten this recording into one video file and export it' });
     const talks = el('button', { class: 'talks-button', text: 'Talks…', title: 'Choose, continue or delete a recorded talk' });
     talks.addEventListener('click', () => this.openRecordingList());
     const closePlayback = el('button', { class: 'close-playback', 'aria-label': 'Leave the recording', title: 'Leave the recording (Esc)', text: '×' });
@@ -1650,22 +1650,12 @@ export class PlayerUI {
         dialog.close();
         void this.continueRecording(entry);
       });
-      // The rendered video, and rendering it (off the clock, by the server with ffmpeg), with the progress of a render under way.
+      // The rendered video, when there is one; a render under way shows its progress in the row (flattening is started from the playback bar).
       const video = el('button', { text: 'Video', title: 'Open the rendered video' });
       video.hidden = !entry.movie;
       video.addEventListener('click', () => window.open(recordingUrl(this._deck.base as string, entry.movie as string), '_blank', 'noopener'));
       const job = this._render.jobs.find((candidate) => candidate.talk === entry.name && candidate.status !== 'done') ?? null;
-      const busy = Boolean(job && ['queued', 'rendering', 'composing'].includes(job.status));
-      const render = el('button', {
-        text: job?.status === 'composing' ? `Composing ${Math.round(job.progress * 100)}%` : busy ? `Rendering ${Math.round((job as NonNullable<typeof job>).progress * 100)}%` : job?.status === 'failed' ? 'Render again' : job?.status === 'interrupted' ? 'Resume render' : entry.movie ? 'Render again' : 'Render video',
-        title: job?.error ? `The last render failed: ${job.error}` : 'Render this talk as an MP4 video off the clock, faster than real time',
-      });
-      render.hidden = !(this._deck.base && recordingStoreAvailable() && this._render.ffmpeg);
-      render.disabled = busy;
-      render.addEventListener('click', () => {
-        dialog.close();
-        void this.startRender(entry.name, `${entry.name}.video`);
-      });
+      const progress = job?.status === 'composing' ? ` · composing ${Math.round(job.progress * 100)}%` : job && ['queued', 'rendering'].includes(job.status) ? ` · rendering ${Math.round(job.progress * 100)}%` : job?.status === 'failed' ? ' · render failed' : job?.status === 'interrupted' ? ' · render interrupted' : '';
       const remove = el('button', { class: 'add', text: 'Delete' });
       remove.hidden = !(this._deck.base && recordingStoreAvailable());
       remove.addEventListener('click', () => {
@@ -1678,7 +1668,7 @@ export class PlayerUI {
         }).catch((error: Error) => this.notice(error.message));
       });
       list.append(el('div', { class: 'binding recording' },
-        el('span', { class: 'action', text: `${when} · ${formatTime(entry.duration)}${entry.video ? ' · camera' : entry.media ? ' · sound' : ''}${entry.movie ? ' · video' : ''}` }), play, video, render, more, remove));
+        el('span', { class: 'action', text: `${when} · ${formatTime(entry.duration)}${entry.video ? ' · camera' : entry.media ? ' · sound' : ''}${entry.movie ? ' · video' : ''}${progress}`, title: job?.error ?? '' }), play, video, more, remove));
     }
     // While a render runs, the list follows its progress.
     if (this._render.jobs.some((job) => ['queued', 'rendering', 'composing'].includes(job.status))) {
@@ -2073,7 +2063,7 @@ export class PlayerUI {
     } finally {
       this._exporting = false;
       this._exportButton.disabled = false;
-      this._exportButton.textContent = 'Export video';
+      this._exportButton.textContent = 'Flatten and export';
       this._playRange.disabled = false;
       this._playToggle.disabled = false;
     }
@@ -2122,7 +2112,7 @@ export class PlayerUI {
     const run = el('button', { class: 'add', text: 'Export', autofocus: '' });
     const cancel = el('button', { text: 'Cancel' });
     dialog.append(
-      el('header', {}, el('h2', { text: 'Export the talk as a video' }), close),
+      el('header', {}, el('h2', { text: 'Flatten the talk into a video and export it' }), close),
       el('section', {},
         el('div', { class: 'row' }, el('label', {}, 'Name ', nameInput), suffix),
         ...(server ? [el('div', { class: 'row' }, el('label', {}, 'Made ', how))] : []),

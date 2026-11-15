@@ -336,7 +336,7 @@ from its start, and the scrubber goes anywhere. During playback the deck follows
 stops play as they did, strokes appear as they were drawn, the whiteboard and the camera switch
 when they did, and the laser or spotlight moves where the presenter pointed. The footer gives way
 to a playback bar with play and pause (also Space or K), a scrubber (also `←` and `→`, five seconds
-at a time, and Home for the start), the time, **Export video** and a way out (also Esc); these
+at a time, and Home for the start), the time, **Flatten and export** and a way out (also Esc); these
 keys have their own group in the Keyboard settings. Seeking anywhere rebuilds the state at that
 moment. The recording's own sound plays, and its camera picture sits in the corner it was
 recorded with, or full frame where the presenter switched to it. Your keys, taps and clicks on the
@@ -345,8 +345,8 @@ recording, so that nothing of yours gets mixed with what the timeline replays.
 
 **Rendering a video.** A talk is a bundle that only Zoomdeck plays; a flat video file plays
 anywhere. Where the deck is served by `zoomdeck serve`, the desktop app or the development page
-and the computer has [ffmpeg](https://ffmpeg.org), **Render video** in the list of talks (and
-the first choice of the Export dialog) renders the talk *off the clock*: a page of its own
+and the computer has [ffmpeg](https://ffmpeg.org), **Flatten and export** in the playback bar,
+with its first choice, renders the talk *off the clock*: a page of its own
 replays the timeline on a virtual clock, as fast as the machine draws rather than as long as the
 talk lasted, and sends the server a picture of the deck (the slides or the whiteboard with their
 ink and the pointer, in the deck's proportions) whenever it changes; the server
@@ -382,7 +382,7 @@ page copy another page's pixels), so the rendered file shows its place as the de
 before the page is live; what happened inside it is in the talk only if the screen was filmed
 meanwhile, which a held share does by itself (see Away from the deck).
 
-**The Export dialog.** **Export video** in the playback bar asks, in separate rows, how the video
+**The Export dialog.** **Flatten and export** in the playback bar asks, in separate rows, how the video
 is made and where the file goes. *Made*: off the clock by the server, as above, where it can;
 or in this page, in real time. *Save to*: a folder of your choice through the browser's own save
 dialog (Chrome and Edge; the first choice where it exists), the `recordings/` folder next to the
