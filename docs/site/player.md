@@ -383,7 +383,8 @@ meanwhile, which a held share does by itself (see Away from the deck).
 **Exporting from the page.** Without ffmpeg, or when the file should go elsewhere, **Export video**
 renders the open recording in the page itself: the recording plays from the start while the
 frames are captured, so the export takes exactly as long as the talk, and the window must stay
-visible meanwhile (a hidden tab draws nothing). A dialog first asks for the file's name and where
+visible meanwhile (a hidden tab draws nothing); the playback controls and keys are off until it
+ends, so that nothing moves the talk while it is being filmed. A dialog first asks for the file's name and where
 it goes: the `recordings/` folder next to the deck (with the preview server), a folder of your
 choice through the browser's own save dialog (Chrome and Edge), or the browser's downloads. The
 result is a WebM file (VP9 and Opus), saved as `recordings/<name>.video.webm` next to the

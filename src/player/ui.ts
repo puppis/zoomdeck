@@ -739,10 +739,11 @@ export class PlayerUI {
       case 'boardRight': this._panBoardBy(1, 0); break;
       case 'boardUp': this._panBoardBy(0, 1); break;
       case 'boardDown': this._panBoardBy(0, -1); break;
-      case 'playPause': this._playback?.toggle(); break;
-      case 'seekBack': if (this._playback) this._playback.seek(this._playback.time - 5000); break;
-      case 'seekForward': if (this._playback) this._playback.seek(this._playback.time + 5000); break;
-      case 'playStart': this._playback?.seek(0); break;
+      // While a video is exported from the page, the recording must play through untouched: its keys are off.
+      case 'playPause': if (!this._exporting) this._playback?.toggle(); break;
+      case 'seekBack': if (this._playback && !this._exporting) this._playback.seek(this._playback.time - 5000); break;
+      case 'seekForward': if (this._playback && !this._exporting) this._playback.seek(this._playback.time + 5000); break;
+      case 'playStart': if (!this._exporting) this._playback?.seek(0); break;
       case 'closePlayback': if (this._playback) this.closeRecording(); break;
     }
   }
@@ -1931,6 +1932,7 @@ export class PlayerUI {
     this._exporting = true;
     this._exportButton.disabled = true;
     this._playRange.disabled = true;
+    this._playToggle.disabled = true;
     const source: ExportSource = {
       aspect: this._deckAspect,
       frameAspect: aspect,
@@ -1970,6 +1972,7 @@ export class PlayerUI {
       this._exportButton.disabled = false;
       this._exportButton.textContent = 'Export video';
       this._playRange.disabled = false;
+      this._playToggle.disabled = false;
     }
   }
 

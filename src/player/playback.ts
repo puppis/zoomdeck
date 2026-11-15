@@ -290,16 +290,20 @@ export class Playback {
     }
   }
 
-  /** A media part ran out: the next one follows, or the talk is over. */
+  /** A camera-lane part ran out: the lane's next one follows (the screen lane's parts overlap and are not in this row), or the talk is over. */
   private _partEnded(): void {
     if (!this._playing || !this._part) return;
-    const next = this.timeline.media[this.timeline.media.indexOf(this._part) + 1];
+    const lane = this.timeline.media.filter((part) => part.lane !== 'screen');
+    const next = lane[lane.indexOf(this._part) + 1];
     if (!next) {
       this._end();
       return;
     }
     this._advance(next.start);
-    void this._loadPart(next.start).then(() => this.host.media?.play()).catch(() => this._end());
+    void this._loadPart(next.start).then(() => {
+      void this._syncScreen(next.start);
+      return this.host.media?.play();
+    }).catch(() => this._end());
   }
 
   private _end(): void {

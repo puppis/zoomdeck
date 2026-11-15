@@ -169,6 +169,43 @@ describe('timelines', () => {
 });
 
 describe('the screen lane', () => {
+  it('is skipped when a camera-lane file runs out: the lane\'s next file follows, not the overlapping screen file', async () => {
+    class FakeMedia extends EventTarget {
+      currentTime = 0;
+      src = '';
+      paused = true;
+      load(): void {}
+      pause(): void { this.paused = true; }
+      play(): Promise<void> { this.paused = false; return Promise.resolve(); }
+    }
+    const media = new FakeMedia();
+    const screen = new FakeMedia();
+    const player = { goTo: async () => undefined, rewindTo: async () => undefined, speed: 1, runner: { cancel: () => undefined } } as unknown as Player;
+    const timeline: Timeline = {
+      version: 1, deck: { title: 't', hash: 'x' }, recorded: '2026-11-15T09:00:00.000Z', duration: 9000,
+      media: [
+        { file: 'a.webm', type: 'video/webm', video: true, start: 0, duration: 2000 },
+        { file: 'a.part2.webm', type: 'video/webm', video: true, source: 'screen', lane: 'screen', start: 1900, duration: 5000 },
+        { file: 'a.part3.webm', type: 'video/webm', video: true, start: 2000, duration: 7000 },
+      ],
+      pip: { corner: 'bottom-right', size: 0.18 }, events: [],
+    };
+    const playback = new Playback(timeline, { navigation, player, media: media as unknown as HTMLMediaElement, screen: screen as unknown as HTMLVideoElement, apply: () => undefined, resetInk: () => undefined });
+    await playback.play();
+    expect(playback.part?.file).toBe('a.webm');
+    // The first file ends a little short of its stretch: the next file of the lane takes over at its own start.
+    media.currentTime = 1.95;
+    media.dispatchEvent(new Event('ended'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(playback.part?.file).toBe('a.part3.webm');
+    expect(playback.playing).toBe(true);
+    expect(media.currentTime).toBe(0);
+    // The screen lane's file covers this moment in its own element.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(playback.screenPart?.file).toBe('a.part2.webm');
+    playback.dispose();
+  });
+
   it('runs beside the camera lane: the camera lane covers the talk, the screen lane overlaps it', () => {
     const media: TimelineMedia[] = [
       { file: 'a.webm', type: 'video/webm', video: true, start: 0, duration: 5000 },
