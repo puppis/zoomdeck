@@ -26,7 +26,7 @@ import { PRINT_WIDTHS, printDeck, printPages, type PrintPages } from './print';
 import { zipFiles } from './zip';
 import { deleteRecording, describeMedia, download, listRecordings, loadTimeline, mediaFileName, mediaSource, recordingStoreAvailable, RecordingSession, recordingUrl, saveFile, type RecordingEntry } from './store';
 import { awayFromDeck } from './away';
-import { displayWidth, renderPageUrl, renderPlan, RenderSession, renderStatus, renderTalk, requestRender, VIDEO_WIDTHS, type RenderStatus } from './render';
+import { displayWidth, renderPageUrl, renderPlan, RenderSession, renderStatus, renderTalk, requestRender, VIDEO_HEIGHTS, videoWidthFor, type RenderStatus } from './render';
 import { appendPart, formatTime, recordingName, stopRef, structureHash, type Corner, type PointerKind, type Timeline, type TimelineEvent, type TimelineMedia, type UntimedEvent } from './timeline';
 
 /** A tablet page known to the presenter. */
@@ -185,18 +185,18 @@ export class PlayerUI {
   /** What the server says about rendering videos: whether it can (ffmpeg), whether it opens render pages itself, and the jobs of this deck's talks. */
   private _render: RenderStatus = { ffmpeg: false, desktop: false, jobs: [] };
   private _renderToggle!: HTMLInputElement;
-  private _renderWidthSelect!: HTMLSelectElement;
+  private _renderSizeSelect!: HTMLSelectElement;
 
-  /** The width of a rendered or exported video: the setting's, or the display's own. */
-  private _videoWidth(): number {
-    return this._settings.recording.renderWidth ?? displayWidth();
+  /** The frame width of a video of the given size (a 16:9 height, or null for the display's own) in the deck's proportions. */
+  private _videoWidth(height: number | null = this._settings.recording.renderHeight): number {
+    return height === null ? displayWidth() : videoWidthFor(height, this._deck.viewport.width / this._deck.viewport.height);
   }
 
-  /** A select of video widths: the display's own (named with its pixels), then the fixed ones; '' stands for the display. */
-  private _widthSelect(label: string, current: number | null): HTMLSelectElement {
+  /** A select of video sizes: the standard ones by name, then the display's own; '' stands for the display. */
+  private _sizeSelect(label: string, current: number | null): HTMLSelectElement {
     const select = el('select', { 'aria-label': label });
-    select.append(el('option', { value: '', text: `The display's (${displayWidth()} px)` }));
-    for (const [width, text] of VIDEO_WIDTHS) select.append(el('option', { value: String(width), text }));
+    for (const [height, text] of VIDEO_HEIGHTS) select.append(el('option', { value: String(height), text }));
+    select.append(el('option', { value: '', text: `The display's own size (${displayWidth()} px wide)` }));
     select.value = current === null ? '' : String(current);
     return select;
   }
@@ -1836,19 +1836,20 @@ export class PlayerUI {
     if (picker) where.append(el('option', { value: 'pick', text: 'A folder of my choice (asked when the export starts)' }));
     where.append(el('option', { value: 'download', text: "The browser's downloads" }));
     const suffix = el('span', { class: 'note', text: '.webm' });
-    const widthSelect = this._widthSelect('Width of the video', this._settings.recording.renderWidth);
-    const chosenWidth = () => Number(widthSelect.value) || displayWidth();
+    const sizeSelect = this._sizeSelect('Size of the video', this._settings.recording.renderHeight);
+    const chosenWidth = () => this._videoWidth(Number(sizeSelect.value) || null);
     const status = el('p', { class: 'note' });
     const describe = () => {
       const server = where.value === 'server';
       suffix.textContent = server ? '.mp4' : '.webm';
-      const size = `${chosenWidth()} pixels wide in the deck's proportions`;
+      const width = chosenWidth();
+      const size = `${width} by ${Math.round(width / (this._deck.viewport.width / this._deck.viewport.height) / 2) * 2} pixels`;
       status.textContent = server
         ? `The talk is rendered in a page of its own, off the clock and faster than real time, and ffmpeg lays the camera, the screen and the sound from the recording over the deck: an MP4 file (H.264 and AAC), ${size}. This page is free meanwhile; the list of talks shows the progress and opens the video.`
         : `The recording plays from the start while the video is written, which takes as long as the talk; keep this window visible until it ends. The file is WebM (VP9 and Opus), ${size}, with the slides or the whiteboard and their ink, the camera in its corner or full frame, the pointer, and the sound.`;
     };
     where.addEventListener('change', describe);
-    widthSelect.addEventListener('change', describe);
+    sizeSelect.addEventListener('change', describe);
     describe();
     const run = el('button', { class: 'add', text: 'Export', autofocus: '' });
     const cancel = el('button', { text: 'Cancel' });
@@ -1857,7 +1858,7 @@ export class PlayerUI {
       el('section', {},
         el('div', { class: 'row' }, el('label', {}, 'Name ', nameInput), suffix),
         el('div', { class: 'row' }, el('label', {}, 'Save to ', where)),
-        el('div', { class: 'row' }, el('label', {}, 'Width ', widthSelect)),
+        el('div', { class: 'row' }, el('label', {}, 'Size ', sizeSelect)),
         status,
         el('div', { class: 'row' }, run, cancel)),
     );
@@ -2198,9 +2199,9 @@ export class PlayerUI {
       this._settings.recording.renderOnStop = this._renderToggle.checked;
       saveSettings(this._settings);
     });
-    this._renderWidthSelect = this._widthSelect('Width of rendered and exported videos', null);
-    this._renderWidthSelect.addEventListener('change', () => {
-      this._settings.recording.renderWidth = Number(this._renderWidthSelect.value) || null;
+    this._renderSizeSelect = this._sizeSelect('Size of rendered and exported videos', DEFAULT_RECORDING.renderHeight);
+    this._renderSizeSelect.addEventListener('change', () => {
+      this._settings.recording.renderHeight = Number(this._renderSizeSelect.value) || null;
       saveSettings(this._settings);
     });
     this._mirrorToggle = el('input', { type: 'checkbox' });
@@ -2233,7 +2234,7 @@ export class PlayerUI {
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'While a screen share is held, film it by itself whenever you leave the deck for another tab, application or workspace, and come back to the camera on return' }), this._screenAwayToggle),
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Ask for the screen when a recording starts, so that a share is held from the start' }), this._screenAskToggle),
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Render the talk as an MP4 video when a recording stops, off the clock, where the server has ffmpeg (the desktop app does it in the background; a browser offers a button, since it opens a tab for it)' }), this._renderToggle),
-      el('div', { class: 'row' }, el('label', {}, 'Width of rendered and exported videos ', this._renderWidthSelect)),
+      el('div', { class: 'row' }, el('label', {}, 'Size of rendered and exported videos ', this._renderSizeSelect)),
     );
     const resetRecording = el('button', { text: 'Restore the default recording settings' });
     resetRecording.addEventListener('click', () => {
@@ -2560,7 +2561,7 @@ export class PlayerUI {
     this._screenAwayToggle.checked = recording.screenWhenAway;
     this._screenAskToggle.checked = recording.screenOnRecord;
     this._renderToggle.checked = recording.renderOnStop;
-    this._renderWidthSelect.value = recording.renderWidth === null ? '' : String(recording.renderWidth);
+    this._renderSizeSelect.value = recording.renderHeight === null ? '' : String(recording.renderHeight);
     this._antialiasToggle.checked = this._settings.rendering.antialias;
     this._resolutionSelect.value = String(this._settings.rendering.resolution);
     this._renderingChanged();

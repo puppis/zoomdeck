@@ -29,18 +29,18 @@ export interface RecordingSettings {
   screenSurface: 'monitor' | 'window' | 'browser';
   /** Render a talk as an MP4 video by itself when its recording stops, where the server has ffmpeg. */
   renderOnStop: boolean;
-  /** Width in pixels of rendered and exported videos; null for the display's own width. */
-  renderWidth: number | null;
+  /** Height in pixels of rendered and exported videos, as of a 16:9 frame (1080, 1440 or 2160); null for the display's own size. */
+  renderHeight: number | null;
 }
 
-export const RENDER_WIDTHS = [1920, 2560, 3840];
+export const RENDER_HEIGHTS = [1080, 1440, 2160];
 
 export const SCREEN_SURFACES = ['monitor', 'window', 'browser'] as const;
 
 export const CORNERS: Corner[] = ['bottom-right', 'bottom-left', 'top-right', 'top-left'];
 export const PIP_SIZES: Array<[number, string]> = [[0.12, 'Small'], [0.18, 'Medium'], [0.25, 'Large']];
 
-export const DEFAULT_RECORDING: RecordingSettings = { microphone: null, camera: null, mirror: true, corner: 'bottom-right', size: 0.18, screenWhenAway: true, screenOnRecord: false, screenSurface: 'monitor', renderOnStop: true, renderWidth: null };
+export const DEFAULT_RECORDING: RecordingSettings = { microphone: null, camera: null, mirror: true, corner: 'bottom-right', size: 0.18, screenWhenAway: true, screenOnRecord: false, screenSurface: 'monitor', renderOnStop: true, renderHeight: 1080 };
 
 export function sanitizeRecording(value: unknown): RecordingSettings {
   const result = { ...DEFAULT_RECORDING };
@@ -57,7 +57,9 @@ export function sanitizeRecording(value: unknown): RecordingSettings {
   else if (typeof (saved as { screenWhenHidden?: unknown }).screenWhenHidden === 'boolean') result.screenOnRecord = (saved as { screenWhenHidden: boolean }).screenWhenHidden;
   if (typeof saved.screenSurface === 'string' && (SCREEN_SURFACES as readonly string[]).includes(saved.screenSurface)) result.screenSurface = saved.screenSurface as RecordingSettings['screenSurface'];
   if (typeof saved.renderOnStop === 'boolean') result.renderOnStop = saved.renderOnStop;
-  if (saved.renderWidth === null || (typeof saved.renderWidth === 'number' && RENDER_WIDTHS.includes(saved.renderWidth))) result.renderWidth = saved.renderWidth as number | null;
+  if (saved.renderHeight === null || (typeof saved.renderHeight === 'number' && RENDER_HEIGHTS.includes(saved.renderHeight))) result.renderHeight = saved.renderHeight as number | null;
+  // The short-lived width setting of a 16:9 frame maps to the height of the same frame.
+  else if (typeof (saved as { renderWidth?: unknown }).renderWidth === 'number') result.renderHeight = { 1920: 1080, 2560: 1440, 3840: 2160 }[(saved as { renderWidth: number }).renderWidth] ?? 1080;
   return result;
 }
 

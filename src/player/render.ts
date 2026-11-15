@@ -137,10 +137,15 @@ export function installVirtualClock(): VirtualClock {
   };
 }
 
-/** The widths a video may be rendered at, besides the display's own: Full HD, QHD, 4K. */
-export const VIDEO_WIDTHS: Array<[number, string]> = [[1920, 'Full HD (1920 px)'], [2560, 'QHD (2560 px)'], [3840, '4K (3840 px)']];
+/** The sizes a video may be rendered at, named as players and sites name them, by the height of a 16:9 frame. */
+export const VIDEO_HEIGHTS: Array<[number, string]> = [[1080, '1080p (Full HD)'], [1440, '1440p (QHD)'], [2160, '2160p (4K)']];
 
-/** The width of this display in device pixels, even, between 1280 and 3840: the default width of a rendered video. */
+/** The frame width for a video of `height` in the proportions `aspect` (width over height), even. */
+export function videoWidthFor(height: number, aspect: number): number {
+  return Math.max(2, Math.round((height * aspect) / 2) * 2);
+}
+
+/** The width of this display in device pixels, even, between 1280 and 3840, for a video sized exactly as the presenter's screen. */
 export function displayWidth(): number {
   const pixels = Math.round((typeof screen !== 'undefined' && screen.width ? screen.width : 1920) * (typeof window !== 'undefined' && window.devicePixelRatio ? window.devicePixelRatio : 1));
   return Math.min(3840, Math.max(1280, Math.round(pixels / 2) * 2));

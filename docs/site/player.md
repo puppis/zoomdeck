@@ -334,14 +334,17 @@ and the computer has [ffmpeg](https://ffmpeg.org), **Render video** in the list 
 the first choice of the Export dialog) renders the talk *off the clock*: a page of its own
 replays the timeline on a virtual clock, as fast as the machine draws rather than as long as the
 talk lasted, and sends the server a picture of the deck (the slides or the whiteboard with their
-ink and the pointer, as wide as the display by default, in the deck's proportions) whenever it changes; the server
+ink and the pointer, in the deck's proportions) whenever it changes; the server
 then lays the camera, in its corner or full frame, and the filmed screen, whole, over those
 pictures with the recorded sound, straight from the bundle, and writes
 `recordings/<name>.video.mp4` (H.264 and AAC, which every player, phone and site reads). The
-list of talks shows the progress and opens the video (**Video**). The width of the video is the
-display's own by default, so that what you saw is what the viewer sees, and can be set to 1920,
-2560 or 3840 pixels in the Export dialog for one video or under **Recording** in the settings for
-all; the height follows the deck's proportions. A render takes a fraction of
+list of talks shows the progress and opens the video (**Video**). The video is 1080p by default,
+the size of lecture recordings everywhere: 1080 pixels tall for a 16:9 deck, and for other
+proportions the frame of the same height, 1440 by 1080 for a 4:3 deck. The Export dialog offers
+1440p and 2160p for one video, for text-heavy decks watched full screen on sharp monitors or for
+an archive, at about twice and four times the encoding time and file size, and the display's own
+size for a frame exactly as the presenter's screen; the choice under **Recording** in the settings
+holds for every render. A render takes a fraction of
 the talk's length, how small depending on how much moves in it, since ffmpeg's encoding of the
 frames takes most of the time. The desktop app renders in a
 hidden window of its own; a browser opens a tab for it, which closes itself when the video is

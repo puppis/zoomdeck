@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cameraIntervals, ClipLog, displayWidth, installVirtualClock, renderPlan } from '../src/player/render';
+import { cameraIntervals, ClipLog, displayWidth, installVirtualClock, renderPlan, videoWidthFor } from '../src/player/render';
 import type { Timeline } from '../src/player/timeline';
 import { concatList, ffmpegArguments, splitInterval } from '../bin/render.mjs';
 
@@ -55,7 +55,11 @@ describe('render plans', () => {
     events: [{ t: 0, type: 'go', stop: { key: 'markup:root', step: 0 }, autoplay: false }, { t: 3000, type: 'camera', on: true }, { t: 4000, type: 'camera', on: false }, { t: 6500, type: 'camera', on: true }],
   };
 
-  it('takes the display\'s width as the default, even and within bounds', () => {
+  it('sizes a frame by its height in the deck\'s proportions, and knows the display\'s own width', () => {
+    expect(videoWidthFor(1080, 16 / 9)).toBe(1920);
+    expect(videoWidthFor(1080, 4 / 3)).toBe(1440);
+    expect(videoWidthFor(1440, 16 / 10)).toBe(2304);
+    expect(videoWidthFor(2160, 16 / 9)).toBe(3840);
     const width = displayWidth();
     expect(width % 2).toBe(0);
     expect(width).toBeGreaterThanOrEqual(1280);
