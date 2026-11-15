@@ -102,6 +102,21 @@ function markFamilyDirty(mob: Mobject): void {
   for (const member of mob.getFamily()) member._dirty = true;
 }
 
+/**
+ * Members shown before their slide is first visited (`step=-1`): they sit in a group of the
+ * display that the content opacity never scales, so a child's caption shows in the parent's
+ * view while the rest of the child waits for the entry fade.
+ */
+const EARLY_MEMBERS = new WeakSet<Mobject>();
+
+export function markEarly(mob: Mobject): void {
+  EARLY_MEMBERS.add(mob);
+}
+
+export function isEarly(mob: Mobject): boolean {
+  return EARLY_MEMBERS.has(mob);
+}
+
 export interface DisplayOptions {
   contentOpacity: number;
   gridOpacity: number;
@@ -115,6 +130,8 @@ export class Display {
   readonly group = new THREE.Group();
   readonly gridGroup = new THREE.Group();
   readonly contentGroup = new THREE.Group();
+  /** The members shown before the first visit, outside the entry fade. */
+  readonly earlyGroup = new THREE.Group();
   readonly overlayGroup = new THREE.Group();
   contentOpacity: number;
   gridOpacity: number;
@@ -123,7 +140,7 @@ export class Display {
   transform = new Transform();
   /** True until the next render assigns draw order to new Three.js objects. */
   orderDirty = true;
-  private _attached = { grid: [] as Mobject[], content: [] as Mobject[], overlay: [] as Mobject[] };
+  private _attached = { grid: [] as Mobject[], content: [] as Mobject[], early: [] as Mobject[], overlay: [] as Mobject[] };
   private _strokeContext: { width: number; height: number; slide: number } | null = null;
   private _needsOpacityReset = false;
   private _baseVisible = true;
@@ -140,7 +157,15 @@ export class Display {
     this.overlays = [...(options.overlays ?? [])];
     this.group.userData[DISPLAY_GROUP_FLAG] = true;
     this.group.matrixAutoUpdate = false;
-    this.group.add(this.gridGroup, this.contentGroup, this.overlayGroup);
+    this.group.add(this.gridGroup, this.contentGroup, this.earlyGroup, this.overlayGroup);
+  }
+
+  /** The members that fade in with the slide, and those shown before its first visit. */
+  private _split(): { content: Mobject[]; early: Mobject[] } {
+    const content: Mobject[] = [];
+    const early: Mobject[] = [];
+    for (const mob of this.local.mobjects) (isEarly(mob) ? early : content).push(mob);
+    return { content, early };
   }
 
   /** Point the display at a transform and reconcile Three.js children with membership. */
@@ -151,12 +176,15 @@ export class Display {
       this.group.matrixWorldNeedsUpdate = true;
       this._strokeContext = null;
     }
+    const { content, early } = this._split();
     this._reconcile(this.gridGroup, this.backgrounds, 'grid');
-    this._reconcile(this.contentGroup, this.local.mobjects, 'content');
+    this._reconcile(this.contentGroup, content, 'content');
+    this._reconcile(this.earlyGroup, early, 'early');
     this._reconcile(this.overlayGroup, this.overlays, 'overlay');
     this.gridGroup.visible = this.gridOpacity > 0 && this.backgrounds.length > 0;
     this.contentGroup.visible = this.contentOpacity > 0;
-    this._baseVisible = this.gridGroup.visible || this.contentGroup.visible || this.overlays.length > 0;
+    this.earlyGroup.visible = early.length > 0;
+    this._baseVisible = this.gridGroup.visible || this.contentGroup.visible || this.earlyGroup.visible || this.overlays.length > 0;
     this.group.visible = this._baseVisible && !this._culled;
   }
 
@@ -217,12 +245,14 @@ export class Display {
     };
     // Members multiplied last render must be resynchronized from their logical styles.
     const reset = this._needsOpacityReset;
+    const { content, early } = this._split();
     visit(this.backgrounds, this.gridGroup.visible, reset);
-    visit(this.local.mobjects, this.contentGroup.visible, reset);
+    visit(content, this.contentGroup.visible, reset);
+    visit(early, this.earlyGroup.visible, false);
     visit(this.overlays, true, false);
     this._needsOpacityReset = false;
     if (this.orderDirty) {
-      for (const group of [this.gridGroup, this.contentGroup, this.overlayGroup]) {
+      for (const group of [this.gridGroup, this.contentGroup, this.earlyGroup, this.overlayGroup]) {
         for (const child of group.children) {
           const order = nextOrder();
           child.traverse((node) => {
@@ -243,7 +273,7 @@ export class Display {
     }
     if (partial.grid || partial.content) {
       for (const mob of partial.grid ? this.backgrounds : []) markFamilyDirty(mob);
-      for (const mob of partial.content ? this.local.mobjects : []) markFamilyDirty(mob);
+      for (const mob of partial.content ? content : []) markFamilyDirty(mob);
     }
   }
 

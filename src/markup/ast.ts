@@ -663,6 +663,14 @@ export function cssColor(style: string, line: number): string {
   }
 }
 
+/** The step of an element's own appearance: a nonnegative integer, or -1 for a member shown before its slide is first visited. */
+export const EARLY_STEP = -1;
+
+export function elementStep(attrs: Attributes, line: number): number {
+  if (attrs.step === '-1') return EARLY_STEP;
+  return stepValue(attrs, 'step', line);
+}
+
 export function stepValue(attrs: Attributes, key: string, line: number, fallback = 0): number {
   const value = attrs[key] ?? String(fallback);
   if (!/^\d+$/.test(value)) throw new MarkupError(`${key} must be a nonnegative integer`, line);

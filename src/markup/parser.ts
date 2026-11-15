@@ -17,7 +17,7 @@ import {
   type CellAlignment,
   type ListItem,
   NextSpec, SkipNextSpec, SlideItem, SlideSpec, StepChange, StyleSheet, Attributes, applyStyles, attachmentTargets, checkClassName, childKey, endpoint,
-  numberValue, parseAt, parseAttributes, parseColor, parseTremble, polylinePoints, positionOrder, span, stepValue,
+  elementStep, numberValue, parseAt, parseAttributes, parseColor, parseTremble, polylinePoints, positionOrder, span, stepValue,
 } from './ast';
 
 type Env = { line?: number };
@@ -842,7 +842,7 @@ export class ASTTransformer {
       if (item.source.trim() && item.attributes.src) throw new MarkupError('A chart takes its rows from the fence or from src=, not both', item.line);
     }
     if ('tremble' in item.attributes) {
-      const range = parseTremble(item.attributes.tremble, stepValue(item.attributes, 'step', item.line), item.line);
+      const range = parseTremble(item.attributes.tremble, Math.max(0, elementStep(item.attributes, item.line)), item.line);
       if (range && 'hide' in item.attributes && range.start >= stepValue(item.attributes, 'hide', item.line)) {
         throw new MarkupError('tremble must start before the element is hidden', item.line);
       }
@@ -1029,7 +1029,8 @@ export class ASTTransformer {
         throw new MarkupError(`${key} must be between zero and one`, line);
       }
     }
-    for (const key of ['step', 'hide']) if (key in attrs) stepValue(attrs, key, line);
+    // An element's step may be -1 (shown before the slide's first visit); where that makes no sense the caller says so.
+    for (const key of ['step', 'hide']) if (key in attrs && !(key === 'step' && attrs.step === '-1')) stepValue(attrs, key, line);
     for (const key of ['color', 'fill_color', 'border_color', 'header_color', 'axis_color']) if (key in attrs) ASTTransformer._checkColor(attrs[key], line);
     if ('seed' in attrs && !Number.isInteger(Number(attrs.seed))) throw new MarkupError('seed must be an integer', line);
     if ('sketch' in attrs && !['true', 'false'].includes(attrs.sketch)) throw new MarkupError('sketch must be true or false', line);
@@ -1123,10 +1124,12 @@ export class ASTTransformer {
     const noteLine = (step: number, line: number) => lines.set(step, Math.min(lines.get(step) ?? Infinity, line));
     for (const item of slide.items) {
       if (item instanceof ElementSpec) {
-        const appear = stepValue(item.attributes, 'step', item.line);
-        states.set(item.id, appear === 0);
-        if (appear) push(changes, appear, ['show', item.id, item.line, item.attributes]);
-        noteLine(appear, item.line);
+        const appear = elementStep(item.attributes, item.line);
+        // step=-1: shown before the slide is first visited, so present from the start and never animated in.
+        if (appear < 0 && 'enter' in item.attributes) throw new MarkupError('step=-1 shows the element before the slide is visited, where nothing animates: no enter= there', item.line);
+        states.set(item.id, appear <= 0);
+        if (appear > 0) push(changes, appear, ['show', item.id, item.line, item.attributes]);
+        noteLine(Math.max(0, appear), item.line);
         if ('hide' in item.attributes) {
           const hide = stepValue(item.attributes, 'hide', item.line);
           if (hide <= appear) throw new MarkupError("hide must be later than the element's appearance step", item.line);

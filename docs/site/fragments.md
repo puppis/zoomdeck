@@ -35,6 +35,36 @@ Numbers are local to each slide and need not be consecutive: a lone `step=4` cre
 not four. All changes sharing a number play together, followed by a pause; if a step also visits
 children, the parent's changes play first.
 
+### Before the visit: step=-1
+
+A child slide that is not previewed stays hidden in its parent's view until it is first visited,
+when its initial content fades in. An element with `step=-1` is shown *before* that: it is
+present from the start, in the parent's view, outside the entry fade, so that a child can carry
+a caption or a title on its tile while the rest of it waits for the visit. On the visit nothing
+happens to it; it stays through the slide's steps like any initial element, `hide=M` removes it
+at click `M`, and it goes with the slide in exports and printouts. Nothing animates before a
+visit, so `enter=` is refused there. On a root slide, on a page of a flat document and on a
+`preview=true` child, where everything shows from the start anyway, `step=-1` is the same as no
+step.
+
+```zoomdeck {height=5}
+::: slide {#early-parent width=16 height=5}
+
+The tile below shows its caption only, until the child is visited. {x=-7 y=1.8 font_size=20}
+
+[[include: #early-child x=0 y=-0.6 width=6 step=1]]
+
+:::
+
+::: slide {#early-child width=6 height=3.375}
+
+[A caption shown before the visit]{#early-cap x=0 y=1.1 anchor=center font_size=18 color=RED step=-1}
+
+The rest appears on the visit {x=-2.6 y=0 width=5.2 font_size=16}
+
+:::
+```
+
 ## Timing
 
 <a class="try" href="tour.html#slide=anchors">Open in the tour ↗</a>

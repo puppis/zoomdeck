@@ -15,10 +15,12 @@ import { RasterImage, RasterMovie } from '../raster';
 import { VideoClip, VideoPlay } from '../video';
 import { IframeHost } from './iframe';
 import { DelayedAnimation, type SlideContext } from '../runtime';
+import { markEarly } from '../display';
 import {
   ATTACHMENTS, CONNECTIONS, EFFECT_NAMES, ENTER_STYLES, EXIT_STYLES, NEIGHBORS, TEXT_LIKE, VERTICAL_POSITION,
   ActionSpec, AnimationStep, ElementSpec, EventSpec, GroupSpec, CodeSlideSpec, IncludeSpec, MarkupDocument, MarkupError, NextSpec,
   SkipNextSpec, SlideItem, SlideSpec, StepChange, childKey, numberValue, parseAt, parseColor, parseTremble, positionOrder, positionTargets,
+  elementStep,
   stepValue,
 } from './ast';
 import { ASTTransformer } from './parser';
@@ -136,10 +138,17 @@ export class MarkupSlide extends Slide {
     );
     const focused: Mobject[] = [];
     for (const item of this.spec.items) {
-      if (item instanceof ElementSpec && stepValue(item.attributes, 'step', item.line) === 0) {
-        if (item.attributes.focus_only === 'true') focused.push(this.elements.get(item.id) as Mobject);
-        else ctx.add(this.elements.get(item.id) as Mobject);
+      if (!(item instanceof ElementSpec)) continue;
+      const appear = elementStep(item.attributes, item.line);
+      if (appear > 0) continue;
+      const obj = this.elements.get(item.id) as Mobject;
+      if (item.attributes.focus_only === 'true') {
+        focused.push(obj);
+        continue;
       }
+      // step=-1: shown in the parent's view before this slide is first visited, outside the entry fade.
+      if (appear < 0) markEarly(obj);
+      ctx.add(obj);
     }
     if (focused.length) {
       // Share the focus-faded background layer with coordinate grids.
@@ -362,7 +371,7 @@ export class MarkupSlide extends Slide {
         if (!(item instanceof ElementSpec)) continue;
         if (item instanceof GroupSpec) visit(item.items);
         if (!('tremble' in item.attributes)) continue;
-        const range = parseTremble(item.attributes.tremble, stepValue(item.attributes, 'step', item.line), item.line);
+        const range = parseTremble(item.attributes.tremble, Math.max(0, elementStep(item.attributes, item.line)), item.line);
         if (!range || step < range.start || (range.end !== null && step >= range.end)) continue;
         const obj = this.elements.get(item.id);
         if (!obj || !shown.has(obj)) continue;
@@ -419,7 +428,7 @@ export class MarkupSlide extends Slide {
       if (entry.skipNext) ctx.skipNext();
     }
     const initialMovies = this.spec.items
-      .filter((item): item is ElementSpec => item instanceof ElementSpec && this.movies.has(item.id) && stepValue(item.attributes, 'step', item.line) === 0)
+      .filter((item): item is ElementSpec => item instanceof ElementSpec && this.movies.has(item.id) && elementStep(item.attributes, item.line) <= 0)
       .map((item) => item.id);
     if ((initialMovies.length || this._tremblers(ctx, 0).length) && !presenter.consumeSkipNext()) {
       await this._playContinuous(ctx, initialMovies, 0, false);

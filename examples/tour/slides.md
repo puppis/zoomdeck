@@ -488,6 +488,7 @@ Larger decks: the order in which children are visited, splitting the markup into
 
 ::: slide {#leaf width=8}
 ## A leaf: an 8 × 4.5 canvas
+[Shown before the visit]{step=-1 y=-1.7}
 :::
 ```
 
@@ -495,7 +496,7 @@ Larger decks: the order in which children are visited, splitting the markup into
 
 Every slide is a `::: slide {#id}` container with its own canvas, 16 × 9 by default. Slides that nothing includes are roots, visited first to last with cuts between them; `[[include: #id …]]` places a child viewport in the parent's coordinates, and the camera zooms into each child in turn and back out after the last. {#tree-key x=-9.35 y=-3.5 width=18.7 font_size=18}
 
-Includes without `step` are visited in source order after the parent's own click steps (`step=N` shows an element at the N-th click; section 5 has the rest); `preview=true` shows a child before its first visit; `width` or `height` sizes the viewport and `angle` tilts it, in radians. {#tree-more x=-9.35 y=-4.9 width=18.7 font_size=16 color=GRAY}
+Includes without `step` are visited in source order after the parent's own click steps (`step=N` shows an element at the N-th click, `step=-1` before the slide is visited, as the leaf's caption; section 5 has the rest); `preview=true` shows a whole child before its first visit; `width` or `height` sizes the viewport and `angle` tilts it, in radians. {#tree-more x=-9.35 y=-4.9 width=18.7 font_size=16 color=GRAY}
 :::
 
 ::: slide {#branch}
@@ -510,6 +511,8 @@ A child has a canvas of its own and may include children in turn. {x=-7.35 width
 ## A leaf: an 8 × 4.5 canvas {font_size=26}
 
 Returning zooms back out to the parent. {x=-3.35 y=0.2 width=7 font_size=20}
+
+[Shown before the visit, with step=-1]{#leaf-cap x=0 y=-1.7 anchor=center font_size=16 color=GRAY step=-1}
 :::
 
 ::: slide {#prose width=20}

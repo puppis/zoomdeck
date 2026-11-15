@@ -82,7 +82,7 @@ export class TextBatcher {
         if (run && run.lines.length >= 2) this._makeBatches(display, run.anchor, run.lines);
         run = null;
       };
-      for (const member of display.contentGroup.children) {
+      for (const member of [...display.contentGroup.children, ...display.earlyGroup.children]) {
         const lines: StyledLine[] = [];
         let other = false;
         member.traverse((node) => {
@@ -220,7 +220,7 @@ export class TextBatcher {
   sync(): void {
     for (const batch of this._batches) {
       // A run whose first member left the slide's tree (a restored snapshot rebuilt it) is drawn line by line again.
-      if (batch.anchor.parent !== batch.display.contentGroup) {
+      if (batch.anchor.parent !== batch.display.contentGroup && batch.anchor.parent !== batch.display.earlyGroup) {
         this._drop(batch);
         continue;
       }
