@@ -366,7 +366,9 @@ picture is mirrored while presenting (the recording is never mirrored).
 **Playing a recording.** When the deck's folder holds recordings, the footer shows **Talk** (with
 their number when there are several); it opens the recording, or the list of talks to choose
 from. The list is a table, one row per talk: when it was recorded, how long it lasts, small icons
-for the tracks it holds (your voice, the camera, a filmed screen, the computer's sound), and its
+for the tracks it holds (the deck's own, always there: the stops, ink, pointer and camera switches
+of the timeline; then your voice, the camera, a filmed screen and the computer's sound, each only
+when the talk has it), and its
 buttons on one line: **Play**; **Render video**, which makes the talk's video with the size and
 proportions of the Recording settings (off the clock by the server where it has ffmpeg, as below,
 the button following the progress; else in the page while the talk plays once), and which

@@ -51,11 +51,12 @@ const BOARD_STEP = 0.25;
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
-/** The tracks a recorded talk may have, as the list of talks shows them. */
-type TrackKind = 'voice' | 'camera' | 'screen' | 'sound';
+/** The tracks a recorded talk may have, as the list of talks shows them; the deck's own (the timeline) is always there. */
+type TrackKind = 'deck' | 'voice' | 'camera' | 'screen' | 'sound';
 
-/** Small line drawings of the tracks, in a 24-unit box: a microphone, a camera, a screen, a loudspeaker. */
+/** Small line drawings of the tracks, in a 24-unit box: a slide with a play mark, a microphone, a camera, a screen, a loudspeaker. */
 const TRACK_ICON_PATHS: Record<TrackKind, string> = {
+  deck: 'M3 5h18v14H3zM10 9.5v5l4.5-2.5z',
   voice: 'M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM19 11a7 7 0 0 1-14 0M12 18v3M8 21h8',
   camera: 'M3 7h12v10H3zM15 10.5l6-3.5v10l-6-3.5z',
   screen: 'M3 4h18v12H3zM8 20h8M12 16v4',
@@ -1918,6 +1919,7 @@ export class PlayerUI {
       }).catch((error: Error) => this.notice(error.message));
     });
     const tracks: Array<[TrackKind, boolean, string]> = [
+      ['deck', true, 'The deck: its stops, ink, pointer and camera switches, replayed from the timeline'],
       ['voice', Boolean(entry.media), 'Voice'],
       ['camera', entry.camera ?? entry.video, 'Camera'],
       ['screen', Boolean(entry.screen), 'Filmed screen'],
