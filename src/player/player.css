@@ -191,6 +191,14 @@ body.zd-page { margin: 0; height: 100vh; overflow: hidden; background: var(--bac
 .zd-app dialog.recordings table.talks td.buttons button { margin-left: 6px; }
 .zd-app dialog.recordings table.talks td.buttons button[hidden] { display: none; }
 .zd-app dialog.recordings .video-button { min-width: 9.5em; }
+.zd-app dialog.recordings .label-short { display: none; }
+/* A window too narrow even for the short names scrolls the table rather than cutting a button off. */
+.zd-app dialog.recordings section { overflow-x: auto; }
+@media (max-width: 760px) {
+  .zd-app dialog.recordings .label-long { display: none; }
+  .zd-app dialog.recordings .label-short { display: inline; }
+  .zd-app dialog.recordings .video-button { min-width: 0; }
+}
 .zd-app dialog.recordings .video-button.failed { border-color: #d22; }
 .zd-app dialog.recordings .tag { margin-left: 8px; font-size: 11px; color: var(--muted); border: 1px solid var(--border); border-radius: 6px; padding: 1px 5px; }
 .zd-app .track-icons { display: inline-flex; gap: 6px; align-items: center; }

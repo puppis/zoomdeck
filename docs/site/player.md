@@ -343,7 +343,7 @@ browser needs the system's permission to record the screen (macOS asks once), an
 are larger than camera files, about twenty megabytes a minute.
 
 **Continuing a talk.** A stopped recording can be taken up again later, even after closing the
-browser: the Record dialog offers every saved talk to continue, and so does the **Continue**
+browser: the Record dialog offers every saved talk to continue, and so does the **Continue recording**
 button in the list of talks. What follows is stamped after the end of the earlier part, with a cut
 marking the seam, and is kept as a further media file in the same bundle (`talk.part2.webm`,
 since a browser cannot append to a finished media file; the bundle itself only ever grows at its
@@ -373,7 +373,7 @@ buttons on one line: **Play**; **Render video**, which makes the talk's video wi
 proportions of the Recording settings (off the clock by the server where it has ffmpeg, as below,
 the button following the progress; else in the page while the talk plays once), and which
 becomes **Rendered video** once there is one, to play it in a window of its own with a
-**Download** button; and **Continue** and **Delete** where the server keeps the talk. The same
+**Download** button; and **Continue recording** and **Delete** where the server keeps the talk. The same
 list opens from **Talks…** in the playback bar, so one recording can be continued or deleted as
 well. A talk opens at the moment
 it first reached the stop the deck stands on, so that moving to a slide and pressing **Talk**

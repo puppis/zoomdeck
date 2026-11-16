@@ -1892,7 +1892,7 @@ export class PlayerUI {
 
   /** A talk's row in the list of talks. */
   private _talkRow(entry: RecordingEntry, dialog: HTMLDialogElement, refresh: () => void): HTMLTableRowElement {
-    const when = entry.recorded ? new Date(entry.recorded).toLocaleString() : entry.name;
+    const when = entry.recorded ? new Date(entry.recorded).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' }) : entry.name;
     const kept = this._memoryTalks.has(entry.name);
     // Continued and deleted only where the server keeps the talk; a talk in this page alone has its zip as its lasting copy.
     const stored = Boolean(this._deck.base && recordingStoreAvailable()) && !kept;
@@ -1901,7 +1901,9 @@ export class PlayerUI {
       dialog.close();
       void this.openRecording(entry);
     });
-    const more = el('button', { text: 'Continue', title: 'Record on from where this talk stopped' });
+    // The full name where the row has room, "Continue" on a narrow window.
+    const more = el('button', { title: 'Continue recording: record on from where this talk stopped', 'aria-label': 'Continue recording' },
+      el('span', { class: 'label-long', text: 'Continue recording' }), el('span', { class: 'label-short', text: 'Continue' }));
     more.hidden = !stored;
     more.addEventListener('click', () => {
       dialog.close();
@@ -1949,8 +1951,10 @@ export class PlayerUI {
     const talk = entry.name;
     const base = this._deck.base;
     const button = el('button', { class: 'video-button' });
+    // The full names where the row has room, shorter ones on a narrow window.
+    const label = (long: string, short: string) => button.replaceChildren(el('span', { class: 'label-long', text: long }), el('span', { class: 'label-short', text: short }));
     if ((entry.movie && base) || this._sessionVideos.has(talk)) {
-      button.textContent = 'Rendered video';
+      label('Rendered video', 'Video');
       button.title = 'Play the rendered video; it can be downloaded from there';
       button.addEventListener('click', () => {
         dialog.close();
@@ -1967,7 +1971,7 @@ export class PlayerUI {
     }
     const server = Boolean(base && recordingStoreAvailable() && this._render.ffmpeg) && !this._memoryTalks.has(talk);
     const page = Boolean(exportMimeType());
-    button.textContent = 'Render video';
+    label('Render video', 'Render');
     button.hidden = !this._features.has('export') || !(server || page);
     button.title = job?.status === 'failed'
       ? `The last render failed (${job.error ?? 'unknown error'}); render it again`
