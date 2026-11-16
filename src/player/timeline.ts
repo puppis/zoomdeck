@@ -114,6 +114,8 @@ export interface TimelineMedia {
   source?: 'camera' | 'screen';
   /** The lane the file belongs to; absent means the camera lane (where earlier recordings also kept screen files, one picture at a time). */
   lane?: MediaLane;
+  /** False for a camera-lane file recorded without the microphone, which the presenter refused: its sound is silence. */
+  voice?: false;
   start: number;
   duration: number;
 }

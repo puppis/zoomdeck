@@ -429,8 +429,13 @@ describe('the recordings folder', () => {
     writeFileSync(join(recordings, 'a.webm'), 'x');
     writeFileSync(join(recordings, 'notes.json'), '{"not":"a timeline"}');
     const index = await buildIndex(recordings);
-    // A camera-lane file with a picture is the camera's; no screen was filmed.
-    expect(index.recordings).toEqual([{ name: 'a', title: 'Deck', recorded: '2026-11-13T09:05:00.000Z', duration: 1234, media: 'a.webm', video: true, camera: true, screen: false, parts: 1 }]);
+    // A camera-lane file with a picture is the camera's, with the voice; no screen was filmed.
+    expect(index.recordings).toEqual([{ name: 'a', title: 'Deck', recorded: '2026-11-13T09:05:00.000Z', duration: 1234, media: 'a.webm', video: true, voice: true, camera: true, screen: false, parts: 1 }]);
+    // A talk recorded with the microphone refused: its camera-lane file is silence, so no voice.
+    writeFileSync(join(recordings, 'b.json'), JSON.stringify({ ...timeline, recorded: '2026-11-13T10:00:00.000Z', media: [{ file: 'b.webm', type: 'audio/webm', video: false, start: 0, duration: 1234, voice: false }] }));
+    writeFileSync(join(recordings, 'b.webm'), 'x');
+    const both = await buildIndex(recordings);
+    expect(both.recordings.find((entry: { name: string }) => entry.name === 'b')).toMatchObject({ voice: false, camera: false });
     expect(recordingFiles('a', ['a.json', 'a.webm', 'a.video.webm', 'ab.json', 'index.json'])).toEqual(['a.json', 'a.webm', 'a.video.webm']);
     expect(NAME.test('talk-2026-11-13-0905')).toBe(true);
     expect(NAME.test('../etc')).toBe(false);

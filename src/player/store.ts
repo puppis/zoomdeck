@@ -17,6 +17,8 @@ export interface RecordingEntry {
   /** The first media file's name, or null for a timeline without sound. */
   media: string | null;
   video: boolean;
+  /** Whether the presenter's voice is in it (false when the microphone was refused; absent in an older index: then any media stands in). */
+  voice?: boolean;
   /** Whether a camera picture is in it (absent in an index written before it was kept: then `video` stands in). */
   camera?: boolean;
   /** Whether a filmed screen is in it. */

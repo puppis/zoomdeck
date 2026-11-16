@@ -41,6 +41,8 @@ function indexEntry(name, timeline, file, movie = null) {
     duration: Number(timeline.duration) || 0,
     media: media.length ? media[0].file : null,
     video: media.some((part) => part?.video),
+    // The voice: a camera-lane file recorded with the microphone (one refused gives a silent file, marked voice: false).
+    voice: media.some((part) => (!part?.lane || part.lane === 'camera') && part?.voice !== false),
     // Which pictures it has: the camera's (a camera-lane file with a picture), and a filmed screen.
     camera: media.some((part) => part?.video && part?.source !== 'screen'),
     screen: media.some((part) => part?.source === 'screen'),

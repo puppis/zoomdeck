@@ -31,7 +31,7 @@ import {
 import { deleteRecording, describeMedia, download, listRecordings, loadTimeline, mediaFileName, mediaSource, recordingStoreAvailable, RecordingSession, recordingUrl, saveFile, type RecordingEntry } from './store';
 import { awayFromDeck } from './away';
 import { displayWidth, frameAspect, frameSize, renderPageUrl, renderPlan, RenderSession, renderStatus, renderTalk, requestRender, VIDEO_HEIGHTS, type AspectChoice, type RenderStatus } from './render';
-import { appendPart, aspectName, formatTime, presentedAspect, recordingName, stopRef, structureHash, timeOfStop, type Corner, type MediaLane, type PointerKind, type Timeline, type TimelineEvent, type TimelineMedia, type UntimedEvent } from './timeline';
+import { appendPart, aspectName, formatTime, inCameraLane, presentedAspect, recordingName, stopRef, structureHash, timeOfStop, type Corner, type MediaLane, type PointerKind, type Timeline, type TimelineEvent, type TimelineMedia, type UntimedEvent } from './timeline';
 
 /** A tablet page known to the presenter. */
 interface PadEntry {
@@ -50,6 +50,25 @@ const HIGHLIGHTER_COLOR = '#ffdf00';
 const BOARD_STEP = 0.25;
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/**
+ * A sound track of silence, standing in for a microphone the presenter refused: the camera lane
+ * then exists all the same, so that the camera, the filmed screen and the computer's sound are
+ * recorded as usual. Null where the page has no audio engine.
+ */
+function silentAudio(): { stream: MediaStream; context: AudioContext } | null {
+  const AudioContextClass = window.AudioContext ?? (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  if (!AudioContextClass) return null;
+  const context = new AudioContextClass();
+  void context.resume();
+  const destination = context.createMediaStreamDestination();
+  // A constant source at zero keeps samples flowing, so that the recorder writes a steady track.
+  const source = context.createConstantSource();
+  source.offset.value = 0;
+  source.connect(destination);
+  source.start();
+  return { stream: destination.stream, context };
+}
 
 /** The tracks a recorded talk may have, as the list of talks shows them; the deck's own (the timeline) is always there. */
 type TrackKind = 'deck' | 'voice' | 'camera' | 'screen' | 'sound';
@@ -212,6 +231,10 @@ export class PlayerUI {
   private _cameraInScreen = false;
   /** During a playback: the recorded screen shows the camera's floating window at this moment. */
   private _playbackCameraInScreen = false;
+  /** Whether the recording under way, or the last one, had no microphone: a silent track stood in for it (see `silentAudio`). */
+  private _voiceless = false;
+  /** The audio engine of that silent track, closed when the recording stops. */
+  private _silence: AudioContext | null = null;
   /** The picture the camera lane's file being written carries (its video track), null for sound alone; undefined outside a recording. */
   private _lanePicture: string | null | undefined = undefined;
   /** During a playback: the recorded corner picture was set aside by the presenter's pointer at this moment. */
@@ -1541,12 +1564,21 @@ export class PlayerUI {
     this._stopDeviceTest();
     // The microphone is opened here; the camera is the presenter's to turn on, and is recorded while it is.
     let stream: MediaStream | null = null;
+    this._voiceless = false;
+    this._silence?.close().catch(() => undefined);
+    this._silence = null;
     if (typeof navigator.mediaDevices?.getUserMedia === 'function') {
       try {
         stream = await navigator.mediaDevices.getUserMedia({ audio: this._captureConstraints().audio });
       } catch (error) {
-        this.notice(`Cannot record: ${(error as Error).message}`);
-        return;
+        // The talk is recorded all the same, without the voice: a silent track takes the microphone's place.
+        const silence = silentAudio();
+        if (silence) {
+          stream = silence.stream;
+          this._silence = silence.context;
+          this._voiceless = true;
+        }
+        this.notice(silence ? `No microphone (${(error as Error).message}): recording without your voice` : `No microphone (${(error as Error).message}): recording the timeline only`);
       }
     } else {
       this.notice('This browser gives no access to a microphone here; recording the timeline only');
@@ -1602,7 +1634,11 @@ export class PlayerUI {
     this._recordLabel.hidden = false;
     this._recordTimer = window.setInterval(() => this._updateRecordLabel(), 500);
     this._updateRecordLabel();
-    const what = stream ? (videoTracks.length ? 'with the camera' : 'the sound (the camera or the screen join while they are on)') : 'the timeline only';
+    const what = !stream
+      ? 'the timeline only'
+      : this._voiceless
+        ? `without your voice, as the microphone is not allowed${videoTracks.length ? ', with the camera' : ' (the camera or the screen join while they are on)'}`
+        : videoTracks.length ? 'with the camera' : 'the sound (the camera or the screen join while they are on)';
     this.notice(append ? `Continuing ${append.name} at ${formatTime(append.timeline.duration)}, recording ${what}` : `Recording ${what}`);
   }
 
@@ -1698,7 +1734,7 @@ export class PlayerUI {
   /** Describe captured media files as the timeline lists them, numbered after the talk's existing ones (name.webm, name.part2.webm, …). */
   private _describeParts(name: string, first: number, parts: ReadonlyArray<Omit<CapturedMedia, 'blob'>>): TimelineMedia[] {
     // Named by the number each file got as it began (as the bundle names it), not by its place in the list, which follows the order files ended.
-    return parts.map((captured) => ({ ...describeMedia(name, captured.type, first + captured.index, captured.duration), start: captured.start, ...(captured.source === 'screen' ? { source: 'screen' as const } : {}), ...(captured.lane ? { lane: captured.lane } : {}) }));
+    return parts.map((captured) => ({ ...describeMedia(name, captured.type, first + captured.index, captured.duration), start: captured.start, ...(captured.source === 'screen' ? { source: 'screen' as const } : {}), ...(captured.lane ? { lane: captured.lane } : {}), ...(!captured.lane && this._voiceless ? { voice: false as const } : {}) }));
   }
 
   /** The timeline as it would be if the talk stopped now. */
@@ -1747,6 +1783,9 @@ export class PlayerUI {
     // stays held for the next time (S), until the browser's bar ends it.
     for (const track of this._recordStream?.getAudioTracks() ?? []) track.stop();
     this._recordStream = null;
+    // The silence that stood in for a refused microphone ends with the recording.
+    this._silence?.close().catch(() => undefined);
+    this._silence = null;
     await this._setScreenFilming(false);
     // A new talk, or the one being continued: the part is appended either way.
     const append = this._appendTo;
@@ -1838,6 +1877,7 @@ export class PlayerUI {
       duration: timeline.duration,
       media: media.length ? media[0].file : null,
       video: media.some((part) => part.video),
+      voice: media.some((part) => inCameraLane(part) && part.voice !== false),
       camera: media.some((part) => part.video && part.source !== 'screen'),
       screen: media.some((part) => part.source === 'screen'),
       ...(media.some((part) => part.lane === 'system') ? { system: true } : {}),
@@ -1955,7 +1995,7 @@ export class PlayerUI {
     });
     const tracks: Array<[TrackKind, boolean, string]> = [
       ['deck', true, 'The deck: its stops, ink, pointer and camera switches, replayed from the timeline'],
-      ['voice', Boolean(entry.media), 'Voice'],
+      ['voice', entry.voice ?? Boolean(entry.media), 'Voice'],
       ['camera', entry.camera ?? entry.video, 'Camera'],
       ['screen', Boolean(entry.screen), 'Filmed screen'],
       ['sound', Boolean(entry.system), "Computer's sound"],

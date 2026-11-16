@@ -262,7 +262,10 @@ camera while it is on (see [The camera](#the-camera); recording never turns it o
 and everything you do on the deck, each on the same clock: the stops you move through and how
 (played forwards, backwards or jumped to), every pen and highlighter stroke as it is drawn, undo
 and clear, the whiteboard with its scrolling, the laser or spotlight while it is shown, the
-playback speed and the camera switches. The slides themselves are not filmed. A recording is
+playback speed and the camera switches. The slides themselves are not filmed. When the browser
+is not allowed the microphone, the talk is recorded all the same, without your voice: a silent
+track takes the microphone's place, so the camera, the filmed screen and the computer's sound are
+kept as usual, and the list of talks shows no microphone for it. A recording is
 therefore one *bundle*, a zip file `recordings/talk-2026-11-13-1030.zip` holding a few files: the
 sound or video from the microphone and camera (WebM, or MP4 in Safari; a further file each time
 the camera is turned on or off, since a picture cannot join a media file being written, and when
