@@ -8,6 +8,8 @@ There is no server-side rendering, no LaTeX installation and no video encoding: 
 live on a WebGL canvas, and the presentation navigates each tree of slides in pre-order, zooming into
 each child and back out to its parent, and cuts from one root to the next.
 
+Zoomdeck is inspired by [Slajdomat](https://github.com/bojanczyk/slajdomat), Mikołaj Bojańczyk’s program for zooming slides, which I used for many years and which gave me the idea of a talk as a tree of slides that the camera zooms through. Zoomdeck takes a different direction though: its slides are written mainly in a markup language, whereas Slajdomat draws them in a graphical editor (Figma).
+
 ## Documentation
 
 The topic-by-topic documentation is published at <https://puppis.github.io/zoomdeck/>, with the

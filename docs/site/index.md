@@ -11,6 +11,8 @@ as viewports. Presenting means visiting each tree in pre-order: the camera zooms
 plays its steps and zooms back out (or cuts, when you prefer), so the audience always sees where
 a detail belongs; from one root to the next it cuts, as between the pages of a document.
 
+Zoomdeck is inspired by [Slajdomat](https://github.com/bojanczyk/slajdomat), Mikołaj Bojańczyk’s program for zooming slides, which I used for many years and which gave me the idea of a talk as a tree of slides that the camera zooms through. Zoomdeck takes a different direction though: its slides are written mainly in a markup language, whereas Slajdomat draws them in a graphical editor (Figma).
+
 You write slides in a Markdown dialect: prose, LaTeX formulas, images, video, shapes, diagram
 icons and arrows (crisp or hand-drawn), boxes and blobs around groups of elements, tables, charts,
 code listings, live web pages, fragments that appear on clicks, and animations such as moves,
