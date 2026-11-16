@@ -1,8 +1,8 @@
 # Zoomdeck
 
-Zoomdeck is inspired by [Slajdomat](https://github.com/bojanczyk/slajdomat), Mikołaj Bojańczyk’s program for zooming slides, which I used for many years and which gave me the idea of a talk as a tree of slides that the camera zooms through. Zoomdeck takes a different direction though: its slides are written mainly in a markup language, whereas Slajdomat draws them in a graphical editor (Figma).
-
 Repository: <https://github.com/puppis/zoomdeck> · Documentation and tour: <https://puppis.github.io/zoomdeck/>
+
+Zoomdeck is inspired by [Slajdomat](https://github.com/bojanczyk/slajdomat), Mikołaj Bojańczyk’s program for zooming slides, which I used for many years and which gave me the idea of a talk as a tree of slides that the camera zooms through. Zoomdeck takes a different direction though: its slides are written mainly in a markup language, whereas Slajdomat draws them in a graphical editor (Figma).
 
 Author a presentation as a forest of **slides**, most often a single tree, each slide with its own logical canvas and a small
 animation program, and present it as a zooming slideshow that runs **entirely in the browser**.
