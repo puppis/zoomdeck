@@ -485,6 +485,8 @@ be the reference of a position or the target of another connection or attachment
 | `id` | identifier | `element-N` | |
 | `from`, `to` | | required, written before the attributes | the endpoints |
 | `label` | inline markup | | text at the middle of the connection |
+| `label_side` | `above`, `below` | `above` | the side of the edge the label sits on, in the label's own frame along the edge: it reads from left to right (bottom to top on a vertical edge), and `above` is the side its letters stand on, so the left of a vertical edge |
+| `slanted` | `true`, `false` | `false` | turn the label along the edge; otherwise it stays upright, beside the middle of the edge and clear of the line |
 | `font`, `font_size` | | the text face, `layout.fontSize` | the label's face and size |
 | `color` | color | the text color | stroke and label |
 | `stroke_width` | engine units | 2 | |

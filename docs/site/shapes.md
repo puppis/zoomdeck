@@ -50,8 +50,19 @@ like shapes.
 
 An arrow or line goes from one endpoint to another: an element ID (attached at the facing
 bounding edge) or a literal `(x,y)` point. They take an optional `#id`, a `label` with inline
-styling and math (placed above the connection, sized by `font_size`, set in `font`), `color`, `stroke_width`, `opacity`, `step`,
-`hide` and timing. Connections are created after all other elements, so forward references work;
+styling and math (sized by `font_size`, set in `font`), `color`, `stroke_width`, `opacity`, `step`,
+`hide` and timing.
+
+The label sits at the middle of the edge, above it by default: upright, and clear of the line
+on a slanted or vertical edge. `slanted=true` turns it along the edge, and `label_side=below`
+puts it on the other side. Above and below are taken in the label's own frame along the edge,
+which reads from left to right, or from bottom to top on a vertical edge, so that a label is never
+upside down: above a vertical edge is its left, whichever way the arrow points.
+
+```markdown
+[[arrow: #a -> #b, #rise, label="slanted", slanted=true]]
+[[arrow: #b -> #c, #fall, label="below", slanted=true, label_side=below]]
+``` Connections are created after all other elements, so forward references work;
 they cannot anchor other elements and are not hidden implicitly when an endpoint disappears.
 
 ## Attachments

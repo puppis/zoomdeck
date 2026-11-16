@@ -1075,12 +1075,46 @@ export class MarkupRenderer {
       const spans = this._parser.parseInlineSpans(label, element.line);
       const size = numberValue(element.attributes, 'font_size', element.line, this.layout.fontSize * 0.8) as number;
       const text = await this.text(spans, size, 4, this.layout.color, element.attributes.font);
-      text.nextTo(connection, [0, 1, 0], 0.1);
+      placeLabel(text, connection, start3, end3, element.attributes.slanted === 'true', element.attributes.label_side === 'below' ? 'below' : 'above');
       result = new Group(connection, text);
     }
     if ('opacity' in element.attributes) applyOpacity(result, Number(element.attributes.opacity));
     return result;
   }
+}
+
+/**
+ * Place a connection's label at the middle of the edge, on one side of it. The side is taken in
+ * the label's own frame along the edge, the frame it reads in, from left to right (bottom to top on
+ * a vertical edge), so that it is never upside down: `above` is the side its letters stand on
+ * (the left of a vertical edge), `below` the other. A level edge keeps the label above or below
+ * the connection, as it always was. On any other edge the label sits beside the middle, clear of
+ * the line: upright by default, or turned along the edge with `slanted`.
+ */
+export function placeLabel(text: Mobject, connection: Mobject, start: [number, number, number], end: [number, number, number], slanted: boolean, side: 'above' | 'below' = 'above'): void {
+  let angle = Math.atan2(end[1] - start[1], end[0] - start[0]);
+  // Read from left to right: an edge pointing leftwards is turned around.
+  if (angle > Math.PI / 2 + 1e-9) angle -= Math.PI;
+  else if (angle <= -Math.PI / 2 + 1e-9) angle += Math.PI;
+  const sign = side === 'below' ? -1 : 1;
+  if (Math.abs(Math.sin(angle)) < 1e-6) {
+    text.nextTo(connection, [0, sign, 0], 0.1);
+    return;
+  }
+  const middle = [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2];
+  // The normal toward the label's side, in its frame: up from its letters (to the left of a vertical edge), or the other way.
+  const normal = [-Math.sin(angle) * sign, Math.cos(angle) * sign];
+  const gap = 0.1;
+  let reach: number;
+  if (slanted) {
+    // Turned along the edge, the label's height is what separates it from the line.
+    reach = text.getHeight() / 2;
+    text.rotate(angle);
+  } else {
+    // Upright, its box reaches toward the line by its half-extent across the edge.
+    reach = (Math.abs(normal[0]) * text.getWidth()) / 2 + (Math.abs(normal[1]) * text.getHeight()) / 2;
+  }
+  text.moveTo([middle[0] + normal[0] * (reach + gap), middle[1] + normal[1] * (reach + gap), 0]);
 }
 
 export { CONNECTIONS };

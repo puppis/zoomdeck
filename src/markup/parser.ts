@@ -757,7 +757,7 @@ export class ASTTransformer {
     let allowed: Set<string> | null;
     if (item.kind === 'group') allowed = new Set(GROUP_ATTRS);
     else if (CONNECTIONS.has(item.kind)) {
-      allowed = new Set(['id', 'step', 'hide', 'color', 'from', 'to', 'label', 'font', 'font_size', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
+      allowed = new Set(['id', 'step', 'hide', 'color', 'from', 'to', 'label', 'label_side', 'slanted', 'font', 'font_size', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
     }
     else if (ATTACHMENTS.has(item.kind)) {
       allowed = new Set(['id', 'target', 'step', 'hide', 'color', 'buff', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
@@ -801,6 +801,14 @@ export class ASTTransformer {
     }
     if (allowed && VECTOR_KINDS.has(item.kind)) for (const key of TREMBLE_ATTRS) allowed.add(key);
     if (allowed) this._checkAttrs(item.attributes, allowed, item.line);
+    if (CONNECTIONS.has(item.kind)) {
+      // A connection's label: on which side of the edge, in the label's own frame along it, and whether it turns along the edge.
+      if ('label_side' in item.attributes && !['above', 'below'].includes(item.attributes.label_side)) throw new MarkupError('An arrow\'s or a line\'s label_side must be above or below', item.line);
+      if ('slanted' in item.attributes && !['true', 'false'].includes(item.attributes.slanted)) throw new MarkupError('slanted must be true or false', item.line);
+      for (const key of ['label_side', 'slanted']) {
+        if (key in item.attributes && !('label' in item.attributes)) throw new MarkupError(`${key} requires a label`, item.line);
+      }
+    }
     if ('href' in item.attributes && !LINK_TARGET.test(item.attributes.href)) {
       throw new MarkupError(`Unsupported link target ${JSON.stringify(item.attributes.href)}; use https://, mailto:, #, / or a relative path`, item.line);
     }
