@@ -68,6 +68,216 @@ function groupEnd(source: string, start: number): number {
 }
 
 /**
+ * A deck macro as `deck.json` writes it, in MathJax's own form: the expansion alone, or the
+ * expansion and its number of arguments (`#1` to `#9`), or also the default of an optional first
+ * argument, given in brackets.
+ */
+export type MacroDefinition = string | [string, number] | [string, number, string];
+
+/** A deck macro ready to expand. */
+export interface Macro {
+  expansion: string;
+  args: number;
+  /** The default of the optional first argument, when it has one. */
+  optional?: string;
+}
+
+/** An error in a formula; the slide that holds the formula adds its line. */
+export class LatexError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'LatexError';
+  }
+}
+
+/** Check the macros of `deck.json` and make them ready to expand. */
+export function compileMacros(definitions: Record<string, unknown> | undefined): Map<string, Macro> {
+  const macros = new Map<string, Macro>();
+  if (definitions === undefined || definitions === null) return macros;
+  if (typeof definitions !== 'object' || Array.isArray(definitions)) throw new Error('deck.json: "macros" must map names to expansions');
+  for (const [name, value] of Object.entries(definitions)) {
+    const where = `deck.json: macro ${JSON.stringify(name)}`;
+    if (!/^[A-Za-z]+$/.test(name)) throw new Error(`${where}: a name is letters only, without the backslash`);
+    let macro: Macro;
+    if (typeof value === 'string') macro = { expansion: value, args: 0 };
+    else if (Array.isArray(value) && typeof value[0] === 'string' && Number.isInteger(value[1]) && value[1] >= 0 && value[1] <= 9
+      && (value.length === 2 || (value.length === 3 && typeof value[2] === 'string' && value[1] >= 1))) {
+      macro = { expansion: value[0], args: value[1], ...(value.length === 3 ? { optional: value[2] as string } : {}) };
+    } else {
+      throw new Error(`${where}: write an expansion, or [expansion, number of arguments from 1 to 9], or [expansion, number of arguments, default of the optional first one]`);
+    }
+    for (const match of macro.expansion.matchAll(/#+([1-9]?)/g)) {
+      // `##` is a literal `#`; an odd one out must name an argument the macro takes.
+      if ((match[0].length - match[1].length) % 2 === 0) continue;
+      const index = Number(match[1]);
+      if (!index || index > macro.args) {
+        throw new Error(`${where}: #${match[1]} in its expansion, but it takes ${macro.args === 0 ? 'no arguments' : macro.args === 1 ? 'one argument' : `${macro.args} arguments`}`);
+      }
+    }
+    macros.set(name, macro);
+  }
+  return macros;
+}
+
+/** The macros MathJax is also given: those without arguments, for the places expansion leaves alone (`\let\foo\N`). */
+export function plainMacros(macros: ReadonlyMap<string, Macro>): Record<string, string> | undefined {
+  const plain = Object.fromEntries([...macros].filter(([, macro]) => macro.args === 0).map(([name, macro]) => [name, macro.expansion]));
+  return Object.keys(plain).length ? plain : undefined;
+}
+
+/** Commands that define a macro: the name after them is the formula's own, never expanded. */
+const DEFINERS = new Set(['newcommand', 'renewcommand', 'providecommand', 'def', 'gdef', 'edef', 'xdef', 'let', 'DeclareMathOperator']);
+/** Expansions in one formula past which a macro is taken to use itself without end. */
+const MAX_EXPANSIONS = 10_000;
+
+/** The name of the control sequence at `start` (a backslash) and the index just past it. */
+function controlSequence(source: string, start: number): [string, number] {
+  let end = start + 1;
+  if (end >= source.length) return ['', end];
+  if (!/[A-Za-z]/.test(source[end])) return [source[end], end + 1];
+  while (end < source.length && /[A-Za-z]/.test(source[end])) end += 1;
+  return [source.slice(start + 1, end), end];
+}
+
+function skipSpaces(source: string, index: number): number {
+  while (index < source.length && /\s/.test(source[index])) index += 1;
+  return index;
+}
+
+/** The index of the `close` that ends what opens at `start`, outside braces; -1 when there is none. */
+function closing(source: string, start: number, close: string): number {
+  let depth = 0;
+  for (let i = start + 1; i < source.length; i++) {
+    const char = source[i];
+    if (char === '\\') i += 1;
+    else if (char === '{') depth += 1;
+    else if (char === '}') {
+      if (depth === 0) return close === '}' ? i : -1;
+      depth -= 1;
+    } else if (char === close && depth === 0) return i;
+  }
+  return -1;
+}
+
+/**
+ * Join two pieces of a formula as MathJax does when it substitutes arguments: a control word
+ * followed by a letter would read as a longer word, so a space keeps them apart.
+ */
+function join(left: string, right: string): string {
+  return /(?:^|[^\\])(?:\\\\)*\\[A-Za-z]+$/.test(left) && /^[A-Za-z]/.test(right) ? `${left} ${right}` : left + right;
+}
+
+/** The arguments of a use of `\name` that ends at `index`, and the index just past them. */
+function readArguments(source: string, index: number, name: string, macro: Macro): [string[], number] {
+  const args: string[] = [];
+  const takes = macro.optional !== undefined ? `${macro.args} arguments, the first one optional`
+    : macro.args === 1 ? 'one argument' : `${macro.args} arguments`;
+  for (let k = 0; k < macro.args; k++) {
+    const at = skipSpaces(source, index);
+    if (k === 0 && macro.optional !== undefined) {
+      if (source[at] === '[') {
+        const end = closing(source, at, ']');
+        if (end < 0) throw new LatexError(`\\${name}: the optional argument opened with [ is never closed`);
+        // As in TeX, braces around the whole of it (to hold a bracket) are not part of it.
+        const optional = source.slice(at + 1, end);
+        args.push(optional.startsWith('{') && closing(optional, 0, '}') === optional.length - 1 ? optional.slice(1, -1) : optional);
+        index = end + 1;
+      } else args.push(macro.optional);
+      continue;
+    }
+    if (at >= source.length || source[at] === '}' || source[at] === '&') {
+      throw new LatexError(`\\${name} takes ${takes}: argument ${k + 1} is missing`);
+    }
+    if (source[at] === '{') {
+      const end = closing(source, at, '}');
+      if (end < 0) throw new LatexError(`\\${name}: an argument opened with { is never closed`);
+      args.push(source.slice(at + 1, end));
+      index = end + 1;
+    } else if (source[at] === '\\') {
+      const [, end] = controlSequence(source, at);
+      args.push(source.slice(at, end));
+      index = end;
+    } else {
+      args.push(source[at]);
+      index = at + 1;
+    }
+  }
+  return [args, index];
+}
+
+/** A macro's expansion with its arguments in place of `#1` to `#9`, and `#` for `##`. */
+function substitute(expansion: string, args: readonly string[]): string {
+  let result = '';
+  let last = 0;
+  for (const match of expansion.matchAll(/##|#([1-9])/g)) {
+    result = join(result, expansion.slice(last, match.index));
+    result = join(result, match[0] === '##' ? '#' : args[Number(match[1]) - 1]);
+    last = (match.index ?? 0) + match[0].length;
+  }
+  return join(result, expansion.slice(last));
+}
+
+/**
+ * Expand the deck's macros in a formula, as TeX would: a use reads its arguments (a `{group}`, a
+ * command or a character, and the optional first one in brackets), and what it expands to is read
+ * again, so macros may use one another and take arguments from the text that follows. A name the
+ * formula defines for itself (`\newcommand`, `\def`, `\let`…) is left to MathJax from there on.
+ */
+export function expandMacros(source: string, macros: ReadonlyMap<string, Macro>): string {
+  if (!macros.size || !source.includes('\\')) return source;
+  let text = source;
+  const own = new Set<string>();
+  let expansions = 0;
+  let i = 0;
+  while (i < text.length) {
+    if (text[i] !== '\\') {
+      i += 1;
+      continue;
+    }
+    const [name, end] = controlSequence(text, i);
+    if (DEFINERS.has(name)) {
+      // The name defined comes next, bare or in braces; \let also leaves the command it copies alone.
+      let at = skipSpaces(text, end);
+      if (text[at] === '*') at = skipSpaces(text, at + 1);
+      if (text[at] === '{') at = skipSpaces(text, at + 1);
+      if (text[at] !== '\\') {
+        i = end;
+        continue;
+      }
+      const [defined, after] = controlSequence(text, at);
+      own.add(defined);
+      i = after;
+      if (name === 'let') {
+        at = skipSpaces(text, i);
+        if (text[at] === '=') at = skipSpaces(text, at + 1);
+        if (text[at] === '\\') i = controlSequence(text, at)[1];
+      }
+      continue;
+    }
+    const macro = own.has(name) ? undefined : macros.get(name);
+    if (!macro) {
+      i = end;
+      continue;
+    }
+    expansions += 1;
+    if (expansions > MAX_EXPANSIONS) throw new LatexError(`\\${name} expands without end: a macro uses itself`);
+    const [args, after] = readArguments(text, end, name, macro);
+    const before = text.slice(0, i);
+    text = join(join(before, substitute(macro.expansion, args)), text.slice(after));
+    // Read the expansion again from its start: it may use macros, and take arguments from what follows.
+    i = before.length;
+  }
+  return text;
+}
+
+/** The message of a MathJax error in a rendered formula, if it is one. */
+export function latexErrorOf(svg: string): string | null {
+  const match = /data-mjx-error="([^"]*)"/.exec(svg);
+  if (!match) return null;
+  return match[1].replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCodePoint(parseInt(hex, 16))).replace(/&amp;/g, '&');
+}
+
+/**
  * Rewrite `\textcolor` and `\color` into `\class` groups MathJax understands,
  * and spell `<` / `>` as commands: a literal `<` breaks the engine's render path.
  */

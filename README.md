@@ -178,7 +178,8 @@ that). Prose uses the bundled Latin Modern Roman face and code the bundled Latin
 replace them; `font=` on a paragraph, heading or label picks another face (the handwriting face
 Zeyada is bundled too, and a family in a `fonts/` folder is loaded by name). Formula sizes are
 calibrated to prose sizes, so text and math look like one LaTeX document by default. LaTeX renders
-through MathJax (ams, newcommand and configmacros packages). `\textcolor` and `\color` with
+through MathJax (ams, newcommand and configmacros packages), with the macros of `deck.json`, which
+may take arguments. `\textcolor` and `\color` with
 dvipsnames or CSS colors are supported; other LaTeX packages are not. Inline math shares the text
 baseline. Fenced code blocks become verbatim listings with token colors for Python,
 JavaScript/TypeScript, C-like languages (C, C++, C#, Java, Rust, Go, Swift and more), shells, JSON,

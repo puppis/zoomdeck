@@ -136,7 +136,8 @@ $$ \textcolor{Orange}{a}^2 + {\color{Cerulean} b^2} = c^2 $$
 
 Single dollars give inline math, `$$` on its own lines (or `$$…$$` on one line) a display formula.
 LaTeX renders through MathJax with the ams, newcommand and configmacros packages; `macros` in
-`deck.json` defines extra commands. `\textcolor{…}{…}` and `{\color{…} …}` accept dvipsnames and
+`deck.json` defines extra commands, with arguments as in MathJax
+(`"pair": ["\\langle #1, #2 \\rangle", 2]`). `\textcolor{…}{…}` and `{\color{…} …}` accept dvipsnames and
 CSS colors. Wrap a formula in `::: {.element …}` to give it attributes.
 
 ## Images, animated images and videos

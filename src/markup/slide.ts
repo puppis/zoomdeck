@@ -23,6 +23,7 @@ import {
   elementStep,
   stepValue,
 } from './ast';
+import { LatexError, type MacroDefinition } from './latex';
 import { ASTTransformer } from './parser';
 import {
   LayoutConfig, MarkupRenderer, anchorPoint, applyOpacity, elementAnchor, placeRelative, type OriginMobject, type PartsMobject,
@@ -30,6 +31,16 @@ import {
 
 /** Slide classes by name, as `[[subslide: Name]]` finds them. */
 export type SlideNamespace = Record<string, unknown>;
+
+/** Build what the item on `line` draws: an error in one of its formulas names that line. */
+async function located<T>(line: number, build: () => Promise<T>): Promise<T> {
+  try {
+    return await build();
+  } catch (error) {
+    if (error instanceof LatexError) throw new MarkupError(error.message, line);
+    throw error;
+  }
+}
 
 function instantiateSlide(spec: CodeSlideSpec, namespace: SlideNamespace | null): Slide {
   if (!namespace) throw new MarkupError('Code-authored subslides need slide classes; pass `classes` to the markup deck', spec.line);
@@ -186,7 +197,7 @@ export class MarkupSlide extends Slide {
         explicit = 'x' in item.attributes || 'y' in item.attributes;
         position = [Number(item.attributes.x ?? 0), Number(item.attributes.y ?? 0), 0];
       } else {
-        obj = item instanceof GroupSpec ? await this._buildGroup(item, scope.width) : await this.renderer.make(item, Math.max(scope.width - indent, 0.5));
+        obj = item instanceof GroupSpec ? await this._buildGroup(item, scope.width) : await located(item.line, () => this.renderer.make(item, Math.max(scope.width - indent, 0.5)));
         if (item.attributes.href) LINKED_OBJECTS.set(obj, item.attributes.href);
         SOURCE_OBJECTS.set(obj, this.locate(item.line));
         this.elements.set(item.id, obj);
@@ -256,7 +267,7 @@ export class MarkupSlide extends Slide {
     }
     for (const item of items) {
       if (item instanceof ElementSpec && ATTACHMENTS.has(item.kind)) {
-        const obj = await this.renderer.attachment(item, scope.local);
+        const obj = await located(item.line, () => this.renderer.attachment(item, scope.local));
         if (item.attributes.href) LINKED_OBJECTS.set(obj, item.attributes.href);
         SOURCE_OBJECTS.set(obj, this.locate(item.line));
         this.elements.set(item.id, obj);
@@ -265,7 +276,7 @@ export class MarkupSlide extends Slide {
     }
     for (const item of items) {
       if (item instanceof ElementSpec && CONNECTIONS.has(item.kind)) {
-        const obj = await this.renderer.connection(item, scope.local);
+        const obj = await located(item.line, () => this.renderer.connection(item, scope.local));
         if (item.attributes.href) LINKED_OBJECTS.set(obj, item.attributes.href);
         SOURCE_OBJECTS.set(obj, this.locate(item.line));
         this.elements.set(item.id, obj);
@@ -497,7 +508,7 @@ export class SlideBuilder {
   build(
     document: MarkupDocument,
     options: {
-      namespace?: SlideNamespace | null; macros?: Record<string, string>; assets?: Record<string, string>; locate?: (line: number) => SourceLocation;
+      namespace?: SlideNamespace | null; macros?: Record<string, MacroDefinition>; assets?: Record<string, string>; locate?: (line: number) => SourceLocation;
       paths?: string[]; artworks?: string[]; artworkModules?: Record<string, ArtworkModule>;
       fonts?: string[]; effects?: string[]; charts?: string[]; languages?: string[]; codeThemes?: string[]; directives?: string[];
       effectModules?: Record<string, EffectModule>; chartModules?: Record<string, ChartModule>; directiveModules?: Record<string, DirectiveModule>;

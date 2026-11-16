@@ -579,7 +579,7 @@ $$
 $$ \textcolor{Orange}{a}^2 + {\color{Cerulean} b^2} = c^2 $$
 :::
 
-Macros from deck.json: $\N \subset \R$.
+Macros from deck.json: $\N \subset \R$, $\pair{x}{y} \in \R^2$.
 ```
 
 Inline math shares the baseline: $\int_0^1 x^2\,dx = \tfrac13$. {x=0.6 width=9}
@@ -594,9 +594,9 @@ $$
 $$ \textcolor{Orange}{a}^2 + {\color{Cerulean} b^2} = c^2 $$
 :::
 
-Macros from deck.json: $\N \subset \R$. {x=0.6 y=-1.8 width=9}
+Macros from deck.json: $\N \subset \R$, $\pair{x}{y} \in \R^2$. {x=0.6 y=-1.8 width=9}
 
-Single dollars give inline math and `$$` lines a display formula; LaTeX renders through MathJax, with the `macros` of deck.json at hand. {#math-key x=-9.35 y=-3.5 width=18.7 font_size=22}
+Single dollars give inline math and `$$` lines a display formula; LaTeX renders through MathJax, with the `macros` of deck.json at hand, arguments included. {#math-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
 A `::: {.element …}` container positions, sizes or animates a formula; `\textcolor` and `\color` accept dvipsnames and CSS colors. {#math-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
@@ -1028,7 +1028,10 @@ A `::: {.group #id}` container lays out its members in their own coordinates and
   "viewport": { "width": 16, "height": 9 },
   "layout": { "fontSize": 26, "headingSize": 40, "codeSize": 19 },
   "presenter": { "transitionTime": 0.8 },
-  "macros": { "N": "\\mathbb{N}", "R": "\\mathbb{R}" }
+  "macros": {
+    "N": "\\mathbb{N}", "R": "\\mathbb{R}",
+    "pair": ["\\langle #1, #2 \\rangle", 2]
+  }
 }
 ```
 

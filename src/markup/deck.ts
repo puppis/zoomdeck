@@ -3,6 +3,7 @@ import { defineDeck, type DeckDefinition, type ResolvedDeck, type ViewportSize }
 import { PresenterConfig, type PresenterConfigOptions } from '../runtime';
 import { MarkupParser } from './parser';
 import { MarkupError, normalizeStyles } from './ast';
+import type { MacroDefinition } from './latex';
 import { describeOrigin, expandImports } from './imports';
 import { LayoutConfig, type LayoutConfigOptions } from './renderer';
 import { SlideBuilder, type SlideNamespace } from './slide';
@@ -43,8 +44,8 @@ export interface MarkupDeckOptions {
    * document; other paths are fetched relative to it (or to `basePath`).
    */
   files?: Record<string, string>;
-  /** LaTeX macros for MathJax. */
-  macros?: Record<string, string>;
+  /** LaTeX macros for every formula: an expansion, or [expansion, number of arguments, default of an optional first one]. */
+  macros?: Record<string, MacroDefinition>;
   /** Preloaded assets (path relative to the markup file → URL or data URI) for single-file bundles. */
   assets?: Record<string, string>;
   /** Named styles: attribute strings (`"font_size=18 color=GRAY"`) or objects, applied by role or `.class`. */
@@ -453,7 +454,7 @@ export interface DeckConfig {
   background?: string;
   viewport?: ViewportSize;
   showOutline?: boolean;
-  macros?: Record<string, string>;
+  macros?: Record<string, MacroDefinition>;
   /** Named styles applied by role (`heading`, `body`, `code`, …) or `.class` tokens. */
   styles?: Record<string, string | Record<string, unknown>>;
   /** Module URL exporting slide classes for `[[subslide: Name ...]]` directives. */

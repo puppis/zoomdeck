@@ -868,7 +868,7 @@ are relative to the file itself.
 | `background` | color | the canvas background (white) |
 | `viewport` | `{ "width", "height" }` | the proportions the camera fits (16 × 9) |
 | `showOutline` | boolean | open the outline at start |
-| `macros` | object | LaTeX macros for every formula, name to expansion |
+| `macros` | object | LaTeX macros for every formula: name to an expansion, or to `[expansion, number of arguments]`, or to `[expansion, number of arguments, default of the optional first one]`, as in MathJax |
 | `styles` | object | named styles, as attribute strings or objects |
 | `theme` | name or list | themes applied under the deck's own settings |
 | `paths` | list of folders | searched, after the Markdown's own folder, for imports, images, videos, pages and data files |

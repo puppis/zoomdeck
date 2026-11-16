@@ -17,7 +17,8 @@
   },
   "macros": {
     "N": "\\mathbb{N}",
-    "R": "\\mathbb{R}"
+    "R": "\\mathbb{R}",
+    "pair": ["\\langle #1, #2 \\rangle", 2]
   },
   "styles": {
     "footnote": {

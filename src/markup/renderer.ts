@@ -5,7 +5,7 @@
  */
 import {
   Arc, Arrow, Brace, Circle, Dot, Ellipse, Group, Line, MathTex, Polygon, Rectangle, RoundedRectangle, VGroup, VMobject,
-  type Mobject,
+  renderLatexToSVG, type Mobject,
 } from 'manim-web';
 import { loadSvgMobject } from '../svg';
 import { dashPattern, dashSegments, sketch, sketchSeed, type FillStyle, type OutlineMobject, type SketchOptions } from '../sketch';
@@ -34,7 +34,7 @@ import { MarkupParser } from './parser';
 import { MONOSPACE, baselineY, layoutParagraph, type MathPiece } from './text';
 import { layoutCode } from './code';
 import { DEFAULT_TEXT_FONT } from '../fonts';
-import { applyLatexColors, preprocessLatex } from './latex';
+import { LatexError, applyLatexColors, compileMacros, expandMacros, latexErrorOf, plainMacros, preprocessLatex, type Macro, type MacroDefinition } from './latex';
 
 /** Formula pixel size per prose point, so that `font_size` means the same for both. */
 export const MATH_SIZE_RATIO = 4 / 3;
@@ -313,8 +313,8 @@ export interface MarkupRendererOptions {
   layout?: LayoutConfig;
   /** Base URL for images; relative paths resolve against it. */
   basePath?: string;
-  /** Optional LaTeX macros passed to MathJax. */
-  macros?: Record<string, string>;
+  /** The deck's LaTeX macros, in MathJax's form: an expansion, or [expansion, arguments, default of an optional first one]. */
+  macros?: Record<string, MacroDefinition>;
   /** Preloaded assets keyed by document-relative path, e.g. data URIs in single-file bundles. */
   assets?: Record<string, string>;
   /**
@@ -353,7 +353,10 @@ const MODULE_EXTENSIONS = ['js', 'mjs', 'ts'];
 export class MarkupRenderer {
   readonly layout: LayoutConfig;
   readonly basePath: string;
-  readonly macros: Record<string, string> | undefined;
+  /** The deck's LaTeX macros, expanded in every formula before MathJax reads it. */
+  readonly macros: ReadonlyMap<string, Macro>;
+  /** The macros without arguments, also handed to MathJax for what expansion leaves alone. */
+  private readonly _plainMacros: Record<string, string> | undefined;
   readonly assets: Record<string, string>;
   readonly paths: string[];
   readonly artworks: string[];
@@ -381,7 +384,8 @@ export class MarkupRenderer {
   constructor(options: MarkupRendererOptions = {}) {
     this.layout = options.layout ?? new LayoutConfig();
     this.basePath = options.basePath ?? '';
-    this.macros = options.macros;
+    this.macros = compileMacros(options.macros);
+    this._plainMacros = plainMacros(this.macros);
     this.assets = options.assets ?? {};
     this.paths = options.paths ?? [];
     this.artworks = options.artworks ?? [];
@@ -699,11 +703,20 @@ export class MarkupRenderer {
   }
 
   private async _mathTex(latex: string | string[], color: string, fontSize: number): Promise<MathTex> {
-    const processed = Array.isArray(latex) ? latex.map(preprocessLatex) : preprocessLatex(latex);
+    const prepare = (source: string) => preprocessLatex(expandMacros(source, this.macros));
+    const processed = Array.isArray(latex) ? latex.map(prepare) : prepare(latex);
+    const macros = this._plainMacros ? { macros: this._plainMacros } : {};
     // Prose sizes are points (an em of fontSize * 4/3 canvas pixels); the engine sizes formulas in
     // pixels. Scaling by 4/3 gives formulas and prose of the same `fontSize` the same em.
-    const tex = new MathTex({ latex: processed, color, fontSize: fontSize * MATH_SIZE_RATIO, macros: this.macros });
+    const tex = new MathTex({ latex: processed, color, fontSize: fontSize * MATH_SIZE_RATIO, ...macros });
     await tex.waitForRender();
+    // MathJax shows an error in place of the formula, which the engine leaves out: nothing is drawn.
+    if (!tex.getFamily().some((member) => member instanceof VMobject && member.hasOwnPoints())) {
+      const source = Array.isArray(processed) ? processed.join('') : processed;
+      const rendered = await renderLatexToSVG(source, { displayMode: true, ...macros }).catch(() => null);
+      const message = rendered && latexErrorOf(rendered.svgString);
+      if (message) throw new LatexError(`${message} in $${Array.isArray(latex) ? latex[latex.length - 1] : latex}$`);
+    }
     applyLatexColors(tex);
     return tex;
   }

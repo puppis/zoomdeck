@@ -38,7 +38,7 @@ description: Every key of deck.json, the layout and presenter options, and the c
 | `layout` | typography and spacing, below |
 | `presenter` | timing and camera policy, below |
 | `styles` | named styles applied by `.class` tokens and roles, see [Styles](styles.html) |
-| `macros` | LaTeX macros for every formula |
+| `macros` | LaTeX macros for every formula: an expansion, or `[expansion, arguments]`, or `[expansion, arguments, default of the optional first one]` (see [Mathematics](math.html)) |
 | `showOutline` | open the outline at start |
 
 ## layout
