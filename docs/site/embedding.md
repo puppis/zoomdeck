@@ -56,6 +56,7 @@ the slides. These can be left out, one by one, and the footer shows only what is
 | `screen` | Filming the screen. |
 | `record` | Recording a talk and playing recorded talks back. |
 | `print` | The PDF printout. |
+| `export` | The Export button and dialog: the deck as a web page, where a preview server builds it, and recorded talks as videos. |
 | `fullscreen` | The Fullscreen button and its keys. |
 | `settings` | The ⚙ button and the settings dialog. |
 

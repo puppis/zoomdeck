@@ -26,6 +26,14 @@ export interface DeckDefinition {
   showOutline?: boolean;
   /** URL of the folder the deck's files are loaded from, where recordings of talks are kept. */
   base?: string | null;
+  /** The deck's own file, when the page that loaded it knows it: the player's Export builds the deck as a web page from it, where a preview server serves it. */
+  file?: DeckFile | null;
+}
+
+/** The file a deck was loaded from: a `deck.json`, a Markdown file, a PDF or a module, and for a module the named export shown. */
+export interface DeckFile {
+  url: string;
+  scene?: string | null;
 }
 
 /** A deck definition with every default filled in, as `defineDeck` returns it. */
@@ -38,6 +46,7 @@ export interface ResolvedDeck {
   viewport: ViewportSize;
   showOutline: boolean;
   base: string | null;
+  file?: DeckFile | null;
 }
 
 /** Normalize a deck definition, applying defaults. */
@@ -56,5 +65,6 @@ export function defineDeck(definition: DeckDefinition): ResolvedDeck {
     viewport: { width: viewport.width, height: viewport.height },
     showOutline: Boolean(definition.showOutline),
     base: definition.base ?? null,
+    file: definition.file ?? null,
   };
 }

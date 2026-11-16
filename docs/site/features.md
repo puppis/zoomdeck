@@ -159,7 +159,7 @@ the first time.
 ::: slide {#rec width=20}
 ## Camera and recording
 
-The **Camera** button (C) shows the camera, **Record** (R) starts a talk (voice, camera and the deck), **Screen** (S) shares a screen or a window, filmed as a stream of its own whenever the deck loses the focus and until it gets it back, the computer's sound coming with the share where the browser offers it. A recorded talk appears beside the Record button as a **▶ Talk** button, plays back on the deck and exports as a video; **Print** (P) writes the deck to a PDF.
+The **Camera** button (C) shows the camera, **Record** (R) starts a talk (voice, camera and the deck), **Screen** (S) shares a screen or a window, filmed as a stream of its own whenever the deck loses the focus and until it gets it back, the computer's sound coming with the share where the browser offers it. A recorded talk appears beside the Record button as a **▶ Talk** button, plays back on the deck and exports as a video; **Print** (P) writes the deck to a PDF, and **Export** (X) makes a video of a talk, or a web page of the deck where a preview server shows it.
 :::
 ```
 

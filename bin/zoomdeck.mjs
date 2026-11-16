@@ -21,6 +21,7 @@ import { allowedHosts, lanAddresses, padRelay } from './relay.mjs';
 import { EDITOR_PRESETS, editorSync, previewsFor, requestJump } from './sync.mjs';
 import { FOLDER as RECORDINGS, isRecordingFile, recordingStore, writeIndex } from './recordings.mjs';
 import { renderStore } from './render.mjs';
+import { exportStore, exportWriting } from './export.mjs';
 import { extractBundle, isJournal } from './bundle.mjs';
 import { resolveFromPackage } from './resolve.mjs';
 
@@ -215,8 +216,9 @@ export async function startPreview(options) {
       for (const root of watchRoots) server.watcher.add(root);
       const onChange = (file) => {
         const inside = watchRoots.some((root) => file === root || file.startsWith(root + sep));
-        // Recordings are written by the player itself; a reload would interrupt the talk being saved.
-        if (!inside || /node_modules|\.git\b|\bbuild\b|\bdist\b/.test(file) || isRecordingFile(file)) return;
+        // Recordings are written by the player itself; a reload would interrupt the talk being saved,
+        // as it would an export the player is writing into a folder that may lie inside the deck's.
+        if (!inside || /node_modules|\.git\b|\bbuild\b|\bdist\b/.test(file) || isRecordingFile(file) || exportWriting()) return;
         console.log(`[${new Date().toLocaleTimeString()}] ${relative(deckDir, file) || file} changed; reloading`);
         server.ws.send({ type: 'full-reload' });
       };
@@ -232,7 +234,7 @@ export async function startPreview(options) {
     ...(options.cacheDir ? { cacheDir: options.cacheDir } : {}),
     resolve: { alias: optionalStubs },
     optimizeDeps: { entries: ['index.html'] },
-    plugins: [resolveDeps, dropEngineMuxers, reloadPlugin, padRelay(), editorSync({ editor: options.editor, roots: watchRoots, deck: deckPath }), recordingStore({ roots: watchRoots }), renderStore({ roots: watchRoots, openPage: options.openRenderPage ?? null })],
+    plugins: [resolveDeps, dropEngineMuxers, reloadPlugin, padRelay(), editorSync({ editor: options.editor, roots: watchRoots, deck: deckPath }), recordingStore({ roots: watchRoots }), renderStore({ roots: watchRoots, openPage: options.openRenderPage ?? null }), exportStore({ roots: watchRoots, build: buildDeck })],
     // Bind the IPv4 loopback explicitly: "localhost" may resolve to ::1 only, which would leave
     // the printed 127.0.0.1 address refusing connections. Without --port, a busy 8000 falls
     // through to the next free port instead of failing, so a second preview can always start.
@@ -307,16 +309,42 @@ async function collectAssets(deckDir) {
 
 const MIME = { '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.apng': 'image/apng', '.mp4': 'video/mp4', '.m4v': 'video/mp4', '.webm': 'video/webm', '.ogv': 'video/ogg', '.mov': 'video/quicktime', '.html': 'text/html', '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf', '.otf': 'font/otf', '.json': 'application/json', '.pdf': 'application/pdf', '.csv': 'text/csv', '.tsv': 'text/tab-separated-values', '.txt': 'text/plain' };
 
+/** `zoomdeck build`: the arguments checked as the command line reports them, then the build. */
 async function build(options) {
   const deckPath = resolveDeckPath(options.positional[0] ?? usage('build needs a deck path'));
   if (!existsSync(deckPath)) usage(`deck not found: ${deckPath}`);
   if (!options.output) usage('build needs -o <folder>');
+  if (!deckKind(deckPath)) usage(`unsupported deck file ${deckPath}`);
+  const { target } = await buildDeck({ ...options, positional: [deckPath] });
+  console.log(`Wrote ${target}`);
+}
+
+/**
+ * Build a deck into a static folder (`index.html` with its files) or, with `oneFile`, into one
+ * self-contained `offline.html` in `output`. `options` are those of `parseArgs`: the deck is
+ * `positional[0]`; `showOutline`, `withoutNotes` and `scene` as on the command line. Errors are
+ * thrown, not printed, so that the player's export (bin/export.mjs) reports them; resolves with
+ * the page written.
+ */
+export async function buildDeck(options) {
+  if (!options.positional?.[0]) throw new Error('build needs a deck path');
+  const deckPath = resolveDeckPath(options.positional[0]);
+  if (!existsSync(deckPath)) throw new Error(`deck not found: ${deckPath}`);
+  if (!options.output) throw new Error('build needs an output folder');
   const kind = deckKind(deckPath);
-  if (!kind) usage(`unsupported deck file ${deckPath}`);
+  if (!kind) throw new Error(`unsupported deck file ${deckPath}`);
   const deckDir = dirname(deckPath);
   const outDir = options.output;
   await fs.mkdir(outDir, { recursive: true });
   const stageDir = await fs.realpath(await fs.mkdtemp(join(tmpdir(), 'zoomdeck-')));
+  try {
+    return await buildInto(options, { deckPath, kind, deckDir, outDir, stageDir });
+  } finally {
+    await fs.rm(stageDir, { recursive: true, force: true });
+  }
+}
+
+async function buildInto(options, { deckPath, kind, deckDir, outDir, stageDir }) {
 
   let entrySource;
   const sourceIndex = resolve(packageRoot, 'src/index.ts').split(sep).join('/');
@@ -501,11 +529,9 @@ runDeck(await loadMarkupDeck({
     const inlined = await inlineHtml(html, buildOut);
     const target = join(outDir, 'offline.html');
     await fs.writeFile(target, inlined);
-    console.log(`Wrote ${target}`);
-  } else {
-    console.log(`Wrote ${join(outDir, 'index.html')}`);
+    return { target };
   }
-  await fs.rm(stageDir, { recursive: true, force: true });
+  return { target: join(outDir, 'index.html') };
 }
 
 /**

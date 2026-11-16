@@ -12,6 +12,8 @@ const scene = params.get('scene');
 async function main(): Promise<void> {
   let definition: DeckDefinition | undefined;
   const base = deckPath.startsWith('/') ? deckPath : `/${deckPath}`;
+  // The deck's own file, which the player's Export builds as a web page through the server.
+  let file = new URL(base, location.href).href;
   if (deckPath.endsWith('.json')) {
     definition = await loadDeckConfig(base, async (url) => (await import(/* @vite-ignore */ url)) as Record<string, unknown>);
   } else if (deckPath.endsWith('.md')) {
@@ -20,11 +22,12 @@ async function main(): Promise<void> {
     definition = await pdfDeck({ url: base });
   } else {
     const modulePath = /\.[cm]?[jt]sx?$/.test(base) ? base : `${base}.ts`;
+    file = new URL(modulePath, location.href).href;
     const module = (await import(/* @vite-ignore */ modulePath)) as Record<string, DeckDefinition>;
     definition = scene ? module[scene] : module.default;
   }
   if (!definition) throw new Error(`Deck module ${deckPath} has no export ${scene ?? 'default'}`);
-  const running = await runDeck(definition);
+  const running = await runDeck({ ...definition, file: definition.file ?? { url: file, scene } });
   // A handle for measuring from the console on the development page (draw calls, frame times).
   (window as Window & { zoomdeck?: unknown }).zoomdeck = running;
 }

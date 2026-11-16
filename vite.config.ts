@@ -4,6 +4,8 @@ import { allowedHosts, padRelay } from './bin/relay.mjs';
 import { editorSync } from './bin/sync.mjs';
 import { isRecordingFile, recordingStore } from './bin/recordings.mjs';
 import { renderStore } from './bin/render.mjs';
+import { exportStore, exportWriting } from './bin/export.mjs';
+import { buildDeck } from './bin/zoomdeck.mjs';
 
 // Development server: serves the player page and the example decks from this checkout.
 const optionalStubs = Object.fromEntries(
@@ -40,7 +42,8 @@ function deckReload(): Plugin {
     configureServer(server) {
       server.watcher.add(dir);
       const onChange = (file: string) => {
-        if (!file.startsWith(dir + sep) || /\.(ts|js|mjs|tsx)$/.test(file) || isRecordingFile(file)) return;
+        // An export written by the player (into build/, or a folder of the presenter's that may lie in a deck's) is no reason to reload.
+        if (!file.startsWith(dir + sep) || /\.(ts|js|mjs|tsx)$/.test(file) || isRecordingFile(file) || /[\\/](build|dist)[\\/]/.test(file) || exportWriting()) return;
         server.ws.send({ type: 'full-reload' });
       };
       for (const event of ['change', 'add', 'unlink'] as const) server.watcher.on(event, onChange);
@@ -56,6 +59,7 @@ export default defineConfig({
     editorSync({ editor: process.env.ZOOMDECK_EDITOR ?? null, roots: [resolve(__dirname, 'examples')] }),
     recordingStore({ roots: [resolve(__dirname, 'examples')] }),
     renderStore({ roots: [resolve(__dirname, 'examples')] }),
+    exportStore({ roots: [resolve(__dirname, 'examples')], build: buildDeck }),
   ],
   // A deck's own modules import the package by name, as they do under the command and the app.
   resolve: { alias: { ...optionalStubs, zoomdeck: resolve(__dirname, 'src/index.ts') } },

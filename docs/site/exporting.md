@@ -5,10 +5,37 @@ description: Turn a deck into a static folder or into one self-contained HTML fi
 
 <a class="try" href="tour.html#slide=player">Open in the tour ↗</a>
 
-A deck that previews on the dev page can be exported with the command line. Two forms exist,
-and the player itself prints a deck to a [PDF](#a-pdf-printout).
+A deck exports from the player itself, where `zoomdeck serve` or the desktop app shows it, or
+from the command line. Two forms exist, and the player also prints a deck to a
+[PDF](#a-pdf-printout).
 
-## One self-contained file
+## From the player
+
+**Export** in the footer, beside the settings gear (or X), opens the Export dialog. Its first
+row, *What*, offers this deck as a web page and each recorded talk as a video (see
+[Recording a talk](player.html#recording-a-talk) for those); for the web page the rows are:
+
+- **Name**: the file's or the folder's name, the deck's folder by default.
+- **Form**: one self-contained HTML file, or a folder of files, both described below.
+- **Leave the presenter notes out**, for a deck handed to the audience (`--without-notes`).
+- **Open the slide outline when the deck starts** (`--show-outline`).
+- **Save to**: a folder of your choice, through the browser's own dialog (Chrome, Edge and the
+  desktop app; the first choice where it exists): the file is saved where you say, the folder
+  form becomes a folder of that name inside the folder you pick. Or the `build/` folder next to
+  the deck, as `build/<name>.html` or `build/<name>/`. Or the browser's downloads, the folder
+  form as a zip.
+
+The server builds the deck exactly as `zoomdeck build` does, in some seconds for a small deck
+(the tour takes about ten), while the dialog counts the time; closing it abandons the export.
+An earlier export of the same name is replaced, at the place chosen or in `build/`, but a folder
+holding anything else is never touched: the dialog asks for another name instead. The `build/`
+folder is left out of later exports and does not make the preview reload. A deck opened from an
+export, or from a static host, has no server behind it: its Export dialog offers the recorded
+talks only.
+
+## From the command line
+
+### One self-contained file
 
 ```bash
 zoomdeck build path/to/deck.json -o out --one-file
@@ -33,7 +60,7 @@ Three things to know:
 - Recorded talks are left out: their sound and video would not fit in a page. The folder export
   below ships them.
 
-## A static folder
+### A static folder
 
 ```bash
 zoomdeck build path/to/deck.json -o out
@@ -48,7 +75,7 @@ any static server works, for example:
 cd out && python3 -m http.server 8000
 ```
 
-## Options
+### Options
 
 | Option | Effect |
 | --- | --- |

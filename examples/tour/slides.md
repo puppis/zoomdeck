@@ -245,7 +245,7 @@ A tablet or an iPad pairs with the player from the settings (Tablet) and becomes
 
 [[snippet: docs id=feat-recording page=features.html#camera-recording-and-video]]
 
-The camera (**C**) shows you next to or over the slides, in a corner or full screen. A recording (**R**) keeps the whole talk on one clock: your voice, the camera and every move on the deck, strokes included; it plays back on the deck itself, where it stays navigable, as the **▶ Talk** button beside Record, and exports as a plain video file. A shared screen (**S**) is a video stream of its own in the talk, beside the camera's: it is filmed by itself from the moment the deck loses the focus, to another application, a tab or a live page, until it has it back; the computer's sound, when the share carries it, is a track of its own too. **P** prints the deck to a PDF. {x=-9.35 y=3.9 width=11.2 font_size=19}
+The camera (**C**) shows you next to or over the slides, in a corner or full screen. A recording (**R**) keeps the whole talk on one clock: your voice, the camera and every move on the deck, strokes included; it plays back on the deck itself, where it stays navigable, as the **▶ Talk** button beside Record, and exports as a plain video file. A shared screen (**S**) is a video stream of its own in the talk, beside the camera's: it is filmed by itself from the moment the deck loses the focus, to another application, a tab or a live page, until it has it back; the computer's sound, when the share carries it, is a track of its own too. **P** prints the deck to a PDF; **Export** (**X**) makes a video of a talk, or a web page of the deck. {x=-9.35 y=3.9 width=11.2 font_size=19}
 
 [[icon: user #feat-rec-you x=-8.4 y=-2.0 size=1.8 color=GRAY]]
 [[icon: desktop #feat-rec-deck x=-5.6 y=-2.0 size=1.8 color=GRAY]]
@@ -632,7 +632,7 @@ Raster files may be PNG, JPEG, GIF or WebP. A multi-frame APNG or GIF animates w
 
 **Keys.** → or Space next · ← previous (plays the stop backwards) · Home first stop · A replay · F fullscreen · O outline · , settings. {#player-keys x=-9.35 y=3.9 width=9 font_size=20}
 
-**Tools.** L spotlight or laser (hold Shift to show it) · W whiteboard · C camera · S screen · R record · P print. {#player-tools below:#player-keys left-aligned:#player-keys buff=0.5 width=9 font_size=20}
+**Tools.** L spotlight or laser (hold Shift to show it) · W whiteboard · C camera · S screen · R record · P print · X export. {#player-tools below:#player-keys left-aligned:#player-keys buff=0.5 width=9 font_size=20}
 
 **Pointer.** D turns drawing on (so does the whiteboard): a drag then draws with the pen (with pressure on a pencil or stylus), the pointer is a pencil in its color, and links are inert; Shift + drag highlights. The colors in the footer, and the keys 1 to 4, toggle drawing: a color turns it on in that color, and the color in use turns it off again. A click never changes the stop unless the settings bind a modifier to it. {#player-pointer below:#player-tools left-aligned:#player-tools buff=0.5 width=9 font_size=20}
 
@@ -640,7 +640,7 @@ Raster files may be PNG, JPEG, GIF or WebP. A multi-frame APNG or GIF animates w
 
 **Tablet.** A tablet on the same network pairs from the settings and draws on the deck. {#player-tablet below:#player-links left-aligned:#player-links buff=0.5 width=9 font_size=20}
 
-**Export.** `zoomdeck build deck.json -o out` writes a static folder, `--one-file` a single HTML file with the player, fonts and assets embedded (this tour is such a file). Print writes a PDF, a page per stop or per slide. {#player-export below:#player-tablet left-aligned:#player-tablet buff=0.5 width=9 font_size=20}
+**Export** (X) writes the deck as a single HTML file with the player, fonts and assets embedded (this tour is such a file) or as a static folder, where `zoomdeck serve` or the app shows it; `zoomdeck build` does the same. Print writes a PDF, a page per stop or per slide. {#player-export below:#player-tablet left-aligned:#player-tablet buff=0.5 width=9 font_size=20}
 
 Every key and gesture can be changed in the settings (,), which also hold the pen, the recording devices and the tablet pairing. {#player-more x=-9.35 y=-4.6 width=18.7 font_size=16 color=GRAY}
 :::
@@ -712,7 +712,7 @@ A recording keeps your voice, the camera while you have it on, and every move on
 2. **Record** with R or the ● Record button; a dialog says what will be kept, then the header counts the time. Present as usual: keys, pen, W for the whiteboard, the Camera button or C for the camera (in a corner, full frame, off), recorded while it is on; S shares the screen, which is filmed as a stream of its own whenever the deck loses the focus, to another application, a tab or a live page, and until it gets it back, the camera staying as you set it; the computer's sound comes with the share where the browser offers it. A pause leaves no gap: the talk resumes where it stopped. {x=2.3 width=7.4 font_size=17}
 3. **Stop** saves the talk in `recordings/` next to the deck when the deck is served by `zoomdeck serve` (a zip to download otherwise). R later offers to continue it where it stopped. {x=2.3 width=7.4 font_size=17}
 4. **Play** it with ▶ Talk in the footer: the deck follows the recording; Space pauses, ← and → seek, Esc leaves. {x=2.3 width=7.4 font_size=17}
-5. **Flatten and export** in the playback bar makes one video file of it: slides or whiteboard with ink, camera in a corner or full frame, and the sound. {x=2.3 width=7.4 font_size=17}
+5. **Export** (X, or the same button in the playback bar) makes one video file of it: slides or whiteboard with ink, camera in a corner or full frame, and the sound. {x=2.3 width=7.4 font_size=17}
 
 Try it on this very slide: record a few seconds, draw, turn the camera on with C, stop, then play. {x=-9.35 y=-4.5 width=19 font_size=18 color=GRAY}
 :::

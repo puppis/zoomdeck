@@ -66,7 +66,7 @@ export function sanitizeRecording(value: unknown): RecordingSettings {
 
 export type ActionName =
   | 'next' | 'previous' | 'home' | 'replay' | 'fullscreen' | 'outline' | 'undo' | 'redo' | 'clear' | 'settings' | 'exit' | 'pointer' | 'whiteboard'
-  | 'edit' | 'camera' | 'screen' | 'record' | 'print' | 'draw'
+  | 'edit' | 'camera' | 'screen' | 'record' | 'print' | 'export' | 'draw'
   | 'color1' | 'color2' | 'color3' | 'color4'
   | 'boardLeft' | 'boardRight' | 'boardUp' | 'boardDown'
   | 'playPause' | 'seekBack' | 'seekForward' | 'playStart' | 'closePlayback';
@@ -111,6 +111,7 @@ export const ACTIONS: ActionInfo[] = [
   { name: 'record', label: 'Record the talk (a new one, or continuing a saved one), or stop recording', group: 'deck' },
   { name: 'edit', label: 'Open the source of this stop in the editor (preview server)', group: 'deck' },
   { name: 'print', label: 'Print the deck to a PDF', group: 'deck' },
+  { name: 'export', label: 'Export the deck as a web page, or a recorded talk as a video', group: 'deck' },
   { name: 'fullscreen', label: 'Toggle fullscreen', group: 'deck' },
   { name: 'exit', label: 'Leave fullscreen', group: 'deck' },
   { name: 'outline', label: 'Toggle the slide outline', group: 'deck' },
@@ -130,10 +131,10 @@ export const ACTIONS: ActionInfo[] = [
  * The player's optional features, which a page embedding a deck may leave out: each hides its
  * controls and makes its keys inert. Navigation, the spotlight and the slides' links always work.
  */
-export type Feature = 'outline' | 'pen' | 'whiteboard' | 'camera' | 'screen' | 'record' | 'print' | 'fullscreen' | 'settings';
+export type Feature = 'outline' | 'pen' | 'whiteboard' | 'camera' | 'screen' | 'record' | 'print' | 'export' | 'fullscreen' | 'settings';
 
-/** The features of the player a page may leave out: the outline, the pen, the whiteboard, the camera, the screen, recording, printing, fullscreen and the settings. */
-export const FEATURES: readonly Feature[] = ['outline', 'pen', 'whiteboard', 'camera', 'screen', 'record', 'print', 'fullscreen', 'settings'];
+/** The features of the player a page may leave out: the outline, the pen, the whiteboard, the camera, the screen, recording, printing, exporting, fullscreen and the settings. */
+export const FEATURES: readonly Feature[] = ['outline', 'pen', 'whiteboard', 'camera', 'screen', 'record', 'print', 'export', 'fullscreen', 'settings'];
 
 /** The feature an action belongs to, or null for the actions that are always available. */
 export function featureOf(action: ActionName): Feature | null {
@@ -144,6 +145,7 @@ export function featureOf(action: ActionName): Feature | null {
     case 'screen': return 'screen';
     case 'record': return 'record';
     case 'print': return 'print';
+    case 'export': return 'export';
     case 'fullscreen': case 'exit': return 'fullscreen';
     case 'outline': return 'outline';
     case 'settings': return 'settings';
@@ -185,6 +187,7 @@ export const DEFAULT_BINDINGS: Record<ActionName, string[]> = {
   record: ['r'],
   edit: ['e'],
   print: ['p', 'Meta+p', 'Control+p'],
+  export: ['x'],
   fullscreen: ['f'],
   exit: ['Escape'],
   outline: ['o'],

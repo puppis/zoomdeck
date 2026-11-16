@@ -73,7 +73,8 @@ search box on every page finds any name. `docs/markup.md` is the compact dialect
   drawn by the deck's own renderer at up to 4K and stored losslessly, one per page, with the
   slides as bookmarks.
 - **An editing preview** (`zoomdeck serve`) that reloads on save and restores the current
-  slide and step, and **static exports** (`zoomdeck build`, `--one-file`).
+  slide and step, and **static exports** (`zoomdeck build`, `--one-file`, or the player's
+  **Export** button), one dialog that also turns recorded talks into videos.
 
 ## How playback works
 

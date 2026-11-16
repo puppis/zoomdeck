@@ -61,7 +61,7 @@ The preview, the exports and the app all play a deck with the same player, so wh
 is what the audience sees. `→` or Space advances and `←` goes back; `O` opens the outline, `F`
 the fullscreen view and `,` the settings, where every key and gesture can be changed. Hold Shift
 for the spotlight (`L` makes it a laser), press `D` to draw and `W` for the whiteboard, `C` for
-the camera, `R` to record a talk and `P` to print the deck. [The player](player.html) describes
+the camera, `R` to record a talk, `P` to print the deck and `X` to export it. [The player](player.html) describes
 each tool, and chapters 4 to 6 of the [tour](tour.html#slide=feat-spotlight) show them live.
 
 ## Export it
@@ -71,8 +71,9 @@ zoomdeck build talk/deck.json -o out/talk             # a folder: index.html, as
 zoomdeck build talk/deck.json -o out/talk --one-file  # one HTML file, every asset inside
 ```
 
-The folder is hosted or copied as a whole; the single file opens by double-click and needs no
-server. Both run the deck's program when they load, so a changed deck needs a new export. The
+**Export** in the player's footer (X) does the same from the deck you are looking at, into a
+folder you pick, the `build/` folder next to the deck or the downloads. The folder is hosted or
+copied as a whole; the single file opens by double-click and needs no server. Both run the deck's program when they load, so a changed deck needs a new export. The
 player's Print button writes a PDF with a page per stage or per slide.
 [Exporting a deck](exporting.html) has the options.
 

@@ -24,6 +24,10 @@ import { Playback } from './playback';
 import { exportMimeType, exportVideo, type ExportSource } from './export';
 import { PRINT_WIDTHS, printDeck, printPages, type PrintPages } from './print';
 import { zipFiles } from './zip';
+import {
+  checkWebExportPlace, defaultWebExportName, downloadUrl, folderProblem, forgetWebExport, placeWebExport, startWebExport, waitForWebExport, webExportAvailable, webExportFileUrl,
+  webExportName, webExportZipUrl, writeWebExportFile, writeWebExportFolder, type DirectoryPickerWindow, type WebPageForm,
+} from './webpage';
 import { deleteRecording, describeMedia, download, listRecordings, loadTimeline, mediaFileName, mediaSource, recordingStoreAvailable, RecordingSession, recordingUrl, saveFile, type RecordingEntry } from './store';
 import { awayFromDeck } from './away';
 import { displayWidth, frameAspect, frameSize, renderPageUrl, renderPlan, RenderSession, renderStatus, renderTalk, requestRender, VIDEO_HEIGHTS, type AspectChoice, type RenderStatus } from './render';
@@ -250,10 +254,17 @@ export class PlayerUI {
   private readonly _playToggle: HTMLButtonElement;
   private readonly _playTime: HTMLElement;
   private readonly _playRange: HTMLInputElement;
+  /** The Export button of the footer, beside the settings, and the playback bar's, which stands in for it while a talk plays: both open the Export dialog. */
   private readonly _exportButton: HTMLButtonElement;
+  private readonly _playbackExportButton: HTMLButtonElement;
   private readonly _recordingsButton: HTMLButtonElement;
   private _recordings: RecordingEntry[] = [];
+  /** A talk being exported in this page, in real time: the playback is not to be touched meanwhile. */
   private _exporting = false;
+  /** The deck being exported as a web page: the server builds it, then this page delivers it. */
+  private _webExporting = false;
+  /** The last choices made for the web page in the Export dialog, kept for the session. */
+  private _webChoice: { form: WebPageForm; notes: boolean; destination: string | null } = { form: 'file', notes: true, destination: null };
   private _printing = false;
   /** The last choices made in the print dialog, kept for the session. */
   private _printChoice: { pages: PrintPages; width: number } = { pages: 'stages', width: 2560 };
@@ -358,18 +369,18 @@ export class PlayerUI {
     this._playToggle = el('button', { class: 'play-toggle', 'aria-label': 'Play or pause the recording', text: '▶' });
     this._playRange = el('input', { type: 'range', min: '0', max: '1000', value: '0', 'aria-label': 'Position in the recording' });
     this._playTime = el('span', { class: 'play-time', text: '0:00 / 0:00' });
-    this._exportButton = el('button', { class: 'export-button', text: 'Flatten and export', title: 'Flatten this recording into one video file and export it' });
+    this._playbackExportButton = el('button', { class: 'export-button', text: 'Export', title: 'Export this talk as a video, or the deck as a web page' });
     const talks = el('button', { class: 'talks-button', text: 'Talks…', title: 'Choose, continue or delete a recorded talk' });
     talks.addEventListener('click', () => this.openRecordingList());
     const closePlayback = el('button', { class: 'close-playback', 'aria-label': 'Leave the recording', title: 'Leave the recording (Esc)', text: '×' });
     this._playbackBar = el('div', { class: 'playback-bar', hidden: '', role: 'group', 'aria-label': 'Recording playback' },
-      this._playToggle, this._playRange, this._playTime, talks, this._exportButton, closePlayback);
+      this._playToggle, this._playRange, this._playTime, talks, this._playbackExportButton, closePlayback);
     this._playToggle.addEventListener('click', () => this._playback?.toggle());
     this._playRange.addEventListener('input', () => {
       const playback = this._playback;
       if (playback) playback.seek((Number(this._playRange.value) / 1000) * playback.duration);
     });
-    this._exportButton.addEventListener('click', () => void this.exportRecording());
+    this._playbackExportButton.addEventListener('click', () => void this.openExport(this._playbackName));
     closePlayback.addEventListener('click', () => this.closeRecording());
     this._padRequest = el('div', { class: 'pad-request', role: 'dialog', 'aria-label': 'A tablet asks to draw here', hidden: '' });
     this.stageHost.append(this._boardLayer, this._highlights, this._screen, this._system, this._camera, this._spotlight, this._remoteCursor, this._error, this._loading, this._padRequest);
@@ -402,6 +413,8 @@ export class PlayerUI {
     this._fullscreenButton = el('button', { class: 'fullscreen', text: 'Fullscreen' });
     this._printButton = el('button', { class: 'print-button', text: 'Print', title: 'Print the deck to a PDF (P)' });
     this._printButton.addEventListener('click', () => this.openPrint());
+    this._exportButton = el('button', { class: 'export-button', text: 'Export', title: 'Export the deck as a web page, or a recorded talk as a video (X)', hidden: '' });
+    this._exportButton.addEventListener('click', () => void this.openExport());
     this._settingsButton = el('button', { class: 'settings-button', 'aria-label': 'Settings', title: 'Settings', text: '⚙' });
     this._dialog = this._buildSettingsDialog();
     this._progress = el('progress', { max: '1', value: '0', 'aria-label': 'Presentation progress' });
@@ -416,7 +429,7 @@ export class PlayerUI {
         this._boardButton,
       ),
       el('div', { class: 'group record-controls', role: 'group', 'aria-label': 'Camera and recording' }, this._cameraButton, this._screenButton, this._screenPickButton, this._recordButton, this._pauseButton, this._recordingsButton),
-      el('div', { class: 'group page-controls', role: 'group', 'aria-label': 'Page' }, this._printButton, this._fullscreenButton, this._settingsButton),
+      el('div', { class: 'group page-controls', role: 'group', 'aria-label': 'Page' }, this._printButton, this._fullscreenButton, this._exportButton, this._settingsButton),
       // During a playback the bar takes the whole footer: nothing else can be used meanwhile.
       this._playbackBar,
       this._progress,
@@ -489,6 +502,7 @@ export class PlayerUI {
     this._printButton.hidden = off('print');
     this._fullscreenButton.hidden = off('fullscreen');
     this._settingsButton.hidden = off('settings');
+    this._updateExportButtons();
     for (const group of footer.querySelectorAll<HTMLElement>('.group')) {
       group.hidden = [...group.children].every((child) => (child as HTMLElement).hidden);
     }
@@ -746,6 +760,7 @@ export class PlayerUI {
       case 'screen': void this.toggleScreen(); break;
       case 'record': void this.toggleRecording(); break;
       case 'print': this.openPrint(); break;
+      case 'export': void this.openExport(); break;
       case 'boardLeft': this._panBoardBy(-1, 0); break;
       case 'boardRight': this._panBoardBy(1, 0); break;
       case 'boardUp': this._panBoardBy(0, 1); break;
@@ -1653,6 +1668,7 @@ export class PlayerUI {
     this._render = base && this._features.has('record') && recordingStoreAvailable() ? await renderStatus(base).catch(() => ({ ffmpeg: false, desktop: false, jobs: [] })) : { ffmpeg: false, desktop: false, jobs: [] };
     this._recordingsButton.hidden = this._recordings.length === 0;
     this._recordingsButton.textContent = this._recordings.length > 1 ? `▶ Talks (${this._recordings.length})` : '▶ Talk';
+    this._updateExportButtons();
   }
 
   /** The footer's Talk button: one recording opens at once, several are offered in the list. */
@@ -1723,8 +1739,8 @@ export class PlayerUI {
     dialog.showModal();
   }
 
-  /** Load a recording and show the playback bar; the deck now follows the recording. */
-  async openRecording(entry: RecordingEntry): Promise<void> {
+  /** Load a recording and show the playback bar; the deck now follows the recording, which plays unless `autoplay` is false (an export starts it itself). */
+  async openRecording(entry: RecordingEntry, autoplay = true): Promise<void> {
     const base = this._deck.base;
     const player = this._player;
     const navigation = this._navigation;
@@ -1773,11 +1789,15 @@ export class PlayerUI {
     });
     this.root.classList.add('playing-back');
     this._playbackBar.hidden = false;
-    this._exportButton.hidden = !exportMimeType();
+    this._updateExportButtons();
     this._layoutCamera();
     // The talk starts where the deck stands: the moment it first reached the stop shown now, or its start when it never did.
     const here = stopRef(navigation, player.index);
     const from = here ? timeOfStop(timeline.events, here) : null;
+    if (!autoplay) {
+      this._playback.seek(0);
+      return;
+    }
     if (from === null && here && player.index > 0) this.notice('The talk never reached this stop; playing it from the start');
     this._playback.seek(from ?? 0);
     void this._playback.play();
@@ -2046,13 +2066,369 @@ export class PlayerUI {
     }
   }
 
-  /** Render the open recording as a video file, in real time, and keep it next to the deck or download it. */
-  async exportRecording(): Promise<void> {
-    const playback = this._playback;
-    const talk = this._playbackName;
-    if (!playback || !talk || this._exporting) return;
-    const choice = await this._confirmExport(talk, playback.timeline);
-    if (!choice || this._exporting || this._playback !== playback) return;
+  // ---------------------------------------------------------------------
+  // Exporting: the deck as a web page, a recorded talk as a video
+  // ---------------------------------------------------------------------
+
+  /** Whether the deck can be exported as a web page here: a preview server builds it from the deck's own file. */
+  private _webExportAvailable(): boolean {
+    return webExportAvailable(this._deck.file);
+  }
+
+  /** The recorded talks that can be exported as videos: all of them, where this page or the server can make a video. */
+  private _exportableTalks(): RecordingEntry[] {
+    if (!this._features.has('record')) return [];
+    const server = Boolean(this._deck.base && recordingStoreAvailable() && this._render.ffmpeg);
+    return server || exportMimeType() ? this._recordings : [];
+  }
+
+  /** The Export buttons show where there is something to export, and the export feature is on. */
+  private _updateExportButtons(): void {
+    const shown = this._features.has('export') && (this._webExportAvailable() || this._exportableTalks().length > 0);
+    this._exportButton.hidden = !shown;
+    this._playbackExportButton.hidden = !shown;
+    const group = this._exportButton.parentElement;
+    if (group) group.hidden = [...group.children].every((child) => (child as HTMLElement).hidden);
+  }
+
+  /** A talk's timeline: the one played back, or read from its files. */
+  private async _timelineOf(entry: RecordingEntry): Promise<Timeline> {
+    if (this._playback && this._playbackName === entry.name) return this._playback.timeline;
+    return loadTimeline(this._deck.base as string, entry);
+  }
+
+  /**
+   * The Export dialog. *What* offers the deck as a web page, where a preview server can build
+   * it, and each recorded talk as a video; the rows below follow the choice. `talk` is chosen
+   * first when given (the playback bar passes the talk it plays); otherwise the web page is.
+   */
+  async openExport(talk: string | null = null): Promise<void> {
+    if (!this._features.has('export')) return;
+    if (this._recorder) {
+      this.notice('Stop the recording before exporting');
+      return;
+    }
+    if (this._exporting || this._webExporting) {
+      this.notice('An export is under way');
+      return;
+    }
+    const web = this._webExportAvailable();
+    const talks = this._exportableTalks();
+    if (!web && !talks.length) {
+      this.notice('Nothing to export here: the deck becomes a web page where zoomdeck serve or the desktop app shows it, and recorded talks become videos');
+      return;
+    }
+    for (const stale of this.root.querySelectorAll('dialog.export')) stale.remove();
+    const dialog = el('dialog', { class: 'settings export' });
+    const close = el('button', { class: 'close', 'aria-label': 'Close', text: '×' });
+    const what = el('select', { 'aria-label': 'What to export' });
+    const deckGroup = el('optgroup', { label: 'This deck' });
+    const webOption = el('option', { value: 'web', text: web ? 'As a web page (HTML)' : 'As a web page (HTML), where zoomdeck serve or the desktop app shows the deck' });
+    webOption.disabled = !web;
+    deckGroup.append(webOption);
+    what.append(deckGroup);
+    if (talks.length) {
+      const talkGroup = el('optgroup', { label: 'A recorded talk, as a video' });
+      for (const entry of talks) {
+        const when = entry.recorded ? new Date(entry.recorded).toLocaleString() : entry.name;
+        talkGroup.append(el('option', { value: `talk:${entry.name}`, text: `${when} · ${formatTime(entry.duration)}` }));
+      }
+      what.append(talkGroup);
+    }
+    what.value = talk && talks.some((entry) => entry.name === talk) ? `talk:${talk}` : web ? 'web' : `talk:${talks[0].name}`;
+    const rows = el('div', { class: 'export-rows' });
+    const status = el('p', { class: 'note' });
+    const run = el('button', { class: 'add', text: 'Export' });
+    const cancel = el('button', { text: 'Cancel' });
+    dialog.append(
+      el('header', {}, el('h2', { text: 'Export' }), close),
+      el('section', {}, el('div', { class: 'row' }, el('label', {}, 'What ', what)), rows, status, el('div', { class: 'row' }, run, cancel)),
+    );
+    let cancelled = false;
+    // While the web page is built and written, the choices hold still; the ones enabled before come back after.
+    let locked: Array<HTMLInputElement | HTMLSelectElement | HTMLButtonElement> = [];
+    const lock = (on: boolean) => {
+      if (on) {
+        locked = [...dialog.querySelectorAll<HTMLInputElement | HTMLSelectElement>('input, select'), run].filter((control) => !control.disabled);
+        for (const control of locked) control.disabled = true;
+      } else {
+        for (const control of locked) control.disabled = false;
+        locked = [];
+      }
+    };
+    // The rows of the choice, and what Export then does: true closes the dialog.
+    let action: (() => Promise<boolean>) | null = null;
+    let generation = 0;
+    const show = async () => {
+      const mine = ++generation;
+      action = null;
+      run.disabled = true;
+      rows.replaceChildren();
+      status.textContent = '';
+      if (what.value === 'web') {
+        action = this._webExportRows(rows, status, run, lock, () => cancelled);
+        run.disabled = false;
+        return;
+      }
+      const entry = talks.find((candidate) => `talk:${candidate.name}` === what.value);
+      if (!entry) return;
+      status.textContent = 'Reading the talk…';
+      let timeline: Timeline;
+      try {
+        timeline = await this._timelineOf(entry);
+      } catch (error) {
+        if (mine === generation) status.textContent = (error as Error).message;
+        return;
+      }
+      if (mine !== generation) return;
+      action = this._videoExportRows(entry, timeline, rows, status, run);
+      run.disabled = false;
+    };
+    what.addEventListener('change', () => void show());
+    run.addEventListener('click', () => {
+      const go = action;
+      if (!go) return;
+      void go().then((done) => {
+        if (done) dialog.close();
+      });
+    });
+    cancel.addEventListener('click', () => dialog.close());
+    close.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('close', () => {
+      cancelled = true;
+      dialog.remove();
+    });
+    this.root.append(dialog);
+    dialog.showModal();
+    await show();
+  }
+
+  /**
+   * The rows for the deck as a web page: its name, its form, the notes and the outline, and
+   * where it goes. Export then has the server build it while the dialog shows the progress.
+   */
+  private _webExportRows(rows: HTMLElement, status: HTMLElement, run: HTMLButtonElement, lock: (on: boolean) => void, cancelled: () => boolean): () => Promise<boolean> {
+    const choice = this._webChoice;
+    const nameInput = el('input', { type: 'text', value: defaultWebExportName(this._deck.file, this._deck.title), 'aria-label': 'Name', spellcheck: 'false' });
+    const suffix = el('span', { class: 'note' });
+    const form = el('select', { 'aria-label': 'Form of the web page' });
+    form.append(
+      el('option', { value: 'file', text: 'One self-contained HTML file (opens from disk, by a double click)' }),
+      el('option', { value: 'folder', text: 'A folder of files, recorded talks included (for a web server)' }),
+    );
+    form.value = choice.form;
+    const notes = el('input', { type: 'checkbox' });
+    notes.checked = !choice.notes;
+    const outline = el('input', { type: 'checkbox' });
+    // A deck that opens its outline by itself keeps doing so.
+    outline.checked = this._deck.showOutline;
+    outline.disabled = this._deck.showOutline;
+    const where = el('select', { 'aria-label': 'Where to save the web page' });
+    const pickers = () => form.value === 'folder'
+      ? typeof (window as DirectoryPickerWindow).showDirectoryPicker === 'function'
+      : typeof (window as SavePickerWindow).showSaveFilePicker === 'function';
+    const fillWhere = () => {
+      const previous = where.value || choice.destination;
+      where.replaceChildren();
+      if (pickers()) where.append(el('option', { value: 'pick', text: 'A folder of my choice (asked when the export starts)' }));
+      where.append(el('option', { value: 'build', text: 'The build/ folder next to the deck' }));
+      where.append(el('option', { value: 'download', text: form.value === 'folder' ? "The browser's downloads, as a zip" : "The browser's downloads" }));
+      if (previous && [...where.options].some((option) => option.value === previous)) where.value = previous;
+    };
+    const describe = () => {
+      const name = webExportName(nameInput.value);
+      const folder = form.value === 'folder';
+      suffix.textContent = folder ? '/' : '.html';
+      const made = folder
+        ? 'A folder: index.html, the player in chunks loaded on demand, and the deck\'s files in deck/, the recorded talks unpacked among them. A browser needs the folder served over HTTP: any static host or server.'
+        : 'The player, the engine, the fonts, the deck and every asset it uses, in one file that opens by a double click, from disk, an attachment or any host. Recorded talks are left out; the folder carries them.';
+      const delivered = where.value === 'pick'
+        ? folder ? ` It is written into a folder ${name} inside the folder you choose.` : ' It is saved where you choose.'
+        : where.value === 'build'
+          ? ` It is written to build/${name}${folder ? '/' : '.html'} next to the deck, replacing an earlier export of that name.`
+          : ` It arrives in the downloads as ${name}${folder ? '.zip' : '.html'}.`;
+      status.textContent = `${made}${delivered} The server builds it first, in some seconds for a small deck; keep this dialog open.`;
+    };
+    form.addEventListener('change', () => {
+      fillWhere();
+      describe();
+    });
+    where.addEventListener('change', describe);
+    nameInput.addEventListener('input', describe);
+    nameInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') run.click();
+    });
+    fillWhere();
+    describe();
+    rows.append(
+      el('div', { class: 'row' }, el('label', {}, 'Name ', nameInput), suffix),
+      el('div', { class: 'row' }, el('label', {}, 'Form ', form)),
+      el('div', { class: 'row' }, el('label', {}, notes, ' Leave the presenter notes out, for a deck handed to the audience')),
+      el('div', { class: 'row' }, el('label', {}, outline, ' Open the slide outline when the deck starts')),
+      el('div', { class: 'row' }, el('label', {}, 'Save to ', where)),
+    );
+    queueMicrotask(() => nameInput.select());
+    return () => {
+      this._webChoice = { form: form.value as WebPageForm, notes: !notes.checked, destination: where.value };
+      return this._exportWebPage(webExportName(nameInput.value), form.value as WebPageForm, !notes.checked, outline.checked, where.value as 'pick' | 'build' | 'download', status, lock, cancelled);
+    };
+  }
+
+  /**
+   * Have the server build the deck as a web page and deliver it: into the folder or the file
+   * chosen (asked first, while the click still counts for the browser), the deck's build/
+   * folder, or the downloads. Resolves true when the dialog may close.
+   */
+  private async _exportWebPage(name: string, form: WebPageForm, notes: boolean, outline: boolean, destination: 'pick' | 'build' | 'download', status: HTMLElement, lock: (on: boolean) => void, cancelled: () => boolean): Promise<boolean> {
+    const file = this._deck.file;
+    if (!file || this._webExporting) return false;
+    let folder: FileSystemDirectoryHandle | null = null;
+    let target: FileSystemFileHandle | null = null;
+    if (destination === 'pick') {
+      try {
+        if (form === 'folder') folder = (await (window as DirectoryPickerWindow).showDirectoryPicker?.({ id: 'zoomdeck-export', mode: 'readwrite' })) ?? null;
+        else target = (await (window as SavePickerWindow).showSaveFilePicker?.({ suggestedName: `${name}.html`, types: [{ description: 'Web page', accept: { 'text/html': ['.html'] } }] })) ?? null;
+      } catch (error) {
+        // Dismissed, the dialog stays as it was; a picker that fails says so, and another place can be chosen.
+        if ((error as DOMException).name !== 'AbortError') status.textContent = `No folder can be chosen here (${(error as Error).message}); choose another place to save to.`;
+        return false;
+      }
+      if (!folder && !target) return false;
+      const problem = folder ? await folderProblem(folder, name) : null;
+      if (problem) {
+        status.textContent = problem;
+        return false;
+      }
+    } else if (destination === 'build') {
+      // A name taken by something else in build/ is refused before the build, not after.
+      try {
+        await checkWebExportPlace(file, name, form);
+      } catch (error) {
+        status.textContent = (error as Error).message;
+        return false;
+      }
+    }
+    this._webExporting = true;
+    lock(true);
+    let id: string | null = null;
+    let keep = false;
+    try {
+      id = await startWebExport(file, { form, notes, outline });
+      const started = performance.now();
+      const result = await waitForWebExport(id, () => {
+        status.textContent = `Building the web page… ${Math.round((performance.now() - started) / 1000)} s`;
+      }, cancelled);
+      if (!result) return true;
+      if (result.status === 'failed') throw new Error(result.error ?? 'the build failed');
+      if (folder) {
+        const done = await writeWebExportFolder(id, result.files, folder, name, (count, total) => {
+          status.textContent = `Writing file ${count} of ${total}…`;
+        }, cancelled);
+        if (done) this.notice(`Exported into ${folder.name}/${name}/`);
+      } else if (target) {
+        status.textContent = 'Writing the file…';
+        await writeWebExportFile(id, target);
+        this.notice(`Exported as ${target.name}`);
+      } else if (destination === 'build') {
+        this.notice(`Exported into ${await placeWebExport(id, name)} next to the deck`);
+      } else {
+        // The download streams from the server's copy, which therefore stays (the server removes it within the hour).
+        keep = true;
+        if (form === 'folder') downloadUrl(webExportZipUrl(id, name), `${name}.zip`);
+        else downloadUrl(webExportFileUrl(id, 'offline.html', `${name}.html`), `${name}.html`);
+        this.notice(`${name}${form === 'folder' ? '.zip' : '.html'} is downloading`);
+      }
+      return true;
+    } catch (error) {
+      status.textContent = `The export failed: ${(error as Error).message}`;
+      return false;
+    } finally {
+      if (id && !keep) void forgetWebExport(id);
+      this._webExporting = false;
+      lock(false);
+    }
+  }
+
+  /** The rows for a talk as a video: its name, how it is made, where it goes, its size and proportions. Export then starts it and closes the dialog. */
+  private _videoExportRows(entry: RecordingEntry, timeline: Timeline, rows: HTMLElement, status: HTMLElement, run: HTMLButtonElement): () => Promise<boolean> {
+    const talk = entry.name;
+    const folder = Boolean(this._deck.base && recordingStoreAvailable());
+    const picker = typeof (window as SavePickerWindow).showSaveFilePicker === 'function';
+    const server = folder && this._render.ffmpeg;
+    const page = Boolean(exportMimeType());
+    const nameInput = el('input', { type: 'text', value: `${talk}.video`, 'aria-label': 'File name', spellcheck: 'false' });
+    // How the video is made, and separately where the file goes.
+    const how = el('select', { 'aria-label': 'How the video is made' });
+    if (server) how.append(el('option', { value: 'server', text: 'Off the clock, by the server (MP4; faster than real time, this page stays free)' }));
+    if (page) how.append(el('option', { value: 'page', text: 'In this page, in real time (WebM; takes as long as the talk)' }));
+    const where = el('select', { 'aria-label': 'Where to save the video' });
+    if (picker) where.append(el('option', { value: 'pick', text: 'A folder of my choice (asked when the export starts)' }));
+    if (folder) where.append(el('option', { value: 'folder', text: 'The recordings/ folder next to the deck' }));
+    where.append(el('option', { value: 'download', text: "The browser's downloads" }));
+    const suffix = el('span', { class: 'note', text: '.webm' });
+    const sizeSelect = this._sizeSelect('Size of the video', this._settings.recording.renderHeight);
+    const aspectSelect = this._aspectSelect('Proportions of the video', this._settings.recording.renderAspect, timeline);
+    const chosenSize = (): number | 'display' => Number(sizeSelect.value) || 'display';
+    const chosenAspect = () => aspectSelect.value as AspectChoice;
+    const describe = () => {
+      const offline = how.value === 'server';
+      suffix.textContent = offline ? '.mp4' : '.webm';
+      const frame = frameSize(chosenSize(), frameAspect(chosenAspect(), timeline, this._deckAspect));
+      const size = `${frame.width} by ${frame.height} pixels`;
+      const made = offline
+        ? `The talk is rendered in a page of its own, off the clock and faster than real time, and ffmpeg lays the camera, the screen and the sound from the recording over the deck: an MP4 file (H.264 and AAC), ${size}. The list of talks shows the progress.`
+        : `The talk opens and plays from the start while the video is written, which takes as long as the talk; keep this window visible until it ends. The file is WebM (VP9 and Opus), ${size}, with the slides or the whiteboard and their ink, the camera in its corner or full frame, the pointer, and the sound.`;
+      const delivered = offline && where.value !== 'folder'
+        ? ` The server writes the video into the recordings/ folder, where the list of talks opens it; when the render ends, this page ${where.value === 'pick' ? 'writes a copy to the folder you chose' : 'offers a copy as a download'}, so keep this page open until then.`
+        : '';
+      status.textContent = made + delivered;
+    };
+    how.addEventListener('change', describe);
+    where.addEventListener('change', describe);
+    sizeSelect.addEventListener('change', describe);
+    aspectSelect.addEventListener('change', describe);
+    nameInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') run.click();
+    });
+    describe();
+    rows.append(
+      el('div', { class: 'row' }, el('label', {}, 'Name ', nameInput), suffix),
+      ...(server && page ? [el('div', { class: 'row' }, el('label', {}, 'Made ', how))] : []),
+      el('div', { class: 'row' }, el('label', {}, 'Save to ', where)),
+      el('div', { class: 'row' }, el('label', {}, 'Size ', sizeSelect)),
+      el('div', { class: 'row' }, el('label', {}, 'Proportions ', aspectSelect)),
+    );
+    queueMicrotask(() => nameInput.select());
+    return async () => {
+      // Characters a file name or the server refuse become dashes; an empty name falls back to the talk's.
+      const name = nameInput.value.trim().replace(/[^\w.-]+/g, '-').replace(/^[^A-Za-z0-9]+|-+$/g, '') || `${talk}.video`;
+      const destination = where.value as ExportChoice['destination'];
+      const method = (how.value === 'server' ? 'server' : 'page') as ExportChoice['method'];
+      let handle: FileSystemFileHandle | undefined;
+      if (destination === 'pick') {
+        try {
+          // The picker must follow the click directly; the file is written when the export, or the render, ends.
+          const extension = method === 'server' ? 'mp4' : 'webm';
+          handle = await (window as SavePickerWindow).showSaveFilePicker?.({ suggestedName: `${name}.${extension}`, types: [{ description: method === 'server' ? 'MP4 video' : 'WebM video', accept: { [method === 'server' ? 'video/mp4' : 'video/webm']: [`.${extension}`] } }] });
+        } catch (error) {
+          // Dismissed, the dialog stays as it was; a picker that fails says so, and another place can be chosen.
+          if ((error as DOMException).name !== 'AbortError') status.textContent = `No file can be chosen here (${(error as Error).message}); choose another place to save to.`;
+          return false;
+        }
+        if (!handle) return false;
+      }
+      void this._exportTalk(entry, { name, method, destination, handle, size: chosenSize(), aspect: chosenAspect() });
+      return true;
+    };
+  }
+
+  /**
+   * Export a talk as a video: off the clock by the server, or in this page in real time, where
+   * the talk is opened (when another, or none, plays) and played from its start while it is
+   * filmed; the playback bar's Export button shows the progress meanwhile.
+   */
+  private async _exportTalk(entry: RecordingEntry, choice: ExportChoice): Promise<void> {
+    const talk = entry.name;
     const name = choice.name;
     if (choice.method === 'server') {
       await this.startRender(talk, name, choice.size, choice.aspect);
@@ -2060,10 +2436,16 @@ export class PlayerUI {
       if (choice.destination !== 'folder') this._deliverWhenRendered(talk, name, choice.destination, choice.handle);
       return;
     }
+    if (this._exporting) return;
+    // Opened without playing: a play started and paused at once would end after the export's own play began, and stop it.
+    if (!this._playback || this._playbackName !== talk) await this.openRecording(entry, false);
+    const playback = this._playback;
+    if (!playback || this._playbackName !== talk || this._exporting) return;
+    if (playback.playing) playback.pause();
     const aspect = frameAspect(choice.aspect, playback.timeline, this._deckAspect);
     const { width } = frameSize(choice.size, aspect);
     this._exporting = true;
-    this._exportButton.disabled = true;
+    this._playbackExportButton.disabled = true;
     this._playRange.disabled = true;
     this._playToggle.disabled = true;
     const source: ExportSource = {
@@ -2084,7 +2466,7 @@ export class PlayerUI {
       const blob = await exportVideo(playback, source, {
         width,
         onProgress: (fraction) => {
-          this._exportButton.textContent = `Exporting… ${Math.round(fraction * 100)}%`;
+          this._playbackExportButton.textContent = `Exporting… ${Math.round(fraction * 100)}%`;
         },
       });
       if (choice.handle) {
@@ -2103,99 +2485,11 @@ export class PlayerUI {
       this.notice(`Export failed: ${(error as Error).message}`);
     } finally {
       this._exporting = false;
-      this._exportButton.disabled = false;
-      this._exportButton.textContent = 'Flatten and export';
+      this._playbackExportButton.disabled = false;
+      this._playbackExportButton.textContent = 'Export';
       this._playRange.disabled = false;
       this._playToggle.disabled = false;
     }
-  }
-
-  /** Ask for the video's name and where it goes, and for the go-ahead; null when the dialog is dismissed. */
-  private _confirmExport(talk: string, timeline: Timeline): Promise<ExportChoice | null> {
-    const folder = Boolean(this._deck.base && recordingStoreAvailable());
-    const picker = typeof (window as SavePickerWindow).showSaveFilePicker === 'function';
-    const server = folder && this._render.ffmpeg;
-    const dialog = el('dialog', { class: 'settings export' });
-    const close = el('button', { class: 'close', 'aria-label': 'Close', text: '×' });
-    const nameInput = el('input', { type: 'text', value: `${talk}.video`, 'aria-label': 'File name', spellcheck: 'false' });
-    // How the video is made, and separately where the file goes.
-    const how = el('select', { 'aria-label': 'How the video is made' });
-    if (server) how.append(el('option', { value: 'server', text: 'Off the clock, by the server (MP4; faster than real time, this page stays free)' }));
-    how.append(el('option', { value: 'page', text: 'In this page, in real time (WebM; takes as long as the talk)' }));
-    const where = el('select', { 'aria-label': 'Where to save the video' });
-    if (picker) where.append(el('option', { value: 'pick', text: 'A folder of my choice (asked when the export starts)' }));
-    if (folder) where.append(el('option', { value: 'folder', text: 'The recordings/ folder next to the deck' }));
-    where.append(el('option', { value: 'download', text: "The browser's downloads" }));
-    const suffix = el('span', { class: 'note', text: '.webm' });
-    const sizeSelect = this._sizeSelect('Size of the video', this._settings.recording.renderHeight);
-    const aspectSelect = this._aspectSelect('Proportions of the video', this._settings.recording.renderAspect, timeline);
-    const chosenSize = (): number | 'display' => Number(sizeSelect.value) || 'display';
-    const chosenAspect = () => aspectSelect.value as AspectChoice;
-    const status = el('p', { class: 'note' });
-    const describe = () => {
-      const offline = how.value === 'server';
-      suffix.textContent = offline ? '.mp4' : '.webm';
-      const frame = frameSize(chosenSize(), frameAspect(chosenAspect(), timeline, this._deckAspect));
-      const size = `${frame.width} by ${frame.height} pixels`;
-      const made = offline
-        ? `The talk is rendered in a page of its own, off the clock and faster than real time, and ffmpeg lays the camera, the screen and the sound from the recording over the deck: an MP4 file (H.264 and AAC), ${size}. The list of talks shows the progress.`
-        : `The recording plays from the start while the video is written, which takes as long as the talk; keep this window visible until it ends. The file is WebM (VP9 and Opus), ${size}, with the slides or the whiteboard and their ink, the camera in its corner or full frame, the pointer, and the sound.`;
-      const delivered = offline && where.value !== 'folder'
-        ? ` The server writes the video into the recordings/ folder, where the list of talks opens it; when the render ends, this page ${where.value === 'pick' ? 'writes a copy to the folder you chose' : 'offers a copy as a download'}, so keep this page open until then.`
-        : '';
-      status.textContent = made + delivered;
-    };
-    how.addEventListener('change', describe);
-    where.addEventListener('change', describe);
-    sizeSelect.addEventListener('change', describe);
-    aspectSelect.addEventListener('change', describe);
-    describe();
-    const run = el('button', { class: 'add', text: 'Export', autofocus: '' });
-    const cancel = el('button', { text: 'Cancel' });
-    dialog.append(
-      el('header', {}, el('h2', { text: 'Flatten the talk into a video and export it' }), close),
-      el('section', {},
-        el('div', { class: 'row' }, el('label', {}, 'Name ', nameInput), suffix),
-        ...(server ? [el('div', { class: 'row' }, el('label', {}, 'Made ', how))] : []),
-        el('div', { class: 'row' }, el('label', {}, 'Save to ', where)),
-        el('div', { class: 'row' }, el('label', {}, 'Size ', sizeSelect)),
-        el('div', { class: 'row' }, el('label', {}, 'Proportions ', aspectSelect)),
-        status,
-        el('div', { class: 'row' }, run, cancel)),
-    );
-    return new Promise((resolve) => {
-      let choice: ExportChoice | null = null;
-      run.addEventListener('click', () => {
-        void (async () => {
-          // Characters a file name or the server refuse become dashes; an empty name falls back to the talk's.
-          const name = nameInput.value.trim().replace(/[^\w.-]+/g, '-').replace(/^[^A-Za-z0-9]+|-+$/g, '') || `${talk}.video`;
-          const destination = where.value as ExportChoice['destination'];
-          const method = (how.value === 'server' ? 'server' : 'page') as ExportChoice['method'];
-          let handle: FileSystemFileHandle | undefined;
-          if (destination === 'pick') {
-            try {
-              // The picker must follow the click directly; the file is written when the export, or the render, ends.
-              const extension = method === 'server' ? 'mp4' : 'webm';
-              handle = await (window as SavePickerWindow).showSaveFilePicker?.({ suggestedName: `${name}.${extension}`, types: [{ description: method === 'server' ? 'MP4 video' : 'WebM video', accept: { [method === 'server' ? 'video/mp4' : 'video/webm']: [`.${extension}`] } }] });
-            } catch {
-              return; // dismissed: the dialog stays
-            }
-            if (!handle) return;
-          }
-          choice = { name, method, destination, handle, size: chosenSize(), aspect: chosenAspect() };
-          dialog.close();
-        })();
-      });
-      nameInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') run.click();
-      });
-      cancel.addEventListener('click', () => dialog.close());
-      close.addEventListener('click', () => dialog.close());
-      dialog.addEventListener('close', () => { dialog.remove(); resolve(choice); });
-      this.root.append(dialog);
-      dialog.showModal();
-      nameInput.select();
-    });
   }
 
   // ---------------------------------------------------------------------
