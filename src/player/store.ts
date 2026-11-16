@@ -17,12 +17,16 @@ export interface RecordingEntry {
   /** The first media file's name, or null for a timeline without sound. */
   media: string | null;
   video: boolean;
+  /** Whether a camera picture is in it (absent in an index written before it was kept: then `video` stands in). */
+  camera?: boolean;
+  /** Whether a filmed screen is in it. */
+  screen?: boolean;
   /** Whether the talk has a system lane: the computer's sound, recorded with the screen share. */
   system?: boolean;
   parts?: number;
   /** The bundle holding the talk (`name.zip`); absent when the talk lies in plain files. */
   file?: string;
-  /** The talk's rendered video in the recordings folder (`name.video.mp4`), when there is one. */
+  /** The talk's rendered video in the recordings folder (`name.video.mp4`, or a `name.video.webm` made in a page), when there is one. */
   movie?: string;
 }
 

@@ -41,6 +41,9 @@ function indexEntry(name, timeline, file, movie = null) {
     duration: Number(timeline.duration) || 0,
     media: media.length ? media[0].file : null,
     video: media.some((part) => part?.video),
+    // Which pictures it has: the camera's (a camera-lane file with a picture), and a filmed screen.
+    camera: media.some((part) => part?.video && part?.source !== 'screen'),
+    screen: media.some((part) => part?.source === 'screen'),
     ...(media.some((part) => part?.lane === 'system') ? { system: true } : {}),
     parts: media.length,
     ...(file ? { file } : {}),
@@ -50,7 +53,7 @@ function indexEntry(name, timeline, file, movie = null) {
 
 /** The rendered video of a talk among a folder's files: `name.video.mp4` as the player names it, or `name.mp4`. */
 function movieOf(name, entries) {
-  return [`${name}.video.mp4`, `${name}.mp4`].find((candidate) => entries.includes(candidate)) ?? null;
+  return [`${name}.video.mp4`, `${name}.mp4`, `${name}.video.webm`].find((candidate) => entries.includes(candidate)) ?? null;
 }
 
 /** The timeline inside a bundle, or null when the file is not a complete bundle holding one. */

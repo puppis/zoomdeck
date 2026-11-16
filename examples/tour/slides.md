@@ -712,7 +712,7 @@ A recording keeps your voice, the camera while you have it on, and every move on
 2. **Record** with R or the ● Record button; a dialog says what will be kept, then the header counts the time. Present as usual: keys, pen, W for the whiteboard, the Camera button or C for the camera (in a corner, full frame, off), recorded while it is on; S shares the screen, which is filmed as a stream of its own whenever the deck loses the focus, to another application, a tab or a live page, and until it gets it back, the camera staying as you set it; the computer's sound comes with the share where the browser offers it. A pause leaves no gap: the talk resumes where it stopped. {x=2.3 width=7.4 font_size=17}
 3. **Stop** saves the talk in `recordings/` next to the deck when the deck is served by `zoomdeck serve`, and R later offers to continue it; elsewhere it downloads a zip and offers a video of the talk. {x=2.3 width=7.4 font_size=17}
 4. **Play** it with ▶ Talk in the footer: the deck follows the recording; Space pauses, ← and → seek, Esc leaves. {x=2.3 width=7.4 font_size=17}
-5. **Export** (X, or the same button in the playback bar) makes one video file of it: slides or whiteboard with ink, camera in a corner or full frame, and the sound. {x=2.3 width=7.4 font_size=17}
+5. **Render video** in the list of talks, or **Export** (X), makes one video file of it: slides or whiteboard with ink, camera in a corner or full frame, and the sound. {x=2.3 width=7.4 font_size=17}
 
 Try it on this very slide: record a few seconds, draw, turn the camera on with C, stop, then play. {x=-9.35 y=-4.5 width=19 font_size=18 color=GRAY}
 :::

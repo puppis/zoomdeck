@@ -116,6 +116,8 @@ body.zd-page { margin: 0; height: 100vh; overflow: hidden; background: var(--bac
 .zd-app.playing-back footer .group { display: none; }
 .zd-app footer .playback-bar input[type=range] { flex: 1; min-width: 80px; }
 .zd-app footer .playback-bar .play-time { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.zd-app footer .playback-bar .export-progress { font-variant-numeric: tabular-nums; white-space: nowrap; color: #d22; font-weight: 600; }
+.zd-app footer .playback-bar .export-progress[hidden] { display: none; }
 .zd-app footer .playback-bar button { padding: 5px 10px; font-size: 12px; }
 .zd-app .render-offer { position: absolute; left: 50%; bottom: 64px; transform: translateX(-50%); display: flex; gap: 10px; align-items: center; max-width: 90%; padding: 10px 14px; background: var(--background); color: var(--foreground); border: 1px solid color-mix(in srgb, var(--foreground) 20%, transparent); border-radius: 8px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18); font-size: 13px; z-index: 30; }
 .zd-app .render-offer button { padding: 5px 10px; font-size: 12px; white-space: nowrap; }
@@ -178,7 +180,25 @@ body.zd-page { margin: 0; height: 100vh; overflow: hidden; background: var(--bac
 .zd-app .record-label { font-size: 12px; color: #d22; font-variant-numeric: tabular-nums; font-weight: 600; }
 .zd-app .record-label.paused { color: var(--muted); }
 .zd-app .record-label[hidden] { display: none; }
-.zd-app dialog.recordings .binding.recording { grid-template-columns: 1fr auto auto auto; }
+/* The list of talks: a table, one row per talk, the buttons on one line. */
+.zd-app dialog.settings.recordings { width: min(900px, 96vw); }
+.zd-app dialog.recordings table.talks { width: 100%; border-collapse: collapse; font-size: 14px; }
+.zd-app dialog.recordings table.talks th { text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding: 0 10px 6px 0; }
+.zd-app dialog.recordings table.talks td { padding: 7px 10px 7px 0; border-top: 1px solid var(--border); vertical-align: middle; }
+.zd-app dialog.recordings table.talks td.length { font-variant-numeric: tabular-nums; }
+.zd-app dialog.recordings table.talks td.when, .zd-app dialog.recordings table.talks td.length, .zd-app dialog.recordings table.talks td.buttons { white-space: nowrap; }
+.zd-app dialog.recordings table.talks td.buttons { text-align: right; padding-right: 0; }
+.zd-app dialog.recordings table.talks td.buttons button { margin-left: 6px; }
+.zd-app dialog.recordings table.talks td.buttons button[hidden] { display: none; }
+.zd-app dialog.recordings .video-button { min-width: 9.5em; }
+.zd-app dialog.recordings .video-button.failed { border-color: #d22; }
+.zd-app dialog.recordings .tag { margin-left: 8px; font-size: 11px; color: var(--muted); border: 1px solid var(--border); border-radius: 6px; padding: 1px 5px; }
+.zd-app .track-icons { display: inline-flex; gap: 6px; align-items: center; }
+.zd-app .track-icon, .zd-app .track-gap { width: 18px; height: 18px; flex: none; }
+.zd-app .track-icon { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+/* A rendered video, played in a dialog of its own. */
+.zd-app dialog.settings.rendered-video { width: min(960px, 96vw); }
+.zd-app dialog.rendered-video video { display: block; width: 100%; max-height: 70vh; background: #000; border-radius: 6px; }
 .zd-app select { padding: 5px 6px; }
 .zd-app .counter { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; margin-left: 4px; }
 .zd-app progress { position: absolute; top: 0; left: 0; width: 100%; height: 2px; border: 0; appearance: none; background: var(--border); color: var(--foreground); }

@@ -51,6 +51,32 @@ const BOARD_STEP = 0.25;
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
+/** The tracks a recorded talk may have, as the list of talks shows them. */
+type TrackKind = 'voice' | 'camera' | 'screen' | 'sound';
+
+/** Small line drawings of the tracks, in a 24-unit box: a microphone, a camera, a screen, a loudspeaker. */
+const TRACK_ICON_PATHS: Record<TrackKind, string> = {
+  voice: 'M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM19 11a7 7 0 0 1-14 0M12 18v3M8 21h8',
+  camera: 'M3 7h12v10H3zM15 10.5l6-3.5v10l-6-3.5z',
+  screen: 'M3 4h18v12H3zM8 20h8M12 16v4',
+  sound: 'M4 9h4l5-4v14l-5-4H4zM16.5 9.5a4 4 0 0 1 0 5M19 7a7.5 7.5 0 0 1 0 10',
+};
+
+/** One track's icon, named for screen readers and in its tooltip. */
+function trackIcon(kind: TrackKind, label: string): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('class', 'track-icon');
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', label);
+  const title = document.createElementNS(SVG_NS, 'title');
+  title.textContent = label;
+  const path = document.createElementNS(SVG_NS, 'path');
+  path.setAttribute('d', TRACK_ICON_PATHS[kind]);
+  svg.append(title, path);
+  return svg;
+}
+
 /** The live camera as the presenter sets it: off, in a corner of the slides, or full frame. */
 export type CameraMode = 'off' | 'corner' | 'full';
 
@@ -66,8 +92,8 @@ interface ExportChoice {
   name: string;
   /** How the video is made: off the clock by the server (an MP4), or in this page in real time (a WebM). */
   method: 'server' | 'page';
-  /** Where the file goes: a folder chosen through the browser's save dialog, the recordings folder next to the deck, or the browser's downloads. */
-  destination: 'pick' | 'folder' | 'download';
+  /** Where the file goes: a folder chosen through the browser's save dialog, the recordings folder next to the deck, the browser's downloads, or nowhere yet (`keep`: the list of talks plays it and offers it for download). */
+  destination: 'pick' | 'folder' | 'download' | 'keep';
   /** The frame: a standard height or the display's own width, in the chosen proportions. */
   size: number | 'display';
   aspect: AspectChoice;
@@ -258,9 +284,10 @@ export class PlayerUI {
   private readonly _playToggle: HTMLButtonElement;
   private readonly _playTime: HTMLElement;
   private readonly _playRange: HTMLInputElement;
-  /** The Export button of the footer, beside the settings, and the playback bar's, which stands in for it while a talk plays: both open the Export dialog. */
+  /** The Export button of the footer, beside the settings: it opens the Export dialog. */
   private readonly _exportButton: HTMLButtonElement;
-  private readonly _playbackExportButton: HTMLButtonElement;
+  /** In the playback bar, the progress of a talk being made into a video in this page. */
+  private readonly _exportProgress: HTMLElement;
   private readonly _recordingsButton: HTMLButtonElement;
   private _recordings: RecordingEntry[] = [];
   /**
@@ -269,6 +296,8 @@ export class PlayerUI {
    * export like the others; the downloaded bundle is their only lasting copy.
    */
   private readonly _memoryTalks = new Map<string, { timeline: Timeline; files: Map<string, Blob>; urls: Map<string, string> }>();
+  /** Videos made in this page during the session, by talk: the list of talks plays them and offers them for download. */
+  private readonly _sessionVideos = new Map<string, { url: string; name: string }>();
   /** A talk being exported in this page, in real time: the playback is not to be touched meanwhile. */
   private _exporting = false;
   /** The deck being exported as a web page: the server builds it, then this page delivers it. */
@@ -379,18 +408,17 @@ export class PlayerUI {
     this._playToggle = el('button', { class: 'play-toggle', 'aria-label': 'Play or pause the recording', text: '▶' });
     this._playRange = el('input', { type: 'range', min: '0', max: '1000', value: '0', 'aria-label': 'Position in the recording' });
     this._playTime = el('span', { class: 'play-time', text: '0:00 / 0:00' });
-    this._playbackExportButton = el('button', { class: 'export-button', text: 'Export', title: 'Export this talk as a video, or the deck as a web page' });
+    this._exportProgress = el('span', { class: 'export-progress', role: 'status', hidden: '' });
     const talks = el('button', { class: 'talks-button', text: 'Talks…', title: 'Choose, continue or delete a recorded talk' });
     talks.addEventListener('click', () => this.openRecordingList());
     const closePlayback = el('button', { class: 'close-playback', 'aria-label': 'Leave the recording', title: 'Leave the recording (Esc)', text: '×' });
     this._playbackBar = el('div', { class: 'playback-bar', hidden: '', role: 'group', 'aria-label': 'Recording playback' },
-      this._playToggle, this._playRange, this._playTime, talks, this._playbackExportButton, closePlayback);
+      this._playToggle, this._playRange, this._playTime, this._exportProgress, talks, closePlayback);
     this._playToggle.addEventListener('click', () => this._playback?.toggle());
     this._playRange.addEventListener('input', () => {
       const playback = this._playback;
       if (playback) playback.seek((Number(this._playRange.value) / 1000) * playback.duration);
     });
-    this._playbackExportButton.addEventListener('click', () => void this.openExport(this._playbackName));
     closePlayback.addEventListener('click', () => this.closeRecording());
     this._padRequest = el('div', { class: 'pad-request', role: 'dialog', 'aria-label': 'A tablet asks to draw here', hidden: '' });
     this.stageHost.append(this._boardLayer, this._highlights, this._screen, this._system, this._camera, this._spotlight, this._remoteCursor, this._error, this._loading, this._padRequest);
@@ -1776,6 +1804,8 @@ export class PlayerUI {
       duration: timeline.duration,
       media: media.length ? media[0].file : null,
       video: media.some((part) => part.video),
+      camera: media.some((part) => part.video && part.source !== 'screen'),
+      screen: media.some((part) => part.source === 'screen'),
       ...(media.some((part) => part.lane === 'system') ? { system: true } : {}),
       parts: media.length,
     };
@@ -1815,7 +1845,12 @@ export class PlayerUI {
     else this.openRecordingList();
   }
 
-  /** The list of recorded talks, each with Play, Continue and Delete; also reached from the playback bar. */
+  /**
+   * The list of recorded talks, one row each: when it was recorded, how long it lasts, which
+   * tracks it has (small icons), and its buttons on one line: Play, its video (Render video, or
+   * Rendered video once there is one), and Continue and Delete where the server keeps the talk.
+   * Also reached from the playback bar. A render under way shows its progress in its button.
+   */
   openRecordingList(): void {
     if (!this._recordings.length) {
       this.notice('No recorded talk yet: Record starts one');
@@ -1826,54 +1861,159 @@ export class PlayerUI {
     const dialog = el('dialog', { class: 'settings recordings' });
     const close = el('button', { class: 'close', 'aria-label': 'Close', text: '×' });
     close.addEventListener('click', () => dialog.close());
-    const list = el('div', { class: 'bindings' });
-    for (const entry of this._recordings) {
-      const when = entry.recorded ? new Date(entry.recorded).toLocaleString() : entry.name;
-      const play = el('button', { text: 'Play' });
-      play.addEventListener('click', () => {
-        dialog.close();
-        void this.openRecording(entry);
+    const body = el('tbody');
+    const fill = () => body.replaceChildren(...this._recordings.map((entry) => this._talkRow(entry, dialog, fill)));
+    fill();
+    const table = el('table', { class: 'talks' },
+      el('thead', {}, el('tr', {},
+        el('th', { text: 'Recorded' }),
+        el('th', { text: 'Length' }),
+        el('th', { text: 'Tracks' }),
+        el('th', { 'aria-label': 'Actions' }))),
+      body);
+    // While a render runs, the rows follow its progress.
+    const timer = window.setInterval(() => {
+      if (!this._render.jobs.some((job) => ['queued', 'rendering', 'composing'].includes(job.status))) return;
+      void this._refreshRecordings().then(() => {
+        if (dialog.open) fill();
       });
-      const kept = this._memoryTalks.has(entry.name);
-      const more = el('button', { text: 'Continue', title: 'Record on from where this talk stopped' });
-      more.hidden = !(this._deck.base && recordingStoreAvailable()) || kept;
-      more.addEventListener('click', () => {
-        dialog.close();
-        void this.continueRecording(entry);
-      });
-      // The rendered video, when there is one; a render under way shows its progress in the row (flattening is started from the playback bar).
-      const video = el('button', { text: 'Video', title: 'Open the rendered video' });
-      video.hidden = !entry.movie;
-      video.addEventListener('click', () => window.open(recordingUrl(this._deck.base as string, entry.movie as string), '_blank', 'noopener'));
-      const job = this._render.jobs.find((candidate) => candidate.talk === entry.name && candidate.status !== 'done') ?? null;
-      const progress = job?.status === 'composing' ? ` · composing ${Math.round(job.progress * 100)}%` : job && ['queued', 'rendering'].includes(job.status) ? ` · rendering ${Math.round(job.progress * 100)}%` : job?.status === 'failed' ? ' · render failed' : job?.status === 'interrupted' ? ' · render interrupted' : '';
-      const remove = el('button', { class: 'add', text: 'Delete' });
-      remove.hidden = !(this._deck.base && recordingStoreAvailable()) || kept;
-      remove.addEventListener('click', () => {
-        if (!confirm(`Delete the recording of ${when}?`)) return;
-        void deleteRecording(this._deck.base as string, entry.name).then(() => this._refreshRecordings()).then(() => {
-          dialog.close();
-          // The talk being played is gone with its files: the deck is the viewer's again.
-          if (this._playbackName === entry.name) this.closeRecording();
-          if (this._recordings.length) this.openRecordingList();
-        }).catch((error: Error) => this.notice(error.message));
-      });
-      list.append(el('div', { class: 'binding recording' },
-        el('span', { class: 'action', text: `${when} · ${formatTime(entry.duration)}${entry.video ? ' · camera' : entry.media ? ' · sound' : ''}${entry.system ? " · computer's sound" : ''}${entry.movie ? ' · video' : ''}${kept ? ' · in this page only, until it closes' : ''}${progress}`, title: job?.error ?? '' }), play, video, more, remove));
-    }
-    // While a render runs, the list follows its progress.
-    if (this._render.jobs.some((job) => ['queued', 'rendering', 'composing'].includes(job.status))) {
-      const timer = window.setInterval(() => {
-        void this._refreshRecordings().then(() => {
-          if (dialog.open) this.openRecordingList();
-        });
-      }, 3000);
-      dialog.addEventListener('close', () => clearInterval(timer));
-    }
+    }, 3000);
     const done = el('button', { class: 'done', text: 'Close' });
     done.addEventListener('click', () => dialog.close());
-    dialog.append(el('header', {}, el('h2', { text: 'Recorded talks' }), close), el('section', {}, list), el('div', { class: 'actions' }, done));
-    dialog.addEventListener('close', () => dialog.remove());
+    dialog.append(el('header', {}, el('h2', { text: 'Recorded talks' }), close), el('section', {}, table), el('div', { class: 'actions' }, done));
+    dialog.addEventListener('close', () => {
+      clearInterval(timer);
+      dialog.remove();
+    });
+    this.root.append(dialog);
+    dialog.showModal();
+  }
+
+  /** A talk's row in the list of talks. */
+  private _talkRow(entry: RecordingEntry, dialog: HTMLDialogElement, refresh: () => void): HTMLTableRowElement {
+    const when = entry.recorded ? new Date(entry.recorded).toLocaleString() : entry.name;
+    const kept = this._memoryTalks.has(entry.name);
+    // Continued and deleted only where the server keeps the talk; a talk in this page alone has its zip as its lasting copy.
+    const stored = Boolean(this._deck.base && recordingStoreAvailable()) && !kept;
+    const play = el('button', { text: 'Play', title: 'Play the talk on the deck' });
+    play.addEventListener('click', () => {
+      dialog.close();
+      void this.openRecording(entry);
+    });
+    const more = el('button', { text: 'Continue', title: 'Record on from where this talk stopped' });
+    more.hidden = !stored;
+    more.addEventListener('click', () => {
+      dialog.close();
+      void this.continueRecording(entry);
+    });
+    const remove = el('button', { text: 'Delete', title: 'Delete the talk and its video' });
+    remove.hidden = !stored;
+    remove.addEventListener('click', () => {
+      if (!confirm(`Delete the recording of ${when}?`)) return;
+      void deleteRecording(this._deck.base as string, entry.name).then(() => this._refreshRecordings()).then(() => {
+        // The talk being played is gone with its files: the deck is the viewer's again.
+        if (this._playbackName === entry.name) this.closeRecording();
+        if (this._recordings.length) refresh();
+        else dialog.close();
+      }).catch((error: Error) => this.notice(error.message));
+    });
+    const tracks: Array<[TrackKind, boolean, string]> = [
+      ['voice', Boolean(entry.media), 'Voice'],
+      ['camera', entry.camera ?? entry.video, 'Camera'],
+      ['screen', Boolean(entry.screen), 'Filmed screen'],
+      ['sound', Boolean(entry.system), "Computer's sound"],
+    ];
+    const icons = el('span', { class: 'track-icons' });
+    // A track missing leaves its place empty, so that the icons line up in columns.
+    for (const [kind, present, label] of tracks) icons.append(present ? trackIcon(kind, label) : el('span', { class: 'track-gap', 'aria-hidden': 'true' }));
+    const whenCell = el('td', { class: 'when' }, when);
+    if (kept) whenCell.append(el('span', { class: 'tag', text: 'this page only', title: 'Kept in this page until it closes; the zip downloaded at Stop is its lasting copy' }));
+    return el('tr', {},
+      whenCell,
+      el('td', { class: 'length', text: formatTime(entry.duration) }),
+      el('td', { class: 'tracks' }, icons),
+      el('td', { class: 'buttons' }, play, this._videoButton(entry, dialog, refresh), more, remove));
+  }
+
+  /**
+   * A talk's video button. Once there is a video (rendered by the server, or made in this page
+   * during the session), Rendered video plays it, with a way to download it. Before, Render
+   * video makes one: off the clock by the server where it has ffmpeg (an MP4 in recordings/,
+   * the button following its progress), else in this page while the talk plays once (a WebM,
+   * kept for the session). The size and the proportions are those of the Recording settings;
+   * the Export dialog offers every choice.
+   */
+  private _videoButton(entry: RecordingEntry, dialog: HTMLDialogElement, refresh: () => void): HTMLButtonElement {
+    const talk = entry.name;
+    const base = this._deck.base;
+    const button = el('button', { class: 'video-button' });
+    if ((entry.movie && base) || this._sessionVideos.has(talk)) {
+      button.textContent = 'Rendered video';
+      button.title = 'Play the rendered video; it can be downloaded from there';
+      button.addEventListener('click', () => {
+        dialog.close();
+        this._showRenderedVideo(entry);
+      });
+      return button;
+    }
+    const job = this._render.jobs.find((candidate) => candidate.talk === talk && candidate.status !== 'done') ?? null;
+    if (job && ['queued', 'rendering', 'composing'].includes(job.status)) {
+      const percent = Math.round(job.progress * 100);
+      button.textContent = job.status === 'queued' ? 'Queued…' : job.status === 'composing' ? `Composing… ${percent}%` : `Rendering… ${percent}%`;
+      button.disabled = true;
+      return button;
+    }
+    const server = Boolean(base && recordingStoreAvailable() && this._render.ffmpeg) && !this._memoryTalks.has(talk);
+    const page = Boolean(exportMimeType());
+    button.textContent = 'Render video';
+    button.hidden = !this._features.has('export') || !(server || page);
+    button.title = job?.status === 'failed'
+      ? `The last render failed (${job.error ?? 'unknown error'}); render it again`
+      : job?.status === 'interrupted'
+        ? 'The last render was interrupted; render it again'
+        : server
+          ? 'Render the talk into an MP4 video, off the clock and faster than real time'
+          : 'Make a video of the talk in this page, while it plays once in real time';
+    if (job?.status === 'failed' || job?.status === 'interrupted') button.classList.add('failed');
+    const recording = this._settings.recording;
+    button.addEventListener('click', () => {
+      if (server) {
+        button.disabled = true;
+        button.textContent = 'Queued…';
+        void this.startRender(talk, `${talk}.video`).then(refresh);
+        return;
+      }
+      dialog.close();
+      void this._exportTalk(entry, { name: `${talk}.video`, method: 'page', destination: 'keep', size: recording.renderHeight ?? 'display', aspect: recording.renderAspect });
+    });
+    return button;
+  }
+
+  /** Play a talk's rendered video in a dialog of its own, with a button to download it. */
+  private _showRenderedVideo(entry: RecordingEntry): void {
+    const session = this._sessionVideos.get(entry.name);
+    const base = this._deck.base;
+    const url = session ? session.url : entry.movie && base ? recordingUrl(base, entry.movie) : null;
+    if (!url) return;
+    const file = session ? session.name : (entry.movie as string);
+    const when = entry.recorded ? new Date(entry.recorded).toLocaleString() : entry.name;
+    for (const stale of this.root.querySelectorAll('dialog.rendered-video')) stale.remove();
+    const dialog = el('dialog', { class: 'settings rendered-video' });
+    const close = el('button', { class: 'close', 'aria-label': 'Close', text: '×' });
+    const video = el('video', { controls: '', autoplay: '', playsinline: '', src: url, 'aria-label': `The video of the talk of ${when}` });
+    const save = el('button', { class: 'add', text: 'Download', title: `Save ${file}` });
+    save.addEventListener('click', () => downloadUrl(url, file));
+    const done = el('button', { text: 'Close' });
+    for (const button of [close, done]) button.addEventListener('click', () => dialog.close());
+    dialog.append(
+      el('header', {}, el('h2', { text: `Video of the talk of ${when}` }), close),
+      el('section', {}, video),
+      el('div', { class: 'actions' }, save, done),
+    );
+    dialog.addEventListener('close', () => {
+      video.pause();
+      dialog.remove();
+    });
     this.root.append(dialog);
     dialog.showModal();
   }
@@ -2227,11 +2367,10 @@ export class PlayerUI {
     return server || exportMimeType() ? this._recordings : [];
   }
 
-  /** The Export buttons show where there is something to export, and the export feature is on. */
+  /** The Export button shows where there is something to export, and the export feature is on. */
   private _updateExportButtons(): void {
     const shown = this._features.has('export') && (this._webExportAvailable() || this._exportableTalks().length > 0);
     this._exportButton.hidden = !shown;
-    this._playbackExportButton.hidden = !shown;
     const group = this._exportButton.parentElement;
     if (group) group.hidden = [...group.children].every((child) => (child as HTMLElement).hidden);
   }
@@ -2572,7 +2711,7 @@ export class PlayerUI {
   /**
    * Export a talk as a video: off the clock by the server, or in this page in real time, where
    * the talk is opened (when another, or none, plays) and played from its start while it is
-   * filmed; the playback bar's Export button shows the progress meanwhile.
+   * filmed; the playback bar shows the progress meanwhile.
    */
   private async _exportTalk(entry: RecordingEntry, choice: ExportChoice): Promise<void> {
     const talk = entry.name;
@@ -2580,7 +2719,7 @@ export class PlayerUI {
     if (choice.method === 'server') {
       await this.startRender(talk, name, choice.size, choice.aspect);
       // The server writes into the recordings folder; a file wanted elsewhere is handed over from there when the render ends.
-      if (choice.destination !== 'folder') this._deliverWhenRendered(talk, name, choice.destination, choice.handle);
+      if (choice.destination === 'pick' || choice.destination === 'download') this._deliverWhenRendered(talk, name, choice.destination, choice.handle);
       return;
     }
     if (this._exporting) return;
@@ -2592,7 +2731,8 @@ export class PlayerUI {
     const aspect = frameAspect(choice.aspect, playback.timeline, this._deckAspect);
     const { width } = frameSize(choice.size, aspect);
     this._exporting = true;
-    this._playbackExportButton.disabled = true;
+    this._exportProgress.textContent = 'Exporting… 0%';
+    this._exportProgress.hidden = false;
     this._playRange.disabled = true;
     this._playToggle.disabled = true;
     const source: ExportSource = {
@@ -2613,9 +2753,13 @@ export class PlayerUI {
       const blob = await exportVideo(playback, source, {
         width,
         onProgress: (fraction) => {
-          this._playbackExportButton.textContent = `Exporting… ${Math.round(fraction * 100)}%`;
+          this._exportProgress.textContent = `Exporting… ${Math.round(fraction * 100)}%`;
         },
       });
+      // The video stays in this page for the session too: the list of talks plays it and offers it for download.
+      const previous = this._sessionVideos.get(talk);
+      if (previous) URL.revokeObjectURL(previous.url);
+      this._sessionVideos.set(talk, { url: URL.createObjectURL(blob), name: `${name}.webm` });
       if (choice.handle) {
         const writable = await choice.handle.createWritable();
         await writable.write(blob);
@@ -2623,7 +2767,10 @@ export class PlayerUI {
         this.notice(`Video saved as ${choice.handle.name}`);
       } else if (choice.destination === 'folder') {
         await saveFile(this._deck.base as string, name, 'webm', blob);
+        await this._refreshRecordings();
         this.notice(`Video saved as recordings/${name}.webm`);
+      } else if (choice.destination === 'keep') {
+        this.notice('The video is ready: Rendered video, in the list of talks, plays it and downloads it');
       } else {
         download(blob, `${name}.webm`);
         this.notice(`${name}.webm downloaded`);
@@ -2632,8 +2779,7 @@ export class PlayerUI {
       this.notice(`Export failed: ${(error as Error).message}`);
     } finally {
       this._exporting = false;
-      this._playbackExportButton.disabled = false;
-      this._playbackExportButton.textContent = 'Export';
+      this._exportProgress.hidden = true;
       this._playRange.disabled = false;
       this._playToggle.disabled = false;
     }

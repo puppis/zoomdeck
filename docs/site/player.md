@@ -364,16 +364,23 @@ which is where it appears while you present and in the exported video, and wheth
 picture is mirrored while presenting (the recording is never mirrored).
 
 **Playing a recording.** When the deck's folder holds recordings, the footer shows **Talk** (with
-their number when there are several); it opens the recording, or a list to choose from, with a
-Delete button where the server can remove files. The same list opens from **Talks…** in the
-playback bar, so one recording can be continued or deleted as well. A talk opens at the moment
+their number when there are several); it opens the recording, or the list of talks to choose
+from. The list is a table, one row per talk: when it was recorded, how long it lasts, small icons
+for the tracks it holds (your voice, the camera, a filmed screen, the computer's sound), and its
+buttons on one line: **Play**; **Render video**, which makes the talk's video with the size and
+proportions of the Recording settings (off the clock by the server where it has ffmpeg, as below,
+the button following the progress; else in the page while the talk plays once), and which
+becomes **Rendered video** once there is one, to play it in a window of its own with a
+**Download** button; and **Continue** and **Delete** where the server keeps the talk. The same
+list opens from **Talks…** in the playback bar, so one recording can be continued or deleted as
+well. A talk opens at the moment
 it first reached the stop the deck stands on, so that moving to a slide and pressing **Talk**
 plays what was said there; from the first stop, or from a stop the talk never reached, it plays
 from its start, and the scrubber goes anywhere. During playback the deck follows the recording:
 stops play as they did, strokes appear as they were drawn, the whiteboard and the camera switch
 when they did, and the laser or spotlight moves where the presenter pointed. The footer gives way
 to a playback bar with play and pause (also Space or K), a scrubber (also `←` and `→`, five seconds
-at a time, and Home for the start), the time, **Export** (the footer's own, in its place) and a way out (also Esc); these
+at a time, and Home for the start), the time, **Talks…** and a way out (also Esc); these
 keys have their own group in the Keyboard settings. Seeking anywhere rebuilds the state at that
 moment. The recording's own sound plays, and its camera picture sits in the corner it was
 recorded with, or full frame where the presenter switched to it. Your keys, taps and clicks on the
@@ -382,15 +389,16 @@ recording, so that nothing of yours gets mixed with what the timeline replays.
 
 **Rendering a video.** A talk is a bundle that only Zoomdeck plays; a flat video file plays
 anywhere. Where the deck is served by `zoomdeck serve`, the desktop app or the development page
-and the computer has [ffmpeg](https://ffmpeg.org), **Export**, with the talk chosen and its
-first way of making the video, renders the talk *off the clock*: a page of its own
+and the computer has [ffmpeg](https://ffmpeg.org), **Render video** in the list of talks, or
+**Export** with the talk chosen and its first way of making the video, renders the talk *off
+the clock*: a page of its own
 replays the timeline on a virtual clock, as fast as the machine draws rather than as long as the
 talk lasted, and sends the server a picture of the deck (the slides or the whiteboard with their
 ink and the pointer, in the deck's proportions) whenever it changes; the server
 then lays the camera, in its corner or full frame, and the filmed screen, whole, over those
 pictures with the recorded sound, straight from the bundle, and writes
 `recordings/<name>.video.mp4` (H.264 and AAC, which every player, phone and site reads). The
-list of talks shows the progress and opens the video (**Video**). The frame has the proportions
+list of talks shows the progress and then plays the video (**Rendered video**). The frame has the proportions
 the deck was *presented* in by default: a recording keeps the shape of the stage, the area of the
 window between header and footer or the whole screen in fullscreen, at its start and after every
 resize, and the video takes the shape that held for longest, so that everything the presenter
@@ -419,10 +427,10 @@ page copy another page's pixels), so the rendered file shows its place as the de
 before the page is live; what happened inside it is in the talk only if the screen was filmed
 meanwhile, which a held share does by itself (see Away from the deck).
 
-**The Export dialog.** **Export** in the footer (X), or in the playback bar while a talk plays,
-opens one dialog for everything the player exports: its first row, *What*, offers the deck as a
-web page ([Exporting a deck](exporting.html#from-the-player)) and each recorded talk as a video,
-the one played back chosen first. For a talk it asks, in separate rows, how the video is made and
+**The Export dialog.** **Export** in the footer (X) opens one dialog for everything the player
+exports, with every choice: its first row, *What*, offers the deck as a web page
+([Exporting a deck](exporting.html#from-the-player)) and each recorded talk as a video. For a
+talk it asks, in separate rows, how the video is made and
 where the file goes. *Made*: off the clock by the server, as above, where it can;
 or in this page, in real time. *Save to*: a folder of your choice through the browser's own save
 dialog (Chrome and Edge; the first choice where it exists), the `recordings/` folder next to the

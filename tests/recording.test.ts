@@ -342,7 +342,8 @@ describe('the recordings folder', () => {
     writeFileSync(join(recordings, 'a.webm'), 'x');
     writeFileSync(join(recordings, 'notes.json'), '{"not":"a timeline"}');
     const index = await buildIndex(recordings);
-    expect(index.recordings).toEqual([{ name: 'a', title: 'Deck', recorded: '2026-11-13T09:05:00.000Z', duration: 1234, media: 'a.webm', video: true, parts: 1 }]);
+    // A camera-lane file with a picture is the camera's; no screen was filmed.
+    expect(index.recordings).toEqual([{ name: 'a', title: 'Deck', recorded: '2026-11-13T09:05:00.000Z', duration: 1234, media: 'a.webm', video: true, camera: true, screen: false, parts: 1 }]);
     expect(recordingFiles('a', ['a.json', 'a.webm', 'a.video.webm', 'ab.json', 'index.json'])).toEqual(['a.json', 'a.webm', 'a.video.webm']);
     expect(NAME.test('talk-2026-11-13-0905')).toBe(true);
     expect(NAME.test('../etc')).toBe(false);
