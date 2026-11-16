@@ -259,6 +259,12 @@ export class PlayerUI {
   private readonly _playbackExportButton: HTMLButtonElement;
   private readonly _recordingsButton: HTMLButtonElement;
   private _recordings: RecordingEntry[] = [];
+  /**
+   * Talks recorded where no server keeps them (a deck on a static host, or a save that failed):
+   * their timeline and files stay in memory until the page closes, so that they play back and
+   * export like the others; the downloaded bundle is their only lasting copy.
+   */
+  private readonly _memoryTalks = new Map<string, { timeline: Timeline; files: Map<string, Blob>; urls: Map<string, string> }>();
   /** A talk being exported in this page, in real time: the playback is not to be touched meanwhile. */
   private _exporting = false;
   /** The deck being exported as a web page: the server builds it, then this page delivers it. */
@@ -1489,7 +1495,7 @@ export class PlayerUI {
         : `the camera (${option(this._cameraSelect)}), on now ${this._cameraMode === 'full' ? 'full frame' : 'in a corner'}, for as long as it stays on`;
     const where = this._deck.base && recordingStoreAvailable()
       ? 'completes the talk\'s bundle in the recordings/ folder next to the deck, which is written while you talk, so nothing is left to do'
-      : 'offers the talk as a zip bundle to download, to put in a recordings/ folder next to the deck as it is';
+      : 'offers the talk as a zip bundle to download, to put in a recordings/ folder next to the deck as it is, and offers to make a video of it in this page';
     const dialog = el('dialog', { class: 'settings record' });
     const close = el('button', { class: 'close', 'aria-label': 'Close', text: '×' });
     // What to record: a new talk, or more of a saved one (only where the server keeps them).
@@ -1517,10 +1523,10 @@ export class PlayerUI {
       el('section', {},
         ...(continuable.length ? [el('div', { class: 'row' }, el('label', {}, 'Record ', what))] : []),
         el('p', { class: 'note', text: `The recording keeps your voice through the microphone (${option(this._micSelect)}), ${camera}, and every move on the deck: the stops, the ink, the whiteboard, the pointer and the camera switches. The slides themselves are not filmed; the talk plays back on the deck and exports as a video.` }),
-        ...(this._screenHeld() ? [] : [el('p', { class: 'note' }, el('strong', { text: 'No screen share is held: ' }), 'the recording cannot include anything outside this window, nor what happens inside a live page, nor the computer\'s sound, until the screen is shared. Share it with Screen or S, now or during the talk; the first time you leave the deck during the talk, the deck offers it.')]),
+        ...(this._screenHeld() ? [] : [el('p', { class: 'note' }, el('strong', { text: 'No screen share is held: ' }), 'until the screen is shared, the recording cannot include other windows and applications, what happens inside a live page, or the computer\'s sound. Your voice and the camera are recorded either way. Share the screen with Screen or S, now or during the talk; the first time you leave the deck during the talk, the deck offers it.')]),
         ...(this._screenHeld() && this._settings.recording.systemAudio && !this._systemSoundHeld() ? [el('p', { class: 'note' }, el('strong', { text: 'The share carries no sound: ' }), 'the computer\'s sound will not be in the recording. The browser offers it for a whole screen or a tab, with its box ticked in the share dialog; the arrow beside Screen opens the dialog again.')] : []),
         el('p', { class: 'note', text: `The Screen button or S holds a screen share${this._settings.recording.screenOnRecord ? ' (the browser asks which screen when the recording starts)' : ' (the browser asks which screen)'} and lets it go again; while a share is held, leaving the deck for another tab, application, workspace or live page films the screen by itself, beside the camera, and coming back stops the filming. The computer's sound, when the share carries it, is recorded all along, also while you are on the deck. The camera stays as you set it, in its floating window.` }),
-        el('p', { class: 'note', text: `The header counts the time. Pause leaves a gap out of the talk; Stop (the same key or button) ends the recording and ${where}. A stopped talk can be continued later from this dialog or from the list of talks.` }),
+        el('p', { class: 'note', text: `The header counts the time. Pause leaves a gap out of the talk; Stop (the same key or button) ends the recording and ${where}.${this._deck.base && recordingStoreAvailable() ? ' A stopped talk can be continued later from this dialog or from the list of talks.' : ' Until this page closes, the talk also plays back here, from ▶ Talk.'}` }),
         seam,
         el('div', { class: 'row' }, start, cancel)),
     );
@@ -1655,6 +1661,71 @@ export class PlayerUI {
       for (const entry of entries) download(entry.blob, entry.name);
       this.notice('Recording downloaded: put the files in a recordings/ folder next to the deck');
     }
+    // The talk stays playable here until the page closes, and a video of it is offered: the bundle is a file only Zoomdeck plays.
+    this._memoryTalks.set(name, { timeline, files: new Map(entries.slice(0, -1).map((entry) => [entry.name, entry.blob])), urls: new Map() });
+    await this._refreshRecordings();
+    this._offerVideo(name);
+  }
+
+  /**
+   * After a talk recorded where no server keeps it: offer to make a video of it now, composed
+   * in this page from the recorded tracks while the talk plays once, in real time, as the
+   * server's render is offered elsewhere. It goes where the viewer chooses, or to the downloads.
+   */
+  private _offerVideo(name: string): void {
+    if (!this._features.has('export') || !exportMimeType()) return;
+    for (const stale of this.root.querySelectorAll('.render-offer')) stale.remove();
+    const offer = el('div', { class: 'render-offer', role: 'status' });
+    const go = el('button', { class: 'add', text: 'Make the video now' });
+    const later = el('button', { text: 'Later' });
+    go.addEventListener('click', () => {
+      void (async () => {
+        const entry = this._recordings.find((candidate) => candidate.name === name);
+        if (!entry) return;
+        let handle: FileSystemFileHandle | undefined;
+        if (typeof (window as SavePickerWindow).showSaveFilePicker === 'function') {
+          try {
+            // Asked while the click still counts for the browser; the file is written when the video is done.
+            handle = await (window as SavePickerWindow).showSaveFilePicker?.({ suggestedName: `${name}.video.webm`, types: [{ description: 'WebM video', accept: { 'video/webm': ['.webm'] } }] });
+          } catch (error) {
+            if ((error as DOMException).name === 'AbortError') return; // dismissed: the offer stays
+          }
+        }
+        offer.remove();
+        const recording = this._settings.recording;
+        await this._exportTalk(entry, { name: `${name}.video`, method: 'page', destination: handle ? 'pick' : 'download', handle, size: recording.renderHeight ?? 'display', aspect: recording.renderAspect });
+      })();
+    });
+    later.addEventListener('click', () => offer.remove());
+    offer.append(el('span', { text: `Make a video of ${name}? The recorded tracks are composed in this page while the talk plays once, in real time, into a file that plays anywhere; the zip keeps them apart for Zoomdeck. Until this page closes, Export can also make it later.` }), go, later);
+    this.root.append(offer);
+  }
+
+  /** A talk kept in memory, as the index would list it. */
+  private _memoryEntry(name: string, timeline: Timeline): RecordingEntry {
+    const media = timeline.media;
+    return {
+      name,
+      title: timeline.deck.title,
+      recorded: timeline.recorded,
+      duration: timeline.duration,
+      media: media.length ? media[0].file : null,
+      video: media.some((part) => part.video),
+      ...(media.some((part) => part.lane === 'system') ? { system: true } : {}),
+      parts: media.length,
+    };
+  }
+
+  /** The URL of a file of a talk kept in memory, made once. */
+  private _memoryUrl(talk: { files: Map<string, Blob>; urls: Map<string, string> }, file: string): string {
+    let url = talk.urls.get(file);
+    if (!url) {
+      const blob = talk.files.get(file);
+      if (!blob) throw new Error(`${file} is not in the recording`);
+      url = URL.createObjectURL(blob);
+      talk.urls.set(file, url);
+    }
+    return url;
   }
 
   // ---------------------------------------------------------------------
@@ -1664,7 +1735,9 @@ export class PlayerUI {
   private async _refreshRecordings(): Promise<void> {
     const base = this._deck.base;
     // Without the recorder there is no Talk button either: a deck in a page is not asked about its recordings.
-    this._recordings = base && this._features.has('record') ? await listRecordings(base) : [];
+    const listed = base && this._features.has('record') ? await listRecordings(base) : [];
+    const kept = this._features.has('record') ? [...this._memoryTalks.entries()].filter(([name]) => !listed.some((entry) => entry.name === name)).map(([name, talk]) => this._memoryEntry(name, talk.timeline)) : [];
+    this._recordings = [...listed, ...kept].sort((a, b) => (b.recorded ?? '').localeCompare(a.recorded ?? ''));
     this._render = base && this._features.has('record') && recordingStoreAvailable() ? await renderStatus(base).catch(() => ({ ffmpeg: false, desktop: false, jobs: [] })) : { ffmpeg: false, desktop: false, jobs: [] };
     this._recordingsButton.hidden = this._recordings.length === 0;
     this._recordingsButton.textContent = this._recordings.length > 1 ? `▶ Talks (${this._recordings.length})` : '▶ Talk';
@@ -1696,8 +1769,9 @@ export class PlayerUI {
         dialog.close();
         void this.openRecording(entry);
       });
+      const kept = this._memoryTalks.has(entry.name);
       const more = el('button', { text: 'Continue', title: 'Record on from where this talk stopped' });
-      more.hidden = !(this._deck.base && recordingStoreAvailable());
+      more.hidden = !(this._deck.base && recordingStoreAvailable()) || kept;
       more.addEventListener('click', () => {
         dialog.close();
         void this.continueRecording(entry);
@@ -1709,7 +1783,7 @@ export class PlayerUI {
       const job = this._render.jobs.find((candidate) => candidate.talk === entry.name && candidate.status !== 'done') ?? null;
       const progress = job?.status === 'composing' ? ` · composing ${Math.round(job.progress * 100)}%` : job && ['queued', 'rendering'].includes(job.status) ? ` · rendering ${Math.round(job.progress * 100)}%` : job?.status === 'failed' ? ' · render failed' : job?.status === 'interrupted' ? ' · render interrupted' : '';
       const remove = el('button', { class: 'add', text: 'Delete' });
-      remove.hidden = !(this._deck.base && recordingStoreAvailable());
+      remove.hidden = !(this._deck.base && recordingStoreAvailable()) || kept;
       remove.addEventListener('click', () => {
         if (!confirm(`Delete the recording of ${when}?`)) return;
         void deleteRecording(this._deck.base as string, entry.name).then(() => this._refreshRecordings()).then(() => {
@@ -1720,7 +1794,7 @@ export class PlayerUI {
         }).catch((error: Error) => this.notice(error.message));
       });
       list.append(el('div', { class: 'binding recording' },
-        el('span', { class: 'action', text: `${when} · ${formatTime(entry.duration)}${entry.video ? ' · camera' : entry.media ? ' · sound' : ''}${entry.system ? " · computer's sound" : ''}${entry.movie ? ' · video' : ''}${progress}`, title: job?.error ?? '' }), play, video, more, remove));
+        el('span', { class: 'action', text: `${when} · ${formatTime(entry.duration)}${entry.video ? ' · camera' : entry.media ? ' · sound' : ''}${entry.system ? " · computer's sound" : ''}${entry.movie ? ' · video' : ''}${kept ? ' · in this page only, until it closes' : ''}${progress}`, title: job?.error ?? '' }), play, video, more, remove));
     }
     // While a render runs, the list follows its progress.
     if (this._render.jobs.some((job) => ['queued', 'rendering', 'composing'].includes(job.status))) {
@@ -1744,12 +1818,13 @@ export class PlayerUI {
     const base = this._deck.base;
     const player = this._player;
     const navigation = this._navigation;
-    if (!base || !player || !navigation) return;
+    const memory = this._memoryTalks.get(entry.name) ?? null;
+    if ((!base && !memory) || !player || !navigation) return;
     if (this._recorder) await this.stopRecording();
     this.closeRecording();
     let timeline;
     try {
-      timeline = await loadTimeline(base, entry);
+      timeline = memory ? memory.timeline : await loadTimeline(base as string, entry);
     } catch (error) {
       this.notice((error as Error).message);
       return;
@@ -1771,7 +1846,7 @@ export class PlayerUI {
       screen: timeline.media.some((part) => part.lane === 'screen') ? this._screen : null,
       system: timeline.media.some((part) => part.lane === 'system') ? this._system : null,
       onScreen: () => this._layoutCamera(),
-      mediaUrl: (part) => mediaSource(base, entry, part),
+      mediaUrl: (part) => (memory ? this._memoryUrl(memory, part.file) : mediaSource(base as string, entry, part)),
       apply: (event, instant) => this._applyTimelineEvent(event, instant),
       resetInk: () => {
         this._slideInk.reset();
@@ -2094,6 +2169,8 @@ export class PlayerUI {
   /** A talk's timeline: the one played back, or read from its files. */
   private async _timelineOf(entry: RecordingEntry): Promise<Timeline> {
     if (this._playback && this._playbackName === entry.name) return this._playback.timeline;
+    const memory = this._memoryTalks.get(entry.name);
+    if (memory) return memory.timeline;
     return loadTimeline(this._deck.base as string, entry);
   }
 

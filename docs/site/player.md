@@ -266,9 +266,15 @@ chunks second by second, and **Stop** only adds the timeline and the archive's d
 kilobytes, so that nothing is copied or compressed afterwards and the computer can be shut the
 moment the talk is over. A talk cut short by a crash, a dead battery or a closed laptop is closed
 from what reached the disk the next time its folder is read, including a draft of the timeline
-kept every ten seconds. Without the server the same bundle is built in memory and offered as a
-download, to put into a `recordings/` folder next to the deck as it is. The recording is named
-after the date and time, `talk-2026-11-13-1030`.
+kept every ten seconds. Without the server (a deck on a static host, such as the online tour)
+the same bundle is built in memory and downloaded at Stop, to put into a `recordings/` folder
+next to the deck as it is; it is the talk's only lasting copy, since such a talk cannot be
+continued. Until the page closes the talk also stays in the list of talks, to play back and
+export, and a panel offers to make a video of it at once (**Make the video now**): the page
+composes the recorded tracks into a WebM file while the talk plays once, in real time, and saves
+it where you choose (Chrome and Edge) or in the downloads. The zip keeps the tracks apart for
+Zoomdeck; the video plays anywhere. The recording is named after the date and time,
+`talk-2026-11-13-1030`.
 
 **Filming the screen.** A talk may leave the deck for a while: a demonstration in another
 application, a terminal, a web page. **Screen** in the footer, or `S`, holds a screen share, or
