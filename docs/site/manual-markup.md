@@ -490,6 +490,7 @@ be the reference of a position or the target of another connection or attachment
 | `font`, `font_size` | | the text face, `layout.fontSize` | the label's face and size |
 | `color` | color | the text color | stroke and label |
 | `stroke_width` | engine units | 2 | |
+| `dashed` | `true`, `false` | `false` | draw the line, or the arrow's shaft, in dashes that begin and end it; they grow longer with `stroke_width`, the tip stays solid, and a hand-drawn connection gets hand-drawn dashes |
 | `opacity` | 0 to 1 | 1 | |
 | `step`, `hide`, `run_time`, `lag`, `href` | | | as for elements; connections fade only |
 | `sketch` and the hand-drawn attributes, `tremble`, `tremble_amplitude`, `tremble_rate` | | | see [Appearance](#appearance) and [tremble](#tremble) |

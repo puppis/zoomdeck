@@ -62,6 +62,15 @@ upside down: above a vertical edge is its left, whichever way the arrow points.
 ```markdown
 [[arrow: #a -> #b, #rise, label="slanted", slanted=true]]
 [[arrow: #b -> #c, #fall, label="below", slanted=true, label_side=below]]
+```
+
+`dashed=true` draws a line, or an arrow's shaft, in dashes. The dashes begin and end the line
+and grow longer with a thicker `stroke_width`; an arrow's tip stays solid, and a hand-drawn
+connection (`sketch=true`) gets hand-drawn dashes.
+
+```markdown
+[[line: #a -> #c, #link, dashed=true]]
+[[arrow: #c -> #a, #back, dashed=true, stroke_width=6, label="optional"]]
 ``` Connections are created after all other elements, so forward references work;
 they cannot anchor other elements and are not hidden implicitly when an endpoint disappears.
 

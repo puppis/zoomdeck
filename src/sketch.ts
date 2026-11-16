@@ -48,6 +48,8 @@ export interface SketchOptions {
   fillWeight?: number;
   /** Seed of the random offsets: the same seed always draws the same shape. */
   seed?: number;
+  /** Dash and gap lengths in logical units: a line or an arrow's shaft drawn with them is dashed. */
+  dash?: readonly [number, number];
 }
 
 interface ResolvedSketch {
@@ -62,6 +64,7 @@ interface ResolvedSketch {
   hachureGap: number | undefined;
   fillWeight: number;
   seed: number;
+  dash: readonly [number, number] | undefined;
 }
 
 /** Vector objects built from a sketch keep the exact geometry they approximate, for paths and anchors. */
@@ -99,6 +102,7 @@ function resolve(options: SketchOptions): ResolvedSketch {
     hachureGap: options.hachureGap,
     fillWeight: options.fillWeight ?? strokeWidth / 2,
     seed: options.seed ?? 1,
+    dash: options.dash,
   };
   for (const key of ['strokeWidth', 'fillOpacity', 'roughness', 'bowing', 'fillWeight'] as const) {
     if (!Number.isFinite(resolved[key]) || resolved[key] < 0) throw new Error(`${key} must be a nonnegative number`);
@@ -126,6 +130,32 @@ function roughOptions(o: ResolvedSketch, overrides: Options = {}): Options {
 }
 
 type Point = readonly number[];
+
+/** The dash and gap lengths, in logical units, of a dashed line of `strokeWidth` engine units: longer for a thicker line. */
+export function dashPattern(strokeWidth: number): [number, number] {
+  const width = strokeWidth / STROKE_UNITS;
+  return [0.1 + 3 * width, 0.06 + 2 * width];
+}
+
+/**
+ * The dashes of the segment from `start` to `end`: about `dash` long with gaps of about `gap`,
+ * stretched so that the segment begins and ends with a dash, and at least two of them.
+ */
+export function dashSegments(start: Point, end: Point, dash: number, gap: number): [number, number, number][][] {
+  const dx = end[0] - start[0];
+  const dy = end[1] - start[1];
+  const length = Math.hypot(dx, dy);
+  if (length < 1e-9) return [];
+  const count = Math.max(2, Math.round((length + gap) / (dash + gap)));
+  const scale = length / (count * dash + (count - 1) * gap);
+  const at = (distance: number): [number, number, number] => [start[0] + (dx * distance) / length, start[1] + (dy * distance) / length, 0];
+  const dashes: [number, number, number][][] = [];
+  for (let i = 0; i < count; i += 1) {
+    const from = i * (dash + gap) * scale;
+    dashes.push([at(from), at(from + dash * scale)]);
+  }
+  return dashes;
+}
 
 /** Logical coordinates to the y-down pixel space of Rough.js. */
 function toRough(point: Point): [number, number] {
@@ -217,6 +247,18 @@ function addDrawable(group: VGroup, drawable: Drawable, o: ResolvedSketch): VGro
     group.add(vmob);
   }
   return group;
+}
+
+/**
+ * A hand-drawn straight stroke, or with a dash its dashes, each a short stroke of its own with its
+ * own seed (the same seed would wobble them all alike; seed 0, random, stays random), in a single outline.
+ */
+function stroke(start: Point, end: Point, o: ResolvedSketch): Drawable {
+  const line = (a: Point, b: Point, seed: number): Drawable => generator().line(...toRough(a), ...toRough(b), { ...roughOptions(o), seed });
+  if (!o.dash) return line(start, end, o.seed);
+  const drawables = dashSegments(start, end, o.dash[0], o.dash[1]).map(([a, b], i) => line(a, b, o.seed && o.seed + i));
+  if (!drawables.length) return line(start, end, o.seed);
+  return { ...drawables[0], sets: [{ type: 'path', ops: drawables.flatMap((drawable) => drawable.sets.flatMap((set) => set.ops)) }] };
 }
 
 /** Convert a Rough.js drawable into a group: fills first, the outline on top. */
@@ -327,12 +369,10 @@ export const sketch = {
     return sketchDrawable(drawable, o);
   },
 
-  /** A straight line from `start` to `end`. */
+  /** A straight line from `start` to `end`, dashed when the options give a dash. */
   line(start: Point, end: Point, options: SketchOptions = {}): VGroup {
     const o = resolve(options);
-    const [x1, y1] = toRough(start);
-    const [x2, y2] = toRough(end);
-    return sketchDrawable(generator().line(x1, y1, x2, y2, roughOptions(o)), o);
+    return sketchDrawable(stroke(start, end, o), o);
   },
 
   /** An arrow from `start` to `end` with a filled triangular tip (`tipWidth` is the half-width). */
@@ -346,9 +386,7 @@ export const sketch = {
     const base = [end[0] - unit[0] * tip, end[1] - unit[1] * tip];
     const perpendicular = [-unit[1] * tipWidth, unit[0] * tipWidth];
     const shaftEnd = [end[0] - unit[0] * tip * 0.8, end[1] - unit[1] * tip * 0.8];
-    const [x1, y1] = toRough(start);
-    const [x2, y2] = toRough(shaftEnd);
-    const group = sketchDrawable(generator().line(x1, y1, x2, y2, roughOptions(o)), o);
+    const group = sketchDrawable(stroke(start, shaftEnd, o), o);
     const corners = [end, [base[0] + perpendicular[0], base[1] + perpendicular[1]], [base[0] - perpendicular[0], base[1] - perpendicular[1]]];
     const head: ResolvedSketch = { ...o, fillColor: o.color, fillOpacity: 1, fillStyle: 'solid', roughness: o.roughness * 0.6 };
     return addDrawable(group, generator().polygon(corners.map(toRough), roughOptions(head)), head);

@@ -4,11 +4,11 @@
  * `MathTex`, images resolve against the document's base URL.
  */
 import {
-  Arc, Arrow, Brace, Circle, Dot, Ellipse, Group, Line, MathTex, Polygon, Rectangle, RoundedRectangle, VMobject,
+  Arc, Arrow, Brace, Circle, Dot, Ellipse, Group, Line, MathTex, Polygon, Rectangle, RoundedRectangle, VGroup, VMobject,
   type Mobject,
 } from 'manim-web';
 import { loadSvgMobject } from '../svg';
-import { sketch, sketchSeed, type FillStyle, type OutlineMobject, type SketchOptions } from '../sketch';
+import { dashPattern, dashSegments, sketch, sketchSeed, type FillStyle, type OutlineMobject, type SketchOptions } from '../sketch';
 import { artworkFromModule, makeIcon, type ArtworkModule, type ArtworkOptions, type IconName } from '../icons';
 import { ICON_KINDS } from './ast';
 import { effectFromModule, type EffectModule, type EffectOptions } from '../animations';
@@ -1064,11 +1064,14 @@ export class MarkupRenderer {
     const start3: [number, number, number] = [a[0] + unit[0] * trim, a[1] + unit[1] * trim, a[2] + unit[2] * trim];
     const end3: [number, number, number] = [b[0] - unit[0] * trim, b[1] - unit[1] * trim, b[2] - unit[2] * trim];
     const strokeWidth = element.kind === 'line' || 'stroke_width' in element.attributes ? Number(element.attributes.stroke_width ?? 2) : undefined;
-    const sketchy = sketchOptions(element, { color, strokeWidth: strokeWidth ?? (isArrow ? 4 : 2), fillColor: color, fillOpacity: 0 });
+    const width = strokeWidth ?? (isArrow ? 4 : 2);
+    const dash = element.attributes.dashed === 'true' ? dashPattern(width) : undefined;
+    const sketchy = sketchOptions(element, { color, strokeWidth: width, fillColor: color, fillOpacity: 0, ...(dash ? { dash } : {}) });
     let connection: Mobject;
     if (sketchy) connection = isArrow ? sketch.arrow(start3, end3, sketchy) : sketch.line(start3, end3, sketchy);
+    else if (dash) connection = dashedConnection(start3, end3, color, width, dash, isArrow);
     else if (isArrow) connection = new Arrow({ start: start3, end: end3, color, ...(strokeWidth !== undefined ? { strokeWidth } : {}) });
-    else connection = new Line({ start: start3, end: end3, color, strokeWidth: strokeWidth ?? 2 });
+    else connection = new Line({ start: start3, end: end3, color, strokeWidth: width });
     const label = element.attributes.label;
     let result: Mobject = connection;
     if (label) {
@@ -1081,6 +1084,26 @@ export class MarkupRenderer {
     if ('opacity' in element.attributes) applyOpacity(result, Number(element.attributes.opacity));
     return result;
   }
+}
+
+/**
+ * A dashed line, or a dashed arrow: the dashes of its shaft and the solid tip of a plain arrow
+ * (0.3 long and 0.2 wide, shorter on a short arrow), whose base the shaft reaches.
+ */
+function dashedConnection(start: [number, number, number], end: [number, number, number], color: string, strokeWidth: number, dash: readonly [number, number], arrow: boolean): Mobject {
+  let shaftEnd = end;
+  const parts: Mobject[] = [];
+  if (arrow) {
+    const length = Math.hypot(end[0] - start[0], end[1] - start[1]);
+    const unit = [(end[0] - start[0]) / length, (end[1] - start[1]) / length];
+    const tip = Math.min(0.3, length);
+    const base = [end[0] - unit[0] * tip, end[1] - unit[1] * tip];
+    const across = [-unit[1] * 0.1, unit[0] * 0.1];
+    shaftEnd = [base[0], base[1], 0];
+    parts.push(new Polygon({ vertices: [end, [base[0] + across[0], base[1] + across[1], 0], [base[0] - across[0], base[1] - across[1], 0]], color, fillOpacity: 1, strokeWidth: 0 }));
+  }
+  const dashes = dashSegments(start, shaftEnd, dash[0], dash[1]).map(([a, b]) => new Line({ start: a, end: b, color, strokeWidth }));
+  return new VGroup(...dashes, ...parts);
 }
 
 /**
