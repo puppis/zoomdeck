@@ -43,10 +43,13 @@ export function webExportName(value: string, fallback = 'deck'): string {
   return value.trim().replace(/[^\w.-]+/g, '-').replace(/^[^A-Za-z0-9]+|-+$/g, '') || fallback;
 }
 
-/** The name an export of the deck gets by default: the folder the deck's file lies in. */
+/** The name an export of the deck gets by default: a PDF's own name, otherwise the folder the deck's file lies in. */
 export function defaultWebExportName(file: DeckFile | null | undefined, title: string): string {
-  const folder = file?.url ? decodeURIComponent(new URL('.', file.url).pathname).split('/').filter(Boolean).at(-1) ?? '' : '';
-  return webExportName(folder || title);
+  if (!file?.url) return webExportName(title);
+  const parts = decodeURIComponent(new URL(file.url).pathname).split('/').filter(Boolean);
+  const own = parts.at(-1) ?? '';
+  if (/\.pdf$/i.test(own)) return webExportName(own.replace(/\.pdf$/i, ''), webExportName(title));
+  return webExportName(parts.at(-2) || title);
 }
 
 async function call(method: string, query: Record<string, string>): Promise<Record<string, unknown>> {

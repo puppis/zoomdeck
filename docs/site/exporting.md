@@ -15,7 +15,8 @@ from the command line. Two forms exist, and the player also prints a deck to a
 row, *What*, offers this deck as a web page and each recorded talk as a video (see
 [Recording a talk](player.html#recording-a-talk) for those); for the web page the rows are:
 
-- **Name**: the file's or the folder's name, the deck's folder by default.
+- **Name**: the file's or the folder's name: by default the deck's folder, and for a PDF the
+  PDF's own name (`paper.pdf` becomes `paper.html`, or a folder `paper/`).
 - **Form**: one self-contained HTML file, or a folder of files, both described below.
 - **Leave the presenter notes out**, for a deck handed to the audience (`--without-notes`).
 - **Open the slide outline when the deck starts** (`--show-outline`).
@@ -89,7 +90,7 @@ its media files and timeline, so a published deck shows its Talk button and play
 [recorded talks](player.html#recording-a-talk); a static host serves them like any other file.
 
 The deck argument is a `deck.json`, a Markdown file (default settings), a PDF (its pages, with the
-file copied next to the page or embedded in the single file) or a JS/TS module exporting a deck
+file copied into `deck/` beside `index.html`, or embedded in the single file) or a JS/TS module exporting a deck
 definition. The export records nothing in advance: like the dev page, the exported player
 runs the deck's program once when it loads, so changes to the Markdown require a new export while
 settings such as key bindings travel with the viewer's browser.

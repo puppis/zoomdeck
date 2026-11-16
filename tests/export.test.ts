@@ -184,6 +184,8 @@ describe('the export of a deck as a web page, from the player', () => {
     expect(webExportName('  .hidden name ')).toBe('hidden-name');
     expect(defaultWebExportName({ url: 'http://127.0.0.1:8000/@fs/Users/me/My%20Talk/deck.json' }, 'Title')).toBe('My-Talk');
     expect(defaultWebExportName(null, 'A title')).toBe('A-title');
+    // A PDF's export is named after the PDF, wherever it lies.
+    expect(defaultWebExportName({ url: 'http://127.0.0.1:8000/@fs/Users/me/Downloads/Lecture%203.PDF' }, 'Title')).toBe('Lecture-3');
     expect(deckFileFor('http://localhost:5178/examples/tour/deck.json', ['/repo/examples'], '/repo')).toBe(join('/repo/examples/tour/deck.json'));
     expect(deckFileFor('http://localhost:5178/src/index.ts', ['/repo/examples'], '/repo')).toBeNull();
     const dir = mkdtempSync(join(tmpdir(), 'zoomdeck-place-'));
