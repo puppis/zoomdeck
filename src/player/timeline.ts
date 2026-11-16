@@ -71,6 +71,8 @@ export type TimelineEvent =
   | { t: number; type: 'camera'; on: boolean }
   /** The camera's corner picture set aside while the pointer was over it, so that what it covers showed, and back. */
   | { t: number; type: 'corner'; hidden: boolean }
+  /** The camera's floating window filmed with the whole screen, which shows the camera already: no corner picture laid over it then. */
+  | { t: number; type: 'camera-in-screen'; on: boolean }
   /** The spotlight or laser at a point of the slide viewport (surface units, 1000 tall), with its radius. */
   | { t: number; type: 'pointer'; mode: PointerKind; x: number; y: number; r: number }
   | { t: number; type: 'pointer-off' }
@@ -194,6 +196,11 @@ export interface Timeline {
   /** Where the camera picture sits when it is not full frame, as a share of the frame width. */
   pip: { corner: Corner; size: number };
   events: TimelineEvent[];
+  /**
+   * `begin` where the files are named by the order they began in, as the bundle names them; absent
+   * in a talk recorded before (see `repairFileNames`).
+   */
+  naming?: 'begin';
 }
 
 /** The settled state the timeline describes at time `t`: everything but the ink, which is replayed op by op. */
@@ -207,12 +214,14 @@ export interface TimelineState {
   camera: boolean;
   /** Whether the camera's corner picture is set aside (the pointer over it). */
   cornerHidden: boolean;
+  /** Whether the filmed screen shows the camera's floating window, so that the corner picture is left out. */
+  cameraInScreen: boolean;
   pointer: { mode: PointerKind; x: number; y: number; r: number } | null;
 }
 
 /** Fold the events at or before `t` into the state they leave behind. */
 export function stateAt(events: TimelineEvent[], t: number): TimelineState {
-  const state: TimelineState = { stop: null, animated: false, speed: 1, board: false, pan: { x: 0, y: 0 }, camera: false, cornerHidden: false, pointer: null };
+  const state: TimelineState = { stop: null, animated: false, speed: 1, board: false, pan: { x: 0, y: 0 }, camera: false, cornerHidden: false, cameraInScreen: false, pointer: null };
   for (const event of events) {
     if (event.t > t) break;
     switch (event.type) {
@@ -223,6 +232,7 @@ export function stateAt(events: TimelineEvent[], t: number): TimelineState {
       case 'pan': state.pan = { x: event.x, y: event.y }; break;
       case 'camera': state.camera = event.on; break;
       case 'corner': state.cornerHidden = event.hidden; break;
+      case 'camera-in-screen': state.cameraInScreen = event.on; break;
       case 'pointer': state.pointer = { mode: event.mode, x: event.x, y: event.y, r: event.r }; break;
       case 'pointer-off': state.pointer = null; break;
       case 'ink': case 'cut': case 'stage': break;
@@ -272,12 +282,40 @@ export interface RecordedPart {
  * talk, a cut marks the seam, and its media files become further files of the talk.
  */
 export function appendPart(timeline: Timeline, part: RecordedPart): Timeline {
+  // The new part's files are named by the order they began; the earlier ones were put right when the talk was loaded.
   const offset = timeline.duration;
   const events: TimelineEvent[] = [...timeline.events];
   if (offset > 0) events.push({ t: offset, type: 'cut' });
   for (const event of part.events) events.push({ ...event, t: event.t + offset });
   const media = [...timeline.media, ...part.media.map((file) => ({ ...file, start: offset + file.start }))];
-  return { ...timeline, duration: offset + part.duration, media, events };
+  return { ...timeline, duration: offset + part.duration, media, events, naming: 'begin' };
+}
+
+/**
+ * Put right the file names of a talk recorded before the files were numbered as they began
+ * (versions 0.4 and 0.5): its timeline named them in the order they ended, while the bundle had
+ * numbered them in the order they began, and with the screen or the computer's sound in lanes of
+ * their own the two orders differ, so that a file's name pointed at another file's content. The
+ * files' start times give the order they began in (the camera lane first at a tie, since it is
+ * begun first): the bundle's numbers, given out in that order, are the right names. A talk
+ * without a side lane, or one named so already, is returned as it is.
+ */
+export function repairFileNames(timeline: Timeline): Timeline {
+  if (timeline.naming === 'begin') return timeline;
+  const media = timeline.media;
+  if (!media.some((part) => part.lane === 'screen' || part.lane === 'system')) return timeline;
+  const numberOf = (file: string) => Number(/\.part(\d+)\.[^.]+$/.exec(file)?.[1] ?? 1);
+  const numbers = media.map((part) => numberOf(part.file)).sort((a, b) => a - b);
+  const side = (part: TimelineMedia) => (part.lane === 'screen' || part.lane === 'system' ? 1 : 0);
+  const begun = media.map((part, place) => ({ part, place })).sort((a, b) => a.part.start - b.part.start || side(a.part) - side(b.part) || a.place - b.place);
+  const renamed = [...media];
+  begun.forEach(({ part, place }, order) => {
+    const talk = part.file.replace(/(\.part\d+)?\.[^.]+$/, '');
+    const extension = part.type.startsWith('video/mp4') ? 'mp4' : part.type.startsWith('audio/mp4') ? 'm4a' : 'webm';
+    const number = numbers[order];
+    renamed[place] = { ...part, file: number > 1 ? `${talk}.part${number}.${extension}` : `${talk}.${extension}` };
+  });
+  return { ...timeline, media: renamed, naming: 'begin' };
 }
 
 /** Whether a parsed JSON value is a timeline this player can replay. */

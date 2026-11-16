@@ -1,8 +1,8 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { existsSync, mkdtempSync, rmSync, writeFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { appendPart, eventsBetween, formatTime, inCameraLane, inkUpTo, isTimeline, mediaAt, recordingName, screenAt, screenIntervals, stateAt, stopIndex, stopRef, structureHash, systemAt, timeOfStop, type Timeline, type TimelineEvent, type TimelineMedia } from '../src/player/timeline';
+import { appendPart, eventsBetween, formatTime, inCameraLane, repairFileNames, inkUpTo, isTimeline, mediaAt, recordingName, screenAt, screenIntervals, stateAt, stopIndex, stopRef, structureHash, systemAt, timeOfStop, type Timeline, type TimelineEvent, type TimelineMedia } from '../src/player/timeline';
 import { Recorder, initialEvents } from '../src/player/recorder';
 import { Playback } from '../src/player/playback';
 import type { Player } from '../src/player/player';
@@ -78,6 +78,10 @@ describe('timelines', () => {
     const aside: TimelineEvent[] = [{ t: 100, type: 'corner', hidden: true }, { t: 900, type: 'corner', hidden: false }];
     expect(stateAt(aside, 500).cornerHidden).toBe(true);
     expect(stateAt(aside, 900).cornerHidden).toBe(false);
+    const inScreen: TimelineEvent[] = [{ t: 100, type: 'camera-in-screen', on: true }, { t: 900, type: 'camera-in-screen', on: false }];
+    expect(stateAt(inScreen, 50).cameraInScreen).toBe(false);
+    expect(stateAt(inScreen, 500).cameraInScreen).toBe(true);
+    expect(stateAt(inScreen, 900).cameraInScreen).toBe(false);
     expect(inkUpTo(events, 1050).map((event) => event.op.op)).toEqual(['begin']);
     expect(inkUpTo(events, 9000).length).toBe(2);
     expect(eventsBetween(events, 2000, 3200).map((event) => event.type)).toEqual(['pointer', 'board', 'pan']);
@@ -228,6 +232,89 @@ describe('the screen lane', () => {
     expect(screenAt(media, 500)).toBeNull();
     expect(screenAt(media, 8500)).toBeNull();
     expect(screenIntervals(media)).toEqual([[1000, 3500], [8000, 9000]]);
+  });
+});
+
+describe('the files of a recording', () => {
+  it('are numbered as they begin, whatever order they end in, for the sink and the timeline alike', async () => {
+    /** Stand-ins for the browser's recorder and streams: a recorder yields one chunk when it stops. */
+    class FakeStream {
+      constructor(private readonly tracks: Array<{ kind: string; id: string }> = []) {}
+      getTracks() { return this.tracks; }
+      getAudioTracks() { return this.tracks.filter((track) => track.kind === 'audio'); }
+      getVideoTracks() { return this.tracks.filter((track) => track.kind === 'video'); }
+    }
+    class FakeRecorder extends EventTarget {
+      static isTypeSupported() { return true; }
+      state = 'inactive';
+      start() {
+        this.state = 'recording';
+        queueMicrotask(() => this.dispatchEvent(new Event('start')));
+      }
+      stop() {
+        const chunk = Object.assign(new Event('dataavailable'), { data: new Blob(['x']) });
+        this.dispatchEvent(chunk);
+        this.state = 'inactive';
+        this.dispatchEvent(new Event('stop'));
+      }
+      pause() {}
+      resume() {}
+    }
+    vi.stubGlobal('MediaRecorder', FakeRecorder);
+    vi.stubGlobal('MediaStream', FakeStream);
+    try {
+      const voice = { kind: 'audio', id: 'mic' };
+      const camera = { kind: 'video', id: 'cam' };
+      const begun: Array<[string, number]> = [];
+      const recorder = new Recorder({
+        stream: new FakeStream([voice, camera]) as unknown as MediaStream,
+        sink: { begin: (capture) => { begun.push([capture.lane, capture.index]); }, write: () => undefined, end: () => undefined },
+      });
+      await recorder.start();
+      // The computer's sound from the start, the screen for a while, the camera turned off meanwhile.
+      await recorder.startSystem(new FakeStream([{ kind: 'audio', id: 'system' }]) as unknown as MediaStream);
+      await recorder.startScreen(new FakeStream([{ kind: 'video', id: 'screen' }]) as unknown as MediaStream);
+      await recorder.switchStream(new FakeStream([voice]) as unknown as MediaStream, 'camera');
+      await recorder.stopScreen();
+      const result = await recorder.stop();
+      expect(begun).toEqual([['camera', 0], ['system', 1], ['screen', 2], ['camera', 3]]);
+      // They ended in another order: each keeps the number it began with, which names it where it is written and in the timeline.
+      expect(result.media.map((media) => [media.lane ?? 'camera', media.index])).toEqual([['camera', 0], ['screen', 2], ['camera', 3], ['system', 1]]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
+describe('a talk recorded before files were numbered as they began', () => {
+  it('gets the names its bundle gave the files, by the order the files began in', () => {
+    // The media of a real talk of 0.5.0: listed and named in the order the files ended.
+    const recorded: TimelineMedia[] = [
+      { file: 't.webm', type: 'video/webm;codecs=vp9,opus', video: true, start: 0, duration: 14093 },
+      { file: 't.part2.webm', type: 'audio/webm;codecs=opus', video: false, start: 14093, duration: 6458 },
+      { file: 't.part3.webm', type: 'video/webm;codecs=vp9,opus', video: true, start: 13923, duration: 6778, source: 'screen', lane: 'screen' },
+      { file: 't.part4.webm', type: 'video/webm;codecs=vp9,opus', video: true, start: 20551, duration: 159 },
+      { file: 't.part5.webm', type: 'video/webm;codecs=vp9,opus', video: true, start: 20710, duration: 934 },
+      { file: 't.part6.webm', type: 'audio/webm;codecs=opus', video: false, start: 0, duration: 21644, lane: 'system' },
+    ];
+    const timeline: Timeline = { version: 1, deck: { title: 'T', hash: 'h' }, recorded: '2026-11-16T22:15:00.000Z', duration: 21644, media: recorded, pip: { corner: 'bottom-right', size: 0.18 }, events: [] };
+    const repaired = repairFileNames(timeline);
+    // What the bundle holds under each name: the camera first, then the computer's sound begun right after it, the screen, the camera's later files.
+    expect(repaired.media.map((part) => [part.file, part.lane ?? 'camera', part.start])).toEqual([
+      ['t.webm', 'camera', 0],
+      ['t.part4.webm', 'camera', 14093],
+      ['t.part3.webm', 'screen', 13923],
+      ['t.part5.webm', 'camera', 20551],
+      ['t.part6.webm', 'camera', 20710],
+      ['t.part2.webm', 'system', 0],
+    ]);
+    expect(repaired.naming).toBe('begin');
+    // Named so already, or with the camera lane alone: nothing to put right.
+    expect(repairFileNames(repaired)).toBe(repaired);
+    const plain = { ...timeline, media: [recorded[0], { ...recorded[1], file: 't.part2.webm' }] };
+    expect(repairFileNames(plain)).toBe(plain);
+    // A part recorded now is named by the order its files began, and says so.
+    expect(appendPart(repaired, { events: [], duration: 1000, media: [] }).naming).toBe('begin');
   });
 });
 

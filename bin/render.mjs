@@ -44,6 +44,19 @@ function hasAudio(ffprobe, file) {
   });
 }
 
+/**
+ * Whether a media file has a picture, asked of ffprobe; assumed when ffprobe is missing. A file
+ * begun with the camera may hold no frame at all when it ended at once.
+ */
+function hasVideo(ffprobe, file) {
+  if (!ffprobe) return Promise.resolve(true);
+  return new Promise((done) => {
+    execFile(ffprobe, ['-v', 'error', '-select_streams', 'v', '-show_entries', 'stream=codec_type', '-of', 'csv=p=0', file], { timeout: 30_000 }, (error, stdout) => {
+      done(error ? true : /video/.test(stdout));
+    });
+  });
+}
+
 const seconds = (ms) => (ms / 1000).toFixed(3);
 
 /** The ffmpeg `enable` expression for a list of millisecond intervals; null for none. */
@@ -118,8 +131,11 @@ function subtract(a, b) {
 export function ffmpegArguments(plan, frames, parts, output, clips = []) {
   const { width: W, height: H, fps } = plan;
   const args = ['-y', '-v', 'error', '-stats', '-f', 'concat', '-safe', '0', '-i', frames];
-  for (const part of parts) args.push('-i', part.path);
-  for (const clip of clips) args.push('-i', clip.path);
+  // A recorded file may change its pictures' properties midway (a browser's first frame in another color range, a
+  // shared window resized): ffmpeg would then rebuild the whole graph, losing the deck frames it has read already, and
+  // the video would have no picture. The graph is kept instead; every file goes through its own scale first.
+  for (const part of parts) args.push('-reinit_filter', '0', '-i', part.path);
+  for (const clip of clips) args.push('-reinit_filter', '0', '-i', clip.path);
   const filters = [`[0:v]fps=${fps},format=rgba[deck]`];
   let current = 'deck';
   let label = 0;
@@ -139,11 +155,16 @@ export function ffmpegArguments(plan, frames, parts, output, clips = []) {
     const shifted = next();
     filters.push(`[${input}:v]setpts=PTS-STARTPTS+${seconds(from)}/TB,fps=${fps}[${shifted}]`);
     if (part.source === 'screen') {
-      // Another application's window stays whole: fitted, on black.
+      // Another application's window stays whole: fitted and centered on black, frame by frame, so that a window
+      // resized while it was shared stays fitted and centered too.
+      const scaled = next();
+      const black = next();
       const fitted = next();
-      filters.push(`[${shifted}]scale=${W}:${H}:force_original_aspect_ratio=decrease,pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:color=black[${fitted}]`);
+      filters.push(`[${shifted}]scale=${W}:${H}:force_original_aspect_ratio=decrease:eval=frame[${scaled}]`);
+      filters.push(`color=c=black:s=${W}x${H}:r=${fps}[${black}]`);
+      filters.push(`[${black}][${scaled}]overlay=x=(W-w)/2:y=(H-h)/2:eval=frame:eof_action=repeat[${fitted}]`);
       const out = next();
-      filters.push(`[${current}][${fitted}]overlay=0:0:eof_action=pass:enable='${enableExpression([[from, to]])}'[${out}]`);
+      filters.push(`[${current}][${fitted}]overlay=0:0:eof_action=repeat:enable='${enableExpression([[from, to]])}'[${out}]`);
       current = out;
       return;
     }
@@ -162,18 +183,20 @@ export function ffmpegArguments(plan, frames, parts, output, clips = []) {
       current = overlayPip(filters, current, shifted, pip);
     }
   });
+  // Each overlay holds its file's last frame until its stretch ends: a screen recording writes frames only when
+  // something changes, and a file just begun may hold a few frames only, so a stream can end before its stretch does.
   function overlayPip(list, base, source, intervals) {
     const scaled = next();
     list.push(`[${source}]scale=${pipWidth}:-2[${scaled}]`);
     const out = next();
-    list.push(`[${base}][${scaled}]overlay=${pipX}:${pipY}:eof_action=pass:enable='${enableExpression(intervals)}'[${out}]`);
+    list.push(`[${base}][${scaled}]overlay=${pipX}:${pipY}:eof_action=repeat:enable='${enableExpression(intervals)}'[${out}]`);
     return out;
   }
   function overlayFull(list, base, source, intervals) {
     const scaled = next();
     list.push(`[${source}]scale=${W}:${H}:force_original_aspect_ratio=increase,crop=${W}:${H}[${scaled}]`);
     const out = next();
-    list.push(`[${base}][${scaled}]overlay=0:0:eof_action=pass:enable='${enableExpression(intervals)}'[${out}]`);
+    list.push(`[${base}][${scaled}]overlay=0:0:eof_action=repeat:enable='${enableExpression(intervals)}'[${out}]`);
     return out;
   }
   filters.push(`[${current}]format=yuv420p[vout]`);
@@ -295,7 +318,7 @@ async function compose(job, plan) {
     await fs.writeFile(join(job.dir, 'plan.json'), JSON.stringify(plan));
     const ffprobe = findFfprobe(ffmpeg);
     const parts = [];
-    for (const part of await mediaFiles(job, plan)) parts.push({ ...part, audio: await hasAudio(ffprobe, part.path) });
+    for (const part of await mediaFiles(job, plan)) parts.push({ ...part, video: Boolean(part.video) && (await hasVideo(ffprobe, part.path)), audio: await hasAudio(ffprobe, part.path) });
     // The slides' own videos, by the files the page loaded them from; one that cannot be found or has no sound is left out.
     const clips = [];
     for (const clip of Array.isArray(plan.clips) ? plan.clips : []) {

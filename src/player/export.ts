@@ -85,7 +85,8 @@ export function drawFrame(context: CanvasRenderingContext2D, width: number, heig
     context.fillStyle = '#000';
     context.fillRect(0, 0, width, height);
     context.drawImage(screen, Math.round((width - w) / 2), Math.round((height - h) / 2), w, h);
-    if (cameraReady && camera !== screen && !state.cornerHidden) drawPip(context, width, height, camera as HTMLVideoElement, source);
+    // The filmed screen may show the camera's floating window already: no second camera over it then.
+    if (cameraReady && camera !== screen && !state.cornerHidden && !state.cameraInScreen) drawPip(context, width, height, camera as HTMLVideoElement, source);
     return;
   }
   if (state.camera && cameraReady) {

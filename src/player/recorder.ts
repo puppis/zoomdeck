@@ -30,7 +30,8 @@ export type PictureSource = 'camera' | 'screen';
  * its own failures (the recorder goes on and keeps everything in memory regardless).
  */
 export interface MediaSink {
-  begin(capture: { type: string; video: boolean; source: PictureSource; start: number; lane: MediaLane }): Promise<unknown> | void;
+  /** `index` numbers the files of a recording in the order they begin, from 0: the file's name derives from it, here and in the timeline. */
+  begin(capture: { type: string; video: boolean; source: PictureSource; start: number; lane: MediaLane; index: number }): Promise<unknown> | void;
   write(chunk: Blob, lane: MediaLane): Promise<unknown> | void;
   end(lane: MediaLane): Promise<unknown> | void;
 }
@@ -56,6 +57,12 @@ export interface CapturedMedia {
   /** Where the file begins on the part's clock, and how long it runs there. */
   start: number;
   duration: number;
+  /**
+   * The file's number among those of the recording, in the order they began, from 0. Files of
+   * different lanes overlap, so they end in another order than they begin: the name a file gets
+   * where it is written, and in the timeline, both derive from this number.
+   */
+  index: number;
 }
 
 export interface RecorderResult {
@@ -75,6 +82,7 @@ interface Capture {
   source: PictureSource;
   lane: MediaLane;
   start: number;
+  index: number;
 }
 
 /** The lane of a captured file as the timeline records it: named for a side lane, absent for the camera lane. */
@@ -90,6 +98,8 @@ export class Recorder {
   /** The side lanes' files being written, beside the camera lane's: the filmed screen, the computer's sound. */
   private readonly _sides: Record<SideLane, Capture | null> = { screen: null, system: null };
   private readonly _captured: CapturedMedia[] = [];
+  /** The number the next file gets (see `CapturedMedia.index`). */
+  private _nextIndex = 0;
   /** Stream changes are applied one after the other, in the order asked. */
   private _switching: Promise<void> = Promise.resolve();
   /** Milliseconds recorded before the current run, and when the current run started (null while paused). */
@@ -120,9 +130,9 @@ export class Recorder {
 
   /** The media files so far, the ones being written included (their duration up to now), for a draft of the timeline. */
   get parts(): Array<Omit<CapturedMedia, 'blob'>> {
-    const parts: Array<Omit<CapturedMedia, 'blob'>> = this._captured.map(({ type, video, source, lane, start, duration }) => ({ type, video, source, ...(lane ? { lane } : {}), start, duration }));
+    const parts: Array<Omit<CapturedMedia, 'blob'>> = this._captured.map(({ type, video, source, lane, start, duration, index }) => ({ type, video, source, ...(lane ? { lane } : {}), start, duration, index }));
     for (const open of this._captures()) {
-      if (open.chunks.length) parts.push({ type: open.type, video: open.video, source: open.source, ...laneOf(open.lane), start: open.start, duration: Math.max(0, Math.round(this.elapsed) - open.start) });
+      if (open.chunks.length) parts.push({ type: open.type, video: open.video, source: open.source, ...laneOf(open.lane), start: open.start, duration: Math.max(0, Math.round(this.elapsed) - open.start), index: open.index });
     }
     return parts;
   }
@@ -272,10 +282,12 @@ export class Recorder {
     if (!type) throw new Error('This browser cannot record audio or video');
     // A screen is large and mostly still: a capped bitrate keeps its files within reason.
     const recorder = new MediaRecorder(stream, source === 'screen' && video ? { mimeType: type, videoBitsPerSecond: 2_500_000 } : { mimeType: type });
-    const capture: Capture = { recorder, chunks: [], type, video, source, lane, start };
+    // Numbered as it begins, before the sink names it.
+    const index = this._nextIndex++;
+    const capture: Capture = { recorder, chunks: [], type, video, source, lane, start, index };
     // The sink's file is begun before the first chunk can arrive; a sink that fails is left to itself.
     const sink = this.options.sink;
-    if (sink) await Promise.resolve(sink.begin({ type, video, source, start, lane })).catch(() => undefined);
+    if (sink) await Promise.resolve(sink.begin({ type, video, source, start, lane, index })).catch(() => undefined);
     recorder.addEventListener('dataavailable', (event) => {
       if (!event.data.size) return;
       capture.chunks.push(event.data);
@@ -325,7 +337,7 @@ export class Recorder {
     }
     const end = Math.round(this.elapsed);
     if (capture.chunks.length) {
-      this._captured.push({ blob: new Blob(capture.chunks, { type: capture.type }), type: capture.type, video: capture.video, source: capture.source, ...laneOf(capture.lane), start: capture.start, duration: Math.max(0, end - capture.start) });
+      this._captured.push({ blob: new Blob(capture.chunks, { type: capture.type }), type: capture.type, video: capture.video, source: capture.source, ...laneOf(capture.lane), start: capture.start, duration: Math.max(0, end - capture.start), index: capture.index });
     }
     // The last chunk came with the stop event, so the sink's file can close after it.
     const sink = this.options.sink;

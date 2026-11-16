@@ -304,8 +304,9 @@ Screen meanwhile, the button looks the same, and the camera stays as you set it.
 own indicator of a captured screen is the one to watch for; the deck adds none. The screen is a
 lane of its own in the recording, overlapping the camera's files, so playback and the rendered
 video show it full frame with the camera in its corner over it; when the entire screen is filmed
-and the camera's floating window is on it, the camera lane keeps the sound alone, since the
-picture is in the filmed screen already; with the camera full frame the screen is not filmed, and
+and the camera's floating window is on it, the recording marks that stretch, and playback and the
+video leave the corner picture out meanwhile, since the filmed screen shows the camera already
+(the camera itself is recorded without a break, so that its picture never restarts); with the camera full frame the screen is not filmed, and
 the filming takes up again when the camera leaves full frame.
 
 **The computer's sound.** The share can carry the computer's own sound besides the picture:

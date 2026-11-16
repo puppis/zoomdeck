@@ -150,7 +150,8 @@ describe('render plans', () => {
     const plan = renderPlan(timeline, 16 / 9, 1920, 30, log.clips);
     expect(plan.clips).toHaveLength(3);
     const args = ffmpegArguments(plan, '/w/frames.txt', plan.media.map((part) => ({ ...part, path: `/w/${part.file}`, audio: true })), '/w/v.mp4', [{ path: '/d/clip.mp4', start: 1000, duration: 2000 }]);
-    expect(args.slice(10, 18)).toEqual(['-i', '/w/a.webm', '-i', '/w/a.part2.webm', '-i', '/w/a.part3.webm', '-i', '/d/clip.mp4']);
+    expect(args.slice(10, 22)).toEqual(['-reinit_filter', '0', '-i', '/w/a.webm', '-reinit_filter', '0', '-i', '/w/a.part2.webm', '-reinit_filter', '0', '-i', '/w/a.part3.webm', '-reinit_filter', '0', '-i', '/d/clip.mp4'].slice(0, 12));
+    expect(args.filter((arg, index) => args[index - 1] === '-i')).toEqual(['/w/frames.txt', '/w/a.webm', '/w/a.part2.webm', '/w/a.part3.webm', '/d/clip.mp4']);
     const graph = args[args.indexOf('-filter_complex') + 1];
     expect(graph).toContain('[4:a]atrim=0:2.000,asetpts=PTS-STARTPTS,aresample=48000,adelay=1000:all=1[a3]');
     expect(graph).toContain('[a0][a1][a2][a3]amix=inputs=4');
@@ -177,6 +178,9 @@ describe('render plans', () => {
     const events: Timeline['events'] = [{ t: 2500, type: 'corner', hidden: true }, { t: 2800, type: 'corner', hidden: false }, { t: 5000, type: 'corner', hidden: true }];
     expect(cornerHiddenIntervals(events, 10_000)).toEqual([[2500, 2800], [5000, 10_000]]);
     expect(cornerHiddenIntervals([], 10_000)).toEqual([]);
+    // The filmed screen showing the camera's floating window leaves the corner picture out too, joined with the pointer's stretches.
+    const inScreen: Timeline['events'] = [{ t: 1000, type: 'camera-in-screen', on: true }, { t: 1500, type: 'corner', hidden: true }, { t: 3000, type: 'camera-in-screen', on: false }, { t: 3200, type: 'corner', hidden: false }, { t: 8000, type: 'camera-in-screen', on: true }];
+    expect(cornerHiddenIntervals(inScreen, 10_000)).toEqual([[1000, 3200], [8000, 10_000]]);
     const plan = renderPlan({ ...timeline, events: [...timeline.events, ...events].sort((a, b) => a.t - b.t) }, 16 / 9, 1920, 30);
     expect(plan.cornerHidden).toEqual([[2500, 2800], [5000, 10_000]]);
     const graph = (p: typeof plan) => {
@@ -184,13 +188,13 @@ describe('render plans', () => {
       return args[args.indexOf('-filter_complex') + 1];
     };
     // The camera's corner stretches were 2.0 to 3.0 and 4.0 to 6.5 seconds; the pointer took 2.5 to 2.8 and everything from 5.0.
-    expect(graph(plan)).toContain("overlay=29:29:eof_action=pass:enable='between(t,2.000,2.500)+between(t,2.800,3.000)+between(t,4.000,5.000)'");
+    expect(graph(plan)).toContain("overlay=29:29:eof_action=repeat:enable='between(t,2.000,2.500)+between(t,2.800,3.000)+between(t,4.000,5.000)'");
     // All of a part's corner time set aside: no corner overlay for it, and no split left with an output nobody takes.
     const hiddenAll = { ...plan, cornerHidden: [[0, 10_000]] as Array<[number, number]> };
     const all = graph(hiddenAll);
     expect(all).not.toContain('split');
     expect(all).not.toContain('scale=480:-2');
-    expect(all).toContain("overlay=0:0:eof_action=pass:enable='between(t,3.000,4.000)+between(t,6.500,7.000)'");
+    expect(all).toContain("overlay=0:0:eof_action=repeat:enable='between(t,3.000,4.000)+between(t,6.500,7.000)'");
   });
 
   it('splits a media file\'s stretch into the parts inside and outside the full-frame intervals', () => {
@@ -204,20 +208,24 @@ describe('render plans', () => {
     expect(list).toBe("ffconcat version 1.0\nfile '/f/0'\\''0.png'\nduration 0.033\nfile '/f/000001-33.png'\nduration 1.967\nfile '/f/000002-2000.png'\nduration 8.000\nfile '/f/000002-2000.png'\n");
     const plan = renderPlan(timeline, 16 / 9, 1920, 30);
     const args = ffmpegArguments(plan, '/w/frames.txt', plan.media.map((part, index) => ({ ...part, path: `/w/${part.file}`, audio: index !== 1 })), '/w/video.mp4');
-    expect(args.slice(0, 15)).toEqual(['-y', '-v', 'error', '-stats', '-f', 'concat', '-safe', '0', '-i', '/w/frames.txt', '-i', '/w/a.webm', '-i', '/w/a.part2.webm', '-i', '/w/a.part3.webm'].slice(0, 15));
+    // The deck frames first; every recorded file keeps the graph as it is when its pictures change midway (no rebuild, which would lose the deck frames read already).
+    expect(args.slice(0, 14)).toEqual(['-y', '-v', 'error', '-stats', '-f', 'concat', '-safe', '0', '-i', '/w/frames.txt', '-reinit_filter', '0', '-i', '/w/a.webm']);
     const graph = args[args.indexOf('-filter_complex') + 1];
     const filters = graph.split(';');
     expect(filters[0]).toBe('[0:v]fps=30,format=rgba[deck]');
     // The camera part, split between its corner and the full frame by the camera intervals, at the top-left corner, a quarter wide.
     expect(graph).toContain('[2:v]setpts=PTS-STARTPTS+2.000/TB,fps=30');
     expect(graph).toContain('scale=480:-2');
-    expect(graph).toContain("overlay=29:29:eof_action=pass:enable='between(t,2.000,3.000)+between(t,4.000,6.500)'");
+    expect(graph).toContain("overlay=29:29:eof_action=repeat:enable='between(t,2.000,3.000)+between(t,4.000,6.500)'");
     expect(graph).toContain("scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080");
-    expect(graph).toContain("overlay=0:0:eof_action=pass:enable='between(t,3.000,4.000)+between(t,6.500,7.000)'");
+    expect(graph).toContain("overlay=0:0:eof_action=repeat:enable='between(t,3.000,4.000)+between(t,6.500,7.000)'");
     // The screen part, fitted whole on black for its own stretch, laid before the camera whatever its place in the plan.
     expect(graph).toContain('[3:v]setpts=PTS-STARTPTS+7.000/TB,fps=30');
     expect(graph.indexOf('[3:v]setpts')).toBeLessThan(graph.indexOf('[2:v]setpts'));
-    expect(graph).toContain('scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2:color=black');
+    // Fitted and centered on black frame by frame, so that a window resized while shared stays so.
+    expect(graph).toContain('scale=1920:1080:force_original_aspect_ratio=decrease:eval=frame');
+    expect(graph).toContain('color=c=black:s=1920x1080:r=30');
+    expect(graph).toContain('overlay=x=(W-w)/2:y=(H-h)/2:eval=frame:eof_action=repeat');
     expect(graph).toContain("enable='between(t,7.000,10.000)'");
     // The sound: the parts with a sound track, each delayed to its start, mixed; the silent one left out.
     expect(graph).toContain('[1:a]aresample=48000,adelay=0:all=1[a0]');

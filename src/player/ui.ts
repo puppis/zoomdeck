@@ -208,6 +208,12 @@ export class PlayerUI {
   private _pipWindow: Window | null = null;
   /** Whether the pointer is over the camera's corner picture, which then steps aside so that what it covers shows (the setting allows it). */
   private _cornerHovered = false;
+  /** Whether the filmed screen shows the camera's floating window now (marked in a recording, see `_noteCameraInScreen`). */
+  private _cameraInScreen = false;
+  /** During a playback: the recorded screen shows the camera's floating window at this moment. */
+  private _playbackCameraInScreen = false;
+  /** The picture the camera lane's file being written carries (its video track), null for sound alone; undefined outside a recording. */
+  private _lanePicture: string | null | undefined = undefined;
   /** During a playback: the recorded corner picture was set aside by the presenter's pointer at this moment. */
   private _playbackCornerHidden = false;
   /** Whether the deck was left while the screen was filmed by hand, so that coming back ends the filming too. */
@@ -975,6 +981,7 @@ export class PlayerUI {
       await this._recordPicture();
     }
     this._layoutCamera();
+    this._noteCameraInScreen();
     // A deck left meanwhile (back from full frame, say) films again, and the corner picture floats.
     if (wasFull || next === 'corner') this._checkAway();
   }
@@ -996,6 +1003,7 @@ export class PlayerUI {
       this._exitPip();
     }
     this._layoutCamera();
+    this._noteCameraInScreen();
     await this._recordPicture();
   }
 
@@ -1029,14 +1037,25 @@ export class PlayerUI {
   }
 
   /**
-   * Whether the camera lane of the recording carries the camera picture now: while the camera
-   * is on, except when the whole screen is filmed with the camera floating over it in the
-   * browser's picture-in-picture window, which the filmed screen shows already.
+   * Whether the camera lane of the recording carries the camera picture now: exactly while the
+   * camera is on, without a break, so that its file never restarts on leaving or coming back to
+   * the deck (a restart loses the first frames of the new file). Where the filmed screen shows
+   * the camera's floating window, the recording marks it instead (see `_noteCameraInScreen`).
    */
   private _cameraInRecording(): boolean {
-    if (this._cameraMode === 'off' || !this._cameraStream) return false;
-    const wholeScreen = this._screenFilming && this._screenSurface() === 'monitor';
-    return !(wholeScreen && this._cameraFloating());
+    return this._cameraMode !== 'off' && Boolean(this._cameraStream);
+  }
+
+  /**
+   * Mark in the recording whether the filmed screen shows the camera's floating window now: the
+   * whole screen filmed while the window is open. Playback and the video leave the corner picture
+   * out meanwhile, since the screen shows the camera already, where the presenter put it.
+   */
+  private _noteCameraInScreen(): void {
+    const on = this._cameraMode === 'corner' && this._pipWindow !== null && this._screenFilming && this._screenSurface() === 'monitor';
+    if (on === this._cameraInScreen) return;
+    this._cameraInScreen = on;
+    this._note({ type: 'camera-in-screen', on });
   }
 
   /** Whether the camera is in its floating window over the other applications now. */
@@ -1054,6 +1073,10 @@ export class PlayerUI {
     if (!recorder || !recorder.capturing) return;
     const audio = this._recordStream?.getAudioTracks() ?? [];
     const camera = this._cameraInRecording() ? this._cameraStream?.getVideoTracks() ?? [] : [];
+    // The file being written carries this picture already: a new file would only restart the camera's recording.
+    const picture = camera[0]?.id ?? null;
+    if (picture === this._lanePicture) return;
+    this._lanePicture = picture;
     try {
       await recorder.switchStream(new MediaStream([...audio, ...camera]), 'camera');
     } catch (error) {
@@ -1180,6 +1203,8 @@ export class PlayerUI {
       await recorder.stopScreen();
       await recorder.startScreen(screen).catch((error: Error) => this.notice(`The screen could not be recorded: ${error.message}`));
     }
+    // A window shared in place of the whole screen, or the other way round, changes whether it shows the camera's window.
+    this._noteCameraInScreen();
     await this._recordPicture();
   }
 
@@ -1310,6 +1335,7 @@ export class PlayerUI {
       if (on && screen) await recorder.startScreen(screen).catch((error: Error) => this.notice(`The screen could not be recorded: ${error.message}`));
       else if (!on) await recorder.stopScreen();
     }
+    this._noteCameraInScreen();
     await this._recordPicture();
   }
 
@@ -1447,7 +1473,7 @@ export class PlayerUI {
     camera.classList.toggle('full', full);
     // The corner picture steps aside under the pointer (the viewer's, or the presenter's as recorded); a picture gone or full frame ends that.
     if (this._cornerHovered && (!hasPicture || full)) this._setCornerHovered(false);
-    camera.classList.toggle('aside', hasPicture && !full && (this._cornerHovered || (Boolean(this._playback) && this._playbackCornerHidden)));
+    camera.classList.toggle('aside', hasPicture && !full && (this._cornerHovered || (Boolean(this._playback) && (this._playbackCornerHidden || (this._playbackCameraInScreen && screenLane)))));
     this.stageHost.classList.toggle('camera-on', (full && hasPicture) || screenLane);
     this._renderState();
   }
@@ -1527,8 +1553,8 @@ export class PlayerUI {
     }
     // A share asked for at the start, while the click that started this still counts, so that leaving the deck films it.
     if (stream && this._settings.recording.screenOnRecord && !this._screenStream) await this._acquireScreen();
-    const screenTracks = this._screenFilming ? this._screenStream?.getVideoTracks() ?? [] : [];
-    const videoTracks = screenTracks.length ? screenTracks : this._cameraStream?.getVideoTracks() ?? [];
+    // The camera lane has the sound and the camera; a screen filmed already has its own lane, begun below.
+    const videoTracks = this._cameraInRecording() ? this._cameraStream?.getVideoTracks() ?? [] : [];
     // The talk's bundle is opened now and written as the talk goes; without the server, or when it refuses, the talk is kept in memory for a download.
     const name = append?.name ?? recordingName(new Date());
     let session: RecordingSession | null = null;
@@ -1541,9 +1567,10 @@ export class PlayerUI {
         session = null;
       }
     }
-    let number = (append?.timeline.media.length ?? 0) + 1;
-    const sink = session ? { begin: (capture: { type: string; lane: MediaLane }) => session.begin(number++, capture.type, capture.lane), write: (chunk: Blob, lane: MediaLane) => session.chunk(chunk, lane), end: (lane: MediaLane) => session.end(lane) } : undefined;
-    const recorder = new Recorder({ stream: stream && videoTracks.length ? new MediaStream([...stream.getAudioTracks(), ...videoTracks]) : stream, source: screenTracks.length ? 'screen' : 'camera', sink });
+    // A file's number in the bundle is the recorder's, in the order files begin, after the talk's earlier files; the timeline names it the same way.
+    const first = (append?.timeline.media.length ?? 0) + 1;
+    const sink = session ? { begin: (capture: { type: string; lane: MediaLane; index: number }) => session.begin(first + capture.index, capture.type, capture.lane), write: (chunk: Blob, lane: MediaLane) => session.chunk(chunk, lane), end: (lane: MediaLane) => session.end(lane) } : undefined;
+    const recorder = new Recorder({ stream: stream && videoTracks.length ? new MediaStream([...stream.getAudioTracks(), ...videoTracks]) : stream, source: 'camera', sink });
     try {
       await recorder.start();
     } catch (error) {
@@ -1556,7 +1583,9 @@ export class PlayerUI {
     }
     this._recorder = recorder;
     this._recordStream = stream;
+    this._lanePicture = stream ? videoTracks[0]?.id ?? null : undefined;
     void this._syncSystemLane();
+    if (this._screenFilming && this._screenStream && recorder.capturing) void recorder.startScreen(this._screenStream).catch(() => undefined);
     this._appendTo = append;
     this._session = session;
     this._talkName = name;
@@ -1564,6 +1593,8 @@ export class PlayerUI {
     this._pointerMarked = false;
     for (const event of initialEvents(stopRef(this._navigation, this._player.index), this._boardOn, this._boardTarget, this._cameraFull, this._player.speed, this._stageAspect())) recorder.mark(event);
     if (this._cornerHovered) recorder.mark({ type: 'corner', hidden: true });
+    this._cameraInScreen = false;
+    this._noteCameraInScreen();
     this._recordButton.textContent = '■ Stop';
     this._recordButton.setAttribute('aria-pressed', 'true');
     this._pauseButton.hidden = false;
@@ -1571,7 +1602,7 @@ export class PlayerUI {
     this._recordLabel.hidden = false;
     this._recordTimer = window.setInterval(() => this._updateRecordLabel(), 500);
     this._updateRecordLabel();
-    const what = stream ? (screenTracks.length ? 'with the screen' : videoTracks.length ? 'with the camera' : 'the sound (the camera or the screen join while they are on)') : 'the timeline only';
+    const what = stream ? (videoTracks.length ? 'with the camera' : 'the sound (the camera or the screen join while they are on)') : 'the timeline only';
     this.notice(append ? `Continuing ${append.name} at ${formatTime(append.timeline.duration)}, recording ${what}` : `Recording ${what}`);
   }
 
@@ -1666,7 +1697,8 @@ export class PlayerUI {
 
   /** Describe captured media files as the timeline lists them, numbered after the talk's existing ones (name.webm, name.part2.webm, …). */
   private _describeParts(name: string, first: number, parts: ReadonlyArray<Omit<CapturedMedia, 'blob'>>): TimelineMedia[] {
-    return parts.map((captured, index) => ({ ...describeMedia(name, captured.type, first + index, captured.duration), start: captured.start, ...(captured.source === 'screen' ? { source: 'screen' as const } : {}), ...(captured.lane ? { lane: captured.lane } : {}) }));
+    // Named by the number each file got as it began (as the bundle names it), not by its place in the list, which follows the order files ended.
+    return parts.map((captured) => ({ ...describeMedia(name, captured.type, first + captured.index, captured.duration), start: captured.start, ...(captured.source === 'screen' ? { source: 'screen' as const } : {}), ...(captured.lane ? { lane: captured.lane } : {}) }));
   }
 
   /** The timeline as it would be if the talk stopped now. */
@@ -1700,6 +1732,7 @@ export class PlayerUI {
       this._pointerMarked = false;
     }
     this._recorder = null;
+    this._lanePicture = undefined;
     this._screenOffer?.remove();
     this._screenOffer = null;
     if (this._recordTimer !== null) clearInterval(this._recordTimer);
@@ -1724,7 +1757,7 @@ export class PlayerUI {
     this._talkName = null;
     const previous = append?.timeline ?? this._freshTimeline(result.started);
     const first = previous.media.length + 1;
-    const files = result.media.map((captured, index) => ({ captured, number: first + index }));
+    const files = result.media.map((captured) => ({ captured, number: first + captured.index }));
     const timeline = appendPart(previous, { ...result.part, media: this._describeParts(name, first, result.media) });
     if (session) {
       // The media is in the bundle already: the timeline and the directory close it.
@@ -2109,6 +2142,7 @@ export class PlayerUI {
     this._playbackName = null;
     this._playbackPointer = null;
     this._playbackCornerHidden = false;
+    this._playbackCameraInScreen = false;
     const camera = this._camera;
     camera.pause();
     camera.removeAttribute('src');
@@ -2342,6 +2376,10 @@ export class PlayerUI {
       case 'camera': this._setCameraFull(event.on); break;
       case 'corner':
         this._playbackCornerHidden = event.hidden;
+        this._layoutCamera();
+        break;
+      case 'camera-in-screen':
+        this._playbackCameraInScreen = event.on;
         this._layoutCamera();
         break;
       case 'pointer':

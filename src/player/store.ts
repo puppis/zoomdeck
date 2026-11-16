@@ -6,7 +6,7 @@
  * versions are read the same way. Without the server (an exported deck, a file opened from
  * disk) a new recording is offered as the same bundle to download.
  */
-import { isTimeline, type MediaLane, type Timeline, type TimelineMedia } from './timeline';
+import { isTimeline, repairFileNames, type MediaLane, type Timeline, type TimelineMedia } from './timeline';
 import { openRemoteZip, type RemoteZip } from './zip';
 
 export interface RecordingEntry {
@@ -100,7 +100,8 @@ export async function loadTimeline(base: string, entry: RecordingEntry): Promise
     value = await response.json();
   }
   if (!isTimeline(value)) throw new Error(`${name} is not a recording of a talk`);
-  return value;
+  // A talk recorded before files were numbered as they began gets the names its bundle gave them.
+  return repairFileNames(value);
 }
 
 /**

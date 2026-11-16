@@ -182,14 +182,22 @@ export function subtractIntervals(a: Array<[number, number]>, b: Array<[number, 
   return result;
 }
 
-/** The stretches of a talk during which the camera's corner picture was set aside (the pointer over it), in milliseconds. */
+/**
+ * The stretches of a talk during which the camera's corner picture is left out, in milliseconds:
+ * while the pointer set it aside, and while the filmed screen showed the camera's floating window.
+ */
 export function cornerHiddenIntervals(events: TimelineEvent[], duration: number): Array<[number, number]> {
   const intervals: Array<[number, number]> = [];
   let since: number | null = null;
+  let aside = false;
+  let inScreen = false;
   for (const event of events) {
-    if (event.type !== 'corner') continue;
-    if (event.hidden && since === null) since = event.t;
-    else if (!event.hidden && since !== null) {
+    if (event.type === 'corner') aside = event.hidden;
+    else if (event.type === 'camera-in-screen') inScreen = event.on;
+    else continue;
+    const hidden = aside || inScreen;
+    if (hidden && since === null) since = event.t;
+    else if (!hidden && since !== null) {
       if (event.t > since) intervals.push([since, event.t]);
       since = null;
     }
