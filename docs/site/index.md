@@ -3,6 +3,8 @@ title: Zoomdeck
 description: Zooming presentations written in Markdown and played entirely in the browser.
 ---
 
+Zoomdeck is inspired by [Slajdomat](https://github.com/bojanczyk/slajdomat), Mikołaj Bojańczyk’s program for zooming slides, which I used for many years and which gave me the idea of a talk as a tree of slides that the camera zooms through. Zoomdeck takes a different direction though: its slides are written mainly in a markup language, whereas Slajdomat draws them in a graphical editor (Figma).
+
 ## What Zoomdeck does
 
 A Zoomdeck presentation is a **forest of slides**, most often a single tree. Each slide has its
@@ -10,8 +12,6 @@ own logical canvas and a small animation program; child slides sit inside their 
 as viewports. Presenting means visiting each tree in pre-order: the camera zooms into each child,
 plays its steps and zooms back out (or cuts, when you prefer), so the audience always sees where
 a detail belongs; from one root to the next it cuts, as between the pages of a document.
-
-Zoomdeck is inspired by [Slajdomat](https://github.com/bojanczyk/slajdomat), Mikołaj Bojańczyk’s program for zooming slides, which I used for many years and which gave me the idea of a talk as a tree of slides that the camera zooms through. Zoomdeck takes a different direction though: its slides are written mainly in a markup language, whereas Slajdomat draws them in a graphical editor (Figma).
 
 You write slides in a Markdown dialect: prose, LaTeX formulas, images, video, shapes, diagram
 icons and arrows (crisp or hand-drawn), boxes and blobs around groups of elements, tables, charts,
