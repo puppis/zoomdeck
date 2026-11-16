@@ -238,6 +238,7 @@ export class Playback {
     this.host.apply({ t: target, type: 'board', on: state.board }, true);
     this.host.apply({ t: target, type: 'pan', x: state.pan.x, y: state.pan.y }, true);
     this.host.apply({ t: target, type: 'camera', on: state.camera }, true);
+    this.host.apply({ t: target, type: 'corner', hidden: state.cornerHidden }, true);
     if (state.pointer) this.host.apply({ t: target, type: 'pointer', ...state.pointer }, true);
     else this.host.apply({ t: target, type: 'pointer-off' }, true);
     this._last = target;
@@ -300,6 +301,7 @@ export class Playback {
       case 'board': state.board = event.on; break;
       case 'pan': state.pan = { x: event.x, y: event.y }; break;
       case 'camera': state.camera = event.on; break;
+      case 'corner': state.cornerHidden = event.hidden; break;
       case 'pointer': state.pointer = { mode: event.mode, x: event.x, y: event.y, r: event.r }; break;
       case 'pointer-off': state.pointer = null; break;
       case 'ink': case 'cut': case 'stage': break;

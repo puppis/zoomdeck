@@ -69,6 +69,8 @@ export type TimelineEvent =
   /** The whiteboard viewport, in surface units. */
   | { t: number; type: 'pan'; x: number; y: number }
   | { t: number; type: 'camera'; on: boolean }
+  /** The camera's corner picture set aside while the pointer was over it, so that what it covers showed, and back. */
+  | { t: number; type: 'corner'; hidden: boolean }
   /** The spotlight or laser at a point of the slide viewport (surface units, 1000 tall), with its radius. */
   | { t: number; type: 'pointer'; mode: PointerKind; x: number; y: number; r: number }
   | { t: number; type: 'pointer-off' }
@@ -203,12 +205,14 @@ export interface TimelineState {
   board: boolean;
   pan: { x: number; y: number };
   camera: boolean;
+  /** Whether the camera's corner picture is set aside (the pointer over it). */
+  cornerHidden: boolean;
   pointer: { mode: PointerKind; x: number; y: number; r: number } | null;
 }
 
 /** Fold the events at or before `t` into the state they leave behind. */
 export function stateAt(events: TimelineEvent[], t: number): TimelineState {
-  const state: TimelineState = { stop: null, animated: false, speed: 1, board: false, pan: { x: 0, y: 0 }, camera: false, pointer: null };
+  const state: TimelineState = { stop: null, animated: false, speed: 1, board: false, pan: { x: 0, y: 0 }, camera: false, cornerHidden: false, pointer: null };
   for (const event of events) {
     if (event.t > t) break;
     switch (event.type) {
@@ -218,6 +222,7 @@ export function stateAt(events: TimelineEvent[], t: number): TimelineState {
       case 'board': state.board = event.on; break;
       case 'pan': state.pan = { x: event.x, y: event.y }; break;
       case 'camera': state.camera = event.on; break;
+      case 'corner': state.cornerHidden = event.hidden; break;
       case 'pointer': state.pointer = { mode: event.mode, x: event.x, y: event.y, r: event.r }; break;
       case 'pointer-off': state.pointer = null; break;
       case 'ink': case 'cut': case 'stage': break;

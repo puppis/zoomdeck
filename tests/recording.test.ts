@@ -73,6 +73,11 @@ describe('timelines', () => {
     expect(late.pointer).toBeNull();
     expect(late.speed).toBe(1.5);
     expect(late.camera).toBe(true);
+    // The corner picture set aside by the pointer, and back: shown unless an event says otherwise.
+    expect(late.cornerHidden).toBe(false);
+    const aside: TimelineEvent[] = [{ t: 100, type: 'corner', hidden: true }, { t: 900, type: 'corner', hidden: false }];
+    expect(stateAt(aside, 500).cornerHidden).toBe(true);
+    expect(stateAt(aside, 900).cornerHidden).toBe(false);
     expect(inkUpTo(events, 1050).map((event) => event.op.op)).toEqual(['begin']);
     expect(inkUpTo(events, 9000).length).toBe(2);
     expect(eventsBetween(events, 2000, 3200).map((event) => event.type)).toEqual(['pointer', 'board', 'pan']);
@@ -143,6 +148,10 @@ describe('timelines', () => {
 
   it('keeps valid recording settings and drops the rest', () => {
     expect(sanitizeRecording(null)).toEqual(DEFAULT_RECORDING);
+    // The corner picture steps aside under the pointer unless turned off.
+    expect(DEFAULT_RECORDING.hideCameraOnHover).toBe(true);
+    expect(sanitizeRecording({ hideCameraOnHover: false }).hideCameraOnHover).toBe(false);
+    expect(sanitizeRecording({ hideCameraOnHover: 'no' }).hideCameraOnHover).toBe(true);
     const fixed = sanitizeRecording({ camera: 'none', corner: 'top-left', size: 0.5, mirror: false, microphone: 7 });
     expect(fixed.camera).toBe('none');
     expect(fixed.corner).toBe('top-left');

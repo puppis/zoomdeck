@@ -226,20 +226,34 @@ base density on every screen and only the lines in view are sharpened to the scr
 The camera is yours to turn on. **Camera** in the footer turns it on in a corner, or off again;
 `C` steps through the three states: in a corner, full frame in place of the slides or the
 whiteboard (a way to show a real blackboard, an object or yourself without leaving the deck),
-and off. The first step asks the browser for the camera chosen in the settings (Recording). The
-corner picture is a small floating window of the page's own, the size the settings give it, that
-stays in view over every application whether or not the deck has the focus, so that a filmed
-screen shows it too; the browser places it, usually at the bottom right, remembers where you
-drag it, and keeps a close button of its own on it, which turns the camera off. In browsers
-without such windows the corner picture sits in the page instead. The picture is mirrored like a
-mirror, so that you can see yourself; the size and the mirroring are settings, and the corner
-setting places the picture in playback and in videos. Full frame closes the floating window and
-pauses the filming of the screen while it lasts. The pen never draws on the camera: strokes
+and off. The first step asks the browser for the camera chosen in the settings (Recording). While
+the deck has the focus the corner picture sits in its corner of the deck, exactly where playback
+and the rendered video put it. When you leave the deck for another application, another tab or
+a live page, it becomes a small floating window of the page's own, the size the settings give
+it, which stays in view over every application, so that a filmed screen shows it too; coming
+back to the deck closes the window and brings the corner picture back. The frame in the page is
+hidden whenever the window is open, so that the camera never appears twice on a filmed screen.
+A browser lets a page open such a window only at certain moments: after a click into a live page
+of the deck, or, in Chrome, when it leaves the tab itself; switching to another application may
+therefore leave the camera without a window, and then the recording keeps it in its own track,
+which the video lays over the filmed screen as usual. The browser places the window, usually at
+the bottom right, remembers where you drag it, and keeps a close button of its own on it, which
+turns the camera off. The picture is mirrored like a mirror, so that you can see yourself; the
+size and the mirroring are settings, and the corner setting places the picture in playback and
+in videos. Full frame closes the floating window and pauses the filming of the screen while it
+lasts.
+
+**Seeing under the camera.** While the mouse is over the corner picture, the picture steps aside,
+so that the part of the slide it covers shows, and comes back when the mouse leaves; drawing,
+the spotlight and links work there as anywhere. A recording keeps those moments, so that
+playback and the video leave the picture out exactly when you did. "Hide the camera picture
+while the mouse is over it", under **Recording** in the settings, is on by default; the same
+happens over a recorded talk's picture during playback. The pen never draws on the camera: strokes
 belong to slides and to the whiteboard. A recording keeps the camera exactly while it is on, so
 you can record a talk without it even with a camera attached, or bring it in for some moments
 only. The camera is yours alone: filming the screen (see Filming the screen under
 [Recording a talk](#recording-a-talk)) leaves it as you set it, and the floating window keeps it
-in view wherever you go.
+in view while you are away from the deck.
 
 ## Recording a talk
 

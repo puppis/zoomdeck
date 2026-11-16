@@ -19,6 +19,8 @@ export interface RenderPlan {
   pip: { corner: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'; size: number };
   media: Array<{ file: string; start: number; duration: number; video: boolean; source: 'camera' | 'screen' }>;
   full: Array<[number, number]>;
+  /** When the corner picture was set aside by the pointer: no camera in the corner then. */
+  cornerHidden?: Array<[number, number]>;
   /** The slides' own videos that played with sound: their URLs and stretches. */
   clips?: Array<{ src: string; start: number; duration: number }>;
 }

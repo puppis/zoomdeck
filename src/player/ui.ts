@@ -179,6 +179,10 @@ export class PlayerUI {
   private _screenOffer: HTMLElement | null = null;
   /** The camera's floating window of the page's own (document picture-in-picture), while it is open. */
   private _pipWindow: Window | null = null;
+  /** Whether the pointer is over the camera's corner picture, which then steps aside so that what it covers shows (the setting allows it). */
+  private _cornerHovered = false;
+  /** During a playback: the recorded corner picture was set aside by the presenter's pointer at this moment. */
+  private _playbackCornerHidden = false;
   /** Whether the deck was left while the screen was filmed by hand, so that coming back ends the filming too. */
   private _awayWhileFilming = false;
   /** Prompts of the browser open (its pickers for the screen and the camera), whose focus changes are no leave. */
@@ -404,7 +408,7 @@ export class PlayerUI {
     this._counter = el('span', { class: 'counter' });
     this._boardButton = el('button', { class: 'board-button', text: 'Whiteboard', title: 'Show or hide the whiteboard (W)', 'aria-pressed': 'false' });
     this._boardButton.addEventListener('click', () => this.toggleWhiteboard());
-    this._cameraButton = el('button', { class: 'camera-button', text: 'Camera', title: 'Turn the camera on in its floating window, or off (C steps through the window, full frame and off; full frame pauses the filming of the screen)', 'aria-pressed': 'false' });
+    this._cameraButton = el('button', { class: 'camera-button', text: 'Camera', title: 'Turn the camera on in its corner, or off (C steps through the corner, full frame and off; full frame pauses the filming of the screen)', 'aria-pressed': 'false' });
     this._cameraButton.addEventListener('click', () => void this.toggleCamera(this._cameraMode === 'off' ? 'corner' : 'off'));
     this._screenButton = el('button', { class: 'screen-button', text: 'Screen', title: 'Film the screen, beside the camera, for the time spent in another application, or stop (S); red while the browser lets this page capture a screen', 'aria-pressed': 'false' });
     this._screenButton.addEventListener('click', () => void this.toggleScreen());
@@ -468,6 +472,9 @@ export class PlayerUI {
       if (this._player) this._player.speed = Number(this._speed.value);
     });
     this._installPointerTools();
+    // The camera's corner picture steps aside while the pointer is over it, so that what it covers shows.
+    this.stageHost.addEventListener('pointermove', (event) => this._hoverCamera(event.clientX, event.clientY), { passive: true, signal: this._abort.signal });
+    this.stageHost.addEventListener('pointerleave', () => this._hoverCamera(null, null), { signal: this._abort.signal });
     this._keys.addEventListener('keydown', ((event: KeyboardEvent) => this._onKeyDown(event)) as EventListener, { signal: this._abort.signal });
     // Leaving the deck for another tab, application or workspace, and coming back.
     document.addEventListener('visibilitychange', () => this._checkAway(), { signal: this._abort.signal });
@@ -530,6 +537,7 @@ export class PlayerUI {
     if (this._recorder) void this.toggleRecording();
     if (this._screenHeld()) void this.toggleScreen();
     this._exitPip();
+    this._offerCameraWindow(false);
     if (this._cameraMode !== 'off') void this.toggleCamera('off');
     this.closeRecording();
     if (document.fullscreenElement === this.root) void document.exitFullscreen();
@@ -561,7 +569,7 @@ export class PlayerUI {
       ...gestures,
       `${keys('undo')}: undo stroke`, `${keys('redo')}: redo stroke`, `${keys('clear')}: clear strokes`,
       `${keys('whiteboard')}: whiteboard (${(['boardLeft', 'boardRight', 'boardUp', 'boardDown'] as const).map(keys).join(' ')}, scrolling or two fingers move it)`,
-      `${keys('camera')}: camera in its floating window, then full frame (which pauses the filming of the screen), then off`, `${keys('screen')}: hold a screen share (the browser asks which) or let it go; leaving the deck films it`, `${keys('record')}: record the talk, or continue a saved one`,
+      `${keys('camera')}: camera in its corner (a floating window while the deck is left), then full frame (which pauses the filming of the screen), then off`, `${keys('screen')}: hold a screen share (the browser asks which) or let it go; leaving the deck films it`, `${keys('record')}: record the talk, or continue a saved one`,
       ...(this._editSource ? [`${keys('edit')}: open this stop's source in the editor`] : []),
       `${keys('settings')}: settings`,
     ];
@@ -923,6 +931,8 @@ export class PlayerUI {
     this._cameraMode = next;
     this._cameraButton.setAttribute('aria-pressed', String(next !== 'off'));
     this._setCameraFull(next === 'full');
+    // Only the corner picture floats, and only while the deck is left.
+    this._offerCameraWindow(next === 'corner');
     if (next === 'off') {
       // The recording closes the file with the picture before the camera goes.
       if (wasOn) await this._recordPicture();
@@ -933,12 +943,60 @@ export class PlayerUI {
       if (this._screenFilming) await this._setScreenFilming(false);
       if (!wasOn) await this._recordPicture();
     } else {
-      await this._openCameraWindow();
       await this._recordPicture();
     }
     this._layoutCamera();
-    // Back from full frame: a deck left meanwhile films again.
-    if (wasFull) this._checkAway();
+    // A deck left meanwhile (back from full frame, say) films again, and the corner picture floats.
+    if (wasFull || next === 'corner') this._checkAway();
+  }
+
+  /**
+   * The camera's corner picture is in the page while the deck has the focus, where the rendered
+   * video has it too, and floats over the other applications in a window of its own while the
+   * deck is left: the window opens when the deck is left, where the browser allows a page to open
+   * one then (after a click into a live page of the deck, or when Chrome asks on leaving the tab),
+   * and closes when the deck has the focus again. Whenever the window is open the frame in the
+   * page is hidden, so that a filmed screen never shows the camera twice; where the window cannot
+   * open, the camera stays in the recording's own lane and the video lays it over the screen.
+   */
+  private async _floatCamera(float: boolean): Promise<void> {
+    if (float) {
+      if (this._cameraMode !== 'corner' || this._pipWindow || !(await this._openCameraWindow())) return;
+    } else {
+      if (!this._pipWindow) return;
+      this._exitPip();
+    }
+    this._layoutCamera();
+    await this._recordPicture();
+  }
+
+  /** Let Chrome open the floating window by itself when the deck's tab is left, as it does for a page that uses the camera; only while the camera is in its corner. */
+  private _offerCameraWindow(on: boolean): void {
+    try {
+      navigator.mediaSession?.setActionHandler('enterpictureinpicture' as MediaSessionAction, on ? () => void this._floatCamera(true) : null);
+    } catch {
+      /* not an action this browser knows */
+    }
+  }
+
+  /** The pointer moved over the stage, or left it (null): the corner picture steps aside while the pointer is over it, where the setting asks so. */
+  private _hoverCamera(x: number | null, y: number | null): void {
+    const camera = this._camera;
+    let over = false;
+    if (x !== null && y !== null && this._settings.recording.hideCameraOnHover && !camera.hidden && !camera.classList.contains('full')) {
+      const box = camera.getBoundingClientRect();
+      over = x >= box.left && x <= box.right && y >= box.top && y <= box.bottom;
+    }
+    if (over === this._cornerHovered) return;
+    this._setCornerHovered(over);
+    this._layoutCamera();
+  }
+
+  /** The corner picture set aside by the pointer, or back; a recording keeps it, so that the video shows what the presenter showed. */
+  private _setCornerHovered(on: boolean): void {
+    if (on === this._cornerHovered) return;
+    this._cornerHovered = on;
+    if (!this._playback) this._note({ type: 'corner', hidden: on });
   }
 
   /**
@@ -999,12 +1057,11 @@ export class PlayerUI {
   }
 
   /**
-   * The camera's corner picture is a floating window of the page's own (document
-   * picture-in-picture), the size the settings give the corner picture, with the camera filling
-   * it, mirrored as the presenter sees it: it stays in view over every application, whether or
-   * not the deck has the focus, and a filmed screen shows it. The browser places it and keeps a
-   * close button on it; closing it turns the camera off. Resolves with whether it opened; where
-   * the browser has no such windows, or allows none now, the corner picture stays in the page.
+   * Open the camera's floating window (document picture-in-picture), the size the settings give
+   * the corner picture, with the camera filling it, mirrored as the presenter sees it: it stays in
+   * view over every application, and a filmed screen shows it (see `_floatCamera`). The browser
+   * places it and keeps a close button on it; closing it turns the camera off. Resolves with
+   * whether it opened; where the browser has no such windows, or allows none now, it does not.
    */
   private async _openCameraWindow(): Promise<boolean> {
     const stream = this._cameraStream;
@@ -1013,6 +1070,7 @@ export class PlayerUI {
     if (!documentPip) return false;
     const width = Math.round(this.stageHost.clientWidth * this._settings.recording.size) || 320;
     const height = Math.round((width * 9) / 16);
+    const focused = document.hasFocus();
     try {
       const pip = await documentPip.requestWindow({ width, height, disallowReturnToOpener: true });
       this._pipWindow = pip;
@@ -1029,8 +1087,8 @@ export class PlayerUI {
       video.srcObject = stream;
       doc.body.append(video);
       void video.play().catch(() => undefined);
-      // The new window took the focus: the deck gets it back, so that the keys keep working there.
-      window.focus();
+      // The new window took the focus: the page gets it back (a live page of the deck, say), so that the keys keep working there.
+      if (focused) window.focus();
       // Closed with the browser's button: the camera goes off with its window.
       pip.addEventListener('pagehide', () => {
         if (this._pipWindow !== pip) return;
@@ -1246,7 +1304,10 @@ export class PlayerUI {
    */
   private _applyAway(): void {
     if (this._playback || this._prompting) return;
-    const away = awayFromDeck(this.stageHost, document, this._pipWindow ? [this._pipWindow] : []);
+    // The camera's window exists only while the deck is left: the focus in it changes nothing.
+    if (this._pipWindow && !this._pipWindow.closed && this._pipWindow.document.hasFocus()) return;
+    const away = awayFromDeck(this.stageHost, document);
+    void this._floatCamera(away);
     if (!this._screenHeld()) {
       // Left during a recording with no share: the browser's picker needs a click, so the deck asks for one, once per session.
       if (away && this._recorder && !this._screenDeclined && !this._screenOffer) this._offerScreen();
@@ -1355,6 +1416,9 @@ export class PlayerUI {
     // The camera never fills the frame over a filmed screen: it keeps its corner there.
     const full = oldScreen || (this._cameraFull && !screenLane);
     camera.classList.toggle('full', full);
+    // The corner picture steps aside under the pointer (the viewer's, or the presenter's as recorded); a picture gone or full frame ends that.
+    if (this._cornerHovered && (!hasPicture || full)) this._setCornerHovered(false);
+    camera.classList.toggle('aside', hasPicture && !full && (this._cornerHovered || (Boolean(this._playback) && this._playbackCornerHidden)));
     this.stageHost.classList.toggle('camera-on', (full && hasPicture) || screenLane);
     this._renderState();
   }
@@ -1470,6 +1534,7 @@ export class PlayerUI {
     this._draftTick = 0;
     this._pointerMarked = false;
     for (const event of initialEvents(stopRef(this._navigation, this._player.index), this._boardOn, this._boardTarget, this._cameraFull, this._player.speed, this._stageAspect())) recorder.mark(event);
+    if (this._cornerHovered) recorder.mark({ type: 'corner', hidden: true });
     this._recordButton.textContent = '■ Stop';
     this._recordButton.setAttribute('aria-pressed', 'true');
     this._pauseButton.hidden = false;
@@ -1525,7 +1590,7 @@ export class PlayerUI {
         el('p', { class: 'note', text: `The recording keeps your voice through the microphone (${option(this._micSelect)}), ${camera}, and every move on the deck: the stops, the ink, the whiteboard, the pointer and the camera switches. The slides themselves are not filmed; the talk plays back on the deck and exports as a video.` }),
         ...(this._screenHeld() ? [] : [el('p', { class: 'note' }, el('strong', { text: 'No screen share is held: ' }), 'until the screen is shared, the recording cannot include other windows and applications, what happens inside a live page, or the computer\'s sound. Your voice and the camera are recorded either way. Share the screen with Screen or S, now or during the talk; the first time you leave the deck during the talk, the deck offers it.')]),
         ...(this._screenHeld() && this._settings.recording.systemAudio && !this._systemSoundHeld() ? [el('p', { class: 'note' }, el('strong', { text: 'The share carries no sound: ' }), 'the computer\'s sound will not be in the recording. The browser offers it for a whole screen or a tab, with its box ticked in the share dialog; the arrow beside Screen opens the dialog again.')] : []),
-        el('p', { class: 'note', text: `The Screen button or S holds a screen share${this._settings.recording.screenOnRecord ? ' (the browser asks which screen when the recording starts)' : ' (the browser asks which screen)'} and lets it go again; while a share is held, leaving the deck for another tab, application, workspace or live page films the screen by itself, beside the camera, and coming back stops the filming. The computer's sound, when the share carries it, is recorded all along, also while you are on the deck. The camera stays as you set it, in its floating window.` }),
+        el('p', { class: 'note', text: `The Screen button or S holds a screen share${this._settings.recording.screenOnRecord ? ' (the browser asks which screen when the recording starts)' : ' (the browser asks which screen)'} and lets it go again; while a share is held, leaving the deck for another tab, application, workspace or live page films the screen by itself, beside the camera, and coming back stops the filming. The computer's sound, when the share carries it, is recorded all along, also while you are on the deck. The camera stays as you set it: in its corner of the deck, and in a floating window over the other applications while the deck is left.` }),
         el('p', { class: 'note', text: `The header counts the time. Pause leaves a gap out of the talk; Stop (the same key or button) ends the recording and ${where}.${this._deck.base && recordingStoreAvailable() ? ' A stopped talk can be continued later from this dialog or from the list of talks.' : ' Until this page closes, the talk also plays back here, from ▶ Talk.'}` }),
         seam,
         el('div', { class: 'row' }, start, cancel)),
@@ -1897,6 +1962,7 @@ export class PlayerUI {
     this._playback = null;
     this._playbackName = null;
     this._playbackPointer = null;
+    this._playbackCornerHidden = false;
     const camera = this._camera;
     camera.pause();
     camera.removeAttribute('src');
@@ -2128,6 +2194,10 @@ export class PlayerUI {
       case 'board': if (event.on !== this._boardOn) this._setBoardShown(event.on); break;
       case 'pan': this._setBoardPan(event.x, event.y, !instant); break;
       case 'camera': this._setCameraFull(event.on); break;
+      case 'corner':
+        this._playbackCornerHidden = event.hidden;
+        this._layoutCamera();
+        break;
       case 'pointer':
         this._playbackPointer = { mode: event.mode, x: event.x, y: event.y, r: event.r };
         this._updateSpotlight();
@@ -2905,6 +2975,12 @@ export class PlayerUI {
       this._settings.recording.renderAspect = this._renderAspectSelect.value as AspectChoice;
       saveSettings(this._settings);
     });
+    this._hoverCameraToggle = el('input', { type: 'checkbox' });
+    this._hoverCameraToggle.addEventListener('change', () => {
+      this._settings.recording.hideCameraOnHover = this._hoverCameraToggle.checked;
+      saveSettings(this._settings);
+      if (!this._hoverCameraToggle.checked) this._hoverCamera(null, null);
+    });
     this._mirrorToggle = el('input', { type: 'checkbox' });
     this._mirrorToggle.addEventListener('change', () => {
       this._settings.recording.mirror = this._mirrorToggle.checked;
@@ -2937,6 +3013,7 @@ export class PlayerUI {
       el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Corner of the camera picture' }), this._cornerSelect),
       el('div', { class: 'binding gesture' }, el('span', { class: 'action', text: 'Size of the camera picture' }), this._pipSizeSelect),
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Mirror my own picture while presenting' }), this._mirrorToggle),
+      el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Hide the camera picture while the mouse is over it, to show what it covers (a recording keeps it hidden then too)' }), this._hoverCameraToggle),
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Ask for the screen when a recording starts, so that a share is held from the start' }), this._screenAskToggle),
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: "Record the computer's sound with the screen share, in a track of its own, when the browser offers it (a whole screen or a tab, with the box ticked in the share dialog)" }), this._systemAudioToggle),
       el('label', { class: 'binding gesture row' }, el('span', { class: 'action', text: 'Render the talk as an MP4 video when a recording stops, off the clock, where the server has ffmpeg (the desktop app does it in the background; a browser offers a button, since it opens a tab for it)' }), this._renderToggle),
@@ -3058,6 +3135,7 @@ export class PlayerUI {
   private _padNotesToggle!: HTMLInputElement;
   private _screenAskToggle!: HTMLInputElement;
   private _systemAudioToggle!: HTMLInputElement;
+  private _hoverCameraToggle!: HTMLInputElement;
   private _antialiasToggle!: HTMLInputElement;
   private _resolutionSelect!: HTMLSelectElement;
   private _renderingNote!: HTMLElement;
@@ -3297,6 +3375,7 @@ export class PlayerUI {
     this._mirrorToggle.checked = recording.mirror;
     this._screenAskToggle.checked = recording.screenOnRecord;
     this._systemAudioToggle.checked = recording.systemAudio;
+    this._hoverCameraToggle.checked = recording.hideCameraOnHover;
     this._renderToggle.checked = recording.renderOnStop;
     this._renderSizeSelect.value = recording.renderHeight === null ? '' : String(recording.renderHeight);
     this._renderAspectSelect.value = recording.renderAspect;

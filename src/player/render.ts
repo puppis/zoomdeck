@@ -182,6 +182,22 @@ export function subtractIntervals(a: Array<[number, number]>, b: Array<[number, 
   return result;
 }
 
+/** The stretches of a talk during which the camera's corner picture was set aside (the pointer over it), in milliseconds. */
+export function cornerHiddenIntervals(events: TimelineEvent[], duration: number): Array<[number, number]> {
+  const intervals: Array<[number, number]> = [];
+  let since: number | null = null;
+  for (const event of events) {
+    if (event.type !== 'corner') continue;
+    if (event.hidden && since === null) since = event.t;
+    else if (!event.hidden && since !== null) {
+      if (event.t > since) intervals.push([since, event.t]);
+      since = null;
+    }
+  }
+  if (since !== null && duration > since) intervals.push([since, duration]);
+  return intervals;
+}
+
 /** The stretches of a talk during which the camera fills the frame, in milliseconds. */
 export function cameraIntervals(events: TimelineEvent[], duration: number): Array<[number, number]> {
   const intervals: Array<[number, number]> = [];
@@ -230,6 +246,8 @@ export interface RenderPlan {
   media: RenderPlanMedia[];
   /** When the camera fills the frame instead of sitting in its corner. */
   full: Array<[number, number]>;
+  /** When the corner picture was set aside, the pointer over it: the camera is not laid over the frame then. */
+  cornerHidden?: Array<[number, number]>;
   /** The slides' own videos that played unmuted, for their sound. */
   clips: RenderPlanClip[];
 }
@@ -245,6 +263,7 @@ export function renderPlan(timeline: Timeline, aspect: number, width: number, fp
     media: timeline.media.map((part) => ({ file: part.file, start: part.start, duration: part.duration, video: part.video, source: part.source ?? 'camera', ...(part.lane === 'screen' || part.lane === 'system' ? { lane: part.lane } : {}) })),
     // While the screen is filmed it fills the frame; the camera keeps its corner over it, never the frame.
     full: subtractIntervals(cameraIntervals(timeline.events, timeline.duration), screenIntervals(timeline.media)),
+    cornerHidden: cornerHiddenIntervals(timeline.events, timeline.duration),
     clips,
   };
 }

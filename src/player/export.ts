@@ -85,7 +85,7 @@ export function drawFrame(context: CanvasRenderingContext2D, width: number, heig
     context.fillStyle = '#000';
     context.fillRect(0, 0, width, height);
     context.drawImage(screen, Math.round((width - w) / 2), Math.round((height - h) / 2), w, h);
-    if (cameraReady && camera !== screen) drawPip(context, width, height, camera as HTMLVideoElement, source);
+    if (cameraReady && camera !== screen && !state.cornerHidden) drawPip(context, width, height, camera as HTMLVideoElement, source);
     return;
   }
   if (state.camera && cameraReady) {
@@ -109,7 +109,8 @@ export function drawFrame(context: CanvasRenderingContext2D, width: number, heig
     drawStrokes(context, source.strokes('slide'), source.penStyle(), k, width, height, { x: 0, y: 0 });
   }
   if (state.pointer) drawPointer(context, width, height, k, state.pointer);
-  if (cameraReady) drawPip(context, width, height, camera as HTMLVideoElement, source);
+  // The corner picture set aside by the presenter's pointer, so that what it covered showed, is left out as it was live.
+  if (cameraReady && !state.cornerHidden) drawPip(context, width, height, camera as HTMLVideoElement, source);
 }
 
 /** The camera in its corner. */

@@ -99,6 +99,22 @@ export function clipsToMix(plan, clips) {
   return clips.filter((clip) => !system.some((part) => clip.start >= part.start && clip.start < part.start + part.duration));
 }
 
+/** The parts of the intervals `a` outside the intervals `b`. */
+function subtract(a, b) {
+  const result = [];
+  const cuts = [...b].sort((x, y) => x[0] - y[0]);
+  for (const [from, to] of a) {
+    let cursor = from;
+    for (const [cutFrom, cutTo] of cuts) {
+      if (cutTo <= cursor || cutFrom >= to) continue;
+      if (cutFrom > cursor) result.push([cursor, cutFrom]);
+      cursor = Math.max(cursor, cutTo);
+    }
+    if (cursor < to) result.push([cursor, to]);
+  }
+  return result;
+}
+
 export function ffmpegArguments(plan, frames, parts, output, clips = []) {
   const { width: W, height: H, fps } = plan;
   const args = ['-y', '-v', 'error', '-stats', '-f', 'concat', '-safe', '0', '-i', frames];
@@ -131,7 +147,9 @@ export function ffmpegArguments(plan, frames, parts, output, clips = []) {
       current = out;
       return;
     }
-    const { inside: full, outside: pip } = splitInterval(from, to, plan.full);
+    const { inside: full, outside: corner } = splitInterval(from, to, plan.full);
+    // The corner picture set aside by the pointer, so that what it covered showed, stays off the frame then.
+    const pip = subtract(corner, plan.cornerHidden ?? []);
     if (full.length && pip.length) {
       const a = next();
       const b = next();

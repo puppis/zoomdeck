@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cameraIntervals, ClipLog, displayWidth, frameAspect, frameSize, installVirtualClock, renderPlan, subtractIntervals, videoWidthFor } from '../src/player/render';
+import { cameraIntervals, cornerHiddenIntervals, ClipLog, displayWidth, frameAspect, frameSize, installVirtualClock, renderPlan, subtractIntervals, videoWidthFor } from '../src/player/render';
 import { aspectName, presentedAspect } from '../src/player/timeline';
 import type { Timeline } from '../src/player/timeline';
 import { clipsToMix, concatList, ffmpegArguments, splitInterval } from '../bin/render.mjs';
@@ -120,6 +120,7 @@ describe('render plans', () => {
       ],
       // The camera filled the frame from 3000 to 4000 and from 6500 on, but the screen had the frame from 7000.
       full: [[3000, 4000], [6500, 7000]],
+      cornerHidden: [],
       clips: [],
     });
     // The height is even, as the encoder wants, whatever the proportions.
@@ -170,6 +171,26 @@ describe('render plans', () => {
     const graph = args[args.indexOf('-filter_complex') + 1];
     expect(graph).toContain('[2:a]aresample=48000,adelay=4000:all=1[a1]');
     expect(graph).toContain('[a0][a1]amix=inputs=2');
+  });
+
+  it('leaves the corner picture out while the presenter\'s pointer set it aside, and never leaves a split output unused', () => {
+    const events: Timeline['events'] = [{ t: 2500, type: 'corner', hidden: true }, { t: 2800, type: 'corner', hidden: false }, { t: 5000, type: 'corner', hidden: true }];
+    expect(cornerHiddenIntervals(events, 10_000)).toEqual([[2500, 2800], [5000, 10_000]]);
+    expect(cornerHiddenIntervals([], 10_000)).toEqual([]);
+    const plan = renderPlan({ ...timeline, events: [...timeline.events, ...events].sort((a, b) => a.t - b.t) }, 16 / 9, 1920, 30);
+    expect(plan.cornerHidden).toEqual([[2500, 2800], [5000, 10_000]]);
+    const graph = (p: typeof plan) => {
+      const args = ffmpegArguments(p, '/w/frames.txt', p.media.map((part) => ({ ...part, path: `/w/${part.file}`, audio: false })), '/w/v.mp4');
+      return args[args.indexOf('-filter_complex') + 1];
+    };
+    // The camera's corner stretches were 2.0 to 3.0 and 4.0 to 6.5 seconds; the pointer took 2.5 to 2.8 and everything from 5.0.
+    expect(graph(plan)).toContain("overlay=29:29:eof_action=pass:enable='between(t,2.000,2.500)+between(t,2.800,3.000)+between(t,4.000,5.000)'");
+    // All of a part's corner time set aside: no corner overlay for it, and no split left with an output nobody takes.
+    const hiddenAll = { ...plan, cornerHidden: [[0, 10_000]] as Array<[number, number]> };
+    const all = graph(hiddenAll);
+    expect(all).not.toContain('split');
+    expect(all).not.toContain('scale=480:-2');
+    expect(all).toContain("overlay=0:0:eof_action=pass:enable='between(t,3.000,4.000)+between(t,6.500,7.000)'");
   });
 
   it('splits a media file\'s stretch into the parts inside and outside the full-frame intervals', () => {

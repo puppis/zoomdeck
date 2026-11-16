@@ -24,6 +24,8 @@ export interface RecordingSettings {
   screenSurface: 'monitor' | 'window' | 'browser';
   /** Ask the share for the computer's sound too, and record it in a lane of its own while the share is held. */
   systemAudio: boolean;
+  /** Set the camera's corner picture aside while the pointer is over it, so that what it covers shows (a recording keeps it so). */
+  hideCameraOnHover: boolean;
   /** Render a talk as an MP4 video by itself when its recording stops, where the server has ffmpeg. */
   renderOnStop: boolean;
   /** Height in pixels of rendered and exported videos, as of a 16:9 frame (1080, 1440 or 2160); null for the display's own size. */
@@ -40,7 +42,7 @@ export const SCREEN_SURFACES = ['monitor', 'window', 'browser'] as const;
 export const CORNERS: Corner[] = ['bottom-right', 'bottom-left', 'top-right', 'top-left'];
 export const PIP_SIZES: Array<[number, string]> = [[0.12, 'Small'], [0.18, 'Medium'], [0.25, 'Large']];
 
-export const DEFAULT_RECORDING: RecordingSettings = { microphone: null, camera: null, mirror: true, corner: 'bottom-right', size: 0.18, screenOnRecord: false, screenSurface: 'monitor', systemAudio: true, renderOnStop: true, renderHeight: 1080, renderAspect: 'presented' };
+export const DEFAULT_RECORDING: RecordingSettings = { microphone: null, camera: null, mirror: true, corner: 'bottom-right', size: 0.18, screenOnRecord: false, screenSurface: 'monitor', systemAudio: true, hideCameraOnHover: true, renderOnStop: true, renderHeight: 1080, renderAspect: 'presented' };
 
 export function sanitizeRecording(value: unknown): RecordingSettings {
   const result = { ...DEFAULT_RECORDING };
@@ -56,6 +58,7 @@ export function sanitizeRecording(value: unknown): RecordingSettings {
   else if (typeof (saved as { screenWhenHidden?: unknown }).screenWhenHidden === 'boolean') result.screenOnRecord = (saved as { screenWhenHidden: boolean }).screenWhenHidden;
   if (typeof saved.screenSurface === 'string' && (SCREEN_SURFACES as readonly string[]).includes(saved.screenSurface)) result.screenSurface = saved.screenSurface as RecordingSettings['screenSurface'];
   if (typeof saved.systemAudio === 'boolean') result.systemAudio = saved.systemAudio;
+  if (typeof saved.hideCameraOnHover === 'boolean') result.hideCameraOnHover = saved.hideCameraOnHover;
   if (typeof saved.renderOnStop === 'boolean') result.renderOnStop = saved.renderOnStop;
   if (saved.renderHeight === null || (typeof saved.renderHeight === 'number' && RENDER_HEIGHTS.includes(saved.renderHeight))) result.renderHeight = saved.renderHeight as number | null;
   if (typeof saved.renderAspect === 'string' && (RENDER_ASPECTS as readonly string[]).includes(saved.renderAspect)) result.renderAspect = saved.renderAspect as RecordingSettings['renderAspect'];
