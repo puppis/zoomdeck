@@ -34,6 +34,7 @@ in proportion and their text wraps.
 | Attribute | Default | Meaning |
 | --- | --- | --- |
 | `rules` | `all` | which lines to draw: `all`, `rows`, `cols`, `outer` or `none` |
+| `valign` | `baseline` | how the cells of a row line up: on their first baseline, or by the `center`, `top` or `bottom` of their box |
 | `border_color` | the text color | color of every rule and the default shading color |
 | `stroke_width` | 1.5 | width of every rule |
 | `row_rule_color`, `row_rule_width` | `border_color`, `stroke_width` | the horizontal rules: between rows, and the top and bottom of the frame |

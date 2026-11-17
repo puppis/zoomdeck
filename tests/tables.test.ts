@@ -114,6 +114,35 @@ describe('tables', () => {
     expect(lines(rowsOnly).every(level)).toBe(true);
   });
 
+  it('lines the cells of a row up on their first baseline, or by the middle, top or bottom of their box', async () => {
+    // Cells as boxes whose first baseline lies at a given height: a word with a descender, a tall
+    // formula over its baseline, and a plain word.
+    const baseline = (height: number, above: number) => {
+      const box = new Rectangle({ width: 0.6, height }) as Rectangle & { markupBaselineFraction: number };
+      // The baseline lies `above` below the top: from the center, a fraction of the height.
+      box.markupBaselineFraction = (height / 2 - above) / height;
+      return box;
+    };
+    const makers = [() => baseline(0.3, 0.2), () => baseline(0.6, 0.45), () => baseline(0.25, 0.25)];
+    const factory = (index: () => number) => async () => makers[index()]();
+    const build = async (valign?: 'baseline' | 'center' | 'top' | 'bottom') => {
+      let n = 0;
+      const rows = [[cell('a'), cell('b'), cell('c')]];
+      const table = await buildTable(rows, { fontSize: 20, color: '#000000', header: false, rules: 'none', ...(valign ? { valign } : {}) }, factory(() => n++ % 3)) as Group;
+      return table.children.filter((c) => c instanceof Rectangle && (c as Rectangle).fillOpacity === 0) as Array<Rectangle & { markupBaselineFraction: number }>;
+    };
+    const baselines = (cells: Array<Rectangle & { markupBaselineFraction: number }>) => cells.map((c) => c.getCenter()[1] + c.markupBaselineFraction * c.getHeight());
+    const onBaseline = await build();
+    expect(onBaseline).toHaveLength(3);
+    for (const y of baselines(onBaseline)) expect(y).toBeCloseTo(baselines(onBaseline)[0], 9);
+    const centered = await build('center');
+    for (const c of centered) expect(c.getCenter()[1]).toBeCloseTo(centered[0].getCenter()[1], 9);
+    const top = await build('top');
+    for (const c of top) expect(c.getTop()[1]).toBeCloseTo(top[0].getTop()[1], 9);
+    const bottom = await build('bottom');
+    for (const c of bottom) expect(c.getBottom()[1]).toBeCloseTo(bottom[0].getBottom()[1], 9);
+  });
+
   it('shrinks and wraps columns to fit a maximum width', async () => {
     const rows = [[cell('A very long header that takes a lot of room'), cell('Another long header text')], [cell('x'), cell('y')]];
     const wide = await buildTable(rows, { fontSize: 20, color: '#000000' }, factory);
@@ -130,6 +159,8 @@ describe('markup for tables and charts', () => {
     expect(() => parse(`::: {.element #t row_rule_color=BLUE row_rule_width=3 col_rule_color=RED col_rule_width=0}\n${table}\n:::`)).not.toThrow();
     expect(() => parse(`::: {.element #t row_rule_width=-1}\n${table}\n:::`)).toThrow(/row_rule_width must be nonnegative/);
     expect(() => parse(`::: {.element #t col_rule_color=nope}\n${table}\n:::`)).toThrow(/Invalid color/);
+    expect(() => parse(`::: {.element #t valign=top}\n${table}\n:::`)).not.toThrow();
+    expect(() => parse(`::: {.element #t valign=middle}\n${table}\n:::`)).toThrow(/valign must be baseline, center, top or bottom/);
   });
 
   it('parses pipe tables with alignments and inline styling', () => {

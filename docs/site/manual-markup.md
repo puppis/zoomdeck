@@ -389,6 +389,7 @@ common attributes except `height` and `font`, the hand-drawn attributes, and:
 | `header` | `true`, `false` | true | whether the first row is a header |
 | `padding` | units | 0.15 | space between a cell's text and its rules |
 | `rules` | `all`, `rows`, `cols`, `outer`, `none` | `all` | which rules are drawn |
+| `valign` | `baseline`, `center`, `top`, `bottom` | `baseline` | how the cells of a row line up: on their first baseline, so that text, formulas and descenders share a line, or by the middle, top or bottom of their box |
 | `border_color` | color | the text color | color of every rule |
 | `stroke_width` | engine units | 1.5 | width of every rule |
 | `row_rule_color`, `row_rule_width` | color, engine units | `border_color`, `stroke_width` | the horizontal rules, between rows and at the top and bottom; width 0 leaves them out |

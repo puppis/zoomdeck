@@ -21,7 +21,7 @@ import type { Animation } from 'manim-web';
 import { blobMobject, type Rect } from '../blob';
 import { installMathPathFix } from '../pathdata';
 import { buildChart, parseChartData, type ChartType } from '../charts';
-import { buildTable, type TableRules } from './table';
+import { buildTable, type TableRules, type TableValign } from './table';
 import { DEFAULT_ANIMATION_TIME, Slide, resolveSize } from '../slides';
 import { RasterImage, RasterSource } from '../raster';
 import { VideoClip } from '../video';
@@ -869,6 +869,7 @@ export class MarkupRenderer {
         header: attrs.header !== 'false',
         padding: optional('padding'),
         rules: attrs.rules as TableRules | undefined,
+        valign: attrs.valign as TableValign | undefined,
         borderColor,
         strokeWidth: optional('stroke_width'),
         rowRuleColor: attrs.row_rule_color ? parseColor(attrs.row_rule_color) : undefined,

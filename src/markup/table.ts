@@ -7,11 +7,15 @@
 import { Group, Line, Rectangle, type Mobject } from 'manim-web';
 import type { InlineSpan } from './ast';
 import { sketch, type SketchOptions } from '../sketch';
+import { baselineY } from './text';
 
 /** Which rules a table may draw. */
 export const TABLE_RULES = ['all', 'rows', 'cols', 'outer', 'none'] as const;
 /** One of the rule choices of a table. */
 export type TableRules = (typeof TABLE_RULES)[number];
+/** How the cells of a row line up: on their first baseline, or by the middle, top or bottom of their box. */
+export const TABLE_VALIGNS = ['baseline', 'center', 'top', 'bottom'] as const;
+export type TableValign = (typeof TABLE_VALIGNS)[number];
 export type CellAlign = 'left' | 'center' | 'right';
 
 /** How a table is drawn: font, colors, header, padding, rules and backgrounds. */
@@ -22,6 +26,8 @@ export interface TableOptions {
   color: string;
   /** Column alignments; left where missing. */
   aligns?: CellAlign[];
+  /** How the cells of a row line up; on their first baseline by default. */
+  valign?: TableValign;
   /** Whether the first row is a header; true by default. */
   header?: boolean;
   /** Space between a cell's text and its rules, in logical units; 0.15 by default. */
@@ -86,7 +92,9 @@ export async function buildTable(rows: InlineSpan[][][], options: TableOptions, 
   const headerOpacity = options.headerOpacity ?? 0.12;
   const stripeOpacity = options.stripeOpacity ?? 0;
   const sketchy = { sketch: options.sketch ?? null };
+  const valign = options.valign ?? 'baseline';
   if (!TABLE_RULES.includes(rules)) throw new Error(`Unknown table rules ${JSON.stringify(rules)}`);
+  if (!TABLE_VALIGNS.includes(valign)) throw new Error(`Unknown table valign ${JSON.stringify(valign)}`);
   if (!(padding >= 0)) throw new Error('Table padding must be nonnegative');
   const lineHeight = (options.fontSize / 72) * 1.3;
   // Natural widths first: every cell on one line.
@@ -107,7 +115,22 @@ export async function buildTable(rows: InlineSpan[][][], options: TableOptions, 
     contentWidths = targets.map((w, j) => Math.max(w, ...cells.map((row) => row[j].getWidth())));
   }
   const columnWidths = contentWidths.map((w) => w + 2 * padding);
-  const rowHeights = cells.map((row) => Math.max(lineHeight, ...row.map((obj) => obj.getHeight())) + 2 * padding);
+  // How far each cell reaches above and below its first baseline: on the baseline, a row is as
+  // tall as its tallest reach above plus its deepest below, so that a formula or a descender
+  // never leaves the row.
+  const reach = cells.map((row) => row.map((obj) => {
+    if (obj.getWidth() <= 0) return null;
+    const base = baselineY(obj);
+    return { above: obj.getTop()[1] - base, below: base - obj.getBottom()[1] };
+  }));
+  const rowReach = reach.map((row) => ({
+    above: Math.max(0, ...row.map((r) => r?.above ?? 0)),
+    below: Math.max(0, ...row.map((r) => r?.below ?? 0)),
+  }));
+  const rowHeights = cells.map((row, i) => {
+    const content = valign === 'baseline' ? rowReach[i].above + rowReach[i].below : Math.max(0, ...row.map((obj) => obj.getHeight()));
+    return Math.max(lineHeight, content) + 2 * padding;
+  });
   const width = columnWidths.reduce((sum, w) => sum + w, 0);
   const height = rowHeights.reduce((sum, h) => sum + h, 0);
   const xs = [0];
@@ -146,6 +169,13 @@ export async function buildTable(rows: InlineSpan[][][], options: TableOptions, 
         : align === 'right' ? xs[j + 1] - padding - obj.getWidth() / 2
         : (xs[j] + xs[j + 1]) / 2;
       obj.moveTo([x, (ys[i] + ys[i + 1]) / 2, 0]);
+      if (valign === 'baseline') {
+        // The row's shared baseline, with its content centered in the row.
+        const { above, below } = rowReach[i];
+        const slack = rowHeights[i] - 2 * padding - (above + below);
+        obj.shift([0, ys[i] - padding - slack / 2 - above - baselineY(obj), 0]);
+      } else if (valign === 'top') obj.shift([0, ys[i] - padding - obj.getTop()[1], 0]);
+      else if (valign === 'bottom') obj.shift([0, ys[i + 1] + padding - obj.getBottom()[1], 0]);
       members.push(obj);
     });
   });

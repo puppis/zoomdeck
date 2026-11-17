@@ -838,6 +838,9 @@ export class ASTTransformer {
       if ('rules' in item.attributes && !TABLE_RULE_NAMES.has(item.attributes.rules)) {
         throw new MarkupError(`rules must be one of ${[...TABLE_RULE_NAMES].join(', ')}`, item.line);
       }
+      if ('valign' in item.attributes && !['baseline', 'center', 'top', 'bottom'].includes(item.attributes.valign)) {
+        throw new MarkupError('valign must be baseline, center, top or bottom', item.line);
+      }
       if ('header' in item.attributes && !['true', 'false'].includes(item.attributes.header)) throw new MarkupError('header must be true or false', item.line);
       for (const row of (item as TableSpec).rows) for (const cell of row) for (const s of cell) if (s.color) ASTTransformer._checkColor(s.color, item.line);
     }
