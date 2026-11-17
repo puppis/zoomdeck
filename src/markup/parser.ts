@@ -795,7 +795,7 @@ export class ASTTransformer {
       }
     } else if (item.kind === 'iframe') {
       allowed = new Set(['id', 'url', 'x', 'y', 'width', 'height', 'anchor', 'at', 'dx', 'dy', 'class', 'title', 'poster', 'step', 'hide', 'color', 'href',
-        ...POSITION_REFERENCES, 'buff', ...TIMING_ATTRS]);
+        ...POSITION_REFERENCES, 'buff', ...STROKE_ATTRS, ...TIMING_ATTRS]);
     } else {
       allowed = new Set(ELEMENT_ATTRS);
       if (item.kind !== 'text') allowed.delete('font');

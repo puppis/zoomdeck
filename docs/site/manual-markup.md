@@ -592,6 +592,7 @@ path, or a `.html` file. `width` and `height` are required.
 | `width`, `height` | units | required | the frame's size |
 | `title` | text | the URL | the accessible name |
 | `poster` | path | | an image shown until the page is live, and in exports |
+| `stroke_width` | engine units | 0 | a border around the frame, in `color`; none by default |
 | `x`, `y`, `anchor`, `at`, `dx`, `dy`, `buff`, the relative references, `class`, `step`, `hide`, `color`, `href`, `run_time`, `lag` | | | as for elements |
 
 ### ::: {.group}

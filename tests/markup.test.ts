@@ -349,6 +349,9 @@ describe('phase 4 markup features', () => {
     expect(() => parse('[[iframe: https://example.org, #p, width=4]]')).toThrow(/requires width and height/);
     expect(() => parse('[[iframe: javascript:alert(1), #p, width=4 height=3]]')).toThrow(/must be http/);
     expect(() => parse('[[iframe: https://example.org, #p, width=4 height=3 opacity=0.5]]')).toThrow(/Unknown attributes/);
+    // No border unless stroke_width asks for one.
+    expect(() => parse('[[iframe: https://example.org, #p, width=4 height=3 stroke_width=2 color=BLUE]]')).not.toThrow();
+    expect(() => parse('[[iframe: https://example.org, #p, width=4 height=3 stroke_width=-1]]')).toThrow(/stroke_width/);
   });
 
   it('accepts video attributes only on video sources', () => {

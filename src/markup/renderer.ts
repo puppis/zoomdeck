@@ -747,7 +747,8 @@ export class MarkupRenderer {
       const boxWidth = Number(attrs.width);
       const boxHeight = Number(attrs.height);
       const box = new Rectangle({ width: boxWidth, height: boxHeight });
-      box.setStyle({ strokeColor: color, strokeWidth: 2 });
+      // No border unless stroke_width asks for one, in color, around the placeholder and the live page.
+      box.setStyle({ strokeColor: color, strokeWidth: numberValue(attrs, 'stroke_width', element.line, 0) as number });
       box.setFill(color, 0.06);
       const caption = attrs.title ?? element.source;
       let inside: Mobject | null = null;

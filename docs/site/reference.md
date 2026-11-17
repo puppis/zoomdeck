@@ -44,7 +44,7 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
 | ```` ```lang {attrs} ```` | code listing |
 | `\| a \| b \|` rows with a `\| --- \| --- \|` delimiter | table (attributes through a `::: {.element …}` container) |
 | ```` ```chart {attrs} ```` with rows of `label, v1, v2`, or `src=data.csv` | bar, line or pie chart, or a chart type of the deck's own; rows from the fence or from a CSV or JSON file |
-| `[[iframe: url, #id, width, height, poster, title, placement, step]]` | a live web page ([Live pages](live-pages.html)) |
+| `[[iframe: url, #id, width, height, poster, title, stroke_width, placement, step]]` | a live web page, borderless unless `stroke_width` is set ([Live pages](live-pages.html)) |
 
 | Attribute | On | Meaning |
 | --- | --- | --- |

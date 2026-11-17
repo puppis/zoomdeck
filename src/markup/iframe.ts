@@ -1,6 +1,6 @@
 /**
- * Placeholder drawn on the canvas for an `[[iframe]]`: an outlined box with
- * the page's address. The player shows the live page over it while the slide
+ * Placeholder drawn on the canvas for an `[[iframe]]`: a lightly tinted box
+ * with the page's address, outlined only when `stroke_width` asks for it. The player shows the live page over it while the slide
  * is focused (see `player/iframes.ts`).
  */
 import { Group, Rectangle, type Mobject } from 'manim-web';
