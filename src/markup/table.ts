@@ -1,8 +1,10 @@
 /**
  * Tables for markup slides: cells of styled prose and math in a grid of
  * rules, with optional backgrounds for the whole table, the header row and
- * alternate rows. Columns take their natural width and shrink, wrapping their
- * text, when the table would exceed the available width.
+ * alternate rows. Columns take their natural width, or a fixed one, and the
+ * natural ones shrink, wrapping their text, when the table would exceed the
+ * available width. Rows are as tall as their text reaches above and below its
+ * baseline, plus the vertical padding.
  */
 import { Group, Line, Rectangle, type Mobject } from 'manim-web';
 import type { InlineSpan } from './ast';
@@ -30,8 +32,17 @@ export interface TableOptions {
   valign?: TableValign;
   /** Whether the first row is a header; true by default. */
   header?: boolean;
-  /** Space between a cell's text and its rules, in logical units; 0.15 by default. */
+  /** Space between a cell's text and its rules, in logical units, on all four sides; 0.15 by default. */
   padding?: number;
+  /** Space between a cell's text and the rules beside it, and above and below it; `padding` by default. */
+  paddingX?: number;
+  paddingY?: number;
+  /**
+   * Fixed widths of the columns, rules to rules, in logical units: one for every column, or one
+   * per column, where null leaves a column its natural width. A cell too wide for its column
+   * wraps, to a line height at the narrowest; a column too narrow for that and its padding widens.
+   */
+  columnWidths?: ReadonlyArray<number | null>;
   /** Which rules to draw; all by default. */
   rules?: TableRules;
   /** Color of every rule; the text color by default. */
@@ -85,6 +96,8 @@ export async function buildTable(rows: InlineSpan[][][], options: TableOptions, 
   if (!rows.length) throw new Error('A table needs at least one row');
   const columns = Math.max(...rows.map((row) => row.length));
   const padding = options.padding ?? 0.15;
+  const paddingX = options.paddingX ?? padding;
+  const paddingY = options.paddingY ?? padding;
   const header = options.header ?? true;
   const rules = options.rules ?? 'all';
   const borderColor = options.borderColor ?? options.color;
@@ -95,26 +108,38 @@ export async function buildTable(rows: InlineSpan[][][], options: TableOptions, 
   const valign = options.valign ?? 'baseline';
   if (!TABLE_RULES.includes(rules)) throw new Error(`Unknown table rules ${JSON.stringify(rules)}`);
   if (!TABLE_VALIGNS.includes(valign)) throw new Error(`Unknown table valign ${JSON.stringify(valign)}`);
-  if (!(padding >= 0)) throw new Error('Table padding must be nonnegative');
+  if (!(paddingX >= 0 && paddingY >= 0)) throw new Error('Table padding must be nonnegative');
+  const given = options.columnWidths ?? [];
+  if (given.length > 1 && given.length !== columns) throw new Error(`col_width gives ${given.length} widths for ${columns} columns`);
+  const fixed = Array.from({ length: columns }, (_, j) => (given.length === 1 ? given[0] : given[j]) ?? null);
+  if (fixed.some((w) => w !== null && !(w > 0))) throw new Error('Column widths must be positive');
   const lineHeight = (options.fontSize / 72) * 1.3;
-  // Natural widths first: every cell on one line.
-  const render = async (widths: number[] | null): Promise<Mobject[][]> =>
+  // Natural widths first: every cell on one line, except in a column of fixed width, whose cells
+  // wrap to it, never narrower than a line height, so that a short entry keeps its size and a
+  // column too narrow for it and its padding widens.
+  const fixedTargets = fixed.map((w) => (w === null ? null : Math.max(w - 2 * paddingX, lineHeight)));
+  const render = async (targets: ReadonlyArray<number | null>): Promise<Mobject[][]> =>
     Promise.all(rows.map((row) => Promise.all(Array.from({ length: columns }, (_, j) => {
       const spans = row[j] ?? [];
-      return spans.some((s) => s.content.trim()) ? cell(spans, options.fontSize, widths ? widths[j] : 1000) : Promise.resolve(new Group());
+      return spans.some((s) => s.content.trim()) ? cell(spans, options.fontSize, targets[j] ?? 1000) : Promise.resolve(new Group());
     }))));
-  let cells = await render(null);
-  let contentWidths = Array.from({ length: columns }, (_, j) => Math.max(lineHeight, ...cells.map((row) => row[j].getWidth())));
-  const total = contentWidths.reduce((sum, w) => sum + w + 2 * padding, 0);
-  if (options.maxWidth !== undefined && total > options.maxWidth) {
-    // Shrink the columns proportionally and wrap their text.
-    const available = Math.max(columns * lineHeight, options.maxWidth - 2 * padding * columns);
-    const factor = available / contentWidths.reduce((sum, w) => sum + w, 0);
-    const targets = contentWidths.map((w) => Math.max(lineHeight, w * factor));
+  let cells = await render(fixedTargets);
+  // A column of natural width is at least a line height wide, so that an empty one still shows.
+  const measure = (j: number, floor: number) => Math.max(floor, ...cells.map((row) => row[j].getWidth()));
+  let contentWidths = fixed.map((w, j) => measure(j, w === null ? lineHeight : 0));
+  const widthOf = (j: number) => (fixed[j] === null ? contentWidths[j] + 2 * paddingX : Math.max(fixed[j] as number, contentWidths[j] + 2 * paddingX));
+  const natural = fixed.flatMap((w, j) => (w === null ? [j] : []));
+  const total = contentWidths.reduce((sum, _, j) => sum + widthOf(j), 0);
+  if (options.maxWidth !== undefined && total > options.maxWidth && natural.length) {
+    // Shrink the columns of natural width proportionally and wrap their text; fixed ones keep theirs.
+    const kept = fixed.reduce((sum: number, w, j) => sum + (w === null ? 0 : widthOf(j)), 0);
+    const available = Math.max(natural.length * lineHeight, options.maxWidth - kept - 2 * paddingX * natural.length);
+    const factor = available / natural.reduce((sum, j) => sum + contentWidths[j], 0);
+    const targets = fixedTargets.map((target, j) => (fixed[j] === null ? Math.max(lineHeight, contentWidths[j] * factor) : target));
     cells = await render(targets);
-    contentWidths = targets.map((w, j) => Math.max(w, ...cells.map((row) => row[j].getWidth())));
+    contentWidths = targets.map((target, j) => Math.max(fixed[j] === null ? (target as number) : 0, ...cells.map((row) => row[j].getWidth())));
   }
-  const columnWidths = contentWidths.map((w) => w + 2 * padding);
+  const columnWidths = contentWidths.map((_, j) => widthOf(j));
   // How far each cell reaches above and below its first baseline: on the baseline, a row is as
   // tall as its tallest reach above plus its deepest below, so that a formula or a descender
   // never leaves the row.
@@ -127,9 +152,11 @@ export async function buildTable(rows: InlineSpan[][][], options: TableOptions, 
     above: Math.max(0, ...row.map((r) => r?.above ?? 0)),
     below: Math.max(0, ...row.map((r) => r?.below ?? 0)),
   }));
+  // A row is as tall as its text, and a row of empty cells a line height, plus the padding.
   const rowHeights = cells.map((row, i) => {
+    if (row.every((obj) => obj.getWidth() <= 0)) return lineHeight + 2 * paddingY;
     const content = valign === 'baseline' ? rowReach[i].above + rowReach[i].below : Math.max(0, ...row.map((obj) => obj.getHeight()));
-    return Math.max(lineHeight, content) + 2 * padding;
+    return content + 2 * paddingY;
   });
   const width = columnWidths.reduce((sum, w) => sum + w, 0);
   const height = rowHeights.reduce((sum, h) => sum + h, 0);
@@ -165,17 +192,17 @@ export async function buildTable(rows: InlineSpan[][][], options: TableOptions, 
     row.forEach((obj, j) => {
       if (obj.getWidth() <= 0) return;
       const align = options.aligns?.[j] ?? 'left';
-      const x = align === 'left' ? xs[j] + padding + obj.getWidth() / 2
-        : align === 'right' ? xs[j + 1] - padding - obj.getWidth() / 2
+      const x = align === 'left' ? xs[j] + paddingX + obj.getWidth() / 2
+        : align === 'right' ? xs[j + 1] - paddingX - obj.getWidth() / 2
         : (xs[j] + xs[j + 1]) / 2;
       obj.moveTo([x, (ys[i] + ys[i + 1]) / 2, 0]);
       if (valign === 'baseline') {
         // The row's shared baseline, with its content centered in the row.
         const { above, below } = rowReach[i];
-        const slack = rowHeights[i] - 2 * padding - (above + below);
-        obj.shift([0, ys[i] - padding - slack / 2 - above - baselineY(obj), 0]);
-      } else if (valign === 'top') obj.shift([0, ys[i] - padding - obj.getTop()[1], 0]);
-      else if (valign === 'bottom') obj.shift([0, ys[i + 1] + padding - obj.getBottom()[1], 0]);
+        const slack = rowHeights[i] - 2 * paddingY - (above + below);
+        obj.shift([0, ys[i] - paddingY - slack / 2 - above - baselineY(obj), 0]);
+      } else if (valign === 'top') obj.shift([0, ys[i] - paddingY - obj.getTop()[1], 0]);
+      else if (valign === 'bottom') obj.shift([0, ys[i + 1] + paddingY - obj.getBottom()[1], 0]);
       members.push(obj);
     });
   });

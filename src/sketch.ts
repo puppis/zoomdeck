@@ -400,6 +400,30 @@ export const sketch = {
   },
 
   /**
+   * Hand-drawn strokes along chains of cubic curves (each its start, then three points per curve),
+   * each piece a stroke of its own with its own seed, and a tip: a filled triangle through its
+   * three corners, or with `open` the two strokes of an open tip, from one side through the point
+   * to the other.
+   */
+  curve(pieces: readonly (readonly Point[])[], options: SketchOptions = {}, tip?: { open: boolean; corners: readonly Point[] }): VGroup {
+    const o = resolve(options);
+    const drawables = pieces.filter((points) => points.length >= 4).map((points, i) =>
+      generator().path(curvesToPath([points.map(toRough)]), { ...roughOptions(o), seed: o.seed && o.seed + i }));
+    const group = new VGroup() as ShaftMobject;
+    if (drawables.length) {
+      const merged: Drawable = { ...drawables[0], sets: [{ type: 'path', ops: drawables.flatMap((drawable) => drawable.sets.flatMap((set) => set.ops)) }] };
+      addDrawable(group, merged, o);
+    }
+    group.markupShaft = group.children.filter((child): child is VMobject => child instanceof VMobject);
+    if (tip?.open) return addDrawable(group, generator().linearPath(tip.corners.map(toRough), roughOptions(o)), o);
+    if (tip) {
+      const head: ResolvedSketch = { ...o, fillColor: o.color, fillOpacity: 1, fillStyle: 'solid', roughness: o.roughness * 0.6 };
+      return addDrawable(group, generator().polygon(tip.corners.map(toRough), roughOptions(head)), head);
+    }
+    return group;
+  },
+
+  /**
    * A curly brace spanning `length` horizontally with its tip pointing down
    * and its open side on y = 0; rotate it to brace other sides.
    */

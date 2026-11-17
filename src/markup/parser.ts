@@ -4,6 +4,7 @@
  */
 import MarkdownIt from 'markdown-it';
 import { LINK_TARGET } from '../links';
+import { TIP_KINDS, isViaList } from '../curves';
 import type StateInline from 'markdown-it/lib/rules_inline/state_inline.mjs';
 import type Token from 'markdown-it/lib/token.mjs';
 import {
@@ -764,7 +765,7 @@ export class ASTTransformer {
     let allowed: Set<string> | null;
     if (item.kind === 'group') allowed = new Set(GROUP_ATTRS);
     else if (CONNECTIONS.has(item.kind)) {
-      allowed = new Set(['id', 'step', 'hide', 'color', 'from', 'to', 'dashed', 'halo_bridge', 'halo_width', 'label', 'label_buff', 'label_color', 'label_pos', 'label_side', 'slanted', 'font', 'font_size', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
+      allowed = new Set(['id', 'step', 'hide', 'color', 'from', 'to', 'dashed', 'halo_bridge', 'halo_width', 'tip', 'tip_length', 'tip_width', 'bend', 'loop', 'looseness', 'wavy', 'amplitude', 'via', 'label', 'label_buff', 'label_color', 'label_pos', 'label_side', 'slanted', 'font', 'font_size', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
     }
     else if (ATTACHMENTS.has(item.kind)) {
       allowed = new Set(['id', 'target', 'step', 'hide', 'color', 'buff', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
@@ -813,6 +814,28 @@ export class ASTTransformer {
       // A halo bridge is true (the deck's background), false, or a color.
       if ('halo_bridge' in item.attributes && !['true', 'false'].includes(item.attributes.halo_bridge)) ASTTransformer._checkColor(item.attributes.halo_bridge, item.line);
       if ('halo_width' in item.attributes && !styledKeys(item).has('halo_width') && !('halo_bridge' in item.attributes)) throw new MarkupError('halo_width requires halo_bridge', item.line);
+      const styledHere = styledKeys(item);
+      // An arrow's tip: a filled triangle, open (two strokes) or none, its size uncapped when given.
+      for (const key of ['tip', 'tip_length', 'tip_width']) {
+        if (key in item.attributes && item.kind !== 'arrow' && !styledHere.has(key)) throw new MarkupError(`${key} applies to arrows only`, item.line);
+      }
+      if ('tip' in item.attributes && !(TIP_KINDS as readonly string[]).includes(item.attributes.tip)) throw new MarkupError('tip must be triangle, open or none', item.line);
+      // The way a connection goes: straight, or one of a bend, a loop, a wave and a curve through points.
+      const ways = ['bend', 'loop', 'wavy', 'via'].filter((key) => key in item.attributes);
+      if (ways.length > 1) throw new MarkupError(`${ways.join(' and ')} cannot be combined: a connection bends, loops, waves or passes through points`, item.line);
+      if ('loop' in item.attributes) {
+        const side = item.attributes.loop;
+        if (!['above', 'below', 'left', 'right'].includes(side) && !(side.trim() && Number.isFinite(Number(side)))) {
+          throw new MarkupError('loop must be above, below, left, right or an angle in degrees', item.line);
+        }
+        const [from, to] = ['from', 'to'].map((key) => item.attributes[key] === undefined ? null : connectionEnd(item.attributes[key], item.line));
+        if (!from || !to || Array.isArray(from) || Array.isArray(to) || from.id !== to.id) throw new MarkupError('loop= needs the same element at both ends', item.line);
+      }
+      if ('via' in item.attributes && !isViaList(item.attributes.via)) {
+        throw new MarkupError('via must list points: (x,y) on the slide, +(x,y) from the start, ++(x,y) from the point before', item.line);
+      }
+      if ('looseness' in item.attributes && !styledHere.has('looseness') && !('bend' in item.attributes) && !('loop' in item.attributes)) throw new MarkupError('looseness requires bend or loop', item.line);
+      if ('amplitude' in item.attributes && !styledHere.has('amplitude') && !('wavy' in item.attributes)) throw new MarkupError('amplitude requires wavy', item.line);
       // A connection's label: on which side of the edge, in the label's own frame along it, and whether it turns along the edge.
       if ('label_side' in item.attributes && !['above', 'below'].includes(item.attributes.label_side)) throw new MarkupError('An arrow\'s or a line\'s label_side must be above or below', item.line);
       if ('slanted' in item.attributes && !['true', 'false'].includes(item.attributes.slanted)) throw new MarkupError('slanted must be true or false', item.line);
@@ -848,6 +871,21 @@ export class ASTTransformer {
         throw new MarkupError('valign must be baseline, center, top or bottom', item.line);
       }
       if ('header' in item.attributes && !['true', 'false'].includes(item.attributes.header)) throw new MarkupError('header must be true or false', item.line);
+      if ('padding' in item.attributes) {
+        // One value for all four sides, or two, vertical first as in CSS.
+        const values = item.attributes.padding.trim().split(/[\s,]+/);
+        if (values.length > 2 || values.some((value) => !value || !(Number(value) >= 0))) {
+          throw new MarkupError('padding must be one or two nonnegative numbers, vertical first', item.line);
+        }
+      }
+      if ('col_width' in item.attributes) {
+        const widths = item.attributes.col_width.trim().split(/[\s,]+/);
+        const columns = Math.max(...(item as TableSpec).rows.map((row) => row.length));
+        if (widths.some((width) => width !== 'auto' && !(Number(width) > 0))) throw new MarkupError('col_width must be positive widths or auto', item.line);
+        if (widths.length > 1 && widths.length !== columns) {
+          throw new MarkupError(`col_width gives ${widths.length} widths for ${columns} columns: give one for all, or one per column`, item.line);
+        }
+      }
       for (const row of (item as TableSpec).rows) for (const cell of row) for (const s of cell) if (s.color) ASTTransformer._checkColor(s.color, item.line);
     }
     if (item.kind === 'chart') {
@@ -1046,13 +1084,14 @@ export class ASTTransformer {
     if (unknown.length) throw new MarkupError(`Unknown attributes: ${unknown.join(', ')}`, line);
     for (const key of [...GEOMETRY, 'font_size', 'size', 'buff', 'radius', 'corner_radius', 'stroke_width', 'fill_opacity', 'opacity', 'dx', 'dy', 'run_time', 'lag',
       'start_angle', 'scale', 'roughness', 'bowing', 'hachure_angle', 'hachure_gap', 'fill_weight', 'seed', 'smoothness', 'tremble_amplitude', 'tremble_rate',
-      'padding', 'header_opacity', 'stripe_opacity', 'min', 'max', 'row_rule_width', 'col_rule_width', 'label_buff', 'halo_width']) {
+      'padding_x', 'padding_y', 'header_opacity', 'stripe_opacity', 'min', 'max', 'row_rule_width', 'col_rule_width', 'label_buff', 'halo_width',
+      'tip_length', 'tip_width', 'bend', 'looseness', 'wavy', 'amplitude']) {
       if (!(key in attrs)) continue;
       const number = numberValue(attrs, key, line) as number;
-      if (['buff', 'corner_radius', 'stroke_width', 'lag', 'roughness', 'bowing', 'fill_weight', 'seed', 'tremble_amplitude', 'padding', 'row_rule_width', 'col_rule_width', 'label_buff', 'halo_width'].includes(key) && number < 0) {
+      if (['buff', 'corner_radius', 'stroke_width', 'lag', 'roughness', 'bowing', 'fill_weight', 'seed', 'tremble_amplitude', 'padding_x', 'padding_y', 'row_rule_width', 'col_rule_width', 'label_buff', 'halo_width'].includes(key) && number < 0) {
         throw new MarkupError(`${key} must be nonnegative`, line);
       }
-      if (['radius', 'run_time', 'hachure_gap', 'tremble_rate'].includes(key) && number <= 0) throw new MarkupError(`${key} must be positive`, line);
+      if (['radius', 'run_time', 'hachure_gap', 'tremble_rate', 'tip_length', 'tip_width', 'looseness', 'wavy'].includes(key) && number <= 0) throw new MarkupError(`${key} must be positive`, line);
       if (['fill_opacity', 'opacity', 'smoothness', 'header_opacity', 'stripe_opacity'].includes(key) && (number < 0 || number > 1)) {
         throw new MarkupError(`${key} must be between zero and one`, line);
       }

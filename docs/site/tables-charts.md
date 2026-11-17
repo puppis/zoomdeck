@@ -28,8 +28,22 @@ row sets each column's alignment (`:---` left, `:---:` center, `---:` right). Li
 table is positioned and styled by wrapping it in a `::: {.element …}` container, which also gives
 it its `#id`, `step`, `hide` and the placement attributes of [Positioning](positioning.html);
 tables are centered on `x`, `y` unless `anchor=` says otherwise. Columns take the width of their
-widest cell; when the table would exceed `width` (the available width by default), columns shrink
-in proportion and their text wraps.
+widest cell, at least a line height; when the table would exceed `width` (the available width by
+default), columns shrink in proportion and their text wraps. A row is as tall as its text reaches
+above and below its baseline, plus the vertical padding, so a cell may be wide and flat; a row of
+empty cells is a line height tall.
+
+`col_width` fixes the width of the columns, rules to rules: one value for all of them, or a list
+with one per column, where `auto` keeps a column's natural width. Empty columns then keep their
+width, and a cell wraps to its column, a line height wide at the narrowest; a column too narrow
+for that and its padding widens. With small, flat cells:
+
+```markdown
+::: {.element #routes header=false font_size=17 padding="0.02 0.07" col_width=0.37}
+| A | | |
+| :-: | :-: | :-: |
+:::
+```
 
 | Attribute | Default | Meaning |
 | --- | --- | --- |
@@ -43,7 +57,9 @@ in proportion and their text wraps.
 | `header_color`, `header_opacity` | the rule color, 0.12 | background of the header row |
 | `stripe_opacity` | 0 | background of every second body row, in the rule color |
 | `fill_color`, `fill_opacity` | the rule color, 0 | background of the whole table |
-| `padding` | 0.15 | space between a cell's text and its rules |
+| `padding` | 0.15 | space between a cell's text and its rules on all four sides; two values give the vertical then the horizontal space, as in CSS |
+| `padding_x`, `padding_y` | `padding` | the space beside a cell's text, and above and below it |
+| `col_width` | natural widths | the width of every column, or a list with one per column (`auto` for a natural one) |
 | `font_size`, `font`, `color`, `opacity` | the layout's | typography and translucency |
 | `sketch` and its tuning | `false` | [hand-drawn](sketch.html) rules and backgrounds |
 

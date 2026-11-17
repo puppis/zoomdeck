@@ -219,9 +219,16 @@ elements or serve as endpoints.
 
 Arrows and lines go from one endpoint to another: an element ID (attached at the facing bounding
 edge) or a literal `(x,y)` point. They take an optional `#id`, `label` (inline text and math,
-placed above the connection), `color`, `stroke_width`, `step` and `hide`. Connections are created
-after all other elements, cannot anchor other elements, and are not hidden implicitly when an
-endpoint disappears.
+placed above the connection), `color`, `stroke_width`, `step` and `hide`. An arrow's `tip` is
+`triangle` (filled, the default), `open` (two strokes meeting at the point, which the shaft
+reaches) or `none`; `tip_length` and `tip_width` (half its width) set its size, uncapped. A
+connection curves with one of `bend` (degrees, as TikZ's `bend left`; `looseness`), `loop`
+(`above`, `below`, `left`, `right` or degrees, from an element back to itself; `looseness`),
+`wavy` (a number of waves; `amplitude`, 0.15) and `via` (points `+(x,y)` from the start,
+`++(x,y)` from the point before, `(x,y)` on the slide); a curve stops at each element's border
+along its own way, its tip follows its last stretch, and labels, dashes and `halo_bridge` follow
+it. Connections are created after all other elements, cannot anchor other elements, and are not
+hidden implicitly when an endpoint disappears.
 
 ### Icons
 
@@ -297,8 +304,10 @@ A pipe table (header, delimiter row with `:---`/`:---:`/`---:` alignments, body 
 grid of cells holding inline markup; a `::: {.element …}` container positions it and takes
 `rules` (`all`, `rows`, `cols`, `outer`, `none`), `border_color`, `stroke_width`, `header`
 (`false` makes the first row ordinary), `header_color`/`header_opacity` (0.12), `stripe_opacity`,
-`fill_color`/`fill_opacity`, `padding` (0.15), `font_size`, `font`, `color`, `opacity`, `width`
-(columns shrink and wrap beyond it) and `sketch=true`. A fence with language `chart` holds rows
+`fill_color`/`fill_opacity`, `padding` (0.15; two values, vertical first, as in CSS),
+`padding_x`/`padding_y`, `col_width` (one width for every column, or one per column, `auto` for a
+natural one), `font_size`, `font`, `color`, `opacity`, `width` (columns shrink and wrap beyond it)
+and `sketch=true`. Rows are as tall as their text, plus the vertical padding. A fence with language `chart` holds rows
 separated by commas, semicolons or tabs (the first row names the series unless it is plain
 numbers; `header=` overrides) and takes `type` (`bar`, `line`, `pie`), `width`/`height` of the
 plot (6 × 3.5), `colors`, `fill_opacity` (0.85), `border_color`, `stroke_width`, `axis_color`,

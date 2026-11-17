@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Group, Line, Rectangle, VMobject } from 'manim-web';
 import { CHART_COLORS, buildChart, niceStep, parseChartData, valueAxis } from '../src/charts';
 import { buildTable } from '../src/markup/table';
+import { columnWidths, tablePadding } from '../src/markup/renderer';
 import { MarkupParser } from '../src/markup/parser';
 import { ElementSpec, TableSpec, span } from '../src/markup/ast';
 import type { InlineSpan } from '../src/markup/ast';
@@ -143,6 +144,33 @@ describe('tables', () => {
     for (const c of bottom) expect(c.getBottom()[1]).toBeCloseTo(bottom[0].getBottom()[1], 9);
   });
 
+  it('pads across and down apart, and sizes rows by their text, a row of empty cells by a line', async () => {
+    const lineHeight = (20 / 72) * 1.3;
+    // Text 0.3 tall (one line of the stand-in), narrower than a line height.
+    const rows = [[cell('ab'), cell('c')], [cell(''), cell('')]];
+    const table = await buildTable(rows, { fontSize: 20, color: '#000000', header: false, rules: 'outer', paddingX: 0.2, paddingY: 0.05 }, factory);
+    expect(table.getWidth()).toBeCloseTo(2 * (lineHeight + 0.4), 6);
+    expect(table.getHeight()).toBeCloseTo(0.3 + 0.1 + lineHeight + 0.1, 6);
+    // One padding for all four sides, as before.
+    const even = await buildTable([[cell('ab')]], { fontSize: 20, color: '#000000', header: false, rules: 'outer', padding: 0.1 }, factory);
+    expect(even.getHeight()).toBeCloseTo(0.3 + 0.2, 6);
+  });
+
+  it('gives columns a fixed width, one for all or one each, and wraps their cells to it', async () => {
+    const options = { fontSize: 20, color: '#000000', header: false, rules: 'outer' as const, padding: 0.07 };
+    // Empty cells no longer shrink their column to a line height.
+    const same = await buildTable([[cell('A'), cell(''), cell('')]], { ...options, columnWidths: [0.37] }, factory);
+    expect(same.getWidth()).toBeCloseTo(3 * 0.37, 6);
+    const lineHeight = (20 / 72) * 1.3;
+    const each = await buildTable([[cell('A'), cell(''), cell('')]], { ...options, columnWidths: [0.5, null, 1] }, factory);
+    expect(each.getWidth()).toBeCloseTo(0.5 + lineHeight + 0.14 + 1, 6);
+    // A long cell wraps to its column, less the padding: three lines of the stand-in.
+    const wrapped = await buildTable([[cell('A long text here')]], { ...options, columnWidths: [1] }, factory);
+    expect(wrapped.getWidth()).toBeCloseTo(1, 6);
+    expect(wrapped.getHeight()).toBeCloseTo(0.9 + 0.14, 6);
+    await expect(buildTable([[cell('A'), cell('B')]], { ...options, columnWidths: [1, 2, 3] }, factory)).rejects.toThrow(/3 widths for 2 columns/);
+  });
+
   it('shrinks and wraps columns to fit a maximum width', async () => {
     const rows = [[cell('A very long header that takes a lot of room'), cell('Another long header text')], [cell('x'), cell('y')]];
     const wide = await buildTable(rows, { fontSize: 20, color: '#000000' }, factory);
@@ -161,6 +189,20 @@ describe('markup for tables and charts', () => {
     expect(() => parse(`::: {.element #t col_rule_color=nope}\n${table}\n:::`)).toThrow(/Invalid color/);
     expect(() => parse(`::: {.element #t valign=top}\n${table}\n:::`)).not.toThrow();
     expect(() => parse(`::: {.element #t valign=middle}\n${table}\n:::`)).toThrow(/valign must be baseline, center, top or bottom/);
+  });
+
+  it('takes padding as one value or two, vertical first, and column widths as one or one per column', () => {
+    const table = '| a | b |\n| :- | :- |\n| 1 | 2 |';
+    expect(() => parse(`::: {.element #t padding="0.02 0.07" padding_x=0.1 col_width="0.4 auto"}\n${table}\n:::`)).not.toThrow();
+    expect(() => parse(`::: {.element #t padding="0.1 0.2 0.3"}\n${table}\n:::`)).toThrow(/padding must be one or two nonnegative numbers/);
+    expect(() => parse(`::: {.element #t padding=-1}\n${table}\n:::`)).toThrow(/padding must be one or two/);
+    expect(() => parse(`::: {.element #t padding_y=-1}\n${table}\n:::`)).toThrow(/padding_y must be nonnegative/);
+    expect(() => parse(`::: {.element #t col_width=0}\n${table}\n:::`)).toThrow(/col_width must be positive/);
+    expect(() => parse(`::: {.element #t col_width="1 2 3"}\n${table}\n:::`)).toThrow(/col_width gives 3 widths for 2 columns/);
+    expect(tablePadding({ padding: '0.02 0.07' })).toEqual({ paddingY: 0.02, paddingX: 0.07 });
+    expect(tablePadding({ padding: '0.1', padding_y: '0' })).toEqual({ paddingY: 0, paddingX: 0.1 });
+    expect(tablePadding({})).toEqual({});
+    expect(columnWidths('0.4 auto, 1')).toEqual([0.4, null, 1]);
   });
 
   it('parses pipe tables with alignments and inline styling', () => {

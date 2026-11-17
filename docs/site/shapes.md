@@ -62,7 +62,7 @@ The anchors are those of [`at=`](positioning.html#anchor-expressions): `top-left
 baseline ones of text. A line ends right on its endpoints; an arrow stops a little short of each,
 so that its tip does not touch the element. An arrow's tip grows and shrinks with its
 `stroke_width` (0.3 long at the default 4) and is at most a quarter of the arrow, so a short thin
-arrow keeps a small tip. Arrows and lines also take an optional `#id`, a
+arrow keeps a small tip, unless its size is given. Arrows and lines also take an optional `#id`, a
 `label` with inline styling and math (sized by `font_size`, set in `font`), `color` for the
 line and its label, `label_color` for a label in another color, `stroke_width`, `opacity`,
 `step`, `hide` and timing.
@@ -90,6 +90,58 @@ connection (`sketch=true`) gets hand-drawn dashes.
 [[arrow: #c -> #a, #back, dashed=true, stroke_width=6, label="optional"]]
 ```
 
+`tip` sets an arrow's tip: `triangle`, the filled default; `open`, two strokes in the arrow's
+color and width meeting at its point, which the shaft reaches; or `none`. An open tip is 0.2 long
+at the default width, its sides spreading 0.7 of its length to each side. `tip_length` sets a
+tip's length along the arrow and `tip_width` how far it spreads on each side of the line (half
+its width). A size given this way is kept however short the arrow, and the other follows in the
+tip's proportions, so a short bold arrow keeps its tip. `arrow: tip=open` in a `::: styles`
+block gives every arrow of a deck an open tip; a dashed arrow keeps a solid one, and a
+hand-drawn arrow sketches its two strokes.
+
+```markdown
+[[arrow: #a -> #b, #next, tip=open]]
+[[arrow: #p -> #path, #hop, stroke_width=7, tip=open, tip_length=0.17, tip_width=0.15]]
+[[arrow: #c -> #d, #plain, tip=none]]
+```
+
+### Curves
+
+A connection may curve instead of running straight:
+
+- `bend` leaves at that angle, in degrees, to the line between its ends and arrives at the
+  mirrored one, an arc as TikZ's `bend left` draws it: a positive angle bends to the left of the
+  way, a negative one to the right. `looseness` (1) stretches the arc or flattens it.
+- `loop` joins an element to itself (`from` and `to` the same element): a loop on the side
+  named, `above`, `below`, `left` or `right`, or toward an angle in degrees (0 right, 90 above),
+  leaving 35 degrees to one side of it and coming back 35 degrees to the other. `looseness` makes
+  it larger or smaller.
+- `wavy` waves along the straight line: that many waves, at most `amplitude` (0.15) from the line,
+  to its left first (a negative amplitude starts to the right). The waves grow from the line over
+  their first quarter and settle back on it over their last, so the path leaves and arrives along
+  the line and a tip points the way it goes.
+- `via` passes smoothly through points (a centripetal Catmull-Rom spline, which never loops
+  between close points): `+(x,y)` is an offset from the start, the center or anchor of the
+  element it leaves, so the curve moves with its elements; `++(x,y)` is an offset from the point
+  before, and `(x,y)` a point of the slide.
+
+```markdown
+[[arrow: #p2 -> #q2, bend=20]]
+[[arrow: #pq -> #pq, loop=above, dashed=true]]
+[[arrow: #p -> #q, wavy=2.5, amplitude=0.3, dashed=true]]
+[[arrow: #p3 -> #r3, via="+(0.4,-0.3) +(0.1,-0.9) +(0.8,-1.1)", dashed=true]]
+```
+
+A curve stops at each element's border along its own way: a bend and a loop leave and arrive at
+their angles, and a curve through points is cut where it first leaves the element it starts
+from and where it last enters the other. An arrow's tip points along the curve's last stretch,
+its base on the curve. Labels sit beside the curve at `label_pos` of its length, by its
+direction there; dashes, hand-drawn strokes and `halo_bridge` follow it, and a curved connection
+is a path that [`[[move_along]]`](animations.html#move_along) follows. One of `bend`, `loop`, `wavy` and
+`via` at a time.
+
+### Halo bridges
+
 `halo_bridge=true` makes a line pass over the arrows and lines it crosses that were written
 before it: at each crossing the earlier path is broken on both sides of it, as in knot diagrams
 and maps. Elements draw in source order, so the path written later is the one on top. The gap is
@@ -110,8 +162,9 @@ anchor or at two, never break one another, nor do two paths whose ends lie close
 `layout.haloBridgeTolerance` (0.2). A path that ends on another (a T), paths that cross at a
 narrow angle (under about 12 degrees, where the gap would grow long) and crossings so near an end
 that the gap would reach it are left alone too, so that an arrow's tip is never notched. A
-hand-drawn path is bridged where its strokes cross, and a bridge shows, hides and fades with
-its path; an animated color leaves it in the background's color.
+hand-drawn path is bridged where its strokes cross, a curve along its curve, and an arrow along
+its shaft, never its tip. A bridge shows, hides and fades with its path; an animated color leaves
+it in the background's color.
 
 Connections are created after all other elements, so forward references work;
 they cannot anchor other elements and are not hidden implicitly when an endpoint disappears.

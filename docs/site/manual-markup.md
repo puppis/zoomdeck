@@ -47,11 +47,12 @@ by default (`layout.defaultSlideSize`), the origin at its center, `x` to the rig
 Font sizes are in points, the engine's convention: text of `font_size=28` is about 0.47 units
 tall. Angles are in radians. Times are in seconds. Opacities run from 0 to 1. Steps are
 nonnegative integers. Every numeric attribute must be a finite number; `width`, `height`,
-`font_size` and `size` must be positive; `radius`, `run_time`, `hachure_gap` and `tremble_rate`
-must be positive; `buff`, `corner_radius`, `stroke_width`, `lag`, `roughness`, `bowing`,
-`fill_weight`, `seed`, `tremble_amplitude` and `padding` must not be negative; `seed` is an
-integer; `fill_opacity`, `opacity`, `smoothness`, `header_opacity` and `stripe_opacity` lie
-between 0 and 1.
+`font_size` and `size` must be positive; `radius`, `run_time`, `hachure_gap`, `tremble_rate`,
+`tip_length`, `tip_width`, `looseness` and `wavy` must be positive; `buff`, `corner_radius`,
+`stroke_width`, `lag`, `roughness`, `bowing`, `fill_weight`, `seed`, `tremble_amplitude`, a
+table's `padding`, `padding_x` and `padding_y` must not be negative; `seed` is an integer;
+`fill_opacity`, `opacity`, `smoothness`, `header_opacity` and `stripe_opacity` lie between 0 and
+1. The angles of `bend` and `loop`, like `hachure_angle`, are in degrees.
 
 ### Colors
 
@@ -381,13 +382,18 @@ follow the text color, or `layout.codeTheme`. A fence named `chart` is a chart, 
 ```
 
 A pipe table with a delimiter row is a table element. The delimiter row sets the alignment of
-each column (`:--` left, `:-:` center, `--:` right). Cells hold inline markup. Tables take the
-common attributes except `height` and `font`, the hand-drawn attributes, and:
+each column (`:--` left, `:-:` center, `--:` right). Cells hold inline markup. A row is as tall
+as its text reaches above and below its baseline, plus the vertical padding; a row of empty
+cells is a line height tall. A column takes its widest cell, at least a line height, unless
+`col_width` fixes it. Tables take the common attributes except `height` and `font`, the
+hand-drawn attributes, and:
 
 | Attribute | Values | Default | Meaning |
 | --- | --- | --- | --- |
 | `header` | `true`, `false` | true | whether the first row is a header |
-| `padding` | units | 0.15 | space between a cell's text and its rules |
+| `padding` | units, one or two | 0.15 | space between a cell's text and its rules on all four sides; two values give the vertical then the horizontal space, as in CSS: `padding="0.02 0.07"` |
+| `padding_x`, `padding_y` | units | `padding` | the space beside a cell's text, and above and below it |
+| `col_width` | units, one or one per column, `auto` | the natural widths | a fixed width for every column, rules to rules, or a list with one per column where `auto` keeps a natural one; a cell wraps to its column, a line height wide at the narrowest, and a column too narrow for that and its padding widens |
 | `rules` | `all`, `rows`, `cols`, `outer`, `none` | `all` | which rules are drawn |
 | `valign` | `baseline`, `center`, `top`, `bottom` | `baseline` | how the cells of a row line up: on their first baseline, so that text, formulas and descenders share a line, or by the middle, top or bottom of their box |
 | `border_color` | color | the text color | color of every rule |
@@ -485,6 +491,17 @@ else), an element at one of its anchors `#id.anchor` (the anchors of [`at=`](#at
 endpoints come first, then `#id` and the attributes, comma-separated. Connections are laid out after the elements they join and cannot
 be the reference of a position or the target of another connection or attachment.
 
+A connection is straight unless it takes one of `bend`, `loop`, `wavy` and `via`. A curve stops
+at each element's border along its own way, and an arrow's tip points along its last stretch;
+labels, `label_pos`, `slanted`, dashes, hand-drawn strokes and `halo_bridge` follow the curve.
+
+```markdown
+[[arrow: #p -> #q, bend=20, tip=open]]
+[[arrow: #q -> #q, loop=above, dashed=true]]
+[[arrow: #p -> #r, wavy=2.5, amplitude=0.3]]
+[[arrow: #p -> #s, via="+(0.4,-0.3) +(0.1,-0.9) +(0.8,-1.1)"]]
+```
+
 | Attribute | Values | Default | Meaning |
 | --- | --- | --- | --- |
 | `id` | identifier | `element-N` | |
@@ -501,6 +518,14 @@ be the reference of a position or the target of another connection or attachment
 | `dashed` | `true`, `false` | `false` | draw the line, or the arrow's shaft, in dashes that begin and end it; they grow longer with `stroke_width`, the tip stays solid, and a hand-drawn connection gets hand-drawn dashes |
 | `halo_bridge` | `true`, `false`, a color | `false` | pass over the arrows and lines written before it that it crosses, as elements draw in source order: each is broken beside it by a patch in the deck's background (`true`) or in the color named; paths that join the same element, end close together (`layout.haloBridgeTolerance`), meet in a T or cross at a narrow angle are left alone |
 | `halo_width` | engine units | `stroke_width` + 12 | the width of the halo around the line, the gap it leaves in the paths it crosses; requires `halo_bridge` |
+| `tip` | `triangle`, `open`, `none` | `triangle` | an arrow's tip: a filled triangle over the end of the shaft; two strokes in the arrow's color and width meeting at its point, which the shaft reaches; or none. Arrows only |
+| `tip_length`, `tip_width` | units, positive | for the stroke width, at most a quarter of the arrow | the tip's length along the arrow, and how far it spreads on each side of the line (half its width); a size given is kept however short the arrow, the other following in the tip's proportions (a third for a triangle, 0.7 for an open tip). Arrows only |
+| `bend` | degrees | | an arc leaving at that angle to the line between the ends and arriving at the mirrored one, as TikZ's `bend left` (negative bends right) |
+| `loop` | `above`, `below`, `left`, `right`, degrees | | a loop from an element back to itself (`from` and `to` the same element), on the side named or toward that angle (0 right, 90 above) |
+| `looseness` | positive number | 1 | how far a bend or a loop reaches; requires `bend` or `loop` |
+| `wavy` | positive number of waves | | a regular wave along the straight line, growing from it over the first quarter wave and settling back over the last |
+| `amplitude` | units | 0.15 | how far the wave reaches from the line, to the left of the way first (negative: to the right); requires `wavy` |
+| `via` | `(x,y)`, `+(x,y)`, `++(x,y)` … | | a smooth curve through the points: `+(x,y)` from the start (the center or anchor it leaves), so that it moves with its elements, `++(x,y)` from the point before, `(x,y)` on the slide |
 | `opacity` | 0 to 1 | 1 | |
 | `step`, `hide`, `run_time`, `lag`, `href` | | | as for elements; connections fade only |
 | `sketch` and the hand-drawn attributes, `tremble`, `tremble_amplitude`, `tremble_rate` | | | see [Appearance](#appearance) and [tremble](#tremble) |

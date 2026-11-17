@@ -25,6 +25,17 @@ resolve relative to the Markdown file, then in the folders `paths` names in the 
 - **SVG** files keep nested transforms and inherited styles, and draw their shapes in document
   order, a stroke after a fill lying over it. `<text>` inside an SVG is not rendered: outline text
   before exporting.
+- **Clip paths and masks** of an SVG are applied to its shapes when the file loads, so that they
+  stay sharp at any zoom and cost nothing while slides move. A clip path lets through what its
+  shapes cover; a mask what its light shapes cover (its opaque ones with `mask-type:alpha`, as
+  Figma exports them), less its dark ones. Strokes and fills wholly inside keep their curves;
+  anything wholly outside goes; a fill across the border, and a stroke nearer the border than half
+  its width, are cut along it, as finely sampled polygons. A stroke masked by its own shape, the
+  way Figma keeps a stroke inside or outside its shape, keeps the half on the visible side. A
+  mask is read by its shapes alone: one that is at least half light or opaque counts as shown, a
+  gradient as its color. Clip paths and masks in `objectBoundingBox` units are not applied, and
+  their content is drawn in full with a warning. A file that uses `xlink:href` without declaring
+  the prefix, as fragments cut out of a larger export often do, loads all the same.
 - **Raster** files may be PNG, JPEG, GIF or WebP.
 
 ## Animated images

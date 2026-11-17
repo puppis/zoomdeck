@@ -10,6 +10,7 @@ import {
 import { loadSvgMobject } from '../svg';
 import { dashPattern, dashSegments, sketch, sketchSeed, type FillStyle, type OutlineMobject, type ShaftMobject, type SketchOptions } from '../sketch';
 import { BRIDGE_PATHS, strokePolylines, type BridgePath, type Point2 } from '../bridges';
+import { Spline, bendCubic, curveMobject, drawPath, lineCubic, loopCubic, throughPoints, viaPoints, waveCubics, type TipKind, type Vec } from '../curves';
 import { artworkFromModule, makeIcon, type ArtworkModule, type ArtworkOptions, type IconName } from '../icons';
 import { ICON_KINDS } from './ast';
 import { effectFromModule, type EffectModule, type EffectOptions } from '../animations';
@@ -905,7 +906,8 @@ export class MarkupRenderer {
         color,
         aligns: table.aligns,
         header: attrs.header !== 'false',
-        padding: optional('padding'),
+        ...tablePadding(attrs),
+        ...('col_width' in attrs ? { columnWidths: columnWidths(attrs.col_width) } : {}),
         rules: attrs.rules as TableRules | undefined,
         valign: attrs.valign as TableValign | undefined,
         borderColor,
@@ -1154,9 +1156,14 @@ export class MarkupRenderer {
     return { color, width: numberValue(element.attributes, 'halo_width', element.line, strokeWidth + 12) as number };
   }
 
-  /** Create an arrow or line between laid-out objects or fixed coordinates. */
+  /**
+   * Create an arrow or line between laid-out objects or fixed coordinates: straight, or bent
+   * (`bend`), a loop (`loop`), wavy (`wavy`) or through points (`via`), with an arrow's tip
+   * (`tip`) a filled triangle, open or none.
+   */
   async connection(element: ElementSpec, objects: Map<string, Mobject>): Promise<Mobject> {
-    const [start, end] = ['from', 'to'].map((key) => connectionEnd(element.attributes[key], element.line));
+    const attrs = element.attributes;
+    const [start, end] = ['from', 'to'].map((key) => connectionEnd(attrs[key], element.line));
     // An arrow to a labeled icon aims at the icon itself, not at the box of icon and label together.
     const body = (obj: Mobject | undefined): Mobject | null => (obj ? (obj as BodyMobject).markupBody ?? obj : null);
     const source = Array.isArray(start) ? null : body(objects.get(start.id));
@@ -1170,61 +1177,167 @@ export class MarkupRenderer {
     };
     let a = at(source, start);
     let b = at(target, end);
-    const direction: [number, number, number] = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
-    const length = Math.hypot(...direction);
-    if (length < 1e-9) throw new MarkupError('Arrow endpoints must have distinct positions', element.line);
-    // Each other end sits where the line between them leaves the element: on the outline of a
-    // circle, a dot or an ellipse, on the box of anything else, where a direction that is
-    // horizontal up to floating-point noise still meets the side, not a corner.
-    if (source && !anchorOf(start)) a = boundaryPoint(source, direction);
-    if (target && !anchorOf(end)) b = boundaryPoint(target, [-direction[0], -direction[1], -direction[2]]);
-    const color = element.attributes.color ? parseColor(element.attributes.color) : this.layout.color;
+    const color = attrs.color ? parseColor(attrs.color) : this.layout.color;
     const isArrow = element.kind === 'arrow';
     const buff = isArrow ? 0.08 : 0;
-    const unit = direction.map((v) => v / length) as [number, number, number];
-    const segment = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
-    const trim = Math.min(buff, segment / 3);
-    const start3: [number, number, number] = [a[0] + unit[0] * trim, a[1] + unit[1] * trim, a[2] + unit[2] * trim];
-    const end3: [number, number, number] = [b[0] - unit[0] * trim, b[1] - unit[1] * trim, b[2] - unit[2] * trim];
-    const strokeWidth = element.kind === 'line' || 'stroke_width' in element.attributes ? Number(element.attributes.stroke_width ?? 2) : undefined;
+    const strokeWidth = element.kind === 'line' || 'stroke_width' in attrs ? Number(attrs.stroke_width ?? 2) : undefined;
     const width = strokeWidth ?? (isArrow ? 4 : 2);
-    const dash = element.attributes.dashed === 'true' ? dashPattern(width) : undefined;
+    const dash = attrs.dashed === 'true' ? dashPattern(width) : undefined;
     const sketchy = sketchOptions(element, { color, strokeWidth: width, fillColor: color, fillOpacity: 0, ...(dash ? { dash } : {}) });
+    const tip: TipKind = isArrow ? (attrs.tip as TipKind | undefined) ?? 'triangle' : 'none';
+    const explicit = (key: string) => (key in attrs ? Number(attrs[key]) : undefined);
+    const curved = ['bend', 'loop', 'via'].some((key) => key in attrs);
+    // A straight path, or a wave along one, runs between the points where the line between the
+    // ends leaves the elements; a curve leaves and reaches them along its own way.
+    let start3: [number, number, number] = a;
+    let end3: [number, number, number] = b;
+    let path: Spline | null = null;
+    if (!curved) {
+      const direction: [number, number, number] = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+      const length = Math.hypot(...direction);
+      if (length < 1e-9) throw new MarkupError('Arrow endpoints must have distinct positions; an arrow or a line from an element to itself needs loop=', element.line);
+      // Each other end sits where the line between them leaves the element: on the outline of a
+      // circle, a dot or an ellipse, on the box of anything else, where a direction that is
+      // horizontal up to floating-point noise still meets the side, not a corner.
+      if (source && !anchorOf(start)) a = boundaryPoint(source, direction);
+      if (target && !anchorOf(end)) b = boundaryPoint(target, [-direction[0], -direction[1], -direction[2]]);
+      const unit = direction.map((v) => v / length) as [number, number, number];
+      const segment = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
+      const trim = Math.min(buff, segment / 3);
+      start3 = [a[0] + unit[0] * trim, a[1] + unit[1] * trim, a[2] + unit[2] * trim];
+      end3 = [b[0] - unit[0] * trim, b[1] - unit[1] * trim, b[2] - unit[2] * trim];
+      if ('wavy' in attrs) path = new Spline(waveCubics([start3[0], start3[1]], [end3[0], end3[1]], Number(attrs.wavy), numberValue(attrs, 'amplitude', element.line, 0.15) as number));
+      else if (isArrow && tip !== 'triangle') path = new Spline([lineCubic([start3[0], start3[1]], [end3[0], end3[1]])]);
+    } else {
+      const curve = curvePath(element, source, target, [a[0], a[1]], [b[0], b[1]], !!anchorOf(start), !!anchorOf(end));
+      const trim = Math.min(buff, curve.length / 3);
+      path = trim > 0 ? curve.part(trim, curve.length - trim) : curve;
+    }
+    const length = path ? path.length : Math.hypot(end3[0] - start3[0], end3[1] - start3[1]);
+    const [tipLength, tipWidth] = tipSize(tip, width, length, explicit('tip_length'), explicit('tip_width'));
     let connection: Mobject;
-    const [tipLength, tipWidth] = arrowTip(width, Math.hypot(end3[0] - start3[0], end3[1] - start3[1]));
-    if (sketchy) connection = isArrow ? sketch.arrow(start3, end3, sketchy, tipLength, tipWidth) : sketch.line(start3, end3, sketchy);
-    else if (dash) connection = dashedConnection(start3, end3, color, width, dash, isArrow, tipLength, tipWidth);
-    else if (isArrow) connection = new Arrow({ start: start3, end: end3, color, tipLength, tipWidth, ...(strokeWidth !== undefined ? { strokeWidth } : {}) });
-    else connection = new Line({ start: start3, end: end3, color, strokeWidth: width });
-    // The stroke as bridges see it: the shaft, which ends where an arrow's tip begins; the strokes
-    // a hand-drawn line draws, sampled.
-    const shaftEnd: Point2 = isArrow ? [end3[0] - unit[0] * tipLength, end3[1] - unit[1] * tipLength] : [end3[0], end3[1]];
-    const shaft = sketchy ? (connection as ShaftMobject).markupShaft : undefined;
-    const path: BridgePath = {
-      strokes: shaft ? shaft.flatMap(strokePolylines) : [[[start3[0], start3[1]], shaftEnd]],
+    let strokes: BridgePath['strokes'];
+    let shaftEnd: Point2;
+    if (path) {
+      // Any other tip or way: the stroke along the path, and the tip on its last stretch.
+      const drawn = drawPath(path, { color, width, ...(dash ? { dash } : {}), sketch: sketchy, tip, tipLength, tipWidth });
+      connection = drawn.mobject;
+      (connection as OutlineMobject).markupOutline = curveMobject([path.cubics]);
+      const shaft = sketchy ? (connection as ShaftMobject).markupShaft : undefined;
+      strokes = shaft ? shaft.flatMap(strokePolylines) : [path.part(0, drawn.tipBase).polyline()];
+      shaftEnd = path.pointAt(drawn.tipBase);
+      start3 = [path.start[0], path.start[1], 0];
+      end3 = [path.end[0], path.end[1], 0];
+    } else {
+      if (sketchy) connection = isArrow ? sketch.arrow(start3, end3, sketchy, tipLength, tipWidth) : sketch.line(start3, end3, sketchy);
+      else if (dash) connection = dashedConnection(start3, end3, color, width, dash, isArrow, tipLength, tipWidth);
+      else if (isArrow) connection = new Arrow({ start: start3, end: end3, color, tipLength, tipWidth, ...(strokeWidth !== undefined ? { strokeWidth } : {}) });
+      else connection = new Line({ start: start3, end: end3, color, strokeWidth: width });
+      // The stroke as bridges see it: the shaft, which ends where an arrow's tip begins; the strokes
+      // a hand-drawn line draws, sampled.
+      const unit = [(end3[0] - start3[0]) / length, (end3[1] - start3[1]) / length];
+      shaftEnd = isArrow ? [end3[0] - unit[0] * tipLength, end3[1] - unit[1] * tipLength] : [end3[0], end3[1]];
+      const shaft = sketchy ? (connection as ShaftMobject).markupShaft : undefined;
+      strokes = shaft ? shaft.flatMap(strokePolylines) : [[[start3[0], start3[1]], shaftEnd]];
+    }
+    const bridgePath: BridgePath = {
+      strokes,
       width,
       ends: [[start3[0], start3[1]], [end3[0], end3[1]]],
       shaftEnds: [[start3[0], start3[1]], shaftEnd],
       joins: [Array.isArray(start) ? null : start.id, Array.isArray(end) ? null : end.id],
       bridge: this.bridge(element, width),
     };
-    const label = element.attributes.label;
+    const label = attrs.label;
     let result: Mobject = connection;
     if (label) {
       const spans = this._parser.parseInlineSpans(label, element.line);
-      const size = numberValue(element.attributes, 'font_size', element.line, this.layout.fontSize * 0.8) as number;
+      const size = numberValue(attrs, 'font_size', element.line, this.layout.fontSize * 0.8) as number;
       // The label in label_color, else in the connection's color, which is the text color unless color= sets it.
-      const labelColor = element.attributes.label_color ? parseColor(element.attributes.label_color) : color;
-      const text = await this.text(spans, size, 4, labelColor, element.attributes.font);
-      const along = numberValue(element.attributes, 'label_pos', element.line, 0.5) as number;
-      const labelGap = numberValue(element.attributes, 'label_buff', element.line, 0.1) as number;
-      placeLabel(text, connection, start3, end3, element.attributes.slanted === 'true', element.attributes.label_side === 'below' ? 'below' : 'above', along, labelGap);
+      const labelColor = attrs.label_color ? parseColor(attrs.label_color) : color;
+      const text = await this.text(spans, size, 4, labelColor, attrs.font);
+      const along = numberValue(attrs, 'label_pos', element.line, 0.5) as number;
+      const labelGap = numberValue(attrs, 'label_buff', element.line, 0.1) as number;
+      const slanted = attrs.slanted === 'true';
+      const side = attrs.label_side === 'below' ? 'below' : 'above';
+      if (curved || (path !== null && path.cubics.length > 1)) {
+        // Along a curve, the label sits beside its point at `along` of its length, by its direction there.
+        const s = along * (path as Spline).length;
+        const [p, d] = [(path as Spline).pointAt(s), (path as Spline).directionAt(s)];
+        placeLabel(text, connection, [p[0] - d[0], p[1] - d[1], 0], [p[0] + d[0], p[1] + d[1], 0], slanted, side, 0.5, labelGap, false);
+      } else placeLabel(text, connection, start3, end3, slanted, side, along, labelGap);
       result = new Group(connection, text);
+      const outline = (connection as OutlineMobject).markupOutline;
+      if (outline) (result as OutlineMobject).markupOutline = outline;
     }
-    if ('opacity' in element.attributes) applyOpacity(result, Number(element.attributes.opacity));
-    BRIDGE_PATHS.set(result, path);
+    if ('opacity' in attrs) applyOpacity(result, Number(attrs.opacity));
+    BRIDGE_PATHS.set(result, bridgePath);
     return result;
   }
+}
+
+/** Whether `p` lies inside `obj`: in the outline of a circle, a dot or an ellipse, in the box of anything else. */
+export function insideShape(obj: Mobject, p: Vec): boolean {
+  const center = obj.getCenter();
+  const [rx, ry] = [obj.getWidth() / 2, obj.getHeight() / 2];
+  const [dx, dy] = [p[0] - center[0], p[1] - center[1]];
+  if ((obj as RoundMobject).markupRound) return rx > 0 && ry > 0 && (dx / rx) ** 2 + (dy / ry) ** 2 < 1;
+  return Math.abs(dx) < rx && Math.abs(dy) < ry;
+}
+
+/** The sides a loop may stand on, as angles in degrees. */
+const LOOP_SIDES: Record<string, number> = { right: 0, above: 90, left: 180, below: 270 };
+/** How far a loop's sides open from the side it stands on. */
+const LOOP_SPREAD = (35 * Math.PI) / 180;
+/** How far a loop's control points lie from its ends at least, at looseness 1. */
+const LOOP_REACH = 1;
+
+/**
+ * The curved path of a connection, from `a` to `b` (an element's center or anchor, or a point),
+ * between the borders of its elements: a bend leaves and arrives at its angle to the line between
+ * them; a loop leaves its element on one side of the side it stands on and comes back on the
+ * other; a curve through points is cut where it leaves the first element and where it last
+ * enters the second.
+ */
+function curvePath(element: ElementSpec, source: Mobject | null, target: Mobject | null, a: Vec, b: Vec, anchoredStart: boolean, anchoredEnd: boolean): Spline {
+  const attrs = element.attributes;
+  const looseness = numberValue(attrs, 'looseness', element.line, 1) as number;
+  const border = (obj: Mobject | null, anchored: boolean, from: Vec, angle: number): Vec => {
+    if (!obj || anchored) return from;
+    const point = boundaryPoint(obj, [Math.cos(angle), Math.sin(angle), 0]);
+    return [point[0], point[1]];
+  };
+  if ('bend' in attrs) {
+    if (Math.hypot(b[0] - a[0], b[1] - a[1]) < 1e-9) throw new MarkupError('Arrow endpoints must have distinct positions; an arrow or a line from an element to itself needs loop=', element.line);
+    const chord = Math.atan2(b[1] - a[1], b[0] - a[0]);
+    const bend = (Number(attrs.bend) * Math.PI) / 180;
+    const [out, into] = [chord + bend, chord + Math.PI - bend];
+    return new Spline([bendCubic(border(source, anchoredStart, a, out), border(target, anchoredEnd, b, into), out, into, looseness)]);
+  }
+  if ('loop' in attrs) {
+    if (!source || source !== target) throw new MarkupError('loop= needs the same element at both ends', element.line);
+    const side = ((LOOP_SIDES[attrs.loop] ?? Number(attrs.loop)) * Math.PI) / 180;
+    const [out, into] = [side + LOOP_SPREAD, side - LOOP_SPREAD];
+    const [from, to] = [border(source, anchoredStart, a, out), border(target, anchoredEnd, b, into)];
+    // A loop on a larger element opens wider, and reaches farther in proportion.
+    const reach = Math.max(LOOP_REACH, 1.6 * Math.hypot(to[0] - from[0], to[1] - from[1])) * looseness;
+    return new Spline([loopCubic(from, to, out, into, reach)]);
+  }
+  const curve = new Spline(throughPoints([a, ...viaPoints(attrs.via, a), b]));
+  let from = 0;
+  let to = curve.length;
+  if (source && !anchoredStart) {
+    const exit = curve.exit((p) => insideShape(source, p));
+    if (exit === null) throw new MarkupError('The curve through via= never leaves the element it starts from', element.line);
+    from = exit;
+  }
+  if (target && !anchoredEnd) {
+    const entry = curve.entry((p) => insideShape(target, p));
+    if (entry === null) throw new MarkupError('The curve through via= never leaves the element it ends at', element.line);
+    to = entry;
+  }
+  if (to - from < 1e-6) throw new MarkupError('The curve through via= runs inside its elements', element.line);
+  return curve.part(from, to);
 }
 
 /**
@@ -1254,6 +1367,23 @@ export function placeBeside(text: Mobject, reference: Mobject, direction: [numbe
 }
 
 /**
+ * A table's padding: `padding` one value for all four sides, or two, vertical first as in CSS;
+ * `padding_x` and `padding_y` override a direction.
+ */
+export function tablePadding(attrs: Record<string, string>): { paddingX?: number; paddingY?: number } {
+  const both = attrs.padding === undefined ? [] : attrs.padding.trim().split(/[\s,]+/).map(Number);
+  const [y, x] = both.length === 1 ? [both[0], both[0]] : both;
+  const paddingX = attrs.padding_x !== undefined ? Number(attrs.padding_x) : x;
+  const paddingY = attrs.padding_y !== undefined ? Number(attrs.padding_y) : y;
+  return { ...(paddingX !== undefined ? { paddingX } : {}), ...(paddingY !== undefined ? { paddingY } : {}) };
+}
+
+/** The column widths of `col_width`: one for every column, or one per column, `auto` for a natural width. */
+export function columnWidths(value: string): Array<number | null> {
+  return value.trim().split(/[\s,]+/).map((word) => (word === 'auto' ? null : Number(word)));
+}
+
+/**
  * The length of an arrow's tip and its half-width, for a stroke of `strokeWidth` engine units on
  * an arrow `length` long: 0.3 by 0.1 at the default width 4, growing and shrinking with the
  * square root of the width, and at most a quarter of the arrow, so that a short thin arrow keeps
@@ -1262,6 +1392,24 @@ export function placeBeside(text: Mobject, reference: Mobject, direction: [numbe
 export function arrowTip(strokeWidth: number, length: number): [number, number] {
   const tip = Math.min(0.3 * Math.sqrt(Math.max(strokeWidth, 0.5) / 4), 0.25 * length);
   return [tip, tip / 3];
+}
+
+/**
+ * The length and half-width of a tip of `kind` on an arrow `length` long: a triangle as
+ * `arrowTip` sizes it; an open tip 0.2 long at the default width 4, growing with the square root
+ * of the width as well, its sides spreading 0.7 of its length on each side, and at most a
+ * quarter of the arrow. A length or a width the author gives is kept as given, uncapped, and the
+ * other follows it in the tip's proportions.
+ */
+export function tipSize(kind: TipKind, strokeWidth: number, length: number, givenLength?: number, givenWidth?: number): [number, number] {
+  const ratio = kind === 'open' ? 0.7 : 1 / 3;
+  if (givenLength !== undefined || givenWidth !== undefined) {
+    const tip = givenLength ?? (givenWidth as number) / ratio;
+    return [tip, givenWidth ?? tip * ratio];
+  }
+  if (kind !== 'open') return arrowTip(strokeWidth, length);
+  const tip = Math.min(0.2 * Math.sqrt(Math.max(strokeWidth, 0.5) / 4), 0.25 * length);
+  return [tip, tip * ratio];
 }
 
 /**
@@ -1290,10 +1438,11 @@ function dashedConnection(start: [number, number, number], end: [number, number,
  * the edge, the frame it reads in, from left to right (bottom to top on a vertical edge), so that
  * it is never upside down: `above` is the side its letters stand on (the left of a vertical edge),
  * `below` the other. On a level edge the label clears the connection's box (an arrow's tip
- * included); on any other edge it sits beside that point, clear of the line: upright by default,
- * or turned along the edge with `slanted`.
+ * included), unless `clearBox` is false (a curve, whose box says nothing of the point); on any
+ * other edge it sits beside that point, clear of the line: upright by default, or turned along
+ * the edge with `slanted`.
  */
-export function placeLabel(text: Mobject, connection: Mobject, start: [number, number, number], end: [number, number, number], slanted: boolean, side: 'above' | 'below' = 'above', along = 0.5, gap = 0.1): void {
+export function placeLabel(text: Mobject, connection: Mobject, start: [number, number, number], end: [number, number, number], slanted: boolean, side: 'above' | 'below' = 'above', along = 0.5, gap = 0.1, clearBox = true): void {
   let angle = Math.atan2(end[1] - start[1], end[0] - start[0]);
   // Read from left to right: an edge pointing leftwards is turned around.
   if (angle > Math.PI / 2 + 1e-9) angle -= Math.PI;
@@ -1302,7 +1451,7 @@ export function placeLabel(text: Mobject, connection: Mobject, start: [number, n
   const middle = [start[0] + (end[0] - start[0]) * along, start[1] + (end[1] - start[1]) * along];
   // The label is measured by its lines, so that labels with and without descenders sit alike.
   const box = lineBox(text);
-  if (Math.abs(Math.sin(angle)) < 1e-6) {
+  if (Math.abs(Math.sin(angle)) < 1e-6 && clearBox) {
     const edge = sign > 0 ? connection.getTop()[1] : connection.getBottom()[1];
     text.shift([middle[0] - box.x, edge + sign * (gap + box.height / 2) - box.y, 0]);
     return;

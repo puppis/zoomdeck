@@ -53,7 +53,7 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
 | `lang` | listings | language name (normally from the fence info) |
 | `play`, `muted` | animated images, videos | `once`, `loop`; sound for videos |
 | `title`, `poster` | iframes | label and preview image |
-| `rules`, `valign`, `header`, `padding`, `border_color`, `row_rule_color`, `row_rule_width`, `col_rule_color`, `col_rule_width`, `header_color`, `header_opacity`, `stripe_opacity` | tables | rules (all, or rows and columns apart), header row, cell padding and shading |
+| `rules`, `valign`, `header`, `padding`, `padding_x`, `padding_y`, `col_width`, `border_color`, `row_rule_color`, `row_rule_width`, `col_rule_color`, `col_rule_width`, `header_color`, `header_opacity`, `stripe_opacity` | tables | rules (all, or rows and columns apart), header row, cell padding, column widths and shading |
 | `type`, `src`, `colors`, `axis_color`, `border_color`, `grid`, `legend`, `values`, `min`, `max`, `header` | charts | chart kind (built in, or a module of the deck's `charts/` folder), data file, palette, axes, gridlines, legend, value labels and axis bounds |
 | `href` | every element, group, connection and attachment | URL opened by a click on the element (a drag still draws); `#slide=id` and `#step=N` move within the deck instead of opening a page |
 
@@ -70,7 +70,7 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
 | `icon` | `[[icon: name #id size label label_color label_side fill_color fill_opacity stroke_width …]]` (names under [Names](#names)) |
 | `artwork` | `[[artwork: name #id size label …]]`: `name.svg` or `name.js`/`.ts` from the deck's artworks folders, with any attributes the module reads ([Icons](icons.html#artworks-of-your-own)) |
 | any other name | `[[name: #id placement …]]`: a directive of the deck's own, drawn by `directives/name.ts` with the attributes it reads ([Extending a deck](extending.html#directives)) |
-| `arrow`, `line` | `[[arrow: #a -> #b, #id, label="…", label_color, label_pos=0…1, label_buff, label_side=above\|below, slanted=true, dashed=true, halo_bridge=true\|color, halo_width, color, stroke_width, step, hide]]` with `#id`, `#id.anchor` or `(x,y)` endpoints |
+| `arrow`, `line` | `[[arrow: #a -> #b, #id, label="…", label_color, label_pos=0…1, label_buff, label_side=above\|below, slanted=true, dashed=true, halo_bridge=true\|color, halo_width, tip=triangle\|open\|none, tip_length, tip_width, bend=degrees, loop=above\|below\|left\|right, looseness, wavy=waves, amplitude, via="+(x,y) …", color, stroke_width, step, hide]]` with `#id`, `#id.anchor` or `(x,y)` endpoints |
 | `brace` | `[[brace: #target …, #id, side, buff, label, label_color, font_size, font]]` (one target or several) |
 | `box`, `blob` | `[[box: #a #b …, #id, buff, corner_radius, fill_color, fill_opacity]]`, `[[blob: #a #b …, #id, buff, smoothness, fill_color, fill_opacity]]` |
 

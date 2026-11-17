@@ -301,7 +301,7 @@ export const CHART_TYPE_NAMES = new Set<string>(CHART_TYPES);
 /** Values of `rules=` on tables. */
 export const TABLE_RULE_NAMES = new Set<string>(TABLE_RULES);
 /** Attributes of tables beyond the common element attributes. */
-export const TABLE_ATTRS = new Set(['header', 'padding', 'rules', 'valign', 'border_color', 'stroke_width', 'row_rule_color', 'row_rule_width', 'col_rule_color', 'col_rule_width', 'fill_color', 'fill_opacity', 'header_color', 'header_opacity', 'stripe_opacity']);
+export const TABLE_ATTRS = new Set(['header', 'padding', 'padding_x', 'padding_y', 'col_width', 'rules', 'valign', 'border_color', 'stroke_width', 'row_rule_color', 'row_rule_width', 'col_rule_color', 'col_rule_width', 'fill_color', 'fill_opacity', 'header_color', 'header_opacity', 'stripe_opacity']);
 /** Attributes of chart fences beyond the common element attributes. */
 export const CHART_ATTRS = new Set(['type', 'src', 'header', 'colors', 'axis_color', 'border_color', 'stroke_width', 'fill_opacity', 'grid', 'legend', 'values', 'min', 'max']);
 /** File extensions rendered as videos by the image syntax. */

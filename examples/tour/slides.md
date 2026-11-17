@@ -746,8 +746,9 @@ Try it on this very slide: record a few seconds, draw, turn the camera on with C
 [[rectangle: #box x=-6.5 y=-1.5 width=3.4 height=1.8 corner_radius=0.3 color=BLUE_E fill_opacity=0.15]]
 [[circle: #disk right-of:#box buff=2.5 radius=0.9 color=GREEN_E href=https://puppis.github.io/zoomdeck/]]
 [[polyline: #zigzag points="(3,-2.4) (5,-0.6) (7,-2.2) (9,-0.4)" color=ORANGE]]
-[[arrow: #box -> #disk, #edge, label="**labeled** $\to$"]]
+[[arrow: #box -> #disk, #edge, label="**labeled** $\to$", bend=20]]
 [[line: #disk -> (1,-3.1), #drop, color=GRAY, dashed=true, label="slanted", slanted=true]]
+[[arrow: #disk -> #disk, #self, loop=above, tip=open, color=GREEN_E]]
 ```
 
 [[rectangle: #box x=-6.5 y=-1.5 width=3.4 height=1.8 corner_radius=0.3 color=BLUE_E fill_opacity=0.15]]
@@ -756,13 +757,15 @@ Try it on this very slide: record a few seconds, draw, turn the camera on with C
 
 [[polyline: #zigzag points="(3,-2.4) (5,-0.6) (7,-2.2) (9,-0.4)" color=ORANGE]]
 
-[[arrow: #box -> #disk, #edge, label="**labeled** $\to$"]]
+[[arrow: #box -> #disk, #edge, label="**labeled** $\to$", bend=20]]
 
 [[line: #disk -> (1,-3.1), #drop, color=GRAY, dashed=true, label="slanted", slanted=true]]
 
+[[arrow: #disk -> #disk, #self, loop=above, tip=open, color=GREEN_E]]
+
 Shapes need an `#id`; `color`, `stroke_width`, `fill_color` and `fill_opacity` style them, and every positioning attribute places them. {#shapes-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-Arrows and lines join element IDs at their facing edges, or literal `(x,y)` points; labels take inline styling and math, `slanted=true` turns one along its edge, and `dashed=true` dashes the line. `href=` makes any element a clickable link (try the circle). {#shapes-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
+Arrows and lines join element IDs at their facing edges, or literal `(x,y)` points; labels take inline styling and math, `slanted=true` turns one along its edge, and `dashed=true` dashes the line. `bend`, `loop`, `wavy` and `via` curve a connection, and `tip=open` opens an arrow's tip. `href=` makes any element a clickable link (try the circle). {#shapes-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#more-shapes width=20}

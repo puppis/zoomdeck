@@ -5,11 +5,17 @@
  * elements and ignores `transform`, which the Figma-exported lecture artwork
  * relies on. This importer walks the document with a current transformation
  * matrix and inherited styles, converts every shape to cubic Bézier points and
- * keeps compound paths together so holes fill correctly.
+ * keeps compound paths together so holes fill correctly. Clip paths and masks
+ * are applied to the geometry they cover (see clip.ts).
  */
 import { VGroup, VMobject } from 'manim-web';
 import { parsePathData } from './pathdata';
 import { parseCssColor } from './markup/ast';
+import {
+  alongBorder, fillPlacement, intersectFill, intersectPolygons, makeRegion, offsetSubpath, regionContains, strokeOutline, strokePlacement, visibleSide,
+  type Region, type Subpath,
+} from './clip';
+import type { Vec } from './curves';
 
 type Matrix = [number, number, number, number, number, number];
 
@@ -163,7 +169,12 @@ export interface SvgImportOptions {
 
 /** Convert SVG text into a group of vector mobjects centered at the origin. */
 export function svgToMobject(svgText: string, options: SvgImportOptions = {}): VGroup {
-  const document = new DOMParser().parseFromString(svgText, 'image/svg+xml');
+  // Fragments cut out of a larger export often use `xlink:href` without declaring the prefix,
+  // which a browser's XML parser rejects at the first use, dropping everything after it.
+  const declared = /xlink:/.test(svgText) && !/xmlns:xlink\s*=/.test(svgText) ? svgText.replace(/<svg\b/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"') : svgText;
+  const document = new DOMParser().parseFromString(declared, 'image/svg+xml');
+  const error = document.querySelector('parsererror');
+  if (error) console.warn(`[zoomdeck] SVG not well formed; parts may be missing: ${(error.textContent ?? '').trim().split('\n')[0]}`);
   const root = document.querySelector('svg');
   if (!root) throw new Error('No <svg> element found');
   const viewBox = (root.getAttribute('viewBox') ?? '').split(/[\s,]+/).filter(Boolean).map(Number);
@@ -182,61 +193,181 @@ export function svgToMobject(svgText: string, options: SvgImportOptions = {}): V
   const group = new VGroup();
   const rootStyle: Style = { fill: '#000000', fillOpacity: 1, stroke: null, strokeWidth: 1, strokeOpacity: 1, opacity: 1 };
   const skip = new Set(['defs', 'clippath', 'mask', 'symbol', 'marker', 'lineargradient', 'radialgradient', 'pattern', 'metadata', 'title', 'desc', 'style']);
-  const toWorld = (m: Matrix, x: number, y: number): [number, number, number] => {
+  const toWorld = (m: Matrix, x: number, y: number): Vec => {
     const px = m[0] * x + m[2] * y + m[4];
     const py = m[1] * x + m[3] * y + m[5];
-    return [(px - box.x - box.width / 2) * scale, -(py - box.y - box.height / 2) * scale, 0];
+    return [(px - box.x - box.width / 2) * scale, -(py - box.y - box.height / 2) * scale];
   };
-  const visit = (element: Element, parentMatrix: Matrix, parentStyle: Style, depth: number): void => {
+  /** The subpaths of a shape element in world coordinates, as cubic curves; null for anything else. */
+  const worldSubpaths = (element: Element, matrix: Matrix): Subpath[] | null => {
+    const d = shapePath(element);
+    if (!d) return null;
+    return parsePathData(d).filter((subpath) => subpath.length >= 2).map((subpath) => subpath.map(([x, y]) => toWorld(matrix, x, y)));
+  };
+  /** Visit the shapes under `element`, with their matrices and styles, following `<use>`. */
+  const walk = (element: Element, parentMatrix: Matrix, parentStyle: Style, depth: number, clips: readonly Region[], emit: (element: Element, subpaths: Subpath[], matrix: Matrix, style: Style, clips: readonly Region[]) => void): void => {
     const tag = element.tagName.toLowerCase();
     if (skip.has(tag) || depth > 64) return;
     const matrix = multiply(parentMatrix, parseTransform(element.getAttribute('transform')));
     const style = styleOf(element, parentStyle, defaultColor);
+    // A clip path or a mask of this element, in its own user space, applies to it and all it holds.
+    const own = [...clips];
+    for (const kind of ['clip-path', 'mask'] as const) {
+      const region = regionOf(element, kind, matrix);
+      if (region) own.push(region);
+    }
     if (tag === 'use') {
       const href = element.getAttribute('href') ?? element.getAttribute('xlink:href') ?? '';
       const target = href.startsWith('#') ? document.getElementById(href.slice(1)) : null;
       if (!target) return;
       const offset: Matrix = [1, 0, 0, 1, parseFloat(element.getAttribute('x') ?? '0') || 0, parseFloat(element.getAttribute('y') ?? '0') || 0];
-      visit(target, multiply(matrix, offset), style, depth + 1);
+      walk(target, multiply(matrix, offset), style, depth + 1, own, emit);
       return;
     }
-    const d = shapePath(element);
-    if (d) {
-      const subpaths = parsePathData(d).filter((subpath) => subpath.length >= 2);
-      if (subpaths.length) {
-        const points: number[][] = [];
-        const lengths: number[] = [];
-        for (const subpath of subpaths) {
-          const converted = subpath.map(([x, y]) => toWorld(matrix, x, y));
-          points.push(...converted);
-          lengths.push(converted.length);
-        }
-        const vmob = new VMobject();
-        vmob.setPoints(points);
-        if (lengths.length > 1) vmob.setBaseSubpathLengths(lengths);
-        const ctmScale = Math.sqrt(Math.abs(matrix[0] * matrix[3] - matrix[1] * matrix[2]));
-        const strokeWorld = style.stroke ? style.strokeWidth * ctmScale * scale : 0;
-        // A shape without a stroke keeps its opacity: the stroke opacity is the mobject's own
-        // opacity in the engine, and zeroing it would hide the fill as well; a zero width is enough.
-        vmob.setStyle({
-          strokeColor: style.stroke ?? style.fill ?? defaultColor,
-          strokeWidth: style.stroke ? strokeWorld * 100 : 0,
-          strokeOpacity: style.opacity * (style.stroke ? style.strokeOpacity : 1),
-        });
-        // The stroke color assignment above also resets the fill color, so the fill comes last.
-        vmob.setFill(style.fill ?? defaultColor, style.fill ? style.fillOpacity * style.opacity : 0);
-        group.add(vmob);
-      }
+    const subpaths = worldSubpaths(element, matrix);
+    if (subpaths) {
+      if (subpaths.length) emit(element, subpaths, matrix, style, own);
       return;
     }
     if (tag === 'text') console.warn('[zoomdeck] SVG <text> elements are not supported; convert text to paths');
-    for (const child of Array.from(element.children)) visit(child, matrix, style, depth + 1);
+    for (const child of Array.from(element.children)) walk(child, matrix, style, depth + 1, own, emit);
+  };
+  const regions = new Map<string, Region | null>();
+  /** The region of the clip path or mask an element names, in the user space of `matrix`; null without one, or one that cannot be applied. */
+  const regionOf = (element: Element, kind: 'clip-path' | 'mask', matrix: Matrix): Region | null => {
+    const value = declaredStyle(element, kind);
+    const id = value?.match(/url\(\s*['"]?#([^'")\s]+)['"]?\s*\)/)?.[1];
+    if (!id) return null;
+    const key = `${kind}#${id}#${matrix.join(',')}`;
+    if (regions.has(key)) return regions.get(key) as Region | null;
+    const source = document.getElementById(id);
+    let region: Region | null = null;
+    const expected = kind === 'mask' ? 'mask' : 'clippath';
+    if (!source || source.tagName.toLowerCase() !== expected) console.warn(`[zoomdeck] SVG ${kind} #${id} not found; drawn in full`);
+    else if ((source.getAttribute(kind === 'mask' ? 'maskContentUnits' : 'clipPathUnits') ?? 'userSpaceOnUse') !== 'userSpaceOnUse') {
+      console.warn(`[zoomdeck] SVG ${kind} #${id} in objectBoundingBox units is not supported; drawn in full`);
+    } else {
+      // A mask lets through its light (or, with mask-type alpha, its opaque) shapes, less its dark ones; a clip path all its shapes.
+      const alpha = kind === 'mask' && (declaredStyle(source, 'mask-type') ?? '').trim() === 'alpha';
+      const shows: Array<{ subpaths: Subpath[]; rule: 'nonzero' | 'evenodd' }> = [];
+      const hides: typeof shows = [];
+      const contentMatrix = kind === 'mask' ? matrix : multiply(matrix, parseTransform(source.getAttribute('transform')));
+      const sourceStyle = styleOf(source, styleOf(root, rootStyle, defaultColor), defaultColor);
+      for (const child of Array.from(source.children)) {
+        walk(child, contentMatrix, sourceStyle, 1, [], (shape, subpaths, _matrix, style) => {
+          const rule = (declaredStyle(shape, kind === 'mask' ? 'fill-rule' : 'clip-rule') ?? '').trim() === 'evenodd' ? 'evenodd' : 'nonzero';
+          const closed = subpaths.map((subpath) => close(subpath));
+          if (kind === 'clip-path') shows.push({ subpaths: closed, rule });
+          else if (style.fill) {
+            const coverage = style.fillOpacity * style.opacity * (alpha ? 1 : luminance(style.fill));
+            (coverage >= 0.5 ? shows : hides).push({ subpaths: closed, rule });
+          }
+        });
+      }
+      region = makeRegion(shows, hides);
+      // A mask or a clip path with nothing in it hides everything.
+      if (!region) region = { shows: [], hides: [], box: { minX: 0, minY: 0, maxX: -1, maxY: -1 } };
+    }
+    regions.set(key, region);
+    return region;
+  };
+  /** A shape as the engine draws it, from world subpaths; `subpaths` already cut by its clips. */
+  const shapeMobject = (subpaths: Subpath[]): VMobject => {
+    const vmob = new VMobject();
+    vmob.setPoints(subpaths.flatMap((subpath) => subpath.map(([x, y]) => [x, y, 0])));
+    if (subpaths.length > 1) vmob.setBaseSubpathLengths(subpaths.map((subpath) => subpath.length));
+    return vmob;
+  };
+  const styled = (vmob: VMobject, style: Style, stroke: number, fill: boolean): VMobject => {
+    // A shape without a stroke keeps its opacity: the stroke opacity is the mobject's own
+    // opacity in the engine, and zeroing it would hide the fill as well; a zero width is enough.
+    vmob.setStyle({
+      strokeColor: style.stroke ?? style.fill ?? defaultColor,
+      strokeWidth: style.stroke ? stroke * 100 : 0,
+      strokeOpacity: style.opacity * (style.stroke ? style.strokeOpacity : 1),
+    });
+    // The stroke color assignment above also resets the fill color, so the fill comes last.
+    vmob.setFill(style.fill ?? defaultColor, fill && style.fill ? style.fillOpacity * style.opacity : 0);
+    return vmob;
+  };
+  const draw = (element: Element, subpaths: Subpath[], matrix: Matrix, style: Style, clips: readonly Region[]): void => {
+    const ctmScale = Math.sqrt(Math.abs(matrix[0] * matrix[3] - matrix[1] * matrix[2]));
+    const strokeWorld = style.stroke ? style.strokeWidth * ctmScale * scale : 0;
+    if (!clips.length) {
+      group.add(styled(shapeMobject(subpaths), style, strokeWorld, true));
+      return;
+    }
+    const inside = (p: Vec) => clips.every((region) => regionContains(region, p));
+    // The fill: whole, gone, or cut to the regions.
+    const filled = !!style.fill && style.fillOpacity * style.opacity > 0;
+    const placement = filled ? fillPlacement(subpaths, inside, clips) : 'outside';
+    // The stroke: one along a region's border keeps the half on the visible side; one clear of
+    // every border stays whole or goes; one nearer a border than half its width is filled as its
+    // outline cut to the regions.
+    let whole: Subpath[] = [];
+    let outlines: Subpath[] = [];
+    let strokeWidth = strokeWorld;
+    let strokeIntact = strokeWorld <= 0;
+    if (strokeWorld > 0) {
+      const border = clips.find((region) => alongBorder(subpaths, region, Math.max(strokeWorld * 0.1, 1e-9)));
+      let lines = subpaths;
+      let cutBy = clips;
+      if (border) {
+        lines = subpaths.map((subpath) => offsetSubpath(subpath, (visibleSide(subpath, border, strokeWorld / 4) * strokeWorld) / 4));
+        strokeWidth = strokeWorld / 2;
+        cutBy = clips.filter((region) => region !== border);
+      }
+      const cap = (declaredStyle(element, 'stroke-linecap') ?? 'butt').trim() as 'butt' | 'round' | 'square';
+      for (const line of lines) {
+        const where = cutBy.length ? strokePlacement(line, strokeWidth / 2, cutBy) : 'inside';
+        if (where === 'inside') whole.push(line);
+        else if (where === 'across') outlines.push(...intersectPolygons(strokeOutline(line, strokeWidth / 2, ['round', 'square'].includes(cap) ? cap : 'butt'), cutBy, true));
+      }
+      strokeIntact = !border && whole.length === subpaths.length;
+    }
+    if (placement === 'inside' && strokeIntact) {
+      group.add(styled(shapeMobject(subpaths), style, strokeWorld, true));
+      return;
+    }
+    if (placement !== 'outside') {
+      const fill = placement === 'inside' ? subpaths : intersectFill(subpaths, clips);
+      if (fill.length) group.add(styled(shapeMobject(fill), { ...style, stroke: null }, 0, true));
+    }
+    if (whole.length) group.add(styled(shapeMobject(whole), style, strokeWidth, false));
+    // The cut outline of a stroke, filled in the stroke's color and opacity.
+    if (outlines.length) group.add(styled(shapeMobject(outlines), { ...style, stroke: null, fill: style.stroke, fillOpacity: style.strokeOpacity }, 0, true));
   };
   // Presentation attributes on the <svg> element itself (a stroke, a fill, an opacity) are inherited like a group's.
   const inherited = styleOf(root, rootStyle, defaultColor);
-  for (const child of Array.from(root.children)) visit(child, IDENTITY, inherited, 0);
+  for (const child of Array.from(root.children)) walk(child, IDENTITY, inherited, 0, [], draw);
   if (!group.isEmpty()) group.moveTo([0, 0, 0]);
   return group;
+}
+
+/** A property of an element, from its style attribute or its own attribute. */
+function declaredStyle(element: Element, name: string): string | null {
+  const inline = element.getAttribute('style');
+  if (inline) {
+    for (const declaration of inline.split(';')) {
+      const index = declaration.indexOf(':');
+      if (index > 0 && declaration.slice(0, index).trim() === name) return declaration.slice(index + 1).trim();
+    }
+  }
+  return element.getAttribute(name);
+}
+
+/** The relative luminance of a `#rrggbb` color, from 0 (black) to 1 (white), as a luminance mask reads it. */
+function luminance(color: string): number {
+  const hex = color.replace('#', '');
+  const channel = (i: number) => parseInt(hex.slice(i, i + 2), 16) / 255;
+  return 0.2125 * channel(0) + 0.7154 * channel(2) + 0.0721 * channel(4);
+}
+
+/** A subpath closed back to its start, as a region's outline is. */
+function close(subpath: Subpath): Subpath {
+  const [first, last] = [subpath[0], subpath[subpath.length - 1]];
+  if (Math.hypot(first[0] - last[0], first[1] - last[1]) < 1e-12) return subpath;
+  return [...subpath, [last[0] + (first[0] - last[0]) / 3, last[1] + (first[1] - last[1]) / 3], [last[0] + (2 * (first[0] - last[0])) / 3, last[1] + (2 * (first[1] - last[1])) / 3], first];
 }
 
 /** Fetch an SVG file and convert it. */

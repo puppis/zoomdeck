@@ -42,9 +42,9 @@ search box on every page finds any name. `docs/markup.md` is the compact dialect
   `transitionTime`, `transition` (`zoom`, `cut` or a module of the deck's own; a slide's own setting governs the camera's arrival at it), `pauseOnEntry`/`pauseOnReturn`.
 - **Selective rendering** (`onlyThis`), **placeholders**, **`startHere`**.
 - **A Markdown dialect**: `::: slide {#id}` containers, includes and subslides with placement and
-  visit steps, `[[import: path.md]]` to split a deck into files, styled prose with inline math, display math, images (SVG, raster, animated APNG/GIF
+  visit steps, `[[import: path.md]]` to split a deck into files, styled prose with inline math, display math, images (SVG with its clip paths and masks, raster, animated APNG/GIF
   and videos with `play=once|loop`), live pages (`iframe:`), syntax-highlighted code listings, vector shapes, diagram icons (`icon:`), arrows and lines with
-  labels (crisp, or hand-drawn with `sketch=true` through Rough.js), boxes and blobs around several elements, pipe tables and bar/line/pie charts, a `tremble=` vibration, anchor-based and relative positioning, named styles, groups, `focus_only`, fragments
+  labels, open tips, bends, loops, waves and curves through points (crisp, or hand-drawn with `sketch=true` through Rough.js), boxes and blobs around several elements, pipe tables and bar/line/pie charts, a `tremble=` vibration, anchor-based and relative positioning, named styles, groups, `focus_only`, fragments
   (`step`, `hide`, `show:`/`hide:`), animation directives (`animate:`, `effect:`, `transform:`,
   `move_along:`, entrance and exit styles), `next:` and `skip_next:`, `[[pdf: file]]` for the pages of
   a PDF inside a slide, snippets with `{{key}}` placeholders, `::: notes` for the presenter, charts from
