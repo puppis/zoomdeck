@@ -1,22 +1,31 @@
 /**
- * Blobs: smooth closed curves that enclose a set of rectangles at a given
+ * Blobs: smooth closed curves that enclose a set of shapes at a given
  * distance.
  *
- * The enclosed region is the set of points whose distance to the nearest
- * rectangle is below `buff`, with neighbouring rectangles blended by a smooth
- * minimum so that the curve flows around the group instead of pinching
- * between its members. The region's boundary is traced on a grid (marching
- * squares), resampled evenly and turned into Catmull-Rom curves.
+ * The shapes are rectangles, round ones (the outline of a circle, a dot or an
+ * ellipse) and bridges, tapered bands between two discs that follow an edge
+ * joining two members. The enclosed region is the set of points whose distance
+ * to the nearest shape is below `buff`, with neighbouring shapes blended by a
+ * smooth minimum so that the curve flows around the group instead of pinching
+ * between its members. The region's outer boundary is traced on a grid
+ * (marching squares), resampled evenly and turned into Catmull-Rom curves.
  */
 import type { VMobject } from 'manim-web';
 import { loopsMobject } from './paths';
 
-/** An axis-aligned rectangle given by its center and size. */
+/** An axis-aligned rectangle given by its center and size; `round`, the ellipse inscribed in it. */
 export interface Rect {
   x: number;
   y: number;
   width: number;
   height: number;
+  round?: boolean;
+}
+
+/** A band between two discs, `[x, y, radius]`, tapering from one to the other: an edge a blob follows. */
+export interface Bridge {
+  from: [number, number, number];
+  to: [number, number, number];
 }
 
 /** How a blob is drawn around its parts: margin, smoothness, stroke and fill. */
@@ -61,6 +70,37 @@ function rectDistance(rect: Rect, x: number, y: number): number {
   return outside + Math.min(Math.max(dx, dy), 0);
 }
 
+/** Signed distance to an ellipse inscribed in `rect` (exact for a circle, close enough otherwise). */
+function roundDistance(rect: Rect, x: number, y: number): number {
+  const rx = rect.width / 2;
+  const ry = rect.height / 2;
+  if (!(rx > 0) || !(ry > 0)) return rectDistance(rect, x, y);
+  if (Math.abs(rx - ry) < 1e-9) return Math.hypot(x - rect.x, y - rect.y) - rx;
+  return (Math.hypot((x - rect.x) / rx, (y - rect.y) / ry) - 1) * Math.min(rx, ry);
+}
+
+/** Signed distance to the hull of two discs (Inigo Quilez's uneven capsule), or to the larger disc when it holds the other. */
+function bridgeDistance(bridge: Bridge, x: number, y: number): number {
+  const [ax, ay, ra] = bridge.from;
+  const [bx, by, rb] = bridge.to;
+  const disc = (cx: number, cy: number, r: number) => Math.hypot(x - cx, y - cy) - r;
+  const vx = bx - ax;
+  const vy = by - ay;
+  const h = vx * vx + vy * vy;
+  const b = ra - rb;
+  if (h <= b * b + 1e-12) return Math.min(disc(ax, ay, ra), disc(bx, by, rb));
+  const px = x - ax;
+  const py = y - ay;
+  const qx = Math.abs(px * vy - py * vx) / h;
+  const qy = (px * vx + py * vy) / h;
+  const cx = Math.sqrt(h - b * b);
+  const cy = b;
+  const k = cx * qy - cy * qx;
+  if (k < 0) return Math.sqrt(h * (qx * qx + qy * qy)) - ra;
+  if (k > cx) return Math.sqrt(h * (qx * qx + qy * qy + 1 - 2 * qy)) - rb;
+  return cx * qx + cy * qy - ra;
+}
+
 /** Polynomial smooth minimum: like `min`, but the transition spans a band of width `k`. */
 function smoothMin(a: number, b: number, k: number): number {
   if (k <= 0) return Math.min(a, b);
@@ -69,14 +109,26 @@ function smoothMin(a: number, b: number, k: number): number {
 }
 
 /** A field that is negative inside the blob and zero on its boundary. */
-export function blobField(rects: readonly Rect[], options: BlobOptions = {}): (x: number, y: number) => number {
+export function blobField(rects: readonly Rect[], options: BlobOptions = {}, bridges: readonly Bridge[] = []): (x: number, y: number) => number {
   const { buff, smoothness } = resolve(options);
   const k = smoothness * buff * 3;
   return (x, y) => {
     let d = Infinity;
-    for (const rect of rects) d = smoothMin(d, rectDistance(rect, x, y), k);
+    for (const rect of rects) d = smoothMin(d, rect.round ? roundDistance(rect, x, y) : rectDistance(rect, x, y), k);
+    for (const bridge of bridges) d = smoothMin(d, bridgeDistance(bridge, x, y), k);
     return d - buff;
   };
+}
+
+/** Whether `point` lies inside the closed polygon `loop` (even-odd rule). */
+function inside(point: number[], loop: number[][]): boolean {
+  let result = false;
+  for (let i = 0, j = loop.length - 1; i < loop.length; j = i, i += 1) {
+    const [xi, yi] = loop[i];
+    const [xj, yj] = loop[j];
+    if ((yi > point[1]) !== (yj > point[1]) && point[0] < ((xj - xi) * (point[1] - yi)) / (yj - yi) + xi) result = !result;
+  }
+  return result;
 }
 
 type Segment = [number, number, number, number, number, number];
@@ -200,8 +252,12 @@ function resample(loop: number[][], spacing: number): number[][] {
   return result;
 }
 
-/** Closed polygons (anchor lists) outlining the blob around `rects`. */
-export function blobOutline(rects: readonly Rect[], options: BlobOptions = {}): number[][][] {
+/**
+ * Closed polygons (anchor lists) outlining the blob around `rects` and along `bridges`: one per
+ * separate part, largest first. A hole (members around an empty middle, a cycle of edges) is
+ * filled, since a blob encloses its members.
+ */
+export function blobOutline(rects: readonly Rect[], options: BlobOptions = {}, bridges: readonly Bridge[] = []): number[][][] {
   if (!rects.length) throw new Error('A blob needs at least one rectangle');
   const { buff, smoothness, resolution, spacing } = resolve(options);
   const margin = buff * (1 + smoothness) + 2 * resolution;
@@ -209,13 +265,13 @@ export function blobOutline(rects: readonly Rect[], options: BlobOptions = {}): 
   const x1 = Math.max(...rects.map((r) => r.x + r.width / 2)) + margin;
   const y0 = Math.min(...rects.map((r) => r.y - r.height / 2)) - margin;
   const y1 = Math.max(...rects.map((r) => r.y + r.height / 2)) + margin;
-  const loops = traceContours(blobField(rects, options), x0, y0, x1, y1, resolution);
-  // Largest loops first, so the outer contour comes before any hole.
-  loops.sort((a, b) => b.length - a.length);
-  return loops.map((loop) => resample(loop, spacing));
+  const loops = traceContours(blobField(rects, options, bridges), x0, y0, x1, y1, resolution);
+  const outer = loops.filter((loop) => !loops.some((other) => other !== loop && inside(loop[0], other)));
+  outer.sort((a, b) => b.length - a.length);
+  return outer.map((loop) => resample(loop, spacing));
 }
 
-/** A vector mobject whose closed smooth curves enclose `rects` at distance `buff`. */
-export function blobMobject(rects: readonly Rect[], options: BlobOptions = {}): VMobject {
-  return loopsMobject(blobOutline(rects, options));
+/** A vector mobject whose closed smooth curves enclose `rects`, and follow `bridges`, at distance `buff`. */
+export function blobMobject(rects: readonly Rect[], options: BlobOptions = {}, bridges: readonly Bridge[] = []): VMobject {
+  return loopsMobject(blobOutline(rects, options, bridges));
 }

@@ -22,8 +22,9 @@ and the relative constraints), and is sized with `width` (`height` scales it to 
 resolve relative to the Markdown file, then in the folders `paths` names in `deck.json`
 ([Configuration](configuration.html)); `data:` URIs and absolute URLs work too.
 
-- **SVG** files keep nested transforms and inherited styles. `<text>` inside an SVG is not
-  rendered: outline text before exporting.
+- **SVG** files keep nested transforms and inherited styles, and draw their shapes in document
+  order, a stroke after a fill lying over it. `<text>` inside an SVG is not rendered: outline text
+  before exporting.
 - **Raster** files may be PNG, JPEG, GIF or WebP.
 
 ## Animated images

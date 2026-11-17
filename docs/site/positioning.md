@@ -88,7 +88,8 @@ inside parentheses does not split attributes.
 
 ## Offsets and sizes
 
-- `dx`, `dy` shift the final position of any positioned element.
+- `dx`, `dy` shift the final position of any positioned element. An element placed relative to
+  it, or `at=` one of its anchors, sees it shifted.
 - `width` controls paragraph wrapping, image width and the maximum width of formulas and listings;
   `height` scales the result; `font_size` overrides the layout size.
 - `opacity` (0 to 1) makes any element translucent; fades preserve it.

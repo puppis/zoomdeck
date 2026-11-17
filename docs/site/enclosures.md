@@ -30,8 +30,21 @@ one element is the familiar surrounding rectangle.
 
 `[[blob: #a #b …, #id, …]]` draws a smooth closed curve that stays at distance `buff` (0.3 by
 default) from every target, following their arrangement instead of their joint rectangle: an
-L-shaped group gets an L-shaped blob, and targets too far apart for their margins to touch get
-separate loops.
+L-shaped group gets an L-shaped blob. A circle, a dot or an ellipse is enclosed by its own round
+outline, so a blob around one dot is a circle.
+
+A blob also follows the arrows and lines of the slide that join two of its targets, with a band
+as wide as the members it joins: two joined dots get a capsule, a large node and a small one a
+tapered shape, a path of edges a blob that turns with it. Targets that no edge joins and whose
+margins do not touch get separate loops. A blob encloses everything inside it, so members around
+an empty middle, or a cycle of edges, give one outline without a hole.
+
+```markdown
+[[dot: #p x=-2 y=0 radius=0.38]]
+[[dot: #q x=1 y=0.5 radius=0.38]]
+[[line: #p -> #q]]
+[[blob: #p #q, #pair, color=GREEN_E]]
+```
 
 | Attribute | Default | Meaning |
 | --- | --- | --- |
@@ -56,6 +69,8 @@ const curve = blobMobject(rects, { buff: 0.4, smoothness: 0.7 });
 curve.setStyle({ strokeColor: engine.GREEN_E, strokeWidth: 2 }).setFill(engine.GREEN_E, 0.1);
 ```
 
-`blobOutline(rects, options)` returns the traced loops as arrays of anchor points,
+`blobOutline(rects, options, bridges)` returns the traced loops as arrays of anchor points,
 `blobMobject` the smooth engine `VMobject` through them, and `blobField` the underlying distance
-field. Rectangles are given by center and size in logical units.
+field. Rectangles are given by center and size in logical units, with `round: true` for the
+ellipse inscribed in one; `bridges` are optional bands `{ from: [x, y, r], to: [x, y, r] }`
+between two discs, which the blob follows.

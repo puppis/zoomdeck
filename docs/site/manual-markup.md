@@ -694,7 +694,8 @@ with no `enter=`, see [Before the visit](fragments.html#before-the-visit-step-1)
 `hide=M` makes it disappear at click `M`, which must be later than its appearance. Numbers are local to the slide and need not be
 consecutive: a lone `step=4` is one click. Changes sharing a number play together, then the
 slide pauses; a step that also visits children plays the parent's changes first. Children are
-visited at their `step` or, without one, after the last numbered step in source order.
+visited at their `step` or, without one, after the last numbered step in source order. Elements
+are drawn in source order, whichever click shows each.
 
 ### [[show]] and [[hide]]
 

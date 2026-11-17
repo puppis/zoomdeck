@@ -35,6 +35,10 @@ Numbers are local to each slide and need not be consecutive: a lone `step=4` cre
 not four. All changes sharing a number play together, followed by a pause; if a step also visits
 children, the parent's changes play first.
 
+Elements are drawn in source order, whichever click shows each: one written later lies over one
+written earlier, so a highlight revealed at a later click stays under the text that follows it in
+the source. Write it after the text to put it on top.
+
 ### Before the visit: step=-1
 
 A child slide that is not previewed stays hidden in its parent's view until it is first visited,

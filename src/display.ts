@@ -74,6 +74,12 @@ export class LocalScene {
   }
 }
 
+/**
+ * A slide is flat: nothing tests depth, and everything is drawn in one pass, the transparent one,
+ * in draw order. Three.js draws opaque materials before transparent ones whatever their order, and
+ * the engine marks a stroke at full opacity opaque but a fill transparent, so a fill would cover
+ * every stroke, even one that follows it. Blending a fully opaque color changes nothing.
+ */
 function applyFlatDepth(object: THREE.Object3D): void {
   const meshLike = object as THREE.Object3D & { material?: THREE.Material | THREE.Material[] };
   if (!meshLike.material) return;
@@ -83,6 +89,7 @@ function applyFlatDepth(object: THREE.Object3D): void {
       material.depthTest = false;
       material.depthWrite = false;
     }
+    if (!material.transparent) material.transparent = true;
   }
 }
 
@@ -108,6 +115,32 @@ function markFamilyDirty(mob: Mobject): void {
  * view while the rest of the child waits for the entry fade.
  */
 const EARLY_MEMBERS = new WeakSet<Mobject>();
+
+/**
+ * Where a member stands in its slide's source: members draw in that order, whenever each one
+ * entered the slide, so an element revealed at a later click still lies under what follows it in
+ * the source. Members without a rank (an effect's flash, a code-authored slide's objects) keep
+ * the order they entered in, after the ranked ones.
+ */
+const SOURCE_RANKS = new WeakMap<Mobject, number>();
+
+export function setSourceRank(mob: Mobject, rank: number): void {
+  SOURCE_RANKS.set(mob, rank);
+}
+
+/** A member's place in its slide's source, if it has one. */
+export function sourceRank(mob: Mobject): number | undefined {
+  return SOURCE_RANKS.get(mob);
+}
+
+/** `members` in source order, a stable sort that leaves members without a rank last, in their order. */
+export function inSourceOrder(members: Mobject[]): Mobject[] {
+  if (!members.some((mob) => SOURCE_RANKS.has(mob))) return members;
+  return members
+    .map((mob, index) => ({ mob, index, rank: SOURCE_RANKS.get(mob) ?? Infinity }))
+    .sort((a, b) => a.rank - b.rank || a.index - b.index)
+    .map(({ mob }) => mob);
+}
 
 export function markEarly(mob: Mobject): void {
   EARLY_MEMBERS.add(mob);
@@ -169,7 +202,7 @@ export class Display {
   private _split(): { content: Mobject[]; early: Mobject[] } {
     const content: Mobject[] = [];
     const early: Mobject[] = [];
-    for (const mob of this.local.mobjects) (isEarly(mob) ? early : content).push(mob);
+    for (const mob of inSourceOrder(this.local.mobjects)) (isEarly(mob) ? early : content).push(mob);
     return { content, early };
   }
 
@@ -258,12 +291,21 @@ export class Display {
     visit(this.overlays, true, false);
     this._needsOpacityReset = false;
     if (this.orderDirty) {
-      for (const group of [this.gridGroup, this.contentGroup, this.earlyGroup, this.overlayGroup]) {
-        for (const child of group.children) {
+      // Each member draws after the ones before it, and inside it every shape after the shapes
+      // before it in the family (an SVG's paths in document order): a fill never covers a stroke
+      // that follows it. The family is listed parents first, so each Three.js node ends with the
+      // order of the innermost mobject it belongs to.
+      const attached = this._attached;
+      for (const members of [attached.grid, attached.content, attached.early, attached.overlay]) {
+        for (const mob of members) {
           const order = nextOrder();
-          child.traverse((node) => {
-            node.renderOrder = order;
-            applyFlatDepth(node);
+          const family = mob.getFamily();
+          family.forEach((member, index) => {
+            const own = order + index / (family.length + 1);
+            member.getThreeObject().traverse((node) => {
+              node.renderOrder = own;
+              applyFlatDepth(node);
+            });
           });
         }
       }

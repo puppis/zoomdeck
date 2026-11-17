@@ -191,7 +191,10 @@ export type BodyMobject = Mobject & { markupBody?: Mobject };
 /** A circle, a dot or an ellipse, whose connections end on its outline. */
 export type RoundMobject = Mobject & { markupRound?: boolean };
 
-/** The rectangles a blob encloses for an object: its parts' rectangles, else its own bounding box. */
+/**
+ * The rectangles a blob encloses for an object: its parts' rectangles, else its own bounding box,
+ * round for a circle, a dot or an ellipse.
+ */
 export function enclosedRects(obj: Mobject): Rect[] {
   const parts = (obj as PartsMobject).markupParts;
   if (parts && parts.length) return parts.flatMap(enclosedRects);
@@ -199,7 +202,19 @@ export function enclosedRects(obj: Mobject): Rect[] {
   const width = obj.getWidth();
   const height = obj.getHeight();
   if (!(width > 0) && !(height > 0)) return [];
-  return [{ x, y, width, height }];
+  return [{ x, y, width, height, ...((obj as RoundMobject).markupRound ? { round: true } : {}) }];
+}
+
+/**
+ * The disc an edge of a blob starts from at an object: its center, and as radius half its size
+ * (the larger side of a round shape, the smaller of anything else), so the band along the edge is
+ * never wider than the members it joins.
+ */
+function edgeDisc(obj: Mobject): [number, number, number] {
+  const body = (obj as BodyMobject).markupBody ?? obj;
+  const [x, y] = body.getCenter();
+  const sides = [body.getWidth(), body.getHeight()];
+  return [x, y, ((body as RoundMobject).markupRound ? Math.max(...sides) : Math.min(...sides)) / 2];
 }
 
 /** The axis-aligned bounding box of several objects together. */
@@ -957,8 +972,11 @@ export class MarkupRenderer {
     return image;
   }
 
-  /** Create a brace, a surrounding box or a blob around already laid-out elements. */
-  async attachment(element: ElementSpec, objects: Map<string, Mobject>): Promise<Mobject> {
+  /**
+   * Create a brace, a surrounding box or a blob around already laid-out elements. `edges` are the
+   * pairs of element ids that arrows and lines join; a blob follows those between its targets.
+   */
+  async attachment(element: ElementSpec, objects: Map<string, Mobject>, edges: readonly (readonly [string, string])[] = []): Promise<Mobject> {
     const attrs = element.attributes;
     const targets = attachmentTargets(element).map((id) => objects.get(id) as Mobject);
     const target = targets[0];
@@ -971,7 +989,11 @@ export class MarkupRenderer {
       const fillOpacity = Number(attrs.fill_opacity ?? 0);
       const rects = targets.flatMap(enclosedRects);
       if (!rects.length) throw new MarkupError('A blob needs targets with a visible size', element.line);
-      const blob = blobMobject(rects, { buff, smoothness: numberValue(attrs, 'smoothness', element.line, 0.5) as number });
+      const members = new Set(attachmentTargets(element));
+      const bridges = edges
+        .filter(([from, to]) => from !== to && members.has(from) && members.has(to))
+        .map(([from, to]) => ({ from: edgeDisc(objects.get(from) as Mobject), to: edgeDisc(objects.get(to) as Mobject) }));
+      const blob = blobMobject(rects, { buff, smoothness: numberValue(attrs, 'smoothness', element.line, 0.5) as number }, bridges);
       blob.setStyle({ strokeColor: color, strokeWidth });
       blob.setFill(fillColor, fillOpacity);
       obj = blob;
@@ -1104,9 +1126,10 @@ export class MarkupRenderer {
     const dash = element.attributes.dashed === 'true' ? dashPattern(width) : undefined;
     const sketchy = sketchOptions(element, { color, strokeWidth: width, fillColor: color, fillOpacity: 0, ...(dash ? { dash } : {}) });
     let connection: Mobject;
-    if (sketchy) connection = isArrow ? sketch.arrow(start3, end3, sketchy) : sketch.line(start3, end3, sketchy);
-    else if (dash) connection = dashedConnection(start3, end3, color, width, dash, isArrow);
-    else if (isArrow) connection = new Arrow({ start: start3, end: end3, color, ...(strokeWidth !== undefined ? { strokeWidth } : {}) });
+    const [tipLength, tipWidth] = arrowTip(width, Math.hypot(end3[0] - start3[0], end3[1] - start3[1]));
+    if (sketchy) connection = isArrow ? sketch.arrow(start3, end3, sketchy, tipLength, tipWidth) : sketch.line(start3, end3, sketchy);
+    else if (dash) connection = dashedConnection(start3, end3, color, width, dash, isArrow, tipLength, tipWidth);
+    else if (isArrow) connection = new Arrow({ start: start3, end: end3, color, tipLength, tipWidth, ...(strokeWidth !== undefined ? { strokeWidth } : {}) });
     else connection = new Line({ start: start3, end: end3, color, strokeWidth: width });
     const label = element.attributes.label;
     let result: Mobject = connection;
@@ -1123,18 +1146,29 @@ export class MarkupRenderer {
 }
 
 /**
- * A dashed line, or a dashed arrow: the dashes of its shaft and the solid tip of a plain arrow
- * (0.3 long and 0.2 wide, shorter on a short arrow), whose base the shaft reaches.
+ * The length of an arrow's tip and its half-width, for a stroke of `strokeWidth` engine units on
+ * an arrow `length` long: 0.3 by 0.1 at the default width 4, growing and shrinking with the
+ * square root of the width, and at most a quarter of the arrow, so that a short thin arrow keeps
+ * a small tip and a visible shaft.
  */
-function dashedConnection(start: [number, number, number], end: [number, number, number], color: string, strokeWidth: number, dash: readonly [number, number], arrow: boolean): Mobject {
+export function arrowTip(strokeWidth: number, length: number): [number, number] {
+  const tip = Math.min(0.3 * Math.sqrt(Math.max(strokeWidth, 0.5) / 4), 0.25 * length);
+  return [tip, tip / 3];
+}
+
+/**
+ * A dashed line, or a dashed arrow: the dashes of its shaft and the solid tip of a plain arrow,
+ * whose base the shaft reaches.
+ */
+function dashedConnection(start: [number, number, number], end: [number, number, number], color: string, strokeWidth: number, dash: readonly [number, number], arrow: boolean, tipLength = 0.3, tipWidth = 0.1): Mobject {
   let shaftEnd = end;
   const parts: Mobject[] = [];
   if (arrow) {
     const length = Math.hypot(end[0] - start[0], end[1] - start[1]);
     const unit = [(end[0] - start[0]) / length, (end[1] - start[1]) / length];
-    const tip = Math.min(0.3, length);
+    const tip = Math.min(tipLength, length);
     const base = [end[0] - unit[0] * tip, end[1] - unit[1] * tip];
-    const across = [-unit[1] * 0.1, unit[0] * 0.1];
+    const across = [-unit[1] * tipWidth, unit[0] * tipWidth];
     shaftEnd = [base[0], base[1], 0];
     parts.push(new Polygon({ vertices: [end, [base[0] + across[0], base[1] + across[1], 0], [base[0] - across[0], base[1] - across[1], 0]], color, fillOpacity: 1, strokeWidth: 0 }));
   }

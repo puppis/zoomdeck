@@ -60,7 +60,9 @@ bounding edge of anything else), an element at one of its anchors, or a literal 
 The anchors are those of [`at=`](positioning.html#anchor-expressions): `top-left`, `top`,
 `top-right`, `left`, `center`, `right`, `bottom-left`, `bottom`, `bottom-right`, and the
 baseline ones of text. A line ends right on its endpoints; an arrow stops a little short of each,
-so that its tip does not touch the element. Arrows and lines also take an optional `#id`, a
+so that its tip does not touch the element. An arrow's tip grows and shrinks with its
+`stroke_width` (0.3 long at the default 4) and is at most a quarter of the arrow, so a short thin
+arrow keeps a small tip. Arrows and lines also take an optional `#id`, a
 `label` with inline styling and math (sized by `font_size`, set in `font`), `color`,
 `stroke_width`, `opacity`, `step`, `hide` and timing.
 

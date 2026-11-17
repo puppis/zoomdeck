@@ -15,11 +15,11 @@ import { RasterImage, RasterMovie } from '../raster';
 import { VideoClip, VideoPlay } from '../video';
 import { IframeHost } from './iframe';
 import { DelayedAnimation, type SlideContext } from '../runtime';
-import { markEarly } from '../display';
+import { markEarly, setSourceRank } from '../display';
 import {
   ATTACHMENTS, CONNECTIONS, EFFECT_NAMES, ENTER_STYLES, EXIT_STYLES, NEIGHBORS, TEXT_LIKE, VERTICAL_POSITION,
   ActionSpec, AnimationStep, ElementSpec, EventSpec, GroupSpec, CodeSlideSpec, IncludeSpec, MarkupDocument, MarkupError, NextSpec,
-  SkipNextSpec, SlideItem, SlideSpec, StepChange, childKey, numberValue, parseAt, parseColor, parseTremble, positionOrder, positionTargets,
+  SkipNextSpec, SlideItem, SlideSpec, StepChange, childKey, connectionEnd, numberValue, parseAt, parseColor, parseTremble, positionOrder, positionTargets,
   elementStep,
   stepValue,
 } from './ast';
@@ -147,6 +147,10 @@ export class MarkupSlide extends Slide {
       { left: -this.width / 2 + layout.margin, top: this.height / 2 - layout.margin, width: available, local: new Map() },
       (index, item) => (this.components.get(childKey(index, item)) as Slide).viewport as Mobject,
     );
+    // Elements draw in source order, whichever click reveals each one.
+    for (const [rank, item] of this.spec.items.entries()) {
+      if (item instanceof ElementSpec && this.elements.has(item.id)) setSourceRank(this.elements.get(item.id) as Mobject, rank);
+    }
     const focused: Mobject[] = [];
     for (const item of this.spec.items) {
       if (!(item instanceof ElementSpec)) continue;
@@ -261,28 +265,37 @@ export class MarkupSlide extends Slide {
         }
       }
     }
+    // An offset applies once the item is placed by flow, coordinates or references, and before
+    // anything placed against it, which so sees it where it is drawn.
+    const offset = (item: ElementSpec | IncludeSpec | CodeSlideSpec, obj: Mobject) => {
+      const dx = Number(item.attributes.dx ?? 0);
+      const dy = Number(item.attributes.dy ?? 0);
+      if (dx || dy) obj.shift([dx, dy, 0]);
+    };
     for (const identifier of positionOrder(placed)) {
       const item = placed.get(identifier) as ElementSpec | IncludeSpec;
-      if (item instanceof IncludeSpec) placeRelative(item, frames.get(item) as Mobject, scope.local, layout.gap);
-      else placeRelative(item, scope.local.get(identifier) as Mobject, scope.local, layout.gap, layout.textAnchor);
+      const obj = item instanceof IncludeSpec ? (frames.get(item) as Mobject) : (scope.local.get(identifier) as Mobject);
+      if (item instanceof IncludeSpec) placeRelative(item, obj, scope.local, layout.gap);
+      else placeRelative(item, obj, scope.local, layout.gap, layout.textAnchor);
+      offset(item, obj);
     }
     // Code-authored children are no references, nor is an include whose id an element has; they follow the rest.
     for (const [item, frame] of frames) {
-      if (item instanceof CodeSlideSpec || placed.get(item.target) !== item) placeRelative(item, frame, scope.local, layout.gap);
+      if (item instanceof CodeSlideSpec || placed.get(item.target) !== item) {
+        placeRelative(item, frame, scope.local, layout.gap);
+        offset(item, frame);
+      }
     }
-    // Offsets apply last, after flow, explicit and relative placement.
-    for (const [index, item] of items.entries()) {
-      if (item instanceof EventSpec || item instanceof ActionSpec || item instanceof NextSpec || item instanceof SkipNextSpec) continue;
-      if (item instanceof ElementSpec && (CONNECTIONS.has(item.kind) || ATTACHMENTS.has(item.kind))) continue;
-      const dx = Number(item.attributes.dx ?? 0);
-      const dy = Number(item.attributes.dy ?? 0);
-      if (!dx && !dy) continue;
-      const obj = item instanceof ElementSpec ? (scope.local.get(item.id) as Mobject) : (viewportOf as NonNullable<typeof viewportOf>)(index, item);
-      obj.shift([dx, dy, 0]);
+    // The pairs of elements that arrows and lines join, which blobs follow.
+    const edges: [string, string][] = [];
+    for (const item of items) {
+      if (!(item instanceof ElementSpec && CONNECTIONS.has(item.kind))) continue;
+      const [from, to] = ['from', 'to'].map((key) => connectionEnd(item.attributes[key], item.line));
+      if (!Array.isArray(from) && !Array.isArray(to)) edges.push([from.id, to.id]);
     }
     for (const item of items) {
       if (item instanceof ElementSpec && ATTACHMENTS.has(item.kind)) {
-        const obj = await located(item.line, () => this.renderer.attachment(item, scope.local));
+        const obj = await located(item.line, () => this.renderer.attachment(item, scope.local, edges));
         if (item.attributes.href) LINKED_OBJECTS.set(obj, item.attributes.href);
         SOURCE_OBJECTS.set(obj, this.locate(item.line));
         this.elements.set(item.id, obj);
