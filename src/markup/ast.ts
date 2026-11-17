@@ -406,8 +406,19 @@ export function styleRoles(item: ElementSpec | IncludeSpec | CodeSlideSpec): str
 }
 
 /** Fill in role and class styles below an item's own attributes, consuming its `class` token list. */
+/** The attributes each element took from its styles rather than writing them itself. */
+const STYLED_KEYS = new WeakMap<object, Set<string>>();
+
+/** The attributes `item` took from a style role or class, not written on the element itself. */
+export function styledKeys(item: ElementSpec | IncludeSpec | CodeSlideSpec): ReadonlySet<string> {
+  return STYLED_KEYS.get(item) ?? new Set();
+}
+
 export function applyStyles(item: ElementSpec | IncludeSpec | CodeSlideSpec, styles: StyleSheet): void {
   const attrs = item.attributes;
+  // Styles may be applied more than once (when parsing and when validating): the keys add up.
+  const styled = STYLED_KEYS.get(item) ?? new Set<string>();
+  STYLED_KEYS.set(item, styled);
   const classes = (attrs.class ?? '').split(/\s+/).filter(Boolean);
   delete attrs.class;
   const layers: Attributes[] = [];
@@ -421,7 +432,10 @@ export function applyStyles(item: ElementSpec | IncludeSpec | CodeSlideSpec, sty
   for (const layer of layers) Object.assign(merged, layer);
   for (const [key, value] of Object.entries(merged)) {
     if (key === 'id' || key === 'class') continue;
-    if (!(key in attrs)) attrs[key] = value;
+    if (!(key in attrs)) {
+      attrs[key] = value;
+      styled.add(key);
+    }
   }
 }
 

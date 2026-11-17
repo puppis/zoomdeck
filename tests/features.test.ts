@@ -141,7 +141,8 @@ describe('markup for icons, enclosures and tremble', () => {
     expect(attachmentTargets(items.find((i) => i.id === 'single') as ElementSpec)).toEqual(['c']);
     expect(styleRoles(all)).toEqual(['attachment', 'blob']);
     expect(() => parse('[[dot: #a x=0 y=0]]\n[[blob: #a #zz, #q]]')).toThrow(/Unknown blob target #zz/);
-    expect(() => parse('[[dot: #a x=0 y=0]]\n[[dot: #b x=1 y=0]]\n[[brace: #a #b, #q]]')).toThrow(/attaches to one element/);
+    // A brace may span several elements too.
+    expect(() => parse('[[dot: #a x=0 y=0]]\n[[dot: #b x=1 y=0]]\n[[brace: #a #b, #q]]')).not.toThrow();
     expect(() => parse('[[dot: #a x=0 y=0]]\n[[blob: #a, #q, smoothness=3]]')).toThrow(/smoothness must be between/);
     expect(() => parse('[[dot: #a x=0 y=0]]\n[[blob: #a, #q, corner_radius=1]]')).toThrow(/Unknown attributes: corner_radius/);
   });

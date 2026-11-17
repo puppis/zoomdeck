@@ -98,9 +98,10 @@ they cannot anchor other elements and are not hidden implicitly when an endpoint
 [[box: #tri, #bx, buff=0.2, corner_radius=0.1, color=GREEN, step=2]]
 ```
 
-A `brace` is attached to one element, named first; it takes `side` (`bottom` by default, or
-`left`, `right`, `top`), `buff`, an inline `label` with `font_size` and `font`, `color` and
-`stroke_width`. A `box` (a surrounding rectangle) and a `blob` (a smooth curve at a fixed
+A `brace` is attached to one element or several, named first: under several it spans their
+joint bounding box (`[[brace: #a #b #c, #all, label="the three"]]`). It takes `side` (`bottom`
+by default, or `left`, `right`, `top`), `buff`, an inline `label` with `font_size`, `font` and
+`label_color`, `color` and `stroke_width`. A `box` (a surrounding rectangle) and a `blob` (a smooth curve at a fixed
 distance) enclose one or **several** elements, listed before the first comma; they are described
 in [Boxes and blobs](enclosures.html). All attachments accept `step`, `hide`, `opacity` and
 timing, may attach to a [group](groups.html) or an [icon](icons.html), and, like connections,

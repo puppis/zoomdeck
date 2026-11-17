@@ -10,13 +10,13 @@ import {
   type NotesSpec,
   ALIGNMENTS, ANIMATE_PROPS, ATTACHMENTS, BASELINE_ANCHORS, BRACE_SIDES, CONNECTIONS, CONTAINER, DIRECTIVE, EFFECT_NAMES, ELEMENT_ATTRS,
   CUSTOM_DIRECTIVE, LIBRARY_NAME,
-  ENCLOSURES, ENTER_STYLES, EXIT_STYLES, FILL_ATTRS, GEOMETRY, GROUP_ANCHORS, GROUP_ATTRS, HORIZONTAL_POSITION, ICON_KINDS, IDENTIFIER,
+  ENTER_STYLES, EXIT_STYLES, FILL_ATTRS, GEOMETRY, GROUP_ANCHORS, GROUP_ATTRS, HORIZONTAL_POSITION, ICON_KINDS, IDENTIFIER,
   LABEL_SIDES, LAYOUT, NEIGHBORS, POSITION_REFERENCES, RATE_NAMES, SHAPES, SKETCH_ATTRS, STROKE_ATTRS, TEXT_LIKE, TIMING_ATTRS, TREMBLE_ATTRS,
   VECTOR_KINDS, VERTICAL_POSITION, VIDEO_EXTENSIONS, FILL_STYLE_NAMES, CHART_ATTRS, CHART_TYPE_NAMES, TABLE_ATTRS, TABLE_RULE_NAMES,
   ActionSpec, AnimationStep, ElementSpec, EventSpec, GroupSpec, CodeSlideSpec, IncludeSpec, InlineSpan, MarkupDocument, MarkupError, TableSpec,
   type CellAlignment,
   type ListItem,
-  NextSpec, SkipNextSpec, SlideItem, SlideSpec, StepChange, StyleSheet, Attributes, applyStyles, attachmentTargets, checkClassName, childKey, connectionEnd, endpoint,
+  NextSpec, SkipNextSpec, SlideItem, SlideSpec, StepChange, StyleSheet, Attributes, applyStyles, attachmentTargets, checkClassName, childKey, connectionEnd, endpoint, styledKeys,
   elementStep, numberValue, parseAt, parseAttributes, parseColor, parseTremble, polylinePoints, positionOrder, span, stepValue,
 } from './ast';
 
@@ -647,7 +647,6 @@ export class ASTTransformer {
         if (ATTACHMENTS.has(item.kind)) {
           const targets = attachmentTargets(item);
           if (!targets.length) throw new MarkupError(`A ${item.kind} needs at least one target`, item.line);
-          if (!ENCLOSURES.has(item.kind) && targets.length > 1) throw new MarkupError(`A ${item.kind} attaches to one element`, item.line);
           for (const id of targets) {
             const target = elements.get(id);
             if (!target) throw new MarkupError(`Unknown ${item.kind} target #${id} in ${slide.id}`, item.line);
@@ -815,11 +814,13 @@ export class ASTTransformer {
         const along = Number(item.attributes.label_pos);
         if (!item.attributes.label_pos.trim() || !(along >= 0 && along <= 1)) throw new MarkupError('label_pos must be a number from 0 (the start) to 1 (the end)', item.line);
       }
-      for (const key of ['label_side', 'slanted', 'label_pos']) {
-        if (key in item.attributes && !('label' in item.attributes)) throw new MarkupError(`${key} requires a label`, item.line);
-      }
     }
-    if ('label_color' in item.attributes && !('label' in item.attributes)) throw new MarkupError('label_color requires a label', item.line);
+    // How a label looks needs a label, when the element says so itself: a style that sets it for
+    // labeled and unlabeled elements alike just has no effect on the unlabeled ones.
+    const styled = styledKeys(item);
+    for (const key of ['label_side', 'slanted', 'label_pos', 'label_color']) {
+      if (key in item.attributes && !styled.has(key) && !('label' in item.attributes)) throw new MarkupError(`${key} requires a label`, item.line);
+    }
     if ('href' in item.attributes && !LINK_TARGET.test(item.attributes.href)) {
       throw new MarkupError(`Unsupported link target ${JSON.stringify(item.attributes.href)}; use https://, mailto:, #, / or a relative path`, item.line);
     }
@@ -827,7 +828,6 @@ export class ASTTransformer {
       if ('label_side' in item.attributes && !LABEL_SIDES.has(item.attributes.label_side)) {
         throw new MarkupError('label_side must be below, above, left or right', item.line);
       }
-      if ('label_side' in item.attributes && !('label' in item.attributes)) throw new MarkupError('label_side requires a label', item.line);
       if ('label' in item.attributes) {
         for (const s of new MarkupParser().parseInlineSpans(item.attributes.label, item.line)) {
           if (s.color) ASTTransformer._checkColor(s.color, item.line);

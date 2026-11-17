@@ -63,6 +63,14 @@ describe('the label of an arrow or a line', () => {
     expect(() => parse('[[arrow: #a -> #b, #e, label_pos=0.3]]')).toThrow(/label_pos requires a label/);
   });
 
+  it('may come from a style that unlabeled elements share, but not be written on one', () => {
+    const shapes = '[[rectangle: #a x=-3 y=0 width=1 height=1]]\n\n[[rectangle: #b x=3 y=2 width=1 height=1]]\n\n';
+    const styled = (body: string) => new MarkupParser().parse(`::: styles\nedge: label_pos=0.3 label_side=below slanted=true label_color=BLUE\n:::\n\n::: slide {#s}\n${shapes}${body}\n:::`);
+    expect(() => styled('[[arrow: #a -> #b, #e, .edge]]')).not.toThrow();
+    expect(() => styled('[[arrow: #a -> #b, #e, .edge, label="x"]]')).not.toThrow();
+    expect(() => styled('[[arrow: #a -> #b, #e, .edge, label_pos=0.5]]')).toThrow(/label_pos requires a label/);
+  });
+
   it('takes a color of its own with label_color, on arrows, lines, braces and icons', () => {
     const parse = (body: string) => new MarkupParser().parse(`::: slide {#s}\n[[rectangle: #a x=-3 y=0 width=1 height=1]]\n\n[[rectangle: #b x=3 y=2 width=1 height=1]]\n\n${body}\n:::`);
     expect(() => parse('[[arrow: #a -> #b, #e, label="x", color=GRAY, label_color=BLUE]]')).not.toThrow();

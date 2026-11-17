@@ -1006,6 +1006,12 @@ export class MarkupRenderer {
     } else if (element.kind === 'brace') {
       const side = attrs.side ?? 'bottom';
       const direction = BRACE_SIDES[side];
+      // A brace under several elements spans their joint bounding box.
+      let target = targets[0];
+      if (targets.length > 1) {
+        const bounds = unionRect(targets);
+        target = new Rectangle({ width: bounds.width, height: bounds.height }).moveTo([bounds.x, bounds.y, 0]);
+      }
       const sketchy = sketchOptions(element, { color, strokeWidth, fillColor: color, fillOpacity: 0 });
       let brace: Mobject;
       if (sketchy) {

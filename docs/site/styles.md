@@ -31,7 +31,10 @@ kept apart from the deck is a **theme**, `themes/<name>.md` next to the Markdown
 ## Classes
 
 Elements, includes and subslides opt into styles with `.name` tokens in their attribute list. Several
-classes may be listed; later ones win.
+classes may be listed; later ones win. A style may set how labels look (`label_pos`,
+`label_side`, `slanted`, `label_color`) for elements with and without a label alike: on one
+without a label they have no effect, while written on such an element itself they are an
+error.
 
 ## Roles
 

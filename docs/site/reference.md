@@ -71,7 +71,7 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
 | `artwork` | `[[artwork: name #id size label …]]`: `name.svg` or `name.js`/`.ts` from the deck's artworks folders, with any attributes the module reads ([Icons](icons.html#artworks-of-your-own)) |
 | any other name | `[[name: #id placement …]]`: a directive of the deck's own, drawn by `directives/name.ts` with the attributes it reads ([Extending a deck](extending.html#directives)) |
 | `arrow`, `line` | `[[arrow: #a -> #b, #id, label="…", label_color, label_pos=0…1, label_side=above\|below, slanted=true, dashed=true, color, stroke_width, step, hide]]` with `#id`, `#id.anchor` or `(x,y)` endpoints |
-| `brace` | `[[brace: #target, #id, side, buff, label, label_color, font_size, font]]` |
+| `brace` | `[[brace: #target …, #id, side, buff, label, label_color, font_size, font]]` (one target or several) |
 | `box`, `blob` | `[[box: #a #b …, #id, buff, corner_radius, fill_color, fill_opacity]]`, `[[blob: #a #b …, #id, buff, smoothness, fill_color, fill_opacity]]` |
 
 | Attribute | On | Meaning |

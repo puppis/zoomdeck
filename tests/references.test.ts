@@ -26,6 +26,14 @@ describe('includes as positioning references', () => {
   });
 });
 
+describe('braces', () => {
+  it('span one target or several', () => {
+    const shapes = '[[rectangle: #a x=-3 y=0 width=1 height=1]]\n\n[[rectangle: #b x=3 y=2 width=1 height=1]]\n\n';
+    expect(() => parse(`${shapes}[[brace: #a #b, #br, side=bottom, label="both"]]`)).not.toThrow();
+    expect(() => parse(`${shapes}[[brace: #a #z, #br]]`)).toThrow(/Unknown brace target #z/);
+  });
+});
+
 describe('the ends of arrows and lines', () => {
   it('parse an element, an element at an anchor, or a point', () => {
     expect(connectionEnd('#a0', 1)).toEqual({ id: 'a0', anchor: null });

@@ -507,7 +507,8 @@ be the reference of a position or the target of another connection or attachment
 [[brace: #formula, #under, side=bottom, label="the whole sum", buff=0.2]]
 ```
 
-A brace hugs one element on one side. The target comes first, then `#id` and the attributes.
+A brace hugs one element, or several, on one side: under several it spans their joint bounding
+box. The targets come first, then `#id` and the attributes.
 
 | Attribute | Values | Default | Meaning |
 | --- | --- | --- | --- |
