@@ -19,5 +19,5 @@ export function copyTour(source, parent, { replace = false } = {}) {
   mkdirSync(target, { recursive: true });
   // The deck's own files; a static build of it, if one was made in place, is not part of the deck.
   cpSync(source, target, { recursive: true, force: true, filter: (path) => !path.slice(source.length).split(sep).includes('build') });
-  return join(target, 'deck.json');
+  return join(target, 'slides.md');
 }

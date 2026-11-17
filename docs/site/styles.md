@@ -5,11 +5,12 @@ description: Named attribute sets applied by class tokens and automatically by r
 
 <a class="try" href="tour.html#slide=styles">Open in the tour ↗</a>
 
-```json
-"styles": {
-  "footnote": { "font_size": 18, "color": "GRAY" },
-  "heading": "color=BLUE_E"
-}
+```markdown
+---
+styles:
+  footnote: { font_size: 18, color: GRAY }
+  heading: color=BLUE_E
+---
 ```
 
 ```markdown
@@ -21,11 +22,11 @@ callout: color=ORANGE font_size=30
 [Look here]{#c .callout x=0 y=-2}
 ```
 
-A **style** is a named set of attributes. Styles are defined in `deck.json` under `styles`, as
-objects or attribute strings, or in a `::: styles` block at the top of the Markdown file (one
-`name: attributes` line each); the Markdown definition wins for the same name. A style sheet
+A **style** is a named set of attributes. Styles are defined under `styles` in the front
+matter, as attribute strings or maps, or in a `::: styles` block of the Markdown file (one
+`name: attributes` line each); the `::: styles` definition wins for the same name. A style sheet
 kept apart from the deck is a **theme**, `themes/<name>.md` next to the Markdown, applied with
-`"theme": "lecture"` in `deck.json` under the deck's own styles; see
+`theme: lecture` in the front matter under the deck's own styles; see
 [Extending a deck](extending.html#themes).
 
 ## Classes

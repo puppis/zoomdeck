@@ -7,7 +7,7 @@ import { Presenter, type NavigationData, type ProgressEvent } from '../runtime';
 import { Player } from './player';
 import { PlayerUI } from './ui';
 import { renderPixelRatio, type Feature } from './settings';
-import { loadDeckConfig, markupDeck } from '../markup/deck';
+import { loadMarkupDeck } from '../markup/deck';
 import type { SlideNamespace } from '../markup/slide';
 import { Stage } from './stage';
 import { LinkLayer } from './links';
@@ -322,7 +322,7 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
 // A deck as one element of a larger page
 // ---------------------------------------------------------------------------
 
-/** What `mountDeck` shows: a deck definition, or the URL of a `deck.json`, of a Markdown file or of a PDF. */
+/** What `mountDeck` shows: a deck definition, or the URL of a Markdown file (its settings in its front matter) or of a PDF. */
 export type DeckSource = DeckDefinition | ResolvedDeck | string;
 
 /** What `mountDeck` takes besides the deck: the element to mount into, the first stop, the features and the colors. */
@@ -374,13 +374,11 @@ export interface DeckHandle {
   destroy(): void;
 }
 
-/** Load a `deck.json` (its slide modules through the browser's own `import`), a PDF or a Markdown file. */
+/** Load a PDF or a Markdown file, the settings of its front matter and the files they name. */
 async function loadSource(source: string): Promise<ResolvedDeck> {
-  if (/\.json(\?|#|$)/.test(source)) {
-    return loadDeckConfig(source, async (url) => (await import(/* @vite-ignore */ url)) as SlideNamespace);
-  }
+  if (/\.json(\?|#|$)/.test(source)) throw new Error(`${source}: a deck is its Markdown file now; move the settings of this JSON file into the front matter at the top of the Markdown (between --- lines) and open the Markdown`);
   if (/\.pdf(\?|#|$)/i.test(source)) return pdfDeck({ url: source });
-  return markupDeck({ url: source });
+  return loadMarkupDeck({ url: source });
 }
 
 /**

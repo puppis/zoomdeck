@@ -12,8 +12,8 @@ and the sources, which bring the `zoomdeck` command and the live development pag
 Download the build for your system from the
 [releases](https://github.com/puppis/zoomdeck/releases): a `.dmg` for macOS, an `.AppImage` or
 `.deb` for Linux, an installer or a portable `.exe` for Windows. The app is the player and the
-preview server in a window of its own: open a `deck.json`, a Markdown file or a PDF from the
-File menu, by dropping it on the app, or by double-clicking it, and present as in the browser.
+preview server in a window of its own: open a Markdown file or a PDF from the File menu, by
+dropping it on the app, or by double-clicking it, and present as in the browser.
 The builds are not signed by a registered developer, so each system warns once the first time;
 [The desktop app](desktop.html) says what to click, and what the app's menus offer.
 
@@ -32,8 +32,8 @@ npm link           # optional: the `zoomdeck` command, from any folder
 ```
 
 `npm run dev` serves `http://localhost:5173/`, which opens the tour deck; `?deck=` selects
-another: `/?deck=path/to/deck.json`, `/?deck=path/to/slides.md`, `/?deck=path/to/paper.pdf`,
-or `/?deck=examples/tree-deck&scene=Demo` for a code-authored deck. The page reloads when a deck
+another: `/?deck=path/to/slides.md`, `/?deck=path/to/paper.pdf`, or
+`/?deck=examples/tree-deck&scene=Demo` for a code-authored deck. The page reloads when a deck
 file changes and comes back to the stop you were looking at.
 
 `npm link` puts a `zoomdeck` command on your path that runs the checkout as it is (so `git pull`
@@ -45,14 +45,13 @@ below find the command on their own, and [Editors](editors.html) covers the rest
 ## Open a deck
 
 ```bash
-zoomdeck serve talk/deck.json      # also talk/slides.md, or paper.pdf
-zoomdeck serve talk/deck.json --host   # reachable on the network, for a tablet
+zoomdeck serve talk/slides.md          # also paper.pdf
+zoomdeck serve talk/slides.md --host   # reachable on the network, for a tablet
 ```
 
 The preview opens the deck in your browser at `http://127.0.0.1:8000/` (or the next free port,
 printed in the terminal), reloads it on every save and keeps your position. The argument is a
-`deck.json`, a Markdown file (a `deck.json` next to it that names it is used), a PDF, or a
-JS/TS module exporting a deck. Ctrl+C stops the server; it also stops by itself when the
+Markdown file (its settings in its front matter), a PDF, or a JS/TS module exporting a deck. Ctrl+C stops the server; it also stops by itself when the
 program that started it, an editor's build panel say, ends.
 
 ## Present it
@@ -67,8 +66,8 @@ each tool, and chapters 4 to 6 of the [tour](tour.html#slide=feat-spotlight) sho
 ## Export it
 
 ```bash
-zoomdeck build talk/deck.json -o out/talk             # a folder: index.html, assets/, deck/
-zoomdeck build talk/deck.json -o out/talk --one-file  # one HTML file, every asset inside
+zoomdeck build talk/slides.md -o out/talk             # a folder: index.html, assets/, deck/
+zoomdeck build talk/slides.md -o out/talk --one-file  # one HTML file, every asset inside
 ```
 
 **Export** in the player's footer (X) does the same from the deck you are looking at, into a
@@ -79,10 +78,14 @@ player's Print button writes a PDF with a page per stage or per slide.
 
 ## Write a first deck
 
-A deck is a Markdown file, and nothing more is needed to start; `deck.json` next to it holds
-the title and other settings when you want them.
+A deck is a Markdown file, and nothing more is needed to start; the title and other settings
+go in its front matter, between `---` lines at the top, when you want them.
 
 ```markdown
+---
+title: First deck
+---
+
 ::: slide {#start width=20}
 # My first deck
 
@@ -100,13 +103,6 @@ Slides are `::: slide` containers; this one has a 20 × 11.25 canvas.
 :::
 ```
 
-```json
-{
-  "markup": "slides.md",
-  "title": "First deck"
-}
-```
-
 Every slide has an `#id`; the slides nothing includes are visited first to last; `width` on a
 slide sets its canvas, and `x`, `y`, `width` on an include place a child inside its parent. The
 notebook [Your first deck, stage by stage](first-deck.html) builds such a deck one cell at a
@@ -115,8 +111,8 @@ from there:
 
 ```text
 talk/
-├── slides.md        the slides, in the Markdown dialect
-├── deck.json        title, colors, typography, presenter options, styles, macros
+├── slides.md        the slides, in the Markdown dialect; its front matter holds the title,
+│                    colors, typography, presenter options, styles, macros
 ├── assets/          images, videos, pages referenced from slides.md
 ├── parts/           optional: Markdown files spliced in with [[import: path.md]]
 ├── artworks/        optional: artworks of your own, name.svg or name.ts, for [[artwork: name]]
@@ -126,7 +122,7 @@ talk/
 ```
 
 Paths in `slides.md` resolve relative to the Markdown file, then in the folders `paths` names
-in `deck.json`, so figures shared between talks can stay in one place. The optional folders
+in the front matter, so figures shared between talks can stay in one place. The optional folders
 extend the player by name, one file each; [Extending a deck](extending.html) lists them.
 
 ## Set up your editor

@@ -30,7 +30,7 @@ export class Orbit extends Slide {
 }
 ```
 
-`deck.json` names the module with `"classes": "code-slides.ts"`; a `slides/` folder next to the
+The front matter names the module with `classes: code-slides.ts`; a `slides/` folder next to the
 Markdown, one `Name.ts` per class, is searched for the names that module lacks
 ([Extending a deck](extending.html#artworks-and-slide-classes)). The class must be constructible
 without arguments and return a fresh slide; qualified names (`helpers.Orbit`) traverse
@@ -110,7 +110,7 @@ export default defineDeck({
 
 A module exporting a deck definition (default export or named exports chosen with `scene=`) runs
 on the dev page with `/?deck=path/to/module` and builds with the command line like any deck.
-Markdown decks can be created from code too: `markupDeck({ url, layout, presenter, styles, … })`.
+Markdown decks can be created from code too: `loadMarkupDeck({ url, layout, presenter, styles, … })`.
 
 ## Available engine objects
 

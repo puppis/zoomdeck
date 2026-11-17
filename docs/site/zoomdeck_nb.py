@@ -13,8 +13,7 @@ The cell's output loads the Zoomdeck player once (from the documentation site, o
 in the ZOOMDECK_BUNDLE environment variable) and shows the deck in it, with the player's own
 controls; edit the cell and run it again to see the deck change. The line after `%%deck` may
 carry options: `--without camera,record`, `--title "A name"`, `--start 2`, `--outline`,
-`--height 500px`. `%deck paper.pdf` (one line) shows a PDF, a Markdown file or a deck.json by
-its address. The same from code: `deck("::: slide ...")` and `deck(src="paper.pdf")` return
+`--height 500px`. `%deck paper.pdf` (one line) shows a PDF or a Markdown file by its address. The same from code: `deck("::: slide ...")` and `deck(src="paper.pdf")` return
 display objects. It all works in JupyterLab, the classic notebook, JupyterLite and any viewer
 that keeps the HTML output of a cell, including the documentation site built from these notebooks.
 """
@@ -123,7 +122,7 @@ def _magic(line: str, cell: str | None = None):
     options = _options(line)
     if cell is None:
         if "src" not in options:
-            raise ValueError("%deck needs the address of a PDF, a Markdown file or a deck.json; %%deck takes the Markdown in the cell")
+            raise ValueError("%deck needs the address of a PDF or a Markdown file; %%deck takes the Markdown in the cell")
         return deck(**options)
     if "src" in options:
         raise ValueError("%%deck shows the Markdown of its cell; use %deck for a file")

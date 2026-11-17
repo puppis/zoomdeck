@@ -1,12 +1,12 @@
 /**
  * Development entry: `?deck=examples/tree-deck&scene=Demo` loads a deck module
- * (or `?deck=path/deck.json`, `?deck=path/slides.md`, `?deck=path/paper.pdf`) from this checkout and starts the player. Without `?deck=` it opens the tour.
+ * (or `?deck=path/slides.md`, `?deck=path/paper.pdf`) from this checkout and starts the player. Without `?deck=` it opens the tour.
  */
-import { runDeck, loadDeckConfig, markupDeck, pdfDeck } from './index';
+import { runDeck, loadMarkupDeck, pdfDeck } from './index';
 import type { DeckDefinition } from './deck';
 
 const params = new URLSearchParams(location.search);
-const deckPath = params.get('deck') ?? 'examples/tour/deck.json';
+const deckPath = params.get('deck') ?? 'examples/tour/slides.md';
 const scene = params.get('scene');
 
 async function main(): Promise<void> {
@@ -15,9 +15,9 @@ async function main(): Promise<void> {
   // The deck's own file, which the player's Export builds as a web page through the server.
   let file = new URL(base, location.href).href;
   if (deckPath.endsWith('.json')) {
-    definition = await loadDeckConfig(base, async (url) => (await import(/* @vite-ignore */ url)) as Record<string, unknown>);
+    throw new Error(`${deckPath}: a deck is its Markdown file now; move the settings of this JSON file into the front matter at the top of the Markdown (between --- lines) and open the Markdown`);
   } else if (deckPath.endsWith('.md')) {
-    definition = markupDeck({ url: base });
+    definition = await loadMarkupDeck({ url: base });
   } else if (/\.pdf$/i.test(deckPath)) {
     definition = await pdfDeck({ url: base });
   } else {

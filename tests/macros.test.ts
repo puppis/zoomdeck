@@ -63,7 +63,7 @@ describe('LaTeX macros of the deck', () => {
     expect(() => expand('\\loop')).toThrow('\\loop expands without end');
   });
 
-  it('checks the macros of deck.json', () => {
+  it('checks the macros of the front matter', () => {
     // Every deck has \boldsymbol and \bm, as bold italic, unless it defines them itself.
     expect([...compileMacros(undefined).keys()]).toEqual(['boldsymbol', 'bm']);
     expect(expandMacros('\\boldsymbol{x} + \\bm\\alpha', compileMacros(undefined))).toBe('\\mathbfit{x} + \\mathbfit{\\alpha}');

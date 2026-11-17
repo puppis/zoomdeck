@@ -8,7 +8,7 @@
  * opens that deck; started bare it asks for one in the folder used last, and the first time it
  * offers to copy the tour deck to a folder of the user's, out of the app.
  *
- *   Zoomdeck [deck.json | slides.md | paper.pdf] [--local] [--port N] [--editor NAME] [--watch PATH] [--scene Name]
+ *   Zoomdeck [slides.md | paper.pdf | deck.ts] [--local] [--port N] [--editor NAME] [--watch PATH] [--scene Name]
  */
 import { app, BrowserWindow, Menu, dialog, shell, session, desktopCapturer, screen, systemPreferences } from 'electron';
 import { fileURLToPath } from 'node:url';
@@ -147,9 +147,16 @@ function remember(deckPath) {
 
 /** Serve `deckPath` (replacing the deck served so far) and show it in the window. */
 async function openDeck(deckPath) {
-  const target = resolveDeckPath(deckPath);
+  let target;
+  try {
+    target = resolveDeckPath(deckPath);
+  } catch (error) {
+    // A deck.json from before: say where its settings go now.
+    dialog.showErrorBox('Zoomdeck', error.message);
+    return;
+  }
   if (!existsSync(target) || !deckKind(target)) {
-    dialog.showErrorBox('Zoomdeck', `Not a deck: ${deckPath}\nOpen a deck.json, a Markdown file, a PDF or a slide module.`);
+    dialog.showErrorBox('Zoomdeck', `Not a deck: ${deckPath}\nOpen a Markdown file, a PDF or a slide module.`);
     return;
   }
   const previous = preview;
@@ -238,7 +245,7 @@ async function chooseDeck(folder = readStore().folder) {
     ...(folder ? { defaultPath: folder } : {}),
     properties: ['openFile'],
     filters: [
-      { name: 'Decks', extensions: ['json', 'md', 'markdown', 'pdf', 'ts', 'js', 'mjs', 'tsx'] },
+      { name: 'Decks', extensions: ['md', 'markdown', 'pdf', 'ts', 'js', 'mjs', 'tsx'] },
       { name: 'All files', extensions: ['*'] },
     ],
   });
@@ -278,7 +285,7 @@ async function offerTour() {
       cancelId: 2,
     });
     if (response === 2) return false;
-    deck = response === 1 ? copyTour(TOUR_SOURCE, chosen.filePaths[0], { replace: true }) : join(error.target, 'deck.json');
+    deck = response === 1 ? copyTour(TOUR_SOURCE, chosen.filePaths[0], { replace: true }) : join(error.target, 'slides.md');
   }
   await openDeck(deck);
   return Boolean(current);
@@ -294,7 +301,7 @@ async function start() {
     const { response } = await dialog.showMessageBox({
       type: 'none',
       message: 'Welcome to Zoomdeck',
-      detail: 'Open a deck of yours (a deck.json, a Markdown file, a PDF or a slide module), or copy the tour deck with its examples to a folder of yours and start from there.',
+      detail: 'Open a deck of yours (a Markdown file, a PDF or a slide module), or copy the tour deck with its examples to a folder of yours and start from there.',
       buttons: ['Open a Deck…', 'Copy the Tour…', 'Quit'],
       defaultId: 1,
       cancelId: 2,

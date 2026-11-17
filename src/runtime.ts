@@ -44,7 +44,7 @@ installPatches();
 // Configuration
 // ---------------------------------------------------------------------------
 
-/** The timing and camera policy of a deck, as `presenter` in `deck.json` gives it. */
+/** The timing and camera policy of a deck, as `presenter` in its front matter gives it. */
 export interface PresenterConfigOptions {
   /** Seconds used for each animated camera move. Zero positions the camera immediately. */
   transitionTime?: number;

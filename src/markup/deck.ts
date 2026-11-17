@@ -1,4 +1,4 @@
-/** Convenience deck definitions for Markdown documents and JSON deck configurations. */
+/** Deck definitions for Markdown documents, their settings in their front matter. */
 import { defineDeck, type DeckDefinition, type ResolvedDeck, type ViewportSize } from '../deck';
 import { PresenterConfig, type PresenterConfigOptions } from '../runtime';
 import { MarkupParser } from './parser';
@@ -18,10 +18,15 @@ import type { DirectiveModule } from '../directives';
 import { transitionFromModule, type TransitionModule } from '../runtime';
 import { pdfPages } from '../pdfdeck';
 import type { Slide } from '../slides';
+import { FOLDER_SETTINGS, parseSettings, resolveSettings, splitFrontMatter, type DeckSettings } from './frontmatter.mjs';
 
-/** What a Markdown deck is made with: the source or URL, the settings of `deck.json`, preloaded files and assets, and the library folders and modules. */
+/**
+ * What a Markdown deck is made with: the source or URL, preloaded files and assets, and the
+ * library folders and modules. The settings (title, layout, presenter, macros, styles, themes,
+ * folders) come from the Markdown's front matter; given here, they win over it.
+ */
 export interface MarkupDeckOptions {
-  /** Markdown source text. Provide this or `url`. */
+  /** Markdown source text. Provide this, `url`, or both when the text at `url` is read already. */
   source?: string;
   /** URL of the Markdown file; images resolve relative to it. */
   url?: string;
@@ -73,7 +78,7 @@ export interface MarkupDeckOptions {
   languages?: string[];
   /** Folders with code themes (`name.json`) for `layout.codeTheme`; `code-themes/` next to the document is searched anyway. */
   codeThemes?: string[];
-  /** Folders with themes, style sheets as `name.md` (`::: styles` blocks) or `name.json`; `themes/` next to the document is searched anyway. */
+  /** Folders with themes, style sheets as `name.md` (`::: styles` blocks); `themes/` next to the document is searched anyway. */
   themes?: string[];
   /** The theme(s) to apply, by name, before the deck's own `styles`. */
   theme?: string | string[];
@@ -94,8 +99,8 @@ export interface MarkupDeckOptions {
 }
 
 /**
- * `folders` ending in a slash; with `base`, relative ones become absolute URLs against it (a
- * deck.json names folders relative to itself, while the document may live elsewhere). Without a
+ * `folders` ending in a slash; with `base`, relative ones become absolute URLs against it (a file
+ * extended names folders relative to itself, while the document may live elsewhere). Without a
  * base they stay relative, to the document or to the keys of a bundle.
  */
 export function resolveFolders(folders: string[] | undefined, base?: string): string[] {
@@ -225,15 +230,9 @@ function themeValue(value: string): unknown {
 /**
  * Parse a theme: a Markdown file whose `::: styles` blocks (or every line) define styles, with
  * the reserved names `layout:`, `presenter:` and `deck:` (`background=`, `viewport=16x9`) for
- * the deck settings; or a JSON file, either a `styles` map or `{ styles, layout, presenter,
- * background, viewport }`.
+ * the deck settings.
  */
-export function parseTheme(text: string, kind: 'md' | 'json'): ThemeParts {
-  if (kind === 'json') {
-    const json = JSON.parse(text) as Record<string, unknown>;
-    const full = ['styles', 'layout', 'presenter', 'background', 'viewport'].some((key) => key in json);
-    return full ? (json as ThemeParts) : { styles: json as ThemeParts['styles'] };
-  }
+export function parseTheme(text: string): ThemeParts {
   const parts: ThemeParts = { styles: {} };
   for (const [name, attributes] of Object.entries(MarkupParser.parseStyles(text))) {
     if (!THEME_SECTIONS.has(name)) {
@@ -280,36 +279,108 @@ export function applyTheme(options: MarkupDeckOptions, theme: ThemeParts): Marku
 }
 
 /**
- * Build a deck definition from a markup document, applying the theme(s) `options.theme` names
- * first: `name.md` or `name.json` in the themes folders, in order, under the deck's own styles,
- * layout, presenter settings, background and viewport. Without a theme, the same as `markupDeck`.
+ * The options with a deck's settings under them: what the options say wins, maps (layout,
+ * presenter, macros, styles) merge entry by entry, and the options' folders come before the
+ * settings' ones.
+ */
+function withSettings(options: MarkupDeckOptions, settings: DeckSettings): MarkupDeckOptions {
+  const folders = Object.fromEntries(FOLDER_SETTINGS.map((key) => {
+    const own = (options as Record<string, unknown>)[key] as string[] | undefined;
+    const theirs = (settings as Record<string, unknown>)[key] as string[] | undefined;
+    return [key, own || theirs ? [...(own ?? []), ...(theirs ?? [])] : undefined];
+  }));
+  return {
+    ...options,
+    ...folders,
+    title: options.title ?? settings.title,
+    root: options.root ?? settings.root,
+    background: options.background ?? settings.background,
+    viewport: options.viewport ?? settings.viewport,
+    showOutline: options.showOutline ?? settings.showOutline,
+    theme: options.theme ?? settings.theme,
+    layout: options.layout instanceof LayoutConfig ? options.layout : { ...(settings.layout as LayoutConfigOptions | undefined), ...options.layout },
+    presenter: options.presenter instanceof PresenterConfig ? options.presenter : { ...(settings.presenter as PresenterConfigOptions | undefined), ...options.presenter },
+    macros: settings.macros || options.macros ? { ...(settings.macros as Record<string, MacroDefinition> | undefined), ...options.macros } : undefined,
+    styles: settings.styles || options.styles ? { ...settings.styles, ...options.styles } : undefined,
+  };
+}
+
+/**
+ * Build a deck definition from a markup document: read it, take the settings of its front matter
+ * and of the files it `extends`, load its slide classes, and apply the theme(s) it names (`name.md`
+ * in the themes folders, in order, under the deck's own styles, layout, presenter settings,
+ * background and viewport). Options given here win over the front matter. The way to open a deck
+ * by its URL: every setting is known before the player starts.
  */
 export async function loadMarkupDeck(options: MarkupDeckOptions): Promise<ResolvedDeck> {
-  const names = [options.theme ?? []].flat();
-  if (!names.length) return markupDeck({ ...options, theme: undefined });
-  const folders = libraryFolders(options);
-  const read = libraryReader(options, deckBase(options), folders.paths);
+  const here = typeof location !== 'undefined' ? location.href : undefined;
+  const url = options.url !== undefined ? new URL(options.url, here).href : undefined;
+  let text = options.source;
+  if (text === undefined) {
+    if (url === undefined) throw new Error('loadMarkupDeck requires source or url');
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Cannot load ${options.url} (${response.status})`);
+    text = await response.text();
+  }
+  const where = url ?? options.basePath ?? here ?? 'the deck';
+  let resolved: Awaited<ReturnType<typeof resolveSettings>>;
+  try {
+    resolved = await resolveSettings(text, where, {
+      read: async (target) => {
+        const response = await fetch(target);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.text();
+      },
+      join: (base, path) => new URL(path, base).href,
+    });
+  } catch (error) {
+    throw new MarkupError((error as Error).message);
+  }
+  let classes = options.classes ?? options.imports;
+  if (!classes && resolved.settings.classes) classes = (await import(/* @vite-ignore */ resolved.settings.classes)) as SlideNamespace;
+  const merged = withSettings({ ...options, classes, source: resolved.body, url: options.url }, resolved.settings);
+  const names = [merged.theme ?? []].flat();
+  if (!names.length) return markupDeck({ ...merged, theme: undefined });
+  const folders = libraryFolders(merged);
+  const read = libraryReader(merged, deckBase(merged), folders.paths);
   let theme: ThemeParts = {};
   for (const name of names) {
     const markdown = await read(`${name}.md`, folders.themes);
-    const json = markdown === null ? await read(`${name}.json`, folders.themes) : null;
-    if (markdown === null && json === null) throw new MarkupError(`No theme ${name}.md or ${name}.json in the deck's themes folders`);
-    theme = mergeThemes(theme, parseTheme(markdown ?? (json as string), markdown !== null ? 'md' : 'json'));
+    if (markdown === null) throw new MarkupError(`No theme ${name}.md in the deck's themes folders`);
+    theme = mergeThemes(theme, parseTheme(markdown));
   }
-  return markupDeck(applyTheme(options, theme));
+  return markupDeck(applyTheme(merged, theme));
 }
 
-/** Build a deck definition from a markup document. */
+/**
+ * Build a deck definition from a markup document given as text, its front matter applied under
+ * the options; with only a URL, the document must have no front matter (`loadMarkupDeck` reads
+ * one before the player starts).
+ */
 export function markupDeck(options: MarkupDeckOptions): ResolvedDeck {
-  const layout = options.layout instanceof LayoutConfig ? options.layout : new LayoutConfig(options.layout ?? {});
   if (options.source === undefined && options.url === undefined) throw new Error('markupDeck requires source or url');
-  if (options.source !== undefined && options.url !== undefined) throw new Error('Set either source or url, not both');
+  if (options.source !== undefined) {
+    const { yaml, body } = splitFrontMatter(options.source);
+    if (yaml !== null) {
+      const settings = parseSettings(yaml, options.url ?? 'the deck');
+      if (settings.extends || settings.theme || settings.classes) {
+        throw new Error('A deck whose front matter extends a file, names a theme or slide classes is opened by loadMarkupDeck, which loads them before the player starts');
+      }
+      const base = deckBase(options);
+      for (const key of FOLDER_SETTINGS) {
+        const folders = (settings as Record<string, unknown>)[key] as string | string[] | undefined;
+        if (folders !== undefined) (settings as Record<string, unknown>)[key] = resolveFolders([folders].flat(), base);
+      }
+      options = withSettings({ ...options, source: body }, settings);
+    }
+  }
+  const layout = options.layout instanceof LayoutConfig ? options.layout : new LayoutConfig(options.layout ?? {});
   if (options.theme !== undefined) throw new Error('A theme is applied by loadMarkupDeck, which loads it before the player starts: use it in place of markupDeck');
   // The presenter's table of camera transitions is filled when the deck loads; it is shared by reference.
   const presenter = options.presenter instanceof PresenterConfig ? options.presenter : new PresenterConfig({ ...(options.presenter ?? {}), transitions: { ...(options.presenter?.transitions ?? {}) } });
   const transitions = presenter.transitions;
   const definition: DeckDefinition = {
-    title: options.title ?? (options.url ? options.url.split('/').pop()?.replace(/\.[^.]+$/, '') : undefined) ?? 'Zoomdeck',
+    title: options.title ?? defaultTitle(options.url ?? options.basePath),
     presenter,
     foreground: layout.color,
     background: options.background,
@@ -321,9 +392,14 @@ export function markupDeck(options: MarkupDeckOptions): ResolvedDeck {
       let basePath = options.basePath;
       if (options.url !== undefined) {
         const url = new URL(options.url, typeof location !== 'undefined' ? location.href : undefined).href;
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`Cannot load ${options.url} (${response.status})`);
-        source = await response.text();
+        if (source === undefined) {
+          const response = await fetch(url);
+          if (!response.ok) throw new Error(`Cannot load ${options.url} (${response.status})`);
+          source = await response.text();
+          if (splitFrontMatter(source).yaml !== null) {
+            throw new MarkupError(`${options.url} has front matter: open it with loadMarkupDeck, which reads its settings before the player starts`);
+          }
+        }
         basePath = basePath ?? url;
       }
       // The fonts, and MathJax when the markup has formulas, load while the markup is parsed and
@@ -444,88 +520,21 @@ export function markupDeck(options: MarkupDeckOptions): ResolvedDeck {
   return defineDeck(definition);
 }
 
-/** JSON configuration placed next to a Markdown deck (`deck.json`). */
-export interface DeckConfig {
-  markup: string;
-  title?: string;
-  root?: string;
-  layout?: LayoutConfigOptions;
-  presenter?: PresenterConfigOptions;
-  background?: string;
-  viewport?: ViewportSize;
-  showOutline?: boolean;
-  macros?: Record<string, MacroDefinition>;
-  /** Named styles applied by role (`heading`, `body`, `code`, …) or `.class` tokens. */
-  styles?: Record<string, string | Record<string, unknown>>;
-  /** Module URL exporting slide classes for `[[subslide: Name ...]]` directives. */
-  classes?: string;
-  /** @deprecated Use `classes`. */
-  imports?: string;
-  /** Folders searched, after the deck's own, for imported Markdown, images, videos and pages; relative to this file. */
-  paths?: string[];
-  /** Folders with artworks of the deck's own (`name.svg`, `name.js`, `name.ts`); `artworks/` next to the Markdown is searched anyway. */
-  artworks?: string[];
-  /** Folders with font files; `fonts/` next to the Markdown is searched anyway. */
-  fonts?: string[];
-  /** Folders with effect modules; `effects/` next to the Markdown is searched anyway. */
-  effects?: string[];
-  /** Folders with chart modules; `charts/` next to the Markdown is searched anyway. */
-  charts?: string[];
-  /** Folders with language profiles; `languages/` next to the Markdown is searched anyway. */
-  languages?: string[];
-  /** Folders with code themes; `code-themes/` next to the Markdown is searched anyway. */
-  codeThemes?: string[];
-  /** Folders with themes; `themes/` next to the Markdown is searched anyway. */
-  themes?: string[];
-  /** The theme(s) applied before `styles`, by name. */
-  theme?: string | string[];
-  /** Folders with slide classes, `Name.ts`; `slides/` next to the Markdown is searched anyway. */
-  slides?: string[];
-  /** Folders with directive modules; `directives/` next to the Markdown is searched anyway. */
-  directives?: string[];
-  /** Folders with snippets; `snippets/` next to the Markdown is searched anyway. */
-  snippets?: string[];
-  /** Folders with camera transitions; `transitions/` next to the Markdown is searched anyway. */
-  transitions?: string[];
-}
-
-/** Load a `deck.json` configuration and its Markdown document. */
-export async function loadDeckConfig(configUrl: string, loadModule?: (url: string) => Promise<SlideNamespace>): Promise<ResolvedDeck> {
-  const url = new URL(configUrl, typeof location !== 'undefined' ? location.href : undefined).href;
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Cannot load ${configUrl} (${response.status})`);
-  const config = (await response.json()) as DeckConfig;
-  if (typeof config.markup !== 'string') throw new Error('deck.json requires a "markup" path');
-  let classes: SlideNamespace | undefined;
-  const modulePath = config.classes ?? config.imports;
-  if (modulePath) {
-    const moduleUrl = new URL(modulePath, url).href;
-    classes = loadModule ? await loadModule(moduleUrl) : ((await import(/* @vite-ignore */ moduleUrl)) as SlideNamespace);
+/**
+ * A deck's title when its front matter gives none: the name of the folder holding the Markdown
+ * (`tour` for `tour/slides.md`), else the file's own name, else Zoomdeck. The same wherever the
+ * deck is opened or built.
+ */
+export function defaultTitle(location: string | undefined): string {
+  if (!location) return 'Zoomdeck';
+  let path = location;
+  try {
+    path = decodeURIComponent(new URL(location, 'file:///').pathname);
+  } catch {
+    /* a plain path */
   }
-  return loadMarkupDeck({
-    url: new URL(config.markup, url).href,
-    title: config.title,
-    root: config.root,
-    layout: config.layout,
-    presenter: config.presenter,
-    background: config.background,
-    viewport: config.viewport,
-    showOutline: config.showOutline,
-    macros: config.macros,
-    styles: config.styles,
-    classes,
-    paths: resolveFolders(config.paths, url),
-    artworks: resolveFolders(config.artworks, url),
-    fonts: resolveFolders(config.fonts, url),
-    effects: resolveFolders(config.effects, url),
-    charts: resolveFolders(config.charts, url),
-    languages: resolveFolders(config.languages, url),
-    codeThemes: resolveFolders(config.codeThemes, url),
-    themes: resolveFolders(config.themes, url),
-    theme: config.theme,
-    slides: resolveFolders(config.slides, url),
-    directives: resolveFolders(config.directives, url),
-    snippets: resolveFolders(config.snippets, url),
-    transitions: resolveFolders(config.transitions, url),
-  });
+  const parts = path.split('/').filter(Boolean);
+  const file = parts.pop();
+  const folder = parts.pop();
+  return folder ?? file?.replace(/\.[^.]+$/, '') ?? 'Zoomdeck';
 }

@@ -69,7 +69,7 @@ export { PropertyAnimation, Tremble, makeEffect, effectFromModule, enterAnimatio
 export type { PropertyTargets, EffectOptions, AnimationTiming, RateFunction, TrembleOptions, EffectFactory, EffectModule } from './animations';
 export type { CodeToken, CodeTheme, TokenClass, CodeLayoutOptions } from './markup/code';
 export type { TextRun, MathPiece, MathFactory } from './markup/text';
-export { markupDeck, loadMarkupDeck, loadDeckConfig, resolveFolders, parseTheme, applyTheme } from './markup/deck';
+export { markupDeck, loadMarkupDeck, resolveFolders, parseTheme, applyTheme, defaultTitle } from './markup/deck';
 export type { ThemeParts } from './markup/deck';
 export { directiveFromModule } from './directives';
 export type { DirectiveOptions, DirectiveFactory, DirectiveModule } from './directives';
@@ -78,7 +78,7 @@ export { pdfDeck, pdfPages, pdfUrl, loadPdfJs, PdfPage, PageImage, PAGE_IMAGES, 
 export type { PdfDeckOptions, PdfSource, PageImageOptions } from './pdfdeck';
 export { expandImports, importPath, describeOrigin, IMPORT_DIRECTIVE } from './markup/imports';
 export type { ExpandOptions, ExpandedSource, LineOrigin } from './markup/imports';
-export type { MarkupDeckOptions, DeckConfig } from './markup/deck';
+export type { MarkupDeckOptions } from './markup/deck';
 export { svgToMobject, loadSvgMobject } from './svg';
 export { sketch, sketchDrawable, sketchSeed, FILL_STYLES, SKETCH_SCALE } from './sketch';
 export type { SketchOptions, FillStyle, OutlineMobject } from './sketch';

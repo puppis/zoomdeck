@@ -53,9 +53,9 @@ function! zoomdeck#Command() abort
   return s:resolved
 endfunction
 
+" The deck is the Markdown file itself: its settings are in its front matter.
 function! s:Deck() abort
-  let l:json = expand('%:p:h') . '/deck.json'
-  return filereadable(l:json) ? l:json : expand('%:p')
+  return expand('%:p')
 endfunction
 
 " The --editor template that opens a line in this Vim through its server, or '' without one.

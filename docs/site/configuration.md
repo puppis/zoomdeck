@@ -1,45 +1,111 @@
 ---
 title: Configuration
-description: Every key of deck.json, the layout and presenter options, and the command line.
+description: The front matter of a deck's Markdown: every setting, the layout and presenter options, settings shared with extends, and the command line.
 ---
 
 <a class="try" href="tour.html#slide=config">Open in the tour ↗</a>
 
-## deck.json
+## Front matter
 
-```json
-{
-  "markup": "slides.md",
-  "title": "Zoomdeck tour",
-  "root": "tour",
-  "classes": "code-slides.ts",
-  "background": "#0F172A",
-  "viewport": { "width": 16, "height": 9 },
-  "layout": { "color": "#F1F5F9", "fontSize": 26, "headingSize": 40, "codeSize": 19 },
-  "presenter": { "transitionTime": 0.8, "showSlideBorders": false },
-  "styles": { "footnote": { "font_size": 18, "color": "GRAY" } },
-  "macros": { "N": "\\mathbb{N}", "R": "\\mathbb{R}" },
-  "showOutline": false
-}
+A deck is its Markdown file. Its settings sit at the top, as YAML between a first line `---`
+and the next `---` (or `...`):
+
+```markdown
+---
+title: Zoomdeck tour
+classes: code-slides.ts
+viewport: 16x9
+layout:
+  fontSize: 26
+  headingSize: 40
+  codeSize: 19
+presenter:
+  transitionTime: 0.8
+  showSlideBorders: false
+macros:
+  N: '\mathbb{N}'
+  R: '\mathbb{R}'
+  pair: ['\langle #1, #2 \rangle', 2]
+styles:
+  footnote: font_size=18 color=GRAY
+---
+
+::: slide {#tour width=44}
+…
 ```
 
-| Key | Meaning |
-| --- | --- |
-| `markup` | the Markdown file, relative to `deck.json` (required) |
-| `title` | the page title and outline root label |
-| `root` | the root slide ID, when you want it checked explicitly |
-| `classes` | module exporting `Slide` classes for `[[subslide: Name]]` (`imports` is still accepted) |
-| `paths` | folders searched, after the Markdown file's own, for the files it names: imported Markdown, images, videos, pages; relative to this file, as in `["../shared", "figures"]` |
-| `artworks` | folders with artworks of the deck's own, `name.svg` or `name.js`/`.ts`, for `[[artwork: name]]`; an `artworks/` folder next to the Markdown is searched anyway, then the `paths`; see [Icons](icons.html#artworks-of-your-own) |
-| `snippets`, `directives`, `fonts`, `effects`, `transitions`, `charts`, `languages`, `codeThemes`, `themes`, `slides` | folders with snippets, directive modules, fonts, effect modules, camera transitions, chart modules, language profiles, code themes, themes and slide classes of the deck's own; the folder of the same name (`code-themes/` for `codeThemes`) next to the Markdown is searched anyway, then the `paths`; see [Extending a deck](extending.html) |
-| `theme` | a theme, or a list of them, under the deck's own `styles`, `layout`, `presenter`, `background` and `viewport`: `themes/<name>.md` or `.json`, see [Extending a deck](extending.html#themes) |
-| `background` | canvas background color (white by default) |
-| `viewport` | proportions the camera fits (the stage reveals surrounding canvas when it has room) |
-| `layout` | typography and spacing, below |
-| `presenter` | timing and camera policy, below |
-| `styles` | named styles applied by `.class` tokens and roles, see [Styles](styles.html) |
-| `macros` | LaTeX macros for every formula: an expansion, or `[expansion, arguments]`, or `[expansion, arguments, default of the optional first one]` (see [Mathematics](math.html)) |
-| `showOutline` | open the outline at start |
+The front matter's lines are left blank when the slides are parsed, so every line keeps its
+number, in error messages and for `zoomdeck jump`. Every way of opening the deck (the command
+line, the desktop app, a page that mounts it, a notebook) reads the same settings, and the
+default title is the same everywhere; a file without front matter has the defaults. YAML single
+quotes keep backslashes as written, so a macro is `'\mathbb{N}'`, not `"\\mathbb{N}"`; they
+also keep a color such as `'#0F172A'` from being read as a comment. `deck.json` is no longer
+read: its settings move into the front matter, without `markup`, and `imports` is written
+`classes`.
+
+| Setting | Kind | Default | Meaning |
+| --- | --- | --- | --- |
+| `title` | text | the name of the folder holding the Markdown (`tour` for `tour/slides.md`) | the page title and outline root label |
+| `root` | text | none | the root slide ID, when you want it checked explicitly; an error on a forest |
+| `background` | text | white | canvas background color |
+| `viewport` | `16x9` (also `16:9`) or `{ width: 16, height: 9 }` | 16 × 9 | proportions the camera fits (the stage reveals surrounding canvas when it has room) |
+| `showOutline` | true or false | false | open the outline at start |
+| `theme` | a name or a list of names | none | themes under the deck's own `styles`, `layout`, `presenter`, `background` and `viewport`: `themes/<name>.md`, see [Extending a deck](extending.html#themes) |
+| `layout` | map | below | typography and spacing, below |
+| `presenter` | map | below | timing and camera policy, below |
+| `macros` | map | none | LaTeX macros for every formula, in MathJax's form: an expansion, or `[expansion, number of arguments]`, or `[expansion, number of arguments, default of an optional first argument]` (see [Mathematics](math.html)) |
+| `styles` | map | none | named styles applied by `.class` tokens and roles, a name to an attribute string or a map, see [Styles](styles.html) |
+| `classes` | path | none | module exporting `Slide` classes for `[[subslide: Name]]`, relative to the file |
+| `extends` | path | none | a Markdown or YAML file whose settings this one builds on, below |
+| `paths` | folder or list of folders | none | folders searched, after the Markdown file's own, for the files it names: imported Markdown, images, videos, pages; as in `[../shared, figures]` |
+| `artworks` | folder or list of folders | `artworks/` | folders with artworks of the deck's own, `name.svg` or `name.js`/`.ts`, for `[[artwork: name]]`; an `artworks/` folder next to the Markdown is searched anyway, then the `paths`; see [Icons](icons.html#artworks-of-your-own) |
+| `snippets`, `directives`, `fonts`, `effects`, `transitions`, `charts`, `languages`, `codeThemes`, `themes`, `slides` | folder or list of folders | the folder of the same name | folders with snippets, directive modules, fonts, effect modules, camera transitions, chart modules, language profiles, code themes, themes and slide classes of the deck's own; the folder of the same name (`code-themes/` for `codeThemes`) next to the Markdown is searched anyway, then the `paths`; see [Extending a deck](extending.html) |
+
+Paths (`classes`, `extends` and the folders) are relative to the file that names them. An
+unknown setting is an error that lists the allowed ones.
+
+## Shared settings
+
+`extends: path` builds on another file's settings: a Markdown file, whose front matter is used,
+or a `.yaml`/`.yml` file, which is all settings. Settings shared by several talks live there once:
+
+```yaml
+# course.yaml, next to the talks' folders
+theme: lecture
+themes: themes
+paths: shared
+layout:
+  fontSize: 26
+  font: Inter
+macros:
+  N: '\mathbb{N}'
+```
+
+```markdown
+---
+extends: ../course.yaml
+title: Week 3
+layout:
+  fontSize: 24
+macros:
+  R: '\mathbb{R}'
+---
+```
+
+- `layout`, `presenter`, `macros` and `styles` merge entry by entry, and the file's own entries
+  win: week 3 has `fontSize: 24`, `font: Inter` and both macros.
+- Folder settings add up, the file's own folders first.
+- Every other setting is replaced by the file's own.
+- Paths resolve against the file that names them: `themes` and `shared` above are folders next
+  to `course.yaml`.
+- An extended file may extend another in turn; a cycle is an error.
+
+## Settings given in code
+
+`loadMarkupDeck` and `markupDeck` take the settings as options too
+([A deck inside a page](embedding.html)), and what code gives wins over the front matter:
+`layout`, `presenter`, `macros` and `styles` merge entry by entry, the options' entries winning,
+and the options' folders come before the front matter's.
 
 ## layout
 
@@ -84,21 +150,25 @@ node bin/zoomdeck.mjs build <deck> -o <folder> [--one-file] [--show-outline] [--
 node bin/zoomdeck.mjs jump <file> <line>
 ```
 
-`<deck>` is a `deck.json`, a Markdown file (default settings) or a JS/TS module exporting a deck
-definition. `serve` watches the deck's folder and any `--watch` path, `--host` also listens on
-the network for a tablet, and `--editor` names the editor (`emacs`, `sublime`, `code`, `vim`,
-`jetbrains`, … or a command with `{file}` and `{line}`; `ZOOMDECK_EDITOR` is the default) that
-the player's E key and Alt + click open source lines with. `jump` moves the running preview to
-the stop of a source line. `build` writes `index.html`, `assets/` and `deck/` into the folder, or
-`offline.html` with `--one-file`; `--without-notes` leaves the presenter's `::: notes` out of
-either. Code decks in `--one-file` mode embed the code but not images they load themselves.
+`<deck>` is a Markdown file, a PDF or a JS/TS module exporting a deck definition; a `.json`
+path is refused, with a message saying to move its settings into the front matter. Both
+commands read the front matter, with the files it extends. `serve` watches the deck's folder,
+the folders its settings name, the folders of the files it extends and any `--watch` path,
+`--host` also listens on the network for a tablet, and `--editor` names the editor (`emacs`,
+`sublime`, `code`, `vim`, `jetbrains`, … or a command with `{file}` and `{line}`;
+`ZOOMDECK_EDITOR` is the default) that the player's E key and Alt + click open source lines
+with. `jump` moves the running preview to the stop of a source line. `build` writes
+`index.html`, `assets/` and `deck/` into the folder, or `offline.html` with `--one-file`;
+`--without-notes` leaves the presenter's `::: notes` out of either. Code decks in `--one-file`
+mode embed the code but not images they load themselves.
 
 ## Development page
 
-`npm run dev` serves `index.html`, which reads `?deck=` (a `deck.json`, a Markdown file or a
-module path, also `/@fs/absolute/path`) and `&scene=` for named exports, and opens the tour when
-`deck` is omitted. Files under `examples/` trigger a reload on change, and `zoomdeck jump` and
-the inverse search work there too (set `ZOOMDECK_EDITOR` before `npm run dev`).
+`npm run dev` serves `index.html`, which reads `?deck=` (a Markdown file, a PDF or a module
+path, also `/@fs/absolute/path`) and `&scene=` for named exports, and opens
+`examples/tour/slides.md` when `deck` is omitted. Files under `examples/` trigger a reload on
+change, and `zoomdeck jump` and the inverse search work there too (set `ZOOMDECK_EDITOR` before
+`npm run dev`).
 
 ## Package scripts
 

@@ -62,7 +62,7 @@ describe('tokenizeCode', () => {
 
   it('handles JSON keys, shell flags, TeX commands and tags', () => {
     expect(classes(tokenizeCode('{"markup": "slides.md", "n": 2}', 'json')[0])).toEqual(['plain:{', 'attribute:"markup"', 'plain::', 'string:"slides.md"', 'plain:,', 'attribute:"n"', 'plain::', 'number:2', 'plain:}']);
-    expect(classes(tokenizeCode('node bin/x.mjs build deck.json -o out --one-file', 'bash')[0])).toContain('attribute:--one-file');
+    expect(classes(tokenizeCode('node bin/x.mjs build slides.md -o out --one-file', 'bash')[0])).toContain('attribute:--one-file');
     expect(classes(tokenizeCode('\\frac{a}{b} % half', 'latex')[0])).toEqual(['keyword:\\frac', 'plain:{a}{b}', 'comment:% half']);
     expect(classes(tokenizeCode('<svg width="10"/>', 'svg')[0])).toEqual(['keyword:<svg', 'attribute:width', 'plain:=', 'string:"10"', 'keyword:/>']);
     expect(languageFor('C++')).toBe('clike');

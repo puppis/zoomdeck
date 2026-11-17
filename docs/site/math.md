@@ -16,7 +16,7 @@ $$
 $$ \textcolor{Orange}{a}^2 + {\color{Cerulean} b^2} = c^2 $$
 :::
 
-Macros from deck.json: $\N \subset \R$, $\pair{x}{y} \in \R^2$.
+Macros from the front matter: $\N \subset \R$, $\pair{x}{y} \in \R^2$.
 ```
 
 - **Inline math** uses single dollars and is laid out on the text baseline, wrapping with the
@@ -24,17 +24,18 @@ Macros from deck.json: $\N \subset \R$, $\pair{x}{y} \in \R^2$.
 - **Display math** uses `$$` on its own lines, or `$$ … $$` on one line, and is one element.
   To give it attributes (position, size, step), wrap it in a `::: {.element …}` container.
 - Formulas render through MathJax with the `ams`, `newcommand` and `configmacros` packages.
-  `macros` in `deck.json` defines commands for the whole deck, written as in MathJax: an
+  `macros` in the front matter defines commands for the whole deck, written as in MathJax: an
   expansion, or a list of the expansion and its number of arguments, `#1` to `#9` in the
   expansion; a third item makes the first argument optional, with that default, given in
-  brackets as in LaTeX's `\newcommand`:
+  brackets as in LaTeX's `\newcommand`. Single quotes keep the backslashes as written, and keep
+  a default such as `'2'` text:
 
-  ```json
-  "macros": {
-    "N": "\\mathbb{N}", "R": "\\mathbb{R}",
-    "pair": ["\\langle #1, #2 \\rangle", 2],
-    "norm": ["\\lVert #2 \\rVert_{#1}", 2, "2"]
-  }
+  ```yaml
+  macros:
+    N: '\mathbb{N}'
+    R: '\mathbb{R}'
+    pair: ['\langle #1, #2 \rangle', 2]
+    norm: ['\lVert #2 \rVert_{#1}', 2, '2']
   ```
 
   `$\pair{x}{y}$` gives ⟨x, y⟩, `$\norm{v}$` the 2-norm and `$\norm[\infty]{v}$` the other.

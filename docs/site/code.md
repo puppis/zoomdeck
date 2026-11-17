@@ -14,7 +14,7 @@ def visit(slide):
 ```
 
 ```json {x=0.6 y=1.3 step=2}
-{ "markup": "slides.md", "layout": { "codeSize": 18 } }
+{ "keywords": ["procedure", "while", "return"] }
 ```
 
 ```pseudo {x=0.6 y=0.4 step=3}

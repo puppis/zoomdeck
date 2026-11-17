@@ -36,9 +36,9 @@ describe('artworks of a deck', () => {
   });
 
   it('names its folders relative to the configuration, or keeps them relative to the document', () => {
-    expect(resolveFolders(['shared', 'art/'], 'https://x.org/talk/deck.json')).toEqual(['https://x.org/talk/shared/', 'https://x.org/talk/art/']);
-    expect(resolveFolders(['../common'], 'https://x.org/talk/deck.json')).toEqual(['https://x.org/common/']);
-    expect(resolveFolders(['https://cdn.org/a', '/root/b'], 'https://x.org/talk/deck.json')).toEqual(['https://cdn.org/a/', '/root/b/']);
+    expect(resolveFolders(['shared', 'art/'], 'https://x.org/talk/shared.yaml')).toEqual(['https://x.org/talk/shared/', 'https://x.org/talk/art/']);
+    expect(resolveFolders(['../common'], 'https://x.org/talk/shared.yaml')).toEqual(['https://x.org/common/']);
+    expect(resolveFolders(['https://cdn.org/a', '/root/b'], 'https://x.org/talk/shared.yaml')).toEqual(['https://cdn.org/a/', '/root/b/']);
     expect(resolveFolders(['paths/0'])).toEqual(['paths/0/']);
     expect(resolveFolders(undefined)).toEqual([]);
   });
@@ -101,18 +101,17 @@ describe('the search folders of a deck', () => {
     expect(await renderer.locate('pic.png')).toBe('https://x.org/talk/pic.png');
   });
 
-  it('are read from the configuration by the command, existing ones only, with artworks/ next to the Markdown', () => {
+  it('are read from the front matter by the command, existing ones only, with artworks/ next to the Markdown', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'zoomdeck-folders-'));
     try {
       mkdirSync(join(dir, 'shared'));
       mkdirSync(join(dir, 'src', 'artworks'), { recursive: true });
-      writeFileSync(join(dir, 'src', 'slides.md'), '::: slide {#a}\nx\n:::\n');
-      writeFileSync(join(dir, 'deck.json'), JSON.stringify({ markup: 'src/slides.md', paths: ['shared', 'absent'], artworks: ['shared'] }));
-      const folders = deckFolders(join(dir, 'deck.json'));
+      writeFileSync(join(dir, 'src', 'slides.md'), '---\npaths: [../shared, ../absent]\nartworks: ../shared\n---\n::: slide {#a}\nx\n:::\n');
+      const folders = await deckFolders(join(dir, 'src', 'slides.md'));
       expect(folders.paths).toEqual([join(dir, 'shared')]);
       expect(folders.artworks).toEqual([join(dir, 'shared'), join(dir, 'src', 'artworks')]);
       expect(folders.all.length).toBe(3);
-      expect(deckFolders(join(dir, 'nope.json')).all).toEqual([]);
+      await expect(deckFolders(join(dir, 'nope.md'))).rejects.toThrow();
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

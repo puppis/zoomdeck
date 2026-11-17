@@ -8,7 +8,7 @@ one kind of thing, one file per name, and the name is what the Markdown says: `[
 expands `snippets/card.md`, `[[gauge: …]]` draws with `directives/gauge.ts`, `[[effect: pulse …]]`
 plays `effects/pulse.ts`, `transition=swoop` moves the camera with `transitions/swoop.ts`,
 `type=donut` draws with `charts/donut.ts`, `` ```zig `` colors with `languages/zig.json`, and
-`"font": "Inter"` loads `fonts/Inter.woff2`. Nothing registers
+`font: Inter` loads `fonts/Inter.woff2`. Nothing registers
 anything: a name that is not built in is looked up in the folders when the deck is built, and a
 name no folder has is an error that names the folders (or, for a font, a family left to the
 browser). The preview watches these folders, and the exports carry them: modules are bundled,
@@ -17,7 +17,6 @@ files copied into the folder export or embedded in the single file.
 ```text
 talk/
 ├── slides.md
-├── deck.json
 ├── snippets/        card.md             [[snippet: card id=one title="…"]]
 ├── directives/      gauge.ts            [[gauge: #g level=0.7]]
 ├── fonts/           Inter.woff2, Inter-Bold.woff2, Inter-Italic.woff2, Inter-BoldItalic.woff2
@@ -25,18 +24,19 @@ talk/
 ├── transitions/     swoop.ts            transition=swoop
 ├── charts/          donut.ts            ```chart {type=donut src=data.csv}
 ├── languages/       zig.json            ```zig
-├── code-themes/     sepia.json          "layout": { "codeTheme": "sepia" }
-├── themes/          lecture.md          "theme": "lecture"
+├── code-themes/     sepia.json          layout: { codeTheme: sepia }
+├── themes/          lecture.md          theme: lecture
 ├── artworks/        rocket.svg, gate.ts [[artwork: rocket]], [[artwork: gate]]
 └── slides/          Orbit.ts            [[subslide: Orbit]]
 ```
 
-The standard folders are found on their own. `deck.json` names further ones under the same keys
-(`snippets`, `directives`, `fonts`, `effects`, `transitions`, `charts`, `languages`, `codeThemes`,
-`themes`, `artworks`, `slides`), relative to itself, so a library shared between talks lives once:
-`"effects": ["../shared/effects"]`. The `paths` folders are searched last for every kind. Modules
-may import `manim-web` and `zoomdeck` as [code-authored slides](code-slides.html) do, and need no
-`node_modules` of their own.
+The standard folders are found on their own. The front matter names further ones under the same
+keys (`snippets`, `directives`, `fonts`, `effects`, `transitions`, `charts`, `languages`,
+`codeThemes`, `themes`, `artworks`, `slides`), relative to the file that names them, so a library
+shared between talks lives once: `effects: ../shared/effects`, or the same line in a file the
+talks extend ([Configuration](configuration.html#shared-settings)). The `paths` folders are
+searched last for every kind. Modules may import `manim-web` and `zoomdeck` as
+[code-authored slides](code-slides.html) do, and need no `node_modules` of their own.
 
 ## Snippets
 
@@ -145,8 +145,8 @@ export default function swoop(start: CameraState, target: CameraState, alpha: nu
 }
 ```
 
-`transition=` on a slide or an include, and `"presenter": { "transition": "…" }` for the whole
-deck, take `zoom`, `cut`, or the name of a module in `transitions/`: a function that receives the
+`transition=` on a slide or an include, and `presenter: { transition: … }` in the front matter
+for the whole deck, take `zoom`, `cut`, or the name of a module in `transitions/`: a function that receives the
 camera's start and target (center and width) and how far the move is, 0 to 1 linear in time, and
 returns where the camera is; it eases as it likes. A slide's transition governs every move into
 that slide, from wherever the camera comes; the move out of it belongs to the next destination.
@@ -196,8 +196,8 @@ is looked for as `languages/<name>.json`, once per deck.
 ```
 
 A code theme maps token classes (`keyword`, `type`, `string`, `comment`, `number`, `directive`,
-`attribute`, and `plain` for everything else) to colors; `"layout": { "codeTheme":
-"sepia" }` applies `code-themes/sepia.json` to every listing. Classes the theme leaves out keep
+`attribute`, and `plain` for everything else) to colors; `layout: { codeTheme: sepia }` in the
+front matter applies `code-themes/sepia.json` to every listing. Classes the theme leaves out keep
 the color the deck's text color gives them.
 
 ## Themes
@@ -216,14 +216,14 @@ deck: background=#0F172A viewport=16x9
 
 A theme is a deck's look kept apart from its slides: a Markdown file whose `::: styles` blocks (or
 every line, when it has no block) define [styles](styles.html), with three reserved names for the
-settings that are not styles: `layout:` takes the keys of `layout` in `deck.json`, `presenter:`
-those of `presenter`, and `deck:` takes `background=` and `viewport=16x9`. A JSON theme is either
-a `styles` map or `{ "styles", "layout", "presenter", "background", "viewport" }`. `"theme":
-"lecture"` in `deck.json` applies `themes/lecture.md`; a list `["lecture", "wide"]` applies
-several, later ones over earlier. The deck's own `styles`, `layout`, `presenter`, `background` and
-`viewport` win over the theme key by key, and its `::: styles` block over everything. Since styles
-cover the roles (`heading`, `body`, `code`, `chart`, `table`, …) and any class, and the theme sets
-typography, timing and colors with them, a theme restyles a deck without touching its slides.
+settings that are not styles: `layout:` takes the keys of `layout` in the front matter,
+`presenter:` those of `presenter`, and `deck:` takes `background=` and `viewport=16x9`.
+`theme: lecture` in the front matter applies `themes/lecture.md`; a list `[lecture, wide]`
+applies several, later ones over earlier. The deck's own `styles`, `layout`, `presenter`,
+`background` and `viewport` win over the theme key by key, and its `::: styles` block over
+everything. Since styles cover the roles (`heading`, `body`, `code`, `chart`, `table`, …) and any
+class, and the theme sets typography, timing and colors with them, a theme restyles a deck
+without touching its slides.
 Themes are read before the player starts, so a page of your own that names one uses
 `loadMarkupDeck` ([Embedding](embedding.html)) rather than `markupDeck`.
 

@@ -106,8 +106,8 @@ The development page opens the **tour deck** (`examples/tour/`), a tour of every
 dialect and the player in which each slide shows the listing that produces it. Other decks are
 chosen through the query string:
 
-- `http://localhost:5173/?deck=examples/tour/deck.json`: a Markdown deck with its configuration
-- `http://localhost:5173/?deck=path/to/slides.md`: a bare Markdown file with default settings
+- `http://localhost:5173/?deck=examples/tour/slides.md`: a Markdown deck, its settings in its front matter
+- `http://localhost:5173/?deck=path/to/slides.md`: any other Markdown deck
 - `http://localhost:5173/?deck=path/to/paper.pdf`: a PDF, page after page
 - `http://localhost:5173/?deck=examples/tree-deck&scene=Demo`: a named export of a module
 
@@ -115,21 +115,22 @@ chosen through the query string:
 
 ```bash
 # Live preview while editing: reloads on save and keeps your current slide/step.
-node bin/zoomdeck.mjs serve examples/tour/deck.json
+node bin/zoomdeck.mjs serve examples/tour/slides.md
 
 # Static bundle: index.html + assets/ + deck/ (copy or host the whole folder).
-node bin/zoomdeck.mjs build examples/tour/deck.json -o build/tour
+node bin/zoomdeck.mjs build examples/tour/slides.md -o build/tour
 
 # One portable file with every asset embedded as a data URI.
-node bin/zoomdeck.mjs build examples/tour/deck.json -o build/tour --one-file
+node bin/zoomdeck.mjs build examples/tour/slides.md -o build/tour --one-file
 ```
 
 `serve` accepts `--port N`, `--host` (for a tablet), `--no-open`, `--editor NAME` (the editor the
 player opens source lines with: E for the current stop, Alt + click for an element), `--scene
 Name` (for module decks) and repeatable `--watch PATH`; `zoomdeck jump <file> <line>` moves the
 running preview to the stop of a source line. `build` accepts `--show-outline`, `--without-notes` (an export for the audience, without the `::: notes`) and `--scene Name`. The deck argument is a
-`deck.json`, a Markdown file, a PDF, or a JS/TS module exporting a deck definition. Code-authored decks
-in `--one-file` mode embed the code but not images they load themselves.
+Markdown file (its settings in its front matter), a PDF, or a JS/TS module exporting a deck
+definition; a `.json` path is refused. Code-authored decks in `--one-file` mode embed the code but
+not images they load themselves.
 
 ### The desktop app
 
@@ -137,7 +138,7 @@ in `--one-file` mode embed the code but not images they load themselves.
 player and preview server, built with electron-builder:
 
 ```bash
-npm run desktop -- examples/tour/deck.json   # run the app from the checkout, with a deck
+npm run desktop -- examples/tour/slides.md   # run the app from the checkout, with a deck
 npm run desktop:dir                          # an unpacked build, for a quick try
 npm run desktop:build                        # the installers for this system, in release/
 ```
@@ -151,35 +152,35 @@ system asks on the first launch.
 ## Markdown decks
 
 Write slides in the Markdown dialect ([docs/markup.md](docs/markup.md); the tour deck under
-`examples/tour/` shows every construct next to its source) and place a `deck.json` next to the
-file:
+`examples/tour/` shows every construct next to its source) and put the deck's settings in the
+YAML front matter at the top of the file:
 
-```json
-{
-  "markup": "slides.md",
-  "title": "IntroductionToLogic",
-  "background": "#FFFFFF",
-  "viewport": { "width": 1024, "height": 768 },
-  "layout": { "defaultSlideSize": [16, 12], "font": "Times New Roman", "color": "BLACK", "fontSize": 36, "headingSize": 80, "codeSize": 24 },
-  "presenter": { "transitionTime": 1.5 },
-  "classes": "code-slides.ts",
-  "macros": { "N": "\\mathbb{N}" }
-}
+```markdown
+---
+title: IntroductionToLogic
+background: '#FFFFFF'
+viewport: 1024x768
+layout: { defaultSlideSize: [16, 12], font: Times New Roman, color: BLACK, fontSize: 36, headingSize: 80, codeSize: 24 }
+presenter: { transitionTime: 1.5 }
+classes: code-slides.ts
+macros: { N: '\mathbb{N}' }
+---
 ```
 
 `layout` takes the `LayoutConfig` fields (`fontSize`, `headingSize`, `codeSize`, `color`, `font`,
 `codeFont`, `codeTheme`, `margin`, `gap`, `lineGap`, `listIndent`, `animationTime`, `defaultSlideSize`, `textAnchor`); `presenter` takes the
 `PresenterConfig` fields; `viewport` sets the presentation proportions the camera fits (the
 browser reveals the surrounding canvas when its stage has extra room); `classes` names a module
-exporting the `Slide` classes used by `[[subslide: Name ...]]`.
+exporting the `Slide` classes used by `[[subslide: Name ...]]`; `extends: course.yaml` builds on
+settings shared by several talks.
 
 A deck is black text on a white canvas by default (`background` and `layout.color` change
 that). Prose uses the bundled Latin Modern Roman face and code the bundled Latin Modern Mono (LaTeX's Computer Modern family) unless `layout.font` or `layout.codeFont`
 replace them; `font=` on a paragraph, heading or label picks another face (the handwriting face
 Zeyada is bundled too, and a family in a `fonts/` folder is loaded by name). Formula sizes are
 calibrated to prose sizes, so text and math look like one LaTeX document by default. LaTeX renders
-through MathJax (ams, newcommand and configmacros packages), with the macros of `deck.json`, which
-may take arguments. `\textcolor` and `\color` with
+through MathJax (ams, newcommand and configmacros packages), with the macros of the front matter,
+which may take arguments. `\textcolor` and `\color` with
 dvipsnames or CSS colors are supported; other LaTeX packages are not. Inline math shares the text
 baseline. Fenced code blocks become verbatim listings with token colors for Python,
 JavaScript/TypeScript, C-like languages (C, C++, C#, Java, Rust, Go, Swift and more), shells, JSON,
@@ -261,9 +262,9 @@ npm install zoomdeck
 ```
 
 ```ts
-import { runDeck, markupDeck } from 'zoomdeck';
+import { runDeck, loadMarkupDeck } from 'zoomdeck';
 
-runDeck(markupDeck({ url: '/decks/lecture/slides.md', title: 'Lecture 1' }));
+runDeck(await loadMarkupDeck({ url: '/decks/lecture/slides.md', title: 'Lecture 1' }));
 ```
 
 A deck can also be one element of a larger page, in a box between paragraphs, driven from the
@@ -272,7 +273,7 @@ page's own script, with the features the page has no use for left out:
 ```ts
 import { mountDeck } from 'zoomdeck';
 
-const deck = await mountDeck(document.querySelector('#lecture'), '/decks/lecture/deck.json', {
+const deck = await mountDeck(document.querySelector('#lecture'), '/decks/lecture/slides.md', {
   features: { camera: false, screen: false, record: false },
 });
 deck.on('stop', ({ index, slide }) => console.log(index, slide));
@@ -285,7 +286,7 @@ while it has the focus; `examples/embed/index.html` shows it in use. The runtime
 and left external, so your bundler resolves them once. The TypeScript sources remain available as
 `zoomdeck/source` for projects that prefer to compile them. Without a bundler, a page can load
 the self-contained module (`npm run build:standalone` writes it to `dist/standalone/`, and the
-documentation site serves it) and write `<zoom-deck src="talk/deck.json" without="camera record">`,
+documentation site serves it) and write `<zoom-deck src="talk/slides.md" without="camera record">`,
 or the Markdown inside the element. Or use the command line: `zoomdeck serve <deck>` for editing
 and `zoomdeck build <deck> -o <folder> [--one-file]` for a static or single-file export that needs
 nothing else.

@@ -34,7 +34,7 @@ const NAV: Array<{ title: string; blurb: string; pages: string[] }> = [
   { title: 'Presenting', blurb: 'The player and its tools: keys, spotlight and laser, the pen and the whiteboard, the camera, recording a talk, printing the deck, exporting it to a folder or a single file.', pages: ['player', 'exporting'] },
   { title: 'Writing slides', blurb: 'Two notebooks to try: a first deck built stage by stage, and the content of a slide; then a PDF shown as it is and a file of plain slides, the forest of slides, and prose, formulas, images, listings, tables and charts in detail.', pages: ['first-deck', 'content', 'documents', 'slides', 'text', 'math', 'images', 'code', 'tables-charts'] },
   { title: 'Diagrams', blurb: 'Shapes, arrows, icons and enclosures, crisp or hand-drawn: a notebook to try them, then every kind in detail.', pages: ['diagrams', 'shapes', 'icons', 'enclosures', 'sketch'] },
-  { title: 'Layout and style', blurb: 'Where things go and how they look: a notebook to try flow, anchors, constraints, groups and style sheets, then each in detail, and the deck.json configuration of a deck.', pages: ['layout', 'positioning', 'groups', 'styles', 'configuration'] },
+  { title: 'Layout and style', blurb: 'Where things go and how they look: a notebook to try flow, anchors, constraints, groups and style sheets, then each in detail, and the front matter that configures a deck.', pages: ['layout', 'positioning', 'groups', 'styles', 'configuration'] },
   { title: 'Motion and interaction', blurb: 'What happens on each click: a notebook to try steps, animations, focus-only decorations and links, then fragments, animations, focus and live web pages in detail.', pages: ['motion', 'fragments', 'animations', 'focus', 'live-pages'] },
   { title: 'Advanced', blurb: 'Slides written in TypeScript, a deck inside a page of your own, the folders that extend the player, and the complete reference of the dialect.', pages: ['code-slides', 'embedding', 'extending', 'reference'] },
   { title: 'Reference manuals', blurb: 'Every construct of the markup language with every attribute, every export of the package, and an alphabetical index of both; the search box at the top finds any name.', pages: ['manual-markup', 'api', 'manual-index'] },
@@ -88,7 +88,7 @@ function fenceAttributes(info: string): Record<string, string> {
 
 /**
  * A live deck for a ```zoomdeck fence: the player in the page, its markup beside it. The fence
- * takes `src=path` (a PDF, a Markdown file or a deck.json instead of the fence's own text),
+ * takes `src=path` (a PDF or a Markdown file instead of the fence's own text),
  * `without="…"` (features to leave out; the camera, the recorder and the screen unless said
  * otherwise, `without=none` keeps them all), `height=…`, `start=…`, `title=…`, `code=hidden`
  * or `code=closed` (the markup folded under the deck) and `caption="…"`.
@@ -503,7 +503,7 @@ async function main(): Promise<void> {
   if (!process.argv.includes('--no-tour')) {
     // The tour deck as one self-contained page, so the documentation can open it anywhere.
     const stage = await fs.mkdtemp(join(tmpdir(), 'zoomdeck-tour-'));
-    execFileSync(process.execPath, [join(root, 'bin', 'zoomdeck.mjs'), 'build', join(root, 'examples', 'tour', 'deck.json'), '-o', stage, '--one-file'], { stdio: 'inherit' });
+    execFileSync(process.execPath, [join(root, 'bin', 'zoomdeck.mjs'), 'build', join(root, 'examples', 'tour', 'slides.md'), '-o', stage, '--one-file'], { stdio: 'inherit' });
     await fs.copyFile(join(stage, 'offline.html'), join(outDir, 'tour.html'));
     await fs.rm(stage, { recursive: true, force: true });
     console.log('Exported the tour deck to docs/html/tour.html');

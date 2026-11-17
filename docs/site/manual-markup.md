@@ -107,8 +107,8 @@ may hold `::: {.group}`, `::: {.element}` and `::: notes` blocks.
 
 Rules: a slide identifier is unique; every slide is included by at most one other; the slides
 nothing includes are the **roots**, visited first to last with a cut between them, and a deck
-with one root is a tree. `root` in `deck.json` names the root of a single tree and is an error
-on a forest. Including a slide that is not defined makes a red placeholder.
+with one root is a tree. `root` in the front matter names the root of a single tree and is an
+error on a forest. Including a slide that is not defined makes a red placeholder.
 
 ### [[include]] and [[subslide]]
 
@@ -131,8 +131,8 @@ and the relative references, plus:
 | `start_here`, `only_this`, `return_to_parent`, `skip_return`, `transition`, `preview` | as for slides | | the same flags, set from the parent's side |
 
 A child may be included once in the whole deck. A `[[subslide: Name]]` with a class name takes
-the same attributes; the class comes from the module `classes` names in `deck.json` or from
-`slides/Name.ts`, and a dotted name (`helpers.Orbit`) walks namespaces.
+the same attributes; the class comes from the module `classes` names in the front matter or
+from `slides/Name.ts`, and a dotted name (`helpers.Orbit`) walks namespaces.
 
 ### [[pdf]]
 
@@ -167,8 +167,8 @@ heading: color=BLUE_E
 
 A style block sits at the top level, before or between slides, one `name: attributes` line per
 style. Names are identifiers; the attributes are any the styled construct takes, except `id`
-and `class`. The same names may be defined under `styles` in `deck.json`, as attribute strings
-or objects; the Markdown definition wins. How styles are applied is under
+and `class`. The same names may be defined under `styles` in the front matter, as attribute
+strings or maps; the `::: styles` definition wins. How styles are applied is under
 [Style roles and classes](#style-roles-and-classes).
 
 ### ::: snippet and [[snippet]]
@@ -324,7 +324,7 @@ $$
 `$$` on one line or around several lines is a math element, centered like other blocks in the
 flow. It must not be empty. It takes the text attributes except `font`. Its color is `color=`
 or the text color; `\color` and similar commands inside the formula are honored. The macros of
-`deck.json` apply.
+the front matter apply.
 
 ### Images and video
 
@@ -857,8 +857,8 @@ or `line`, `attachment` with `brace`, `box` or `blob`, and `include` for childre
 apply in this order, each filling in what the earlier ones left unset: the construct's own
 attributes win; then its classes, the last written first; then its roles, the most specific
 first. `id` and `class` are never copied from a style. A class that no style defines is an
-error. The `::: styles` block of the Markdown wins over `styles` in `deck.json`, which wins
-over a theme.
+error. A `::: styles` block wins over `styles` in the front matter, which wins over a
+theme.
 
 ### Color names
 
@@ -872,29 +872,53 @@ The engine palette, usable wherever a color is: `WHITE`, `BLACK`, `GRAY` and `GR
 Names are matched regardless of case. CSS names (`crimson`, `steelblue`, …) and hex values work
 alike.
 
-## The deck.json file
+## The front matter
 
-A `deck.json` next to the Markdown names the file and holds the settings. Relative paths in it
-are relative to the file itself.
+A deck is its Markdown file, and its settings are the YAML front matter at its top: the lines
+between a first line `---` and the next `---` or `...`. They are left blank when the slides are
+parsed, so every line keeps its number. Relative paths in it are relative to the file that names
+them. An unknown setting is an error that lists the allowed ones.
 
-### Top-level keys
+```markdown
+---
+title: Lecture 3
+viewport: 16x9
+layout:
+  fontSize: 26
+macros:
+  pair: ['\langle #1, #2 \rangle', 2]
+styles:
+  footnote: font_size=18 color=GRAY
+---
+```
 
-| Key | Value | Meaning |
+### Settings
+
+| Setting | Value | Meaning |
 | --- | --- | --- |
-| `markup` | path | the Markdown file (required) |
-| `title` | text | the page title and the outline's root label |
+| `title` | text | the page title and the outline's root label; by default the name of the folder holding the Markdown |
 | `root` | id | the root of a single tree, checked; an error on a forest |
-| `classes` | path | a module exporting slide classes for `[[subslide: Name]]` (`imports` is the old name) |
-| `layout` | object | typography and spacing, below |
-| `presenter` | object | timing and camera policy, below |
+| `classes` | path | a module exporting slide classes for `[[subslide: Name]]` |
+| `layout` | map | typography and spacing, below |
+| `presenter` | map | timing and camera policy, below |
 | `background` | color | the canvas background (white) |
-| `viewport` | `{ "width", "height" }` | the proportions the camera fits (16 × 9) |
-| `showOutline` | boolean | open the outline at start |
-| `macros` | object | LaTeX macros for every formula: name to an expansion, or to `[expansion, number of arguments]`, or to `[expansion, number of arguments, default of the optional first one]`, as in MathJax |
-| `styles` | object | named styles, as attribute strings or objects |
+| `viewport` | `16x9`, `16:9` or `{ width: 16, height: 9 }` | the proportions the camera fits (16 × 9) |
+| `showOutline` | `true`, `false` | open the outline at start |
+| `macros` | map | LaTeX macros for every formula: name to an expansion, or to `[expansion, number of arguments]`, or to `[expansion, number of arguments, default of the optional first one]`, as in MathJax; single quotes keep backslashes as written, `'\mathbb{N}'` |
+| `styles` | map | named styles, a name to an attribute string or a map |
 | `theme` | name or list | themes applied under the deck's own settings |
-| `paths` | list of folders | searched, after the Markdown's own folder, for imports, images, videos, pages and data files |
-| `artworks`, `fonts`, `effects`, `transitions`, `charts`, `languages`, `codeThemes`, `themes`, `slides`, `directives`, `snippets` | lists of folders | the deck's library, besides the folder of the same name next to the Markdown (`code-themes/` for `codeThemes`); see [Extending a deck](extending.html) |
+| `extends` | path | a Markdown file (its front matter) or a `.yaml`/`.yml` file (all settings) this one builds on, below |
+| `paths` | folder or list of folders | searched, after the Markdown's own folder, for imports, images, videos, pages and data files |
+| `artworks`, `fonts`, `effects`, `transitions`, `charts`, `languages`, `codeThemes`, `themes`, `slides`, `directives`, `snippets` | folder or list of folders | the deck's library, besides the folder of the same name next to the Markdown (`code-themes/` for `codeThemes`); see [Extending a deck](extending.html) |
+
+### extends
+
+`extends: ../course.yaml` takes the settings of another file under the file's own: `layout`,
+`presenter`, `macros` and `styles` merge entry by entry, the file's own entries winning; the
+folder settings add up, the file's own first; every other setting is replaced by the file's
+own. Paths resolve against the file that names them. An extended file may extend another; a
+cycle is an error. Options given in code to `loadMarkupDeck` or `markupDeck` win over the front
+matter in the same way.
 
 ### layout
 
@@ -935,19 +959,18 @@ are relative to the file itself.
 ### Library folders
 
 Next to the Markdown, each of these folders extends the player by name when it exists, as do
-the folders the keys above list: `artworks/` (`name.svg`, `name.ts`), `fonts/`
+the folders the settings above list: `artworks/` (`name.svg`, `name.ts`), `fonts/`
 (`Family.woff2` and `-Bold`, `-Italic`, `-BoldItalic`), `effects/`, `transitions/`, `charts/`,
 `directives/`, `slides/` (modules), `languages/` (`lang.json`), `code-themes/` (`name.json`),
-`themes/` (`name.md` or `name.json`), `snippets/` (`name.md`). The `paths` folders are
+`themes/` (`name.md`), `snippets/` (`name.md`). The `paths` folders are
 searched last for every kind. [Extending a deck](extending.html) describes each file format.
 
 ### Theme files
 
 A Markdown theme is a style sheet: `::: styles` blocks, or every line when it has none, with
 three reserved names. `layout:` takes the keys of `layout` above, `presenter:` those of
-`presenter`, and `deck:` takes `background=` and `viewport=16x9`. A JSON theme is a `styles`
-map, or `{ "styles", "layout", "presenter", "background", "viewport" }`. Later themes of a list
-override earlier ones; the deck's own keys override them all.
+`presenter`, and `deck:` takes `background=` and `viewport=16x9`. Later themes of a list
+override earlier ones; the deck's own settings override them all.
 
 ## Errors
 

@@ -128,10 +128,8 @@ Starts the Emacs server when it is not running, so that emacsclient can reach th
   "Highlighting for containers, directives, IDs and attributes.")
 
 (defun zoomdeck--deck-file ()
-  "The deck to serve or build: deck.json next to the buffer's file when present, else the file."
-  (let* ((file (or (buffer-file-name) (user-error "Save the deck to a file first")))
-         (json (expand-file-name "deck.json" (file-name-directory file))))
-    (if (file-exists-p json) json file)))
+  "The deck to serve or build: the buffer's Markdown file, its settings in its front matter."
+  (or (buffer-file-name) (user-error "Save the deck to a file first")))
 
 (defun zoomdeck--run (buffer-name command)
   "Run COMMAND from the deck's directory in a compilation buffer named BUFFER-NAME."

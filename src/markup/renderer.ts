@@ -40,7 +40,7 @@ import { LatexError, applyLatexColors, compileMacros, expandMacros, latexErrorOf
 /** Formula pixel size per prose point, so that `font_size` means the same for both. */
 export const MATH_SIZE_RATIO = 4 / 3;
 
-/** The typography and spacing of a deck, as `layout` in `deck.json` gives them. */
+/** The typography and spacing of a deck, as `layout` in its front matter gives them. */
 export interface LayoutConfigOptions {
   fontSize?: number;
   headingSize?: number;

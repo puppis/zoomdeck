@@ -139,7 +139,7 @@ Reached with a cut from the first tree, as the next page of a document. {font_si
 :::
 ```
 
-The outline lists the roots at the top level and the children under them. `root` in `deck.json`
-names the single root of a tree; naming one in a deck with several roots is an error.
+The outline lists the roots at the top level and the children under them. `root` in the front
+matter names the single root of a tree; naming one in a deck with several roots is an error.
 [Slides and the forest](slides.html) has the includes, the visit order and the flags that shape
 a tree.

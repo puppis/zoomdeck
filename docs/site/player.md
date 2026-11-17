@@ -164,7 +164,7 @@ vector ink on top. The page therefore loads at once on any tablet, answers the p
 immediately, and accepts no gesture other than drawing: a pencil or a finger never selects,
 scrolls or zooms anything.
 
-1. Serve the deck so that other devices can reach it: `zoomdeck serve deck.json --host`, or
+1. Serve the deck so that other devices can reach it: `zoomdeck serve talk/slides.md --host`, or
    `npm run dev -- --host` from the checkout. Pairing needs this server; an exported HTML file
    opened from disk cannot pair. The server answers to its addresses, to any `.local` name and
    to the computer's own host name; a request under another name is refused, as a guard against
@@ -510,13 +510,13 @@ Going back plays the stop's animations in reverse: fades, property animations, e
 camera moves retrace their path, including zooming back into a child you just left. Videos, loops
 and updater-driven waits cannot run backwards and are passed over. Pressing `←` again during a
 reverse settles it and steps back once more, so quick presses step through stops.
-`"presenter": { "reversePlayback": false }` restores instant jumps.
+`presenter: { reversePlayback: false }` in the front matter restores instant jumps.
 
 ## Cuts
 
-`"presenter": { "transition": "cut" }` replaces the view at once when the camera moves between
-slides, like turning the pages of a PDF, while fragments and animations inside a slide still
-play; a slide's own `transition=` decides how the camera arrives at it. The rule is under
+`presenter: { transition: cut }` in the front matter replaces the view at once when the camera
+moves between slides, like turning the pages of a PDF, while fragments and animations inside a
+slide still play; a slide's own `transition=` decides how the camera arrives at it. The rule is under
 [Cuts instead of zooms](slides.html#cuts-instead-of-zooms).
 
 ## Outline and deep links

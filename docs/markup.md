@@ -85,8 +85,8 @@ Exports embed the imported files.
 ```
 
 `subslide` with a class name instantiates a `Slide` subclass exported by the module named by
-`classes` in `deck.json` (or passed as `classes` to `markupDeck`). The class must be constructible without
-arguments and return a fresh slide; put object creation in `build(ctx)` and animations in
+`classes` in the front matter (or passed as `classes` to `markupDeck`). The class must be
+constructible without arguments and return a fresh slide; put object creation in `build(ctx)` and animations in
 `construct(ctx)`. Qualified names (`helpers.Orbit`) traverse namespaces. Each occurrence creates
 its own instance, with the same placement and relative-positioning attributes as an include.
 
@@ -136,9 +136,9 @@ $$ \textcolor{Orange}{a}^2 + {\color{Cerulean} b^2} = c^2 $$
 
 Single dollars give inline math, `$$` on its own lines (or `$$…$$` on one line) a display formula.
 LaTeX renders through MathJax with the ams, newcommand and configmacros packages; `macros` in
-`deck.json` defines extra commands, with arguments as in MathJax
-(`"pair": ["\\langle #1, #2 \\rangle", 2]`). `\textcolor{…}{…}` and `{\color{…} …}` accept dvipsnames and
-CSS colors. Wrap a formula in `::: {.element …}` to give it attributes.
+the front matter defines extra commands, with arguments as in MathJax
+(`pair: ['\langle #1, #2 \rangle', 2]`). `\textcolor{…}{…}` and `{\color{…} …}` accept
+dvipsnames and CSS colors. Wrap a formula in `::: {.element …}` to give it attributes.
 
 ## Images, animated images and videos
 
@@ -233,7 +233,7 @@ endpoint disappears.
 ```
 
 `[[artwork: name #id …]]` draws an artwork of the deck's own, `name.svg` or a `name.js`/`.ts` module
-in its `artworks/` folder (or the folders `artworks` and `paths` name in `deck.json`), with any
+in its `artworks/` folder (or the folders `artworks` and `paths` name in the front matter), with any
 attributes the module reads; `paths` are also searched for imports, images, videos and pages.
 The folders `snippets/`, `directives/`, `fonts/`, `effects/`, `transitions/`, `charts/`,
 `languages/`, `code-themes/`, `themes/` and `slides/` next to the Markdown extend the player the
@@ -398,8 +398,12 @@ attributes against local elements.
 
 ## Styles
 
-```json
-"styles": { "footnote": { "font_size": 18, "color": "GRAY" }, "heading": "color=#93C5FD" }
+```markdown
+---
+styles:
+  footnote: { font_size: 18, color: GRAY }
+  heading: color=#93C5FD
+---
 ```
 
 ```markdown
@@ -411,9 +415,8 @@ callout: color=ORANGE font_size=30
 [Look here]{#c .callout x=0 y=-2}
 ```
 
-A style is a named attribute set, defined in `deck.json` (`styles`, as objects or attribute
-strings) or in a `::: styles` block at the top of the Markdown file, which wins for the same
-name. Elements, includes and subslides opt in with `.name` tokens (several allowed, later ones
+A style is a named attribute set, defined in the front matter (`styles`, as maps or attribute
+strings) or in a `::: styles` block of the Markdown file, which wins for the same name. Elements, includes and subslides opt in with `.name` tokens (several allowed, later ones
 win). Styles named after a **role** apply automatically: `heading` (also `h1` … `h6`), `body`,
 `math`, `code`, `image`, `shape` (also `rectangle`, `circle`, …), `connection` (`arrow`, `line`),
 `attachment` (`brace`, `box`), `group` and `include`. Resolution order: the element's own
@@ -532,21 +535,29 @@ focused and out when the camera leaves, including to a child. They are drawn beh
 content, still take part in layout and can anchor other elements. They cannot carry `step`, `hide`
 or `play`, and `show`/`hide` directives cannot target them.
 
-## Deck configuration
+## Front matter
 
-```json
-{
-  "markup": "slides.md",
-  "title": "A dark deck",
-  "classes": "code-slides.ts",
-  "root": "overview",
-  "background": "#0F172A",
-  "viewport": { "width": 16, "height": 9 },
-  "layout": { "color": "#F1F5F9", "fontSize": 26, "headingSize": 40, "codeSize": 19, "font": "Georgia" },
-  "presenter": { "transitionTime": 0.8, "padding": 1, "showSlideBorders": false, "showSlideGrid": false },
-  "macros": { "N": "\\mathbb{N}" }
-}
+```markdown
+---
+title: A dark deck
+classes: code-slides.ts
+root: overview
+background: '#0F172A'
+viewport: 16x9
+layout: { color: '#F1F5F9', fontSize: 26, headingSize: 40, codeSize: 19, font: Georgia }
+presenter: { transitionTime: 0.8, padding: 1, showSlideBorders: false, showSlideGrid: false }
+macros: { N: '\mathbb{N}' }
+---
 ```
+
+The deck's settings are the YAML front matter at the top of its Markdown, between a first line
+`---` and the next `---` or `...`; its lines are left blank when the slides are parsed, so line
+numbers stay the same. Single quotes keep backslashes as written and keep a `#` color from
+starting a YAML comment. `extends: path` builds on the settings of another Markdown file's front
+matter or of a `.yaml` file: `layout`, `presenter`, `macros` and `styles` merge entry by entry,
+the file's own entries winning, folder settings add up, and every other setting is replaced.
+Paths are relative to the file that names them; an unknown setting is an error. Without a
+`title`, the title is the name of the folder that holds the Markdown.
 
 A deck is black text on a white canvas unless `background` and `layout.color` say otherwise.
 Prose is set in the bundled Latin Modern Roman and code in Latin Modern Mono (the LaTeX text and

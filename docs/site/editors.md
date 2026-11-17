@@ -13,14 +13,12 @@ back at the stop you were looking at. Editing therefore needs only two things fr
    typing (or when the editor loses focus), so the browser follows you.
 2. **Three shortcuts.** One starts the preview server for the deck of the current file, one
    shows the stop of the current line in the browser, the third exports the deck as a single
-   HTML file into a `build/` folder next to it. The command itself picks up the `deck.json` that
-   names the file, so the deck's title, styles, macros and slide classes apply whichever file is
-   open.
+   HTML file into a `build/` folder next to it.
 
 ```bash
-zoomdeck serve path/to/slides.md --editor code   # or deck.json; opens http://127.0.0.1:8000/
+zoomdeck serve path/to/slides.md --editor code   # opens http://127.0.0.1:8000/
 zoomdeck jump path/to/slides.md 42               # the browser shows the stop of line 42
-zoomdeck build path/to/deck.json -o build --one-file
+zoomdeck build path/to/slides.md -o build --one-file
 ```
 
 ## The `zoomdeck` command

@@ -192,15 +192,13 @@ describe('chart data from files', () => {
 
 describe('themes', () => {
   it('carry styles and, under reserved names, the layout, presenter settings, background and viewport', () => {
-    const theme = parseTheme('::: styles\nheading: color=BLUE_E\nlayout: fontSize=30 headingSize=44\npresenter: transitionTime=1.2 pauseOnReturn=false\ndeck: background=#0F172A viewport=4x3\n:::', 'md');
+    const theme = parseTheme('::: styles\nheading: color=BLUE_E\nlayout: fontSize=30 headingSize=44\npresenter: transitionTime=1.2 pauseOnReturn=false\ndeck: background=#0F172A viewport=4x3\n:::');
     expect(theme.styles).toMatchObject({ heading: { color: 'BLUE_E' } });
     expect(theme.layout).toEqual({ fontSize: 30, headingSize: 44 });
     expect(theme.presenter).toEqual({ transitionTime: 1.2, pauseOnReturn: false });
     expect(theme.background).toBe('#0F172A');
     expect(theme.viewport).toEqual({ width: 4, height: 3 });
-    expect(parseTheme('{"footnote": "font_size=18"}', 'json')).toEqual({ styles: { footnote: 'font_size=18' } });
-    expect(parseTheme('{"layout": {"fontSize": 20}}', 'json')).toEqual({ layout: { fontSize: 20 } });
-    expect(() => parseTheme('deck: viewport=wide', 'md')).toThrow(/16x9/);
+    expect(() => parseTheme('deck: viewport=wide')).toThrow(/16x9/);
   });
 
   it('sit under the deck\'s own settings', () => {
@@ -224,13 +222,14 @@ describe('themes', () => {
     const bundled = await loadMarkupDeck({
       source: '::: slide {#a}\nx\n:::', basePath: 'x', theme: ['lecture', 'dark'], themes: ['themes/0/'],
       files: { 'themes/0/lecture.md': 'layout: fontSize=30\npresenter: transitionTime=1.5' },
-      assets: { 'themes/0/dark.json': `data:application/json;base64,${Buffer.from('{"background": "#000", "presenter": {"transitionTime": 2}}').toString('base64')}` },
+      assets: { 'themes/0/dark.md': `data:text/markdown;base64,${Buffer.from('deck: background=#000\npresenter: transitionTime=2').toString('base64')}` },
     });
     expect(bundled.background).toBe('#000');
     expect(bundled.presenter.transitionTime).toBe(2);
     globalThis.fetch = (async (url: string) => {
-      const found = url === 'https://x.org/talk/themes/lecture.md';
-      return { ok: found, headers: new Headers({ 'content-type': found ? 'text/markdown' : 'text/html' }), text: async () => 'deck: background=#123456' } as Response;
+      const deck = url === 'https://x.org/talk/slides.md';
+      const found = deck || url === 'https://x.org/talk/themes/lecture.md';
+      return { ok: found, status: found ? 200 : 404, headers: new Headers({ 'content-type': found ? 'text/markdown' : 'text/html' }), text: async () => (deck ? '::: slide {#a}\nx\n:::' : 'deck: background=#123456') } as Response;
     }) as typeof fetch;
     const fetched = await loadMarkupDeck({ url: 'https://x.org/talk/slides.md', theme: 'lecture' });
     expect(fetched.background).toBe('#123456');
@@ -240,12 +239,12 @@ describe('themes', () => {
 });
 
 describe('the command', () => {
-  it('finds the directives, snippets and transitions folders next to the Markdown', () => {
+  it('finds the directives, snippets and transitions folders next to the Markdown', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'zoomdeck-extending-'));
     try {
       for (const folder of ['directives', 'snippets', 'transitions']) mkdirSync(join(dir, folder));
       writeFileSync(join(dir, 'slides.md'), '::: slide {#a}\nx\n:::\n');
-      const folders = deckFolders(join(dir, 'slides.md'));
+      const folders = await deckFolders(join(dir, 'slides.md'));
       expect(folders.directives).toEqual([join(dir, 'directives')]);
       expect(folders.snippets).toEqual([join(dir, 'snippets')]);
       expect(folders.transitions).toEqual([join(dir, 'transitions')]);

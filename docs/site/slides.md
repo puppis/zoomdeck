@@ -100,9 +100,9 @@ is; zooming back out to a root from its own children is a move like any other. A
 `transition` says how the camera arrives at it, whichever slide it comes from, and overrides the
 rule in both directions, a cut into a zoomed deck or a zoom into a cut one: `transition=cut` on a slide (or on the include that places it) replaces the view
 at once when the camera moves into that slide, `transition=zoom` on a root pans to it from its
-neighbour; fades of focus-only decorations still play. The move out of a slide is the next
+neighbor; fades of focus-only decorations still play. The move out of a slide is the next
 destination's business: back to the parent, it follows the parent's setting. To present a whole
-deck with cuts, set `"presenter": { "transition": "cut" }` in deck.json; individual slides can
+deck with cuts, set `presenter: { transition: cut }` in the front matter; individual slides can
 then ask for `transition=zoom` again, and a module of the deck's own by name
 ([Extending a deck](extending.html#camera-transitions)).
 
@@ -139,8 +139,8 @@ exported with `--without-notes`, which leaves them out ([Exporting a deck](expor
 ```
 
 `subslide` with a class name instead of a `#id` instantiates a `Slide` subclass exported by the
-module named by `classes` in `deck.json`; see [Code-authored slides](code-slides.html). It takes
-the same placement attributes as an include.
+module named by `classes` in the front matter; see [Code-authored slides](code-slides.html). It
+takes the same placement attributes as an include.
 
 ## Splitting a deck into files
 
@@ -164,7 +164,7 @@ file (so a file in `parts/` imports its neighbours by bare name), imported files
 others, and import lines inside fenced code are left alone. Error messages name the imported
 file and the line within it. Asset paths (images, videos, pages) in an imported file keep
 resolving relative to the main document, like everything else. A file that is not next to the
-importing one is looked for in the folders `paths` names in `deck.json`, in their order.
+importing one is looked for in the folders `paths` names in the front matter, in their order.
 
 Exports embed the imported files, so a built deck needs no server to resolve them; the
 preview server reloads when any of them changes.

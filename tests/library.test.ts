@@ -130,22 +130,22 @@ describe('the fonts, languages and code themes of a deck', () => {
 });
 
 describe('the library folders of a deck, by the command', () => {
-  it('are named in the configuration or stand next to the Markdown under their standard names', () => {
+  it('are named in the front matter or stand next to the Markdown under their standard names', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'zoomdeck-library-'));
     try {
       mkdirSync(join(dir, 'shared'));
       for (const { folder } of LIBRARY_KINDS) if (folder) mkdirSync(join(dir, 'src', folder), { recursive: true });
-      writeFileSync(join(dir, 'src', 'slides.md'), '::: slide {#a}\nx\n:::\n');
-      writeFileSync(join(dir, 'deck.json'), JSON.stringify({ markup: 'src/slides.md', fonts: ['shared'], themes: ['absent'] }));
-      const folders = deckFolders(join(dir, 'deck.json'));
+      writeFileSync(join(dir, 'src', 'slides.md'), '---\nfonts: ../shared\nthemes: [../absent]\n---\n::: slide {#a}\nx\n:::\n');
+      writeFileSync(join(dir, 'src', 'bare.md'), '::: slide {#a}\nx\n:::\n');
+      const folders = await deckFolders(join(dir, 'src', 'slides.md'));
       expect(folders.fonts).toEqual([join(dir, 'shared'), join(dir, 'src', 'fonts')]);
       expect(folders.codeThemes).toEqual([join(dir, 'src', 'code-themes')]);
       expect(folders.themes).toEqual([join(dir, 'src', 'themes')]);
       expect(folders.slides).toEqual([join(dir, 'src', 'slides')]);
       expect(folders.paths).toEqual([]);
       expect(folders.all.length).toBe(LIBRARY_KINDS.length);
-      // A bare Markdown file has its standard folders only.
-      const bare = deckFolders(join(dir, 'src', 'slides.md'));
+      // A Markdown file without front matter has its standard folders only.
+      const bare = await deckFolders(join(dir, 'src', 'bare.md'));
       expect(bare.effects).toEqual([join(dir, 'src', 'effects')]);
       expect(bare.fonts).toEqual([join(dir, 'src', 'fonts')]);
     } finally {

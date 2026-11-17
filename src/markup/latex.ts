@@ -68,7 +68,7 @@ function groupEnd(source: string, start: number): number {
 }
 
 /**
- * A deck macro as `deck.json` writes it, in MathJax's own form: the expansion alone, or the
+ * A deck macro as the front matter writes it, in MathJax's own form: the expansion alone, or the
  * expansion and its number of arguments (`#1` to `#9`), or also the default of an optional first
  * argument, given in brackets.
  */
@@ -99,13 +99,13 @@ const BUILT_IN_MACROS: Record<string, Macro> = {
   bm: { expansion: '\\mathbfit{#1}', args: 1 },
 };
 
-/** Check the macros of `deck.json` and make them ready to expand, after the built-in ones. */
+/** Check the macros of the front matter and make them ready to expand, after the built-in ones. */
 export function compileMacros(definitions: Record<string, unknown> | undefined): Map<string, Macro> {
   const macros = new Map<string, Macro>(Object.entries(BUILT_IN_MACROS));
   if (definitions === undefined || definitions === null) return macros;
-  if (typeof definitions !== 'object' || Array.isArray(definitions)) throw new Error('deck.json: "macros" must map names to expansions');
+  if (typeof definitions !== 'object' || Array.isArray(definitions)) throw new Error('macros must map names to expansions');
   for (const [name, value] of Object.entries(definitions)) {
-    const where = `deck.json: macro ${JSON.stringify(name)}`;
+    const where = `The macro ${JSON.stringify(name)}`;
     if (!/^[A-Za-z]+$/.test(name)) throw new Error(`${where}: a name is letters only, without the backslash`);
     let macro: Macro;
     if (typeof value === 'string') macro = { expansion: value, args: 0 };

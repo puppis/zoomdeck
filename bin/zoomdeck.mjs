@@ -7,8 +7,8 @@
  *   zoomdeck build <deck> -o <folder> [--one-file] [--show-outline] [--without-notes]
  *   zoomdeck jump <file> <line>        show, in the running preview, the stop of a source line
  *
- * `<deck>` is a `deck.json`, a Markdown file, a PDF, or a JS/TS module exporting a
- * deck definition (optionally `--scene Name` for a named export).
+ * `<deck>` is a Markdown file (its settings in its front matter), a PDF, or a JS/TS module
+ * exporting a deck definition (optionally `--scene Name` for a named export).
  */
 import { promises as fs } from 'node:fs';
 import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs';
@@ -24,6 +24,7 @@ import { renderStore } from './render.mjs';
 import { exportStore, exportWriting } from './export.mjs';
 import { extractBundle, isJournal } from './bundle.mjs';
 import { resolveFromPackage } from './resolve.mjs';
+import { resolveSettings } from '../src/markup/frontmatter.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(here, '..');
@@ -83,23 +84,30 @@ const dropEngineMuxers = {
 };
 
 /**
- * The deck to use for a path. Editors hand over the Markdown file they are
- * editing; when a deck.json in the same folder names that file, the deck is
- * served or built through it, so its title, styles, macros and slide classes
- * apply exactly as when the configuration is given directly.
+ * The deck to use for a path: the file itself. A deck's settings are the front matter of its
+ * Markdown, so a Markdown file is always the whole deck, whichever way it is opened. A JSON
+ * file is no deck: its settings belong at the top of the Markdown.
  */
 export function resolveDeckPath(path) {
   const deckPath = resolve(path);
-  if (!['.md', '.markdown'].includes(extname(deckPath).toLowerCase())) return deckPath;
-  const configPath = join(dirname(deckPath), 'deck.json');
-  if (!existsSync(configPath)) return deckPath;
-  try {
-    const config = JSON.parse(readFileSync(configPath, 'utf8'));
-    if (typeof config.markup === 'string' && resolve(dirname(configPath), config.markup) === deckPath) return configPath;
-  } catch {
-    // A broken deck.json is reported when it is used explicitly.
+  if (extname(deckPath).toLowerCase() === '.json') {
+    throw new Error(`${path}: a deck is its Markdown file now; move the settings of this JSON file into the front matter at the top of the Markdown (between --- lines) and open the Markdown`);
   }
   return deckPath;
+}
+
+/** How front matter reaches files on disk: their text, and paths resolved against a file. */
+const DISK = {
+  read: (location) => fs.readFile(location, 'utf8'),
+  join: (location, path) => resolve(dirname(location), path),
+};
+
+/**
+ * The settings of a Markdown deck on disk: its front matter over the files it extends, paths
+ * absolute; the Markdown with its front matter left blank; the files extended.
+ */
+export async function deckSettings(deckPath) {
+  return resolveSettings(await fs.readFile(deckPath, 'utf8'), deckPath, DISK);
 }
 
 /**
@@ -151,26 +159,16 @@ export const LIBRARY_KINDS = [
 /**
  * The folders a deck names besides its own: the `paths` searched for imports, images, videos
  * and pages, and the library folders (artworks, fonts, effects, charts, languages, code themes,
- * themes, slide classes) named in the configuration or standing next to the Markdown under
- * their standard names; resolved against the deck.json, existing ones only. A bare Markdown
- * file has its standard folders only.
+ * themes, slide classes) its front matter names, or the files it extends do, or standing next to
+ * the Markdown under their standard names; existing ones only. `extended` lists the folders of
+ * the files it extends, which are served and watched as well.
  */
-export function deckFolders(deckPath) {
-  let config = {};
-  let dir = dirname(deckPath);
-  let markupDir = dir;
-  if (extname(deckPath).toLowerCase() === '.json') {
-    try {
-      config = JSON.parse(readFileSync(deckPath, 'utf8'));
-    } catch {
-      config = {};
-    }
-    if (typeof config.markup === 'string') markupDir = dirname(resolve(dir, config.markup));
-  }
-  const result = { all: [] };
+export async function deckFolders(deckPath) {
+  const markupDir = dirname(deckPath);
+  const { settings, extended } = await deckSettings(deckPath);
+  const result = { all: [], extended: [...new Set(extended.map((file) => dirname(file)))] };
   for (const { key, folder } of LIBRARY_KINDS) {
-    const named = Array.isArray(config[key]) ? config[key] : [];
-    const folders = named.map((name) => resolve(dir, String(name))).filter((candidate) => existsSync(candidate));
+    const folders = (settings[key] ?? []).filter((candidate) => existsSync(candidate));
     const standard = folder ? join(markupDir, folder) : null;
     if (standard && existsSync(standard) && !folders.includes(standard)) folders.push(standard);
     result[key] = folders;
@@ -182,7 +180,6 @@ export function deckFolders(deckPath) {
 /** The kind of deck a file holds, by its extension; null for a file the command cannot serve. */
 export function deckKind(deckPath) {
   const ext = extname(deckPath).toLowerCase();
-  if (ext === '.json') return 'json';
   if (ext === '.md' || ext === '.markdown') return 'markdown';
   if (ext === '.pdf') return 'pdf';
   if (['.ts', '.js', '.mjs', '.tsx'].includes(ext)) return 'module';
@@ -209,7 +206,8 @@ export async function startPreview(options) {
   if (!kind) throw new Error(`unsupported deck file ${deckPath}`);
   const deckDir = dirname(deckPath);
   // The deck's search and artwork folders are served and watched like its own folder.
-  const watchRoots = [deckDir, ...options.watch, ...(kind === 'json' || kind === 'markdown' ? deckFolders(deckPath).all : [])];
+  const folders = kind === 'markdown' ? await deckFolders(deckPath) : { all: [], extended: [] };
+  const watchRoots = [...new Set([deckDir, ...options.watch, ...folders.all, ...folders.extended])];
   const reloadPlugin = {
     name: 'zoomdeck-reload',
     configureServer(server) {
@@ -373,10 +371,12 @@ runDeck(await pdfDeck({
   showOutline: ${options.showOutline},
 }));`;
   } else {
-    const config = kind === 'json' ? JSON.parse(await fs.readFile(deckPath, 'utf8')) : { markup: basename(deckPath) };
-    const markupPath = resolve(deckDir, config.markup);
+    // The deck's settings, its front matter over the files it extends, reach the page as they are;
+    // the Markdown travels with its front matter left blank, so its lines keep their numbers.
+    const { settings: config, body } = await deckSettings(deckPath);
+    const markupPath = deckPath;
     const markupDir = dirname(markupPath);
-    const markdown = options.withoutNotes ? stripNotes(await fs.readFile(markupPath, 'utf8')) : await fs.readFile(markupPath, 'utf8');
+    const markdown = options.withoutNotes ? stripNotes(body) : body;
     const assets = {};
     // Markdown files next to the deck are embedded as text, so [[import: path]] works without a server.
     const files = {};
@@ -385,7 +385,7 @@ runDeck(await pdfDeck({
     // and the player is told those folders relative to the Markdown, the way it names its own files.
     // Every library folder of the deck travels as deck/<kind>/<i>/, named to the player relative to the
     // Markdown; the modules among them (artworks, effects, charts, slide classes) are bundled by name.
-    const folders = deckFolders(deckPath);
+    const folders = await deckFolders(deckPath);
     const sources = [{ root: deckDir, key: (file) => toKey(relative(markupDir, file)), copyTo: (file) => join(outDir, 'deck', relative(deckDir, file)) }];
     const folderKeys = {};
     const moduleImports = {};
@@ -418,8 +418,8 @@ runDeck(await pdfDeck({
           if (mime) assets[key(file)] = `data:${mime};base64,${(await fs.readFile(file)).toString('base64')}`;
         } else {
           const recording = relative(root, file).split(sep).includes(RECORDINGS);
-          // Modules are bundled; the deck's configuration and an editor's project files stay behind. Other JSON (data, profiles, themes) travels.
-          if (!recording && (['.ts', '.js', '.mjs'].includes(ext) || file === deckPath || /^(tsconfig|package|jsconfig)[^/]*\.json$/.test(basename(file)))) continue;
+          // Modules are bundled; an editor's project files stay behind. Other JSON (data, profiles, code themes) travels.
+          if (!recording && (['.ts', '.js', '.mjs'].includes(ext) || /^(tsconfig|package|jsconfig)[^/]*\.json$/.test(basename(file)))) continue;
           const target = copyTo(file);
           await fs.mkdir(dirname(target), { recursive: true });
           if (recording && (isJournal(file) || basename(file) === 'index.json')) continue;
@@ -439,7 +439,7 @@ runDeck(await pdfDeck({
       }
     }
     for (const folder of unpackedRecordings) await writeIndex(folder);
-    const classesModule = config.classes ?? config.imports;
+    const classesModule = config.classes;
     const moduleMap = (kind) => `{ ${moduleImports[kind].map(({ name, variable }) => `${JSON.stringify(name)}: ${variable}`).join(', ')} }`;
     const importsLine = [
       classesModule ? `import * as slides from ${JSON.stringify(resolve(deckDir, classesModule).split(sep).join('/'))};` : 'const slides = undefined;',
@@ -448,7 +448,7 @@ runDeck(await pdfDeck({
     const markupBase = options.oneFile ? '' : `deck/${relative(deckDir, markupPath).split(sep).join('/')}`;
     entrySource = `import { runDeck, loadMarkupDeck } from ${JSON.stringify(sourceIndex)};
 ${importsLine}
-const config = ${JSON.stringify({ ...config, imports: undefined, classes: undefined, ...Object.fromEntries(LIBRARY_KINDS.map(({ key }) => [key, undefined])) })};
+const config = ${JSON.stringify({ ...config, classes: undefined, ...Object.fromEntries(LIBRARY_KINDS.map(({ key }) => [key, undefined])) })};
 const source = ${JSON.stringify(markdown)};
 const assets = ${JSON.stringify(assets)};
 const files = ${JSON.stringify(files)};
@@ -457,7 +457,7 @@ runDeck(await loadMarkupDeck({
   basePath: ${JSON.stringify(markupBase)} ? new URL(${JSON.stringify(markupBase)}, location.href).href : location.href,
   assets: Object.keys(assets).length ? assets : undefined,
   files: Object.keys(files).length ? files : undefined,
-  title: config.title ?? ${JSON.stringify(basename(deckDir))},
+  title: config.title,
   root: config.root,
   layout: config.layout,
   presenter: config.presenter,

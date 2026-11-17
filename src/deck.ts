@@ -30,7 +30,7 @@ export interface DeckDefinition {
   file?: DeckFile | null;
 }
 
-/** The file a deck was loaded from: a `deck.json`, a Markdown file, a PDF or a module, and for a module the named export shown. */
+/** The file a deck was loaded from: a Markdown file, a PDF or a module, and for a module the named export shown. */
 export interface DeckFile {
   url: string;
   scene?: string | null;

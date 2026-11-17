@@ -73,7 +73,7 @@ shape: sketch=true
 ```
 
 The built-in names are not the end of it. An `artworks/` folder next to the Markdown file (and
-any folder named under `artworks` or `paths` in `deck.json`) holds artworks of the deck's own,
+any folder named under `artworks` or `paths` in the front matter) holds artworks of the deck's own,
 one file per name, and `[[artwork: name …]]` (or `[[icon: name …]]` with a name that is not
 built in) places one like an icon, with `size`, `label`, `label_side` and a position:
 

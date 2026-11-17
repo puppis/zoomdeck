@@ -75,7 +75,7 @@ dot: sketch=false
 [[rectangle: #exact x=0 y=0 width=2 height=1 sketch=false]]
 ```
 
-The same works from `deck.json` (`"styles": { "shape": "sketch=true" }`); see [Styles](styles.html).
+The same works from the front matter (`styles: { shape: sketch=true }`); see [Styles](styles.html).
 
 ## From code
 

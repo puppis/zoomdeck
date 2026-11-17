@@ -4,10 +4,10 @@
  * shows a deck with one script tag:
  *
  *     <script type="module" src="zoomdeck.standalone.js"></script>
- *     <zoom-deck src="talk/deck.json" without="camera record"></zoom-deck>
+ *     <zoom-deck src="talk/slides.md" without="camera record"></zoom-deck>
  *
- * `src` is a `deck.json`, a Markdown file or a PDF; without it the deck is the Markdown written
- * inside the element, in a `<script type="text/markdown">` child (verbatim) or as its text.
+ * `src` is a Markdown file (its settings in its front matter) or a PDF; without it the deck is the
+ * Markdown written inside the element, in a `<script type="text/markdown">` child (verbatim) or as its text.
  * `without` leaves features out, `start` names the first stop, `title` the deck, `outline`
  * opens the outline, `use-location` lets the deck write `#step=` in the page's URL (for a page
  * that is one deck). The element is sized by the page; without a size it is as wide as its
@@ -17,10 +17,11 @@
  * inside the element, and a PDF, take the page's own colours
  * (the element's background and text colour, so a dark page shows a dark deck, and the deck
  * follows when the colour scheme changes) unless `background` and `foreground` say otherwise;
- * a `deck.json` keeps its own.
+ * a Markdown file keeps its own.
  */
 export * from './index';
-import { mountDeck, markupDeck, pdfDeck, FEATURES, type DeckHandle, type Feature, type ResolvedDeck } from './index';
+import { mountDeck, loadMarkupDeck, pdfDeck, FEATURES, type DeckHandle, type Feature, type ResolvedDeck } from './index';
+import { splitFrontMatter } from './markup/frontmatter.mjs';
 
 const STYLE_ID = 'zoom-deck-style';
 
@@ -198,7 +199,7 @@ export class ZoomDeckElement extends HTMLElement {
       this._settled = true;
       return null;
     }
-    // Colours: the attributes, else the page's own for a deck written here or a PDF; a deck.json keeps its own.
+    // Colours: the attributes, else the page's own for a deck written here or a PDF; a Markdown file keeps its own.
     const own = this.hasAttribute('background') || this.hasAttribute('foreground');
     const inherited = !own && (!src || /\.pdf(\?|#|$)/i.test(src));
     const page = inherited ? pageColors(this) : null;
@@ -212,14 +213,16 @@ export class ZoomDeckElement extends HTMLElement {
       // Superseded while the document loaded: the newer mount owns the element now.
       if (generation !== this._generation) return null;
     } else {
-      deck = markupDeck({
+      // Written here, the deck may have front matter of its own, read as a file's is.
+      deck = await loadMarkupDeck({
         source: source as string,
         basePath: this.getAttribute('base') ? new URL(this.getAttribute('base') as string, this.baseURI).href : this.baseURI,
-        title: this.getAttribute('title') ?? 'Deck',
+        title: this.getAttribute('title') ?? (splitFrontMatter(source as string).yaml === null ? 'Deck' : undefined),
         showOutline: this.hasAttribute('outline'),
         background,
         layout: foreground ? { color: foreground } : undefined,
       });
+      if (generation !== this._generation) return null;
     }
     this.replaceChildren();
     const start = this.getAttribute('start');

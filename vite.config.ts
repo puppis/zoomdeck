@@ -34,7 +34,7 @@ export function dropEngineMuxers(stub: string): Plugin {
   };
 }
 
-/** Reload the page when a deck file that is not a module changes (Markdown, deck.json, assets). */
+/** Reload the page when a deck file that is not a module changes (Markdown, shared YAML settings, assets). */
 function deckReload(): Plugin {
   const dir = resolve(__dirname, 'examples');
   return {

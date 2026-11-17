@@ -1,3 +1,21 @@
+---
+title: Zoomdeck tour
+classes: code-slides.ts
+viewport: 16x9
+layout:
+  fontSize: 26
+  headingSize: 40
+  codeSize: 19
+presenter:
+  transitionTime: 0.8
+  showSlideBorders: false
+macros:
+  N: '\mathbb{N}'
+  R: '\mathbb{R}'
+  pair: ['\langle #1, #2 \rangle', 2]
+styles:
+  footnote: font_size=18 color=GRAY
+---
 <!-- A tour of every feature of the Markdown dialect. Each slide pairs a listing with the result it produces. -->
 
 ::: styles
@@ -399,7 +417,7 @@ Shapes, arrows and lines, braces and boxes, icons and blobs, drawn crisply or by
 ::: slide {#sec-layout width=36}
 ## 4 · Layout and style {x=-17.35 y=9.2}
 
-Where elements go and how they look: the vertical flow, coordinates and anchors, relative constraints, groups, style sheets, and the deck.json file that sets the deck's title, proportions, fonts and colors. {x=-17.35 y=8.1 width=27 font_size=28}
+Where elements go and how they look: the vertical flow, coordinates and anchors, relative constraints, groups, style sheets, and the front matter that sets the deck's title, proportions, fonts and colors. {x=-17.35 y=8.1 width=27 font_size=28}
 
 [Documentation: Layout and style ↗]{#sec-layout-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/positioning.html}
 
@@ -421,7 +439,7 @@ Where elements go and how they look: the vertical flow, coordinates and anchors,
 [[include: #groups x=-6 y=-4.6 width=9.4 skip_return=true preview=true]]
 [[rectangle: #sec-layout-hit-groups x=-6 y=-4.6 width=9.4 height=5.2875 opacity=0 href=#slide=groups]]
 
-[deck.json and the command line]{#sec-layout-cap-config x=6 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=config}
+[Front matter and the command line]{#sec-layout-cap-config x=6 y=-1.2999999999999998 anchor=bottom font_size=24 color=BLUE_E href=#slide=config}
 [[include: #config x=6 y=-4.6 width=9.4 preview=true]]
 [[rectangle: #sec-layout-hit-config x=6 y=-4.6 width=9.4 height=5.2875 opacity=0 href=#slide=config]]
 :::
@@ -562,7 +580,7 @@ longer && *italic*  && `&&` aligns columns
 
 Blank lines separate elements, and the attributes in braces at the end of a block apply to it: `{#id x= y= width= font_size= color= step=}`. {#prose-key x=-9.35 y=-4.2 width=18.7 font_size=20}
 
-Headings `#` to `######` set the size only; `\\` breaks a line; HTML comments are discarded; `&&` between pieces of text aligns them in columns across the lines, see Columns. A `::: styles` block or deck.json can restyle every role at once. {#prose-more x=-9.35 y=-5.05 width=18.7 font_size=16 color=GRAY}
+Headings `#` to `######` set the size only; `\\` breaks a line; HTML comments are discarded; `&&` between pieces of text aligns them in columns across the lines, see Columns. A `::: styles` block or the front matter can restyle every role at once. {#prose-more x=-9.35 y=-5.05 width=18.7 font_size=16 color=GRAY}
 :::
 
 ::: slide {#math width=20}
@@ -581,7 +599,7 @@ $$
 $$ \textcolor{Orange}{a}^2 + {\color{Cerulean} b^2} = c^2 $$
 :::
 
-Macros from deck.json: $\N \subset \R$, $\pair{x}{y} \in \R^2$.
+Macros from the front matter: $\N \subset \R$, $\pair{x}{y} \in \R^2$.
 ```
 
 Inline math shares the baseline: $\int_0^1 x^2\,dx = \tfrac13$. {x=0.6 width=9}
@@ -596,9 +614,9 @@ $$
 $$ \textcolor{Orange}{a}^2 + {\color{Cerulean} b^2} = c^2 $$
 :::
 
-Macros from deck.json: $\N \subset \R$, $\pair{x}{y} \in \R^2$. {x=0.6 y=-1.8 width=9}
+Macros from the front matter: $\N \subset \R$, $\pair{x}{y} \in \R^2$. {x=0.6 y=-1.8 width=9}
 
-Single dollars give inline math and `$$` lines a display formula; LaTeX renders through MathJax, with the `macros` of deck.json at hand, arguments included. {#math-key x=-9.35 y=-3.5 width=18.7 font_size=22}
+Single dollars give inline math and `$$` lines a display formula; LaTeX renders through MathJax, with the `macros` of the front matter at hand, arguments included. {#math-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
 A `::: {.element …}` container positions, sizes or animates a formula; `\textcolor` and `\color` accept dvipsnames and CSS colors. {#math-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
@@ -668,7 +686,7 @@ Every key and gesture can be changed in the settings (,), which also hold the pe
 
 [[arrow: (-9.2,-3.6) -> (-1.0,-3.6), #tablet-arrow, color=GRAY, stroke_width=1]]
 
-1. **Pair.** Start the preview so that the tablet can reach it (for this tour, `zoomdeck serve examples/tour/deck.json --host` from the checkout, or `npm run dev -- --host`). Open the settings here (⚙ or ,), choose "Show the pairing code" under Tablet and scan it with the tablet, over Wi-Fi or over the cable with Internet Sharing to the iPad switched on. {x=0.6 width=9 font_size=18}
+1. **Pair.** Start the preview so that the tablet can reach it (for this tour, `zoomdeck serve examples/tour/slides.md --host` from the checkout, or `npm run dev -- --host`). Open the settings here (⚙ or ,), choose "Show the pairing code" under Tablet and scan it with the tablet, over Wi-Fi or over the cable with Internet Sharing to the iPad switched on. {x=0.6 width=9 font_size=18}
 2. **Trace** the wave and the circle on the tablet: the lines should appear here as you draw, without a visible delay. {x=0.6 width=9 font_size=18}
 3. **Press** lightly, then harder, along the strip: the width should follow. The Pen settings decide how much and redraw the strokes. {x=0.6 width=9 font_size=18}
 4. **Rest your palm** on the glass while writing in the box: a finger never draws. {x=0.6 width=9 font_size=18}
@@ -952,7 +970,7 @@ For text, `x` is the left edge and `y` the first baseline; images, shapes and ch
 [[rectangle: #ref x=-6.5 y=-0.9 width=3 height=1.4 color=GRAY]]
 [My top-left at its bottom-right]{#tl at=top-left:#ref.bottom-right dx=0.2 color=GOLD_E}
 [Centered on (5, -2.2)]{#cp at=center:(5,-2.2)}
-[A footnote with the .footnote style from deck.json]{.footnote at=#ref.bottom-left anchor=top-left dy=-0.8}
+[A footnote with the .footnote style of the front matter]{.footnote at=#ref.bottom-left anchor=top-left dy=-0.8}
 [Styled by .callout]{#co .callout at=#cp.top anchor=bottom dy=0.3}
 ```
 
@@ -973,13 +991,13 @@ heading: color=BLUE_E
 
 [Centered on (5, -2.2)]{#cp at=center:(5,-2.2)}
 
-[A footnote with the .footnote style from deck.json]{.footnote at=#ref.bottom-left anchor=top-left dy=-0.8}
+[A footnote with the .footnote style of the front matter]{.footnote at=#ref.bottom-left anchor=top-left dy=-0.8}
 
 [Styled by .callout]{#co .callout at=#cp.top anchor=bottom dy=0.3}
 
 `at=` puts one anchor of an element on an anchor of another (`#id.anchor`, center by default) or on a point; `anchor:` before the target, or `anchor=`, chooses the element's own point. {#styles-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-Named styles come from `styles` in deck.json or a `::: styles` block: `.class` tokens apply them, and roles such as `heading`, `body`, `code` or `shape` apply by themselves (every heading of this deck is blue because of the block above). {#styles-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
+Named styles come from `styles` in the front matter or a `::: styles` block: `.class` tokens apply them, and roles such as `heading`, `body`, `code` or `shape` apply by themselves (every heading of this deck is blue because of the block above). {#styles-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#groups width=20}
@@ -1018,35 +1036,34 @@ A `::: {.group #id}` container lays out its members in their own coordinates and
 :::
 
 ::: slide {#config width=20}
-## deck.json and the command line
+## Front matter and the command line
 
 [[snippet: docs id=config page=configuration.html]]
 
-```json {#deck-json x=-9.35 y=3.9 width=9.1}
-{
-  "markup": "slides.md",
-  "title": "Zoomdeck tour",
-  "classes": "code-slides.ts",
-  "viewport": { "width": 16, "height": 9 },
-  "layout": { "fontSize": 26, "headingSize": 40, "codeSize": 19 },
-  "presenter": { "transitionTime": 0.8 },
-  "macros": {
-    "N": "\\mathbb{N}", "R": "\\mathbb{R}",
-    "pair": ["\\langle #1, #2 \\rangle", 2]
-  }
-}
+```yaml {#front-matter x=-9.35 y=3.9 width=9.1}
+---
+title: Zoomdeck tour
+classes: code-slides.ts
+viewport: 16x9
+layout: { fontSize: 26, headingSize: 40, codeSize: 19 }
+presenter: { transitionTime: 0.8 }
+macros:
+  N: '\mathbb{N}'
+  R: '\mathbb{R}'
+  pair: ['\langle #1, #2 \rangle', 2]
+---
 ```
 
 ```bash {#cli x=0.6 y=3.9 width=9.1}
 # live preview: reloads on save, keeps your position
-zoomdeck serve examples/tour/deck.json
+zoomdeck serve examples/tour/slides.md
 
 # a static folder, or one self-contained HTML file
-zoomdeck build examples/tour/deck.json \
+zoomdeck build examples/tour/slides.md \
   -o build/tour --one-file
 ```
 
-`deck.json` names the Markdown file and sets the title, the viewport proportions, `layout` (fonts and sizes), `presenter` (transitions and pauses), LaTeX `macros`, `styles` and the `classes` module of code-authored slides; every key has a default. {#config-key x=-9.35 y=-3.5 width=18.7 font_size=22}
+The deck is its Markdown: the front matter between `---` lines at its top sets the title, the proportions, `layout`, `presenter`, `macros`, `styles` and the slide `classes`; `extends:` builds on a file of shared settings. {#config-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
 The `zoomdeck` command previews a deck with live reload and exports it as a folder or as one file; the editor integrations described in the documentation bind both to shortcuts. {#config-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
@@ -1269,7 +1286,7 @@ export class Orbit extends Slide {
 
 [[subslide: Orbit x=5 y=-0.6 width=8 step=1]]
 
-`[[subslide: Name …]]` instantiates a `Slide` subclass exported by the module named in deck.json (`"classes": "code-slides.ts"`), with the placement attributes of an include. {#code-slides-key x=-9.35 y=-3.5 width=18.7 font_size=22}
+`[[subslide: Name …]]` instantiates a `Slide` subclass exported by the module the front matter names (`classes: code-slides.ts`), with the placement attributes of an include. {#code-slides-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
 `build` runs once to create objects; `construct` plays animations and stops like any other slide, with the whole engine at hand. {#code-slides-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
@@ -1288,7 +1305,7 @@ def visit(slide):
 ```
 
 ```json {x=0.6 y=1.5 step=2}
-{ "markup": "slides.md", "layout": { "codeSize": 18 } }
+{ "keywords": ["procedure", "while", "return"] }
 ```
 
 ```pseudo {x=0.6 y=0.4 step=3}
@@ -1307,7 +1324,7 @@ def visit(slide):
 ```
 
 ```json {x=0.6 y=1.5 step=2}
-{ "markup": "slides.md", "layout": { "codeSize": 18 } }
+{ "keywords": ["procedure", "while", "return"] }
 ```
 
 ```pseudo {x=0.6 y=0.4 step=3}
