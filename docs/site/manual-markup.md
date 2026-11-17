@@ -492,6 +492,7 @@ be the reference of a position or the target of another connection or attachment
 | `font`, `font_size` | | the text face, `layout.fontSize` | the label's face and size |
 | `color` | color | the text color | stroke and label |
 | `label_color` | color | `color` | the label alone, in a color other than the stroke's |
+| `label_pos` | 0 to 1 | 0.5 | where along the edge the label sits, from its start (0) to its end (1), as `pos` in TikZ |
 | `stroke_width` | engine units | 2 | |
 | `dashed` | `true`, `false` | `false` | draw the line, or the arrow's shaft, in dashes that begin and end it; they grow longer with `stroke_width`, the tip stays solid, and a hand-drawn connection gets hand-drawn dashes |
 | `opacity` | 0 to 1 | 1 | |

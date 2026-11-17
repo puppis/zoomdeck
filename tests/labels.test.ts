@@ -6,9 +6,9 @@ import { MarkupParser } from '../src/markup/parser';
 type Point = [number, number, number];
 
 /** A 2 × 0.5 stand-in for a label, placed on the line from `start` to `end`; its center, rounded. */
-function place(start: Point, end: Point, slanted = false, side: 'above' | 'below' = 'above'): number[] {
+function place(start: Point, end: Point, slanted = false, side: 'above' | 'below' = 'above', along = 0.5): number[] {
   const label = new Rectangle({ width: 2, height: 0.5 });
-  placeLabel(label, new Line({ start, end }), start, end, slanted, side);
+  placeLabel(label, new Line({ start, end }), start, end, slanted, side, along);
   return label.getCenter().slice(0, 2).map((v: number) => Math.round(v * 1000) / 1000);
 }
 
@@ -46,6 +46,21 @@ describe('the label of an arrow or a line', () => {
     expect(() => parse('[[arrow: #a -> #b, #e, slanted=true]]')).toThrow(/requires a label/);
     expect(() => parse('[[line: #a -> #b, #e, label="x", label_side=left]]')).toThrow(/above or below/);
     expect(() => parse('[[arrow: #a -> #b, #e, label="x", slanted=yes]]')).toThrow(/true or false/);
+  });
+
+  it('sits at label_pos of the way from the start (0) to the end (1)', () => {
+    // A level edge: the same height as in the middle, moved along.
+    const [x, y] = place([-2, 0, 0], [2, 0, 0], false, 'above', 0.25);
+    expect(x).toBeCloseTo(-1, 3);
+    expect(y).toEqual(place([-2, 0, 0], [2, 0, 0])[1]);
+    expect(place([-2, 0, 0], [2, 0, 0], false, 'below', 1)[0]).toBeCloseTo(2, 3);
+    // A vertical edge pointing down: a quarter of the way is near its start, at the top.
+    expect(place([0, 2, 0], [0, -2, 0], true, 'above', 0.25)).toEqual([-0.35, 1]);
+    const parse = (body: string) => new MarkupParser().parse(`::: slide {#s}\n[[rectangle: #a x=-3 y=0 width=1 height=1]]\n\n[[rectangle: #b x=3 y=2 width=1 height=1]]\n\n${body}\n:::`);
+    expect(() => parse('[[arrow: #a -> #b, #e, label="x", label_pos=0.3]]')).not.toThrow();
+    expect(() => parse('[[arrow: #a -> #b, #e, label="x", label_pos=1.5]]')).toThrow(/from 0 \(the start\) to 1/);
+    expect(() => parse('[[arrow: #a -> #b, #e, label="x", label_pos=near]]')).toThrow(/label_pos must be a number/);
+    expect(() => parse('[[arrow: #a -> #b, #e, label_pos=0.3]]')).toThrow(/label_pos requires a label/);
   });
 
   it('takes a color of its own with label_color, on arrows, lines, braces and icons', () => {

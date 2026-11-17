@@ -762,7 +762,7 @@ export class ASTTransformer {
     let allowed: Set<string> | null;
     if (item.kind === 'group') allowed = new Set(GROUP_ATTRS);
     else if (CONNECTIONS.has(item.kind)) {
-      allowed = new Set(['id', 'step', 'hide', 'color', 'from', 'to', 'dashed', 'label', 'label_color', 'label_side', 'slanted', 'font', 'font_size', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
+      allowed = new Set(['id', 'step', 'hide', 'color', 'from', 'to', 'dashed', 'label', 'label_color', 'label_pos', 'label_side', 'slanted', 'font', 'font_size', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
     }
     else if (ATTACHMENTS.has(item.kind)) {
       allowed = new Set(['id', 'target', 'step', 'hide', 'color', 'buff', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
@@ -811,7 +811,11 @@ export class ASTTransformer {
       // A connection's label: on which side of the edge, in the label's own frame along it, and whether it turns along the edge.
       if ('label_side' in item.attributes && !['above', 'below'].includes(item.attributes.label_side)) throw new MarkupError('An arrow\'s or a line\'s label_side must be above or below', item.line);
       if ('slanted' in item.attributes && !['true', 'false'].includes(item.attributes.slanted)) throw new MarkupError('slanted must be true or false', item.line);
-      for (const key of ['label_side', 'slanted']) {
+      if ('label_pos' in item.attributes) {
+        const along = Number(item.attributes.label_pos);
+        if (!item.attributes.label_pos.trim() || !(along >= 0 && along <= 1)) throw new MarkupError('label_pos must be a number from 0 (the start) to 1 (the end)', item.line);
+      }
+      for (const key of ['label_side', 'slanted', 'label_pos']) {
         if (key in item.attributes && !('label' in item.attributes)) throw new MarkupError(`${key} requires a label`, item.line);
       }
     }

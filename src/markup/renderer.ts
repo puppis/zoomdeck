@@ -1139,7 +1139,8 @@ export class MarkupRenderer {
       // The label in label_color, else in the connection's color, which is the text color unless color= sets it.
       const labelColor = element.attributes.label_color ? parseColor(element.attributes.label_color) : color;
       const text = await this.text(spans, size, 4, labelColor, element.attributes.font);
-      placeLabel(text, connection, start3, end3, element.attributes.slanted === 'true', element.attributes.label_side === 'below' ? 'below' : 'above');
+      const along = numberValue(element.attributes, 'label_pos', element.line, 0.5) as number;
+      placeLabel(text, connection, start3, end3, element.attributes.slanted === 'true', element.attributes.label_side === 'below' ? 'below' : 'above', along);
       result = new Group(connection, text);
     }
     if ('opacity' in element.attributes) applyOpacity(result, Number(element.attributes.opacity));
@@ -1179,24 +1180,26 @@ function dashedConnection(start: [number, number, number], end: [number, number,
 }
 
 /**
- * Place a connection's label at the middle of the edge, on one side of it. The side is taken in
- * the label's own frame along the edge, the frame it reads in, from left to right (bottom to top on
- * a vertical edge), so that it is never upside down: `above` is the side its letters stand on
- * (the left of a vertical edge), `below` the other. A level edge keeps the label above or below
- * the connection, as it always was. On any other edge the label sits beside the middle, clear of
- * the line: upright by default, or turned along the edge with `slanted`.
+ * Place a connection's label beside the edge, at `along` of the way from its start (0) to its end
+ * (1), the middle by default, on one side of it. The side is taken in the label's own frame along
+ * the edge, the frame it reads in, from left to right (bottom to top on a vertical edge), so that
+ * it is never upside down: `above` is the side its letters stand on (the left of a vertical edge),
+ * `below` the other. On a level edge the label clears the connection's box (an arrow's tip
+ * included); on any other edge it sits beside that point, clear of the line: upright by default,
+ * or turned along the edge with `slanted`.
  */
-export function placeLabel(text: Mobject, connection: Mobject, start: [number, number, number], end: [number, number, number], slanted: boolean, side: 'above' | 'below' = 'above'): void {
+export function placeLabel(text: Mobject, connection: Mobject, start: [number, number, number], end: [number, number, number], slanted: boolean, side: 'above' | 'below' = 'above', along = 0.5): void {
   let angle = Math.atan2(end[1] - start[1], end[0] - start[0]);
   // Read from left to right: an edge pointing leftwards is turned around.
   if (angle > Math.PI / 2 + 1e-9) angle -= Math.PI;
   else if (angle <= -Math.PI / 2 + 1e-9) angle += Math.PI;
   const sign = side === 'below' ? -1 : 1;
+  const middle = [start[0] + (end[0] - start[0]) * along, start[1] + (end[1] - start[1]) * along];
   if (Math.abs(Math.sin(angle)) < 1e-6) {
     text.nextTo(connection, [0, sign, 0], 0.1);
+    text.shift([middle[0] - text.getCenter()[0], 0, 0]);
     return;
   }
-  const middle = [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2];
   // The normal toward the label's side, in its frame: up from its letters (to the left of a vertical edge), or the other way.
   const normal = [-Math.sin(angle) * sign, Math.cos(angle) * sign];
   const gap = 0.1;
