@@ -49,7 +49,8 @@ in proportion and their text wraps.
 The shared `border_color` and `stroke_width` style every rule; the `row_rule_` and `col_rule_`
 attributes override them for one direction, so rows and columns may differ in color and weight:
 `row_rule_color=BLUE row_rule_width=3 col_rule_color=GRAY`. A width of 0 leaves out the rules of
-that direction, the sides of the frame included.
+that direction, the sides of the frame included. Where they cross, the row rules lie over the
+column rules.
 
 Tables take the style role `table`, so `table: rules=rows header_opacity=0.2` in a styles block
 sets a deck-wide look, and `tremble=` makes their rules vibrate like any vector geometry.

@@ -105,6 +105,9 @@ describe('tables', () => {
     expect(new Set(lines(split).filter(level).map(style))).toEqual(new Set(['#0000FF 3']));
     // The columns keep the shared width when only their color is given.
     expect(new Set(lines(split).filter((line) => !level(line)).map(style))).toEqual(new Set(['#FF0000 2']));
+    // Row rules come after column rules, so they lie on top where they cross.
+    const kinds = lines(split).map(level);
+    expect(kinds.indexOf(true)).toBeGreaterThan(kinds.lastIndexOf(false));
     // Width 0 leaves out the rules of that direction, the sides of the frame included.
     const rowsOnly = await buildTable(rows, { fontSize: 20, color: '#000000', colRuleWidth: 0 }, factory) as Group;
     expect(lines(rowsOnly)).toHaveLength(4);

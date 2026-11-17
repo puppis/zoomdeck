@@ -128,13 +128,14 @@ export async function buildTable(rows: InlineSpan[][][], options: TableOptions, 
   const colColor = options.colRuleColor ?? borderColor;
   const colWidth = options.colRuleWidth ?? strokeWidth;
   if (rules !== 'none') {
-    for (let i = 0; i <= rows.length && rowWidth > 0; i += 1) {
-      const outer = i === 0 || i === rows.length;
-      if (horizontal || outer) members.push(rule([0, ys[i]], [width, ys[i]], rowColor, rowWidth, sketchy));
-    }
+    // Column rules first, so that where they cross, the row rules lie on top.
     for (let j = 0; j <= columns && colWidth > 0; j += 1) {
       const outer = j === 0 || j === columns;
       if (vertical || outer) members.push(rule([xs[j], 0], [xs[j], -height], colColor, colWidth, sketchy));
+    }
+    for (let i = 0; i <= rows.length && rowWidth > 0; i += 1) {
+      const outer = i === 0 || i === rows.length;
+      if (horizontal || outer) members.push(rule([0, ys[i]], [width, ys[i]], rowColor, rowWidth, sketchy));
     }
   }
   cells.forEach((row, i) => {
