@@ -307,7 +307,8 @@ grid of cells holding inline markup; a `::: {.element …}` container positions 
 `fill_color`/`fill_opacity`, `padding` (0.15; two values, vertical first, as in CSS),
 `padding_x`/`padding_y`, `col_width` (one width for every column, or one per column, `auto` for a
 natural one), `font_size`, `font`, `color`, `opacity`, `width` (columns shrink and wrap beyond it)
-and `sketch=true`. Rows are as tall as their text, plus the vertical padding. A fence with language `chart` holds rows
+and `sketch=true`. Every row is at least as tall as the font's letters, ascenders and descenders
+included (a TeX strut), plus the vertical padding; a taller formula makes its row taller. A fence with language `chart` holds rows
 separated by commas, semicolons or tabs (the first row names the series unless it is plain
 numbers; `header=` overrides) and takes `type` (`bar`, `line`, `pie`), `width`/`height` of the
 plot (6 × 3.5), `colors`, `fill_opacity` (0.85), `border_color`, `stroke_width`, `axis_color`,

@@ -382,10 +382,12 @@ follow the text color, or `layout.codeTheme`. A fence named `chart` is a chart, 
 ```
 
 A pipe table with a delimiter row is a table element. The delimiter row sets the alignment of
-each column (`:--` left, `:-:` center, `--:` right). Cells hold inline markup. A row is as tall
-as its text reaches above and below its baseline, plus the vertical padding; a row of empty
-cells is a line height tall. A column takes its widest cell, at least a line height, unless
-`col_width` fixes it. Tables take the common attributes except `height` and `font`, the
+each column (`:--` left, `:-:` center, `--:` right). Cells hold inline markup. Every row is at
+least as tall as the letters of the table's font, a capital or an ascender above the baseline and
+a descender below, as TeX's strut makes them, so that rows of plain text in one size are equal,
+empty ones included; a formula reaching beyond the letters makes its row taller. The vertical
+padding comes on top. A column takes its widest cell, at least a line height, unless `col_width`
+fixes it. Tables take the common attributes except `height` and `font`, the
 hand-drawn attributes, and:
 
 | Attribute | Values | Default | Meaning |

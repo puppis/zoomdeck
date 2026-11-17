@@ -3,8 +3,10 @@
  * rules, with optional backgrounds for the whole table, the header row and
  * alternate rows. Columns take their natural width, or a fixed one, and the
  * natural ones shrink, wrapping their text, when the table would exceed the
- * available width. Rows are as tall as their text reaches above and below its
- * baseline, plus the vertical padding.
+ * available width. Every row is at least as tall as the font's letters, a capital
+ * or an ascender above the baseline and a descender below, as TeX's strut makes
+ * them, so that rows of plain text in one size are equal; a formula reaching
+ * beyond the letters makes its row taller. The vertical padding comes on top.
  */
 import { Group, Line, Rectangle, type Mobject } from 'manim-web';
 import type { InlineSpan } from './ast';
@@ -140,22 +142,27 @@ export async function buildTable(rows: InlineSpan[][][], options: TableOptions, 
     contentWidths = targets.map((target, j) => Math.max(fixed[j] === null ? (target as number) : 0, ...cells.map((row) => row[j].getWidth())));
   }
   const columnWidths = contentWidths.map((_, j) => widthOf(j));
+  // The strut: how far the font's letters reach above and below the baseline, a capital or an
+  // ascender and a descender, laid out and measured as the cells are, in their font and size.
+  const strutCell = await cell([{ content: 'Hdp', kind: 'text', bold: false, italic: false, color: null }], options.fontSize, 1000);
+  const strutBase = baselineY(strutCell);
+  const strut = { above: strutCell.getTop()[1] - strutBase, below: strutBase - strutCell.getBottom()[1] };
   // How far each cell reaches above and below its first baseline: on the baseline, a row is as
-  // tall as its tallest reach above plus its deepest below, so that a formula or a descender
-  // never leaves the row.
+  // tall as its tallest reach above plus its deepest below, the strut's at least, so that a
+  // formula or a descender never leaves the row and rows of plain text are equal.
   const reach = cells.map((row) => row.map((obj) => {
     if (obj.getWidth() <= 0) return null;
     const base = baselineY(obj);
     return { above: obj.getTop()[1] - base, below: base - obj.getBottom()[1] };
   }));
   const rowReach = reach.map((row) => ({
-    above: Math.max(0, ...row.map((r) => r?.above ?? 0)),
-    below: Math.max(0, ...row.map((r) => r?.below ?? 0)),
+    above: Math.max(strut.above, ...row.map((r) => r?.above ?? 0)),
+    below: Math.max(strut.below, ...row.map((r) => r?.below ?? 0)),
   }));
-  // A row is as tall as its text, and a row of empty cells a line height, plus the padding.
+  // A row is as tall as its text, the strut at least (an empty row too), plus the padding; by
+  // the middle, top or bottom of their boxes, its tallest cell or the strut's whole height.
   const rowHeights = cells.map((row, i) => {
-    if (row.every((obj) => obj.getWidth() <= 0)) return lineHeight + 2 * paddingY;
-    const content = valign === 'baseline' ? rowReach[i].above + rowReach[i].below : Math.max(0, ...row.map((obj) => obj.getHeight()));
+    const content = valign === 'baseline' ? rowReach[i].above + rowReach[i].below : Math.max(strut.above + strut.below, ...row.map((obj) => obj.getHeight()));
     return content + 2 * paddingY;
   });
   const width = columnWidths.reduce((sum, w) => sum + w, 0);

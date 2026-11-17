@@ -144,16 +144,28 @@ describe('tables', () => {
     for (const c of bottom) expect(c.getBottom()[1]).toBeCloseTo(bottom[0].getBottom()[1], 9);
   });
 
-  it('pads across and down apart, and sizes rows by their text, a row of empty cells by a line', async () => {
+  it('pads across and down apart, and makes every row at least as tall as the letters of its font', async () => {
+    // Stand-ins whose ink reaches a given height above the baseline and depth below it: the
+    // strut's letters, an ellipsis, letters without ascenders, a capital, and a tall formula.
+    const reach: Record<string, [number, number]> = { Hdp: [0.22, 0.08], '…': [0.03, 0], ace: [0.12, 0], A: [0.2, 0], F: [0.4, 0.1] };
+    const factory = async (spans: InlineSpan[]) => {
+      const [above, below] = reach[spans.map((s) => s.content).join('')];
+      const box = new Rectangle({ width: 0.3, height: above + below }) as Rectangle & { markupBaselineFraction: number };
+      box.markupBaselineFraction = ((above + below) / 2 - above) / (above + below);
+      return box;
+    };
+    const height = async (text: string, valign?: 'center') => (await buildTable([[cell(text)]], {
+      fontSize: 20, color: '#000000', header: false, rules: 'outer', paddingX: 0.2, paddingY: 0.05, ...(valign ? { valign } : {}),
+    }, factory)).getHeight();
+    // Plain text, an ellipsis, an empty row: all as tall as the strut, 0.3, plus the padding.
+    for (const text of ['…', 'ace', 'A', '']) expect(await height(text)).toBeCloseTo(0.3 + 0.1, 6);
+    // A formula reaching beyond the letters makes its row taller, above and below.
+    expect(await height('F')).toBeCloseTo(0.4 + 0.1 + 0.1, 6);
+    // By the middle of their boxes, the strut's whole height at least.
+    expect(await height('…', 'center')).toBeCloseTo(0.3 + 0.1, 6);
     const lineHeight = (20 / 72) * 1.3;
-    // Text 0.3 tall (one line of the stand-in), narrower than a line height.
-    const rows = [[cell('ab'), cell('c')], [cell(''), cell('')]];
-    const table = await buildTable(rows, { fontSize: 20, color: '#000000', header: false, rules: 'outer', paddingX: 0.2, paddingY: 0.05 }, factory);
-    expect(table.getWidth()).toBeCloseTo(2 * (lineHeight + 0.4), 6);
-    expect(table.getHeight()).toBeCloseTo(0.3 + 0.1 + lineHeight + 0.1, 6);
-    // One padding for all four sides, as before.
-    const even = await buildTable([[cell('ab')]], { fontSize: 20, color: '#000000', header: false, rules: 'outer', padding: 0.1 }, factory);
-    expect(even.getHeight()).toBeCloseTo(0.3 + 0.2, 6);
+    const wide = await buildTable([[cell('…'), cell('')]], { fontSize: 20, color: '#000000', header: false, rules: 'outer', paddingX: 0.2, paddingY: 0.05 }, factory);
+    expect(wide.getWidth()).toBeCloseTo(2 * (lineHeight + 0.4), 6);
   });
 
   it('gives columns a fixed width, one for all or one each, and wraps their cells to it', async () => {

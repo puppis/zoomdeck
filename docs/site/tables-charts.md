@@ -29,9 +29,11 @@ table is positioned and styled by wrapping it in a `::: {.element …}` containe
 it its `#id`, `step`, `hide` and the placement attributes of [Positioning](positioning.html);
 tables are centered on `x`, `y` unless `anchor=` says otherwise. Columns take the width of their
 widest cell, at least a line height; when the table would exceed `width` (the available width by
-default), columns shrink in proportion and their text wraps. A row is as tall as its text reaches
-above and below its baseline, plus the vertical padding, so a cell may be wide and flat; a row of
-empty cells is a line height tall.
+default), columns shrink in proportion and their text wraps. Every row is at least as tall as the
+letters of the table's font, a capital or an ascender above the baseline and a descender below,
+as TeX's strut makes them, plus the vertical padding: rows of plain text in one size are equal,
+whether they hold "…", "ace", "A" or nothing, and a cell may still be wide and flat. A formula
+reaching beyond the letters makes its row taller.
 
 `col_width` fixes the width of the columns, rules to rules: one value for all of them, or a list
 with one per column, where `auto` keeps a column's natural width. Empty columns then keep their
