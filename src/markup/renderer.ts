@@ -8,7 +8,7 @@ import {
   renderLatexToSVG, type Mobject,
 } from 'manim-web';
 import { loadSvgMobject } from '../svg';
-import { dashPattern, dashSegments, sketch, sketchSeed, type FillStyle, type OutlineMobject, type SketchOptions } from '../sketch';
+import { STROKE_UNITS, dashPattern, dashSegments, sketch, sketchSeed, type FillStyle, type OutlineMobject, type SketchOptions } from '../sketch';
 import { artworkFromModule, makeIcon, type ArtworkModule, type ArtworkOptions, type IconName } from '../icons';
 import { ICON_KINDS } from './ast';
 import { effectFromModule, type EffectModule, type EffectOptions } from '../animations';
@@ -365,6 +365,8 @@ export interface MarkupRendererOptions {
   basePath?: string;
   /** The deck's LaTeX macros, in MathJax's form: an expansion, or [expansion, arguments, default of an optional first one]. */
   macros?: Record<string, MacroDefinition>;
+  /** The deck's background color, which halos take unless they name another; white by default. */
+  background?: string;
   /** Preloaded assets keyed by document-relative path, e.g. data URIs in single-file bundles. */
   assets?: Record<string, string>;
   /**
@@ -406,6 +408,8 @@ installMathPathFix();
 export class MarkupRenderer {
   readonly layout: LayoutConfig;
   readonly basePath: string;
+  /** The deck's background color. */
+  readonly background: string;
   /** The deck's LaTeX macros, expanded in every formula before MathJax reads it. */
   readonly macros: ReadonlyMap<string, Macro>;
   /** The macros without arguments, also handed to MathJax for what expansion leaves alone. */
@@ -437,6 +441,7 @@ export class MarkupRenderer {
   constructor(options: MarkupRendererOptions = {}) {
     this.layout = options.layout ?? new LayoutConfig();
     this.basePath = options.basePath ?? '';
+    this.background = parseColor(options.background ?? '#FFFFFF');
     this.macros = compileMacros(options.macros);
     this._plainMacros = plainMacros(this.macros);
     this.assets = options.assets ?? {};
@@ -1129,6 +1134,29 @@ export class MarkupRenderer {
     return this.codeTheme();
   }
 
+  /**
+   * The halo of an arrow or a line, when `halo` asks for one: a straight stroke `halo_width` wide
+   * (the line's width plus 12 by default), in the color `halo` names or, with `halo=true`, the
+   * deck's background, drawn under the line. Where a path drawn later crosses one drawn before,
+   * its halo hides the earlier path beside it, so that it passes over. The halo follows the
+   * shaft, not an arrow's tip, and stops half its width short of each end, so that it never
+   * notches the outline of the element a path leaves or reaches.
+   */
+  halo(element: ElementSpec, start: [number, number, number], end: [number, number, number], strokeWidth: number, tipLength: number): Mobject | null {
+    const value = element.attributes.halo;
+    if (value === undefined || value === 'false') return null;
+    const color = value === 'true' ? this.background : parseColor(value);
+    const haloWidth = numberValue(element.attributes, 'halo_width', element.line, strokeWidth + 12) as number;
+    const length = Math.hypot(end[0] - start[0], end[1] - start[1]);
+    const half = haloWidth / STROKE_UNITS / 2;
+    const from = half;
+    const to = length - Math.max(half, tipLength);
+    if (!(haloWidth > strokeWidth) || to - from < 1e-6) return null;
+    const unit = [(end[0] - start[0]) / length, (end[1] - start[1]) / length];
+    const at = (distance: number): [number, number, number] => [start[0] + unit[0] * distance, start[1] + unit[1] * distance, 0];
+    return new Line({ start: at(from), end: at(to), color, strokeWidth: haloWidth });
+  }
+
   /** Create an arrow or line between laid-out objects or fixed coordinates. */
   async connection(element: ElementSpec, objects: Map<string, Mobject>): Promise<Mobject> {
     const [start, end] = ['from', 'to'].map((key) => connectionEnd(element.attributes[key], element.line));
@@ -1171,8 +1199,9 @@ export class MarkupRenderer {
     else if (dash) connection = dashedConnection(start3, end3, color, width, dash, isArrow, tipLength, tipWidth);
     else if (isArrow) connection = new Arrow({ start: start3, end: end3, color, tipLength, tipWidth, ...(strokeWidth !== undefined ? { strokeWidth } : {}) });
     else connection = new Line({ start: start3, end: end3, color, strokeWidth: width });
+    const halo = this.halo(element, start3, end3, width, isArrow ? tipLength : 0);
     const label = element.attributes.label;
-    let result: Mobject = connection;
+    let result: Mobject = halo ? new Group(halo, connection) : connection;
     if (label) {
       const spans = this._parser.parseInlineSpans(label, element.line);
       const size = numberValue(element.attributes, 'font_size', element.line, this.layout.fontSize * 0.8) as number;
@@ -1182,7 +1211,7 @@ export class MarkupRenderer {
       const along = numberValue(element.attributes, 'label_pos', element.line, 0.5) as number;
       const labelGap = numberValue(element.attributes, 'label_buff', element.line, 0.1) as number;
       placeLabel(text, connection, start3, end3, element.attributes.slanted === 'true', element.attributes.label_side === 'below' ? 'below' : 'above', along, labelGap);
-      result = new Group(connection, text);
+      result = halo ? new Group(halo, connection, text) : new Group(connection, text);
     }
     if ('opacity' in element.attributes) applyOpacity(result, Number(element.attributes.opacity));
     return result;

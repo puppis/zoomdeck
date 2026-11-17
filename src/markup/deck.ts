@@ -509,7 +509,7 @@ export function markupDeck(options: MarkupDeckOptions): ResolvedDeck {
         return { file, line: origin.line };
       };
       return new SlideBuilder({ layout }).build(document, {
-        namespace: Object.keys(namespace).length ? namespace : null, macros: options.macros, assets: options.assets, locate,
+        namespace: Object.keys(namespace).length ? namespace : null, macros: options.macros, assets: options.assets, locate, background: options.background,
         paths, artworks: folders.artworks, artworkModules: options.artworkModules,
         fonts: folders.fonts, effects: folders.effects, charts: folders.charts, languages: folders.languages, codeThemes: folders.codeThemes,
         directives: folders.directives, effectModules: options.effectModules, chartModules: options.chartModules, directiveModules: options.directiveModules,

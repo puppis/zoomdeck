@@ -23,7 +23,7 @@ export type FillStyle = (typeof FILL_STYLES)[number];
 export const SKETCH_SCALE = 60;
 
 /** Engine stroke width units per logical unit. */
-const STROKE_UNITS = 100;
+export const STROKE_UNITS = 100;
 
 /** The hand-drawn look of a shape: stroke, fill, pattern, roughness, bowing, hatching and seed. */
 export interface SketchOptions {

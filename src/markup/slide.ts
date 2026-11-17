@@ -573,11 +573,13 @@ export class SlideBuilder {
       effectModules?: Record<string, EffectModule>; chartModules?: Record<string, ChartModule>; directiveModules?: Record<string, DirectiveModule>;
       /** The documents `[[pdf: file #id]]` placed, loaded ahead, by id. */
       documents?: Map<string, Slide>;
+      /** The deck's background color, which halos take unless they name another. */
+      background?: string;
     } = {},
   ): Slide {
     document = new ASTTransformer().validate(document);
     const renderer = this.renderer ?? new MarkupRenderer({
-      layout: this.layout, basePath: document.basePath, macros: options.macros, assets: options.assets,
+      layout: this.layout, basePath: document.basePath, macros: options.macros, assets: options.assets, background: options.background,
       paths: options.paths, artworks: options.artworks, artworkModules: options.artworkModules,
       fonts: options.fonts, effects: options.effects, charts: options.charts, languages: options.languages, codeThemes: options.codeThemes,
       directives: options.directives, effectModules: options.effectModules, chartModules: options.chartModules, directiveModules: options.directiveModules,

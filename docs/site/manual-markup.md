@@ -499,6 +499,8 @@ be the reference of a position or the target of another connection or attachment
 | `label_buff` | units | 0.1 | the distance between the edge and the label's lines; labels are measured by their font, so labels with and without descenders share a baseline |
 | `stroke_width` | engine units | 2 | |
 | `dashed` | `true`, `false` | `false` | draw the line, or the arrow's shaft, in dashes that begin and end it; they grow longer with `stroke_width`, the tip stays solid, and a hand-drawn connection gets hand-drawn dashes |
+| `halo` | `true`, `false`, a color | `false` | a wider stroke under the line (the shaft of an arrow), in the deck's background with `true` or in the color named: where it crosses a path drawn before, it passes over it, as elements draw in source order |
+| `halo_width` | engine units | `stroke_width` + 12 | the width of the halo; requires `halo` |
 | `opacity` | 0 to 1 | 1 | |
 | `step`, `hide`, `run_time`, `lag`, `href` | | | as for elements; connections fade only |
 | `sketch` and the hand-drawn attributes, `tremble`, `tremble_amplitude`, `tremble_rate` | | | see [Appearance](#appearance) and [tremble](#tremble) |

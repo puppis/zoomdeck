@@ -764,7 +764,7 @@ export class ASTTransformer {
     let allowed: Set<string> | null;
     if (item.kind === 'group') allowed = new Set(GROUP_ATTRS);
     else if (CONNECTIONS.has(item.kind)) {
-      allowed = new Set(['id', 'step', 'hide', 'color', 'from', 'to', 'dashed', 'label', 'label_buff', 'label_color', 'label_pos', 'label_side', 'slanted', 'font', 'font_size', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
+      allowed = new Set(['id', 'step', 'hide', 'color', 'from', 'to', 'dashed', 'halo', 'halo_width', 'label', 'label_buff', 'label_color', 'label_pos', 'label_side', 'slanted', 'font', 'font_size', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
     }
     else if (ATTACHMENTS.has(item.kind)) {
       allowed = new Set(['id', 'target', 'step', 'hide', 'color', 'buff', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
@@ -810,6 +810,9 @@ export class ASTTransformer {
     if (allowed) this._checkAttrs(item.attributes, allowed, item.line);
     if (CONNECTIONS.has(item.kind)) {
       if ('dashed' in item.attributes && !['true', 'false'].includes(item.attributes.dashed)) throw new MarkupError('dashed must be true or false', item.line);
+      // A halo is true (the deck's background), false, or a color.
+      if ('halo' in item.attributes && !['true', 'false'].includes(item.attributes.halo)) ASTTransformer._checkColor(item.attributes.halo, item.line);
+      if ('halo_width' in item.attributes && !styledKeys(item).has('halo_width') && !('halo' in item.attributes)) throw new MarkupError('halo_width requires halo', item.line);
       // A connection's label: on which side of the edge, in the label's own frame along it, and whether it turns along the edge.
       if ('label_side' in item.attributes && !['above', 'below'].includes(item.attributes.label_side)) throw new MarkupError('An arrow\'s or a line\'s label_side must be above or below', item.line);
       if ('slanted' in item.attributes && !['true', 'false'].includes(item.attributes.slanted)) throw new MarkupError('slanted must be true or false', item.line);
@@ -1043,10 +1046,10 @@ export class ASTTransformer {
     if (unknown.length) throw new MarkupError(`Unknown attributes: ${unknown.join(', ')}`, line);
     for (const key of [...GEOMETRY, 'font_size', 'size', 'buff', 'radius', 'corner_radius', 'stroke_width', 'fill_opacity', 'opacity', 'dx', 'dy', 'run_time', 'lag',
       'start_angle', 'scale', 'roughness', 'bowing', 'hachure_angle', 'hachure_gap', 'fill_weight', 'seed', 'smoothness', 'tremble_amplitude', 'tremble_rate',
-      'padding', 'header_opacity', 'stripe_opacity', 'min', 'max', 'row_rule_width', 'col_rule_width', 'label_buff']) {
+      'padding', 'header_opacity', 'stripe_opacity', 'min', 'max', 'row_rule_width', 'col_rule_width', 'label_buff', 'halo_width']) {
       if (!(key in attrs)) continue;
       const number = numberValue(attrs, key, line) as number;
-      if (['buff', 'corner_radius', 'stroke_width', 'lag', 'roughness', 'bowing', 'fill_weight', 'seed', 'tremble_amplitude', 'padding', 'row_rule_width', 'col_rule_width', 'label_buff'].includes(key) && number < 0) {
+      if (['buff', 'corner_radius', 'stroke_width', 'lag', 'roughness', 'bowing', 'fill_weight', 'seed', 'tremble_amplitude', 'padding', 'row_rule_width', 'col_rule_width', 'label_buff', 'halo_width'].includes(key) && number < 0) {
         throw new MarkupError(`${key} must be nonnegative`, line);
       }
       if (['radius', 'run_time', 'hachure_gap', 'tremble_rate'].includes(key) && number <= 0) throw new MarkupError(`${key} must be positive`, line);

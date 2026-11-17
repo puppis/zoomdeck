@@ -76,3 +76,37 @@ describe('dashed arrows and lines', () => {
     expect(() => parse('[[circle: #c radius=1 dashed=true]]')).toThrow(/dashed/);
   });
 });
+
+describe('halos', () => {
+  const element = (attributes: Record<string, string>) => ({ kind: 'line', attributes, line: 1 }) as unknown as ElementSpec;
+  const renderer = new MarkupRenderer({ basePath: 'x', background: '#0F172A' });
+
+  it('draw a wider stroke under the shaft, in the deck background or a color of their own', () => {
+    const halo = renderer.halo(element({ halo: 'true' }), [0, 0, 0], [4, 0, 0], 4, 0) as Line;
+    expect(halo).toBeInstanceOf(Line);
+    expect(halo.color.toUpperCase()).toBe('#0F172A');
+    // The line's width plus 12, stopping half its width short of each end.
+    expect(halo.strokeWidth).toBe(16);
+    expect(halo.getStart()[0]).toBeCloseTo(0.08, 9);
+    expect(halo.getEnd()[0]).toBeCloseTo(4 - 0.08, 9);
+    const yellow = renderer.halo(element({ halo: 'YELLOW', halo_width: '30' }), [0, 0, 0], [4, 0, 0], 2, 0.3) as Line;
+    expect(yellow.strokeWidth).toBe(30);
+    // An arrow's halo ends where its tip begins.
+    expect(yellow.getEnd()[0]).toBeCloseTo(4 - 0.3, 9);
+    expect(renderer.halo(element({}), [0, 0, 0], [4, 0, 0], 4, 0)).toBeNull();
+    expect(renderer.halo(element({ halo: 'false' }), [0, 0, 0], [4, 0, 0], 4, 0)).toBeNull();
+    // Too short a path, or a halo no wider than the line, has none.
+    expect(renderer.halo(element({ halo: 'true' }), [0, 0, 0], [0.1, 0, 0], 4, 0)).toBeNull();
+    expect(renderer.halo(element({ halo: 'true', halo_width: '4' }), [0, 0, 0], [4, 0, 0], 4, 0)).toBeNull();
+    expect(new MarkupRenderer({ basePath: 'x' }).background).toBe('#FFFFFF');
+  });
+
+  it('are named on arrows and lines, as true, false or a color', () => {
+    const parse = (body: string) => new MarkupParser().parse(`::: slide {#s}\n[[rectangle: #a x=-3 y=0 width=1 height=1]]\n\n[[rectangle: #b x=3 y=2 width=1 height=1]]\n\n${body}\n:::`);
+    expect(() => parse('[[arrow: #a -> #b, #e, halo=true, halo_width=20]]')).not.toThrow();
+    expect(() => parse('[[line: #a -> #b, #e, halo=WHITE]]')).not.toThrow();
+    expect(() => parse('[[line: #a -> #b, #e, halo=nocolor]]')).toThrow(/Invalid color/);
+    expect(() => parse('[[line: #a -> #b, #e, halo_width=20]]')).toThrow(/halo_width requires halo/);
+    expect(() => parse('[[line: #a -> #b, #e, halo=true, halo_width=-1]]')).toThrow(/halo_width must be nonnegative/);
+  });
+});

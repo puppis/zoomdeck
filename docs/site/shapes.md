@@ -88,7 +88,23 @@ connection (`sketch=true`) gets hand-drawn dashes.
 ```markdown
 [[line: #a -> #c, #link, dashed=true]]
 [[arrow: #c -> #a, #back, dashed=true, stroke_width=6, label="optional"]]
-``` Connections are created after all other elements, so forward references work;
+```
+
+`halo=true` draws a wider stroke under the line, in the deck's background, so that where it
+crosses a path drawn before it, it passes over it, the earlier path broken on each side, as in
+knot diagrams and maps. Elements draw in source order, so the path written later is on top.
+`halo=` a color gives the halo that color (on a colored shape, say), and `halo_width` its width
+(the line's width plus 12 by default). The halo follows the shaft, not an arrow's tip, and stops
+short of the ends, so that it never notches the elements a path joins. A style gives every arrow
+one at once: `arrow: halo=true` in a `::: styles` block.
+
+```markdown
+[[line: #a -> #b, #first]]
+[[arrow: #c -> #d, #over, halo=true]]
+[[line: #e -> #f, #thick, halo=YELLOW, halo_width=20]]
+```
+
+Connections are created after all other elements, so forward references work;
 they cannot anchor other elements and are not hidden implicitly when an endpoint disappears.
 
 ## Attachments
