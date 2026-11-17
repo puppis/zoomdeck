@@ -94,6 +94,23 @@ describe('tables', () => {
     expect(none.children.filter((c) => c instanceof Line)).toHaveLength(0);
   });
 
+  it('draws row and column rules in colors and widths of their own, or the shared ones', async () => {
+    const rows = [[cell('Name'), cell('Value')], [cell('A'), cell('1')], [cell('B'), cell('22')]];
+    const lines = (table: Group) => table.children.filter((c) => c instanceof Line) as Line[];
+    const level = (line: Line) => Math.abs(line.getStart()[1] - line.getEnd()[1]) < 1e-9;
+    const style = (line: Line) => `${line.color.toUpperCase()} ${line.strokeWidth}`;
+    const shared = await buildTable(rows, { fontSize: 20, color: '#000000', borderColor: '#888888', strokeWidth: 2 }, factory) as Group;
+    expect(new Set(lines(shared).map(style))).toEqual(new Set(['#888888 2']));
+    const split = await buildTable(rows, { fontSize: 20, color: '#000000', borderColor: '#888888', strokeWidth: 2, rowRuleColor: '#0000FF', rowRuleWidth: 3, colRuleColor: '#FF0000' }, factory) as Group;
+    expect(new Set(lines(split).filter(level).map(style))).toEqual(new Set(['#0000FF 3']));
+    // The columns keep the shared width when only their color is given.
+    expect(new Set(lines(split).filter((line) => !level(line)).map(style))).toEqual(new Set(['#FF0000 2']));
+    // Width 0 leaves out the rules of that direction, the sides of the frame included.
+    const rowsOnly = await buildTable(rows, { fontSize: 20, color: '#000000', colRuleWidth: 0 }, factory) as Group;
+    expect(lines(rowsOnly)).toHaveLength(4);
+    expect(lines(rowsOnly).every(level)).toBe(true);
+  });
+
   it('shrinks and wraps columns to fit a maximum width', async () => {
     const rows = [[cell('A very long header that takes a lot of room'), cell('Another long header text')], [cell('x'), cell('y')]];
     const wide = await buildTable(rows, { fontSize: 20, color: '#000000' }, factory);
@@ -105,6 +122,13 @@ describe('tables', () => {
 });
 
 describe('markup for tables and charts', () => {
+  it('accepts row and column rule colors and widths on tables', () => {
+    const table = '| a | b |\n| :- | :- |\n| 1 | 2 |';
+    expect(() => parse(`::: {.element #t row_rule_color=BLUE row_rule_width=3 col_rule_color=RED col_rule_width=0}\n${table}\n:::`)).not.toThrow();
+    expect(() => parse(`::: {.element #t row_rule_width=-1}\n${table}\n:::`)).toThrow(/row_rule_width must be nonnegative/);
+    expect(() => parse(`::: {.element #t col_rule_color=nope}\n${table}\n:::`)).toThrow(/Invalid color/);
+  });
+
   it('parses pipe tables with alignments and inline styling', () => {
     const table = element('| Name | Value |\n| :--- | ---: |\n| **Bold** $x$ | 1 |\n| [red]{color=RED} | 2 |', 'element-1') as TableSpec;
     expect(table).toBeInstanceOf(TableSpec);

@@ -389,8 +389,10 @@ common attributes except `height` and `font`, the hand-drawn attributes, and:
 | `header` | `true`, `false` | true | whether the first row is a header |
 | `padding` | units | 0.15 | space between a cell's text and its rules |
 | `rules` | `all`, `rows`, `cols`, `outer`, `none` | `all` | which rules are drawn |
-| `border_color` | color | the text color | color of the rules |
-| `stroke_width` | engine units | 1.5 | width of the rules |
+| `border_color` | color | the text color | color of every rule |
+| `stroke_width` | engine units | 1.5 | width of every rule |
+| `row_rule_color`, `row_rule_width` | color, engine units | `border_color`, `stroke_width` | the horizontal rules, between rows and at the top and bottom; width 0 leaves them out |
+| `col_rule_color`, `col_rule_width` | color, engine units | `border_color`, `stroke_width` | the vertical rules, between columns and at the sides; width 0 leaves them out |
 | `fill_color`, `fill_opacity` | color, 0 to 1 | none | background of the whole table |
 | `header_color`, `header_opacity` | color, 0 to 1 | the rule color at 0.12 | background of the header row |
 | `stripe_opacity` | 0 to 1 | 0 | background of every second body row, in the rule color |

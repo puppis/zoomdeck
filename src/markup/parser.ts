@@ -1037,10 +1037,10 @@ export class ASTTransformer {
     if (unknown.length) throw new MarkupError(`Unknown attributes: ${unknown.join(', ')}`, line);
     for (const key of [...GEOMETRY, 'font_size', 'size', 'buff', 'radius', 'corner_radius', 'stroke_width', 'fill_opacity', 'opacity', 'dx', 'dy', 'run_time', 'lag',
       'start_angle', 'scale', 'roughness', 'bowing', 'hachure_angle', 'hachure_gap', 'fill_weight', 'seed', 'smoothness', 'tremble_amplitude', 'tremble_rate',
-      'padding', 'header_opacity', 'stripe_opacity', 'min', 'max']) {
+      'padding', 'header_opacity', 'stripe_opacity', 'min', 'max', 'row_rule_width', 'col_rule_width']) {
       if (!(key in attrs)) continue;
       const number = numberValue(attrs, key, line) as number;
-      if (['buff', 'corner_radius', 'stroke_width', 'lag', 'roughness', 'bowing', 'fill_weight', 'seed', 'tremble_amplitude', 'padding'].includes(key) && number < 0) {
+      if (['buff', 'corner_radius', 'stroke_width', 'lag', 'roughness', 'bowing', 'fill_weight', 'seed', 'tremble_amplitude', 'padding', 'row_rule_width', 'col_rule_width'].includes(key) && number < 0) {
         throw new MarkupError(`${key} must be nonnegative`, line);
       }
       if (['radius', 'run_time', 'hachure_gap', 'tremble_rate'].includes(key) && number <= 0) throw new MarkupError(`${key} must be positive`, line);
@@ -1050,7 +1050,7 @@ export class ASTTransformer {
     }
     // An element's step may be -1 (shown before the slide's first visit); where that makes no sense the caller says so.
     for (const key of ['step', 'hide']) if (key in attrs && !(key === 'step' && attrs.step === '-1')) stepValue(attrs, key, line);
-    for (const key of ['color', 'fill_color', 'border_color', 'header_color', 'axis_color', 'label_color']) if (key in attrs) ASTTransformer._checkColor(attrs[key], line);
+    for (const key of ['color', 'fill_color', 'border_color', 'header_color', 'axis_color', 'label_color', 'row_rule_color', 'col_rule_color']) if (key in attrs) ASTTransformer._checkColor(attrs[key], line);
     if ('seed' in attrs && !Number.isInteger(Number(attrs.seed))) throw new MarkupError('seed must be an integer', line);
     if ('sketch' in attrs && !['true', 'false'].includes(attrs.sketch)) throw new MarkupError('sketch must be true or false', line);
     if ('fill_style' in attrs && !FILL_STYLE_NAMES.has(attrs.fill_style)) {

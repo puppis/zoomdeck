@@ -53,7 +53,7 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
 | `lang` | listings | language name (normally from the fence info) |
 | `play`, `muted` | animated images, videos | `once`, `loop`; sound for videos |
 | `title`, `poster` | iframes | label and preview image |
-| `rules`, `header`, `padding`, `border_color`, `header_color`, `header_opacity`, `stripe_opacity` | tables | rules, header row, cell padding and shading |
+| `rules`, `header`, `padding`, `border_color`, `row_rule_color`, `row_rule_width`, `col_rule_color`, `col_rule_width`, `header_color`, `header_opacity`, `stripe_opacity` | tables | rules (all, or rows and columns apart), header row, cell padding and shading |
 | `type`, `src`, `colors`, `axis_color`, `border_color`, `grid`, `legend`, `values`, `min`, `max`, `header` | charts | chart kind (built in, or a module of the deck's `charts/` folder), data file, palette, axes, gridlines, legend, value labels and axis bounds |
 | `href` | every element, group, connection and attachment | URL opened by a click on the element (a drag still draws); `#slide=id` and `#step=N` move within the deck instead of opening a page |
 

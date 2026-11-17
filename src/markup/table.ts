@@ -28,9 +28,16 @@ export interface TableOptions {
   padding?: number;
   /** Which rules to draw; all by default. */
   rules?: TableRules;
+  /** Color of every rule; the text color by default. */
   borderColor?: string;
-  /** Width of the rules in engine units; 1.5 by default. */
+  /** Width of every rule in engine units; 1.5 by default. */
   strokeWidth?: number;
+  /** Color and width of the horizontal rules, between rows and at the top and bottom; the shared ones by default. */
+  rowRuleColor?: string;
+  rowRuleWidth?: number;
+  /** Color and width of the vertical rules, between columns and at the sides; the shared ones by default. */
+  colRuleColor?: string;
+  colRuleWidth?: number;
   /** Background of the whole table. */
   fillColor?: string;
   fillOpacity?: number;
@@ -115,14 +122,19 @@ export async function buildTable(rows: InlineSpan[][][], options: TableOptions, 
   }
   const horizontal = rules === 'all' || rules === 'rows';
   const vertical = rules === 'all' || rules === 'cols';
+  // Rows and columns may have rules of their own color and width; a rule of width 0 is not drawn.
+  const rowColor = options.rowRuleColor ?? borderColor;
+  const rowWidth = options.rowRuleWidth ?? strokeWidth;
+  const colColor = options.colRuleColor ?? borderColor;
+  const colWidth = options.colRuleWidth ?? strokeWidth;
   if (rules !== 'none') {
-    for (let i = 0; i <= rows.length; i += 1) {
+    for (let i = 0; i <= rows.length && rowWidth > 0; i += 1) {
       const outer = i === 0 || i === rows.length;
-      if (horizontal || outer) members.push(rule([0, ys[i]], [width, ys[i]], borderColor, strokeWidth, sketchy));
+      if (horizontal || outer) members.push(rule([0, ys[i]], [width, ys[i]], rowColor, rowWidth, sketchy));
     }
-    for (let j = 0; j <= columns; j += 1) {
+    for (let j = 0; j <= columns && colWidth > 0; j += 1) {
       const outer = j === 0 || j === columns;
-      if (vertical || outer) members.push(rule([xs[j], 0], [xs[j], -height], borderColor, strokeWidth, sketchy));
+      if (vertical || outer) members.push(rule([xs[j], 0], [xs[j], -height], colColor, colWidth, sketchy));
     }
   }
   cells.forEach((row, i) => {

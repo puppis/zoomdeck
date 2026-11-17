@@ -34,8 +34,10 @@ in proportion and their text wraps.
 | Attribute | Default | Meaning |
 | --- | --- | --- |
 | `rules` | `all` | which lines to draw: `all`, `rows`, `cols`, `outer` or `none` |
-| `border_color` | the text color | color of the rules and the default shading color |
-| `stroke_width` | 1.5 | width of the rules |
+| `border_color` | the text color | color of every rule and the default shading color |
+| `stroke_width` | 1.5 | width of every rule |
+| `row_rule_color`, `row_rule_width` | `border_color`, `stroke_width` | the horizontal rules: between rows, and the top and bottom of the frame |
+| `col_rule_color`, `col_rule_width` | `border_color`, `stroke_width` | the vertical rules: between columns, and the sides of the frame |
 | `header` | `true` | whether the first row is a header (shaded; `false` treats it as a body row) |
 | `header_color`, `header_opacity` | the rule color, 0.12 | background of the header row |
 | `stripe_opacity` | 0 | background of every second body row, in the rule color |
@@ -43,6 +45,11 @@ in proportion and their text wraps.
 | `padding` | 0.15 | space between a cell's text and its rules |
 | `font_size`, `font`, `color`, `opacity` | the layout's | typography and translucency |
 | `sketch` and its tuning | `false` | [hand-drawn](sketch.html) rules and backgrounds |
+
+The shared `border_color` and `stroke_width` style every rule; the `row_rule_` and `col_rule_`
+attributes override them for one direction, so rows and columns may differ in color and weight:
+`row_rule_color=BLUE row_rule_width=3 col_rule_color=GRAY`. A width of 0 leaves out the rules of
+that direction, the sides of the frame included.
 
 Tables take the style role `table`, so `table: rules=rows header_opacity=0.2` in a styles block
 sets a deck-wide look, and `tremble=` makes their rules vibrate like any vector geometry.
