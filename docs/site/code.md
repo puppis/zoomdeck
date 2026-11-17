@@ -16,6 +16,13 @@ def visit(slide):
 ```json {x=0.6 y=1.3 step=2}
 { "markup": "slides.md", "layout": { "codeSize": 18 } }
 ```
+
+```pseudo {x=0.6 y=0.4 step=3}
+procedure gcd(a, b)
+  while b ≠ 0 do            // Euclid
+    (a, b) := (b, a mod b)
+  return a
+```
 ````
 
 A fenced block (`` ``` `` or `~~~`) is a verbatim listing. Its info string names the language,
@@ -44,5 +51,27 @@ palette, dark text on a light background a light-theme one. Listings and inline 
 bundled Latin Modern Mono, the LaTeX typewriter face; `layout.codeFont` picks another monospace
 family, from the deck's `fonts/` folder when it has it. `layout.codeTheme` names a color scheme
 of the deck's own, `code-themes/<name>.json`.
+
+## Pseudocode
+
+No pseudocode is built in, since every course writes its own: a deck names its keywords in a
+[language profile](extending.html#languages-and-code-themes), and its fences take the profile's
+name. The tour colors the `pseudo` listing above with `languages/pseudo.json`:
+
+```json
+{
+  "keywords": ["procedure", "function", "begin", "end", "if", "then", "else", "while", "do",
+               "for", "each", "all", "in", "to", "downto", "repeat", "until", "return",
+               "and", "or", "not", "mod", "div", "let", "var", "true", "false", "nil"],
+  "types": ["integer", "boolean", "real", "string", "array", "list", "set", "graph", "node", "edge"],
+  "lineComment": ["//"],
+  "strings": ["\""]
+}
+```
+
+Keywords take the keyword color and types the type color; `//` starts a comment. Add the words
+of your own algorithms (`send`, `receive`, `parent`) to the lists. A fence finds the profile by
+its file name, `pseudo` here. Symbols such as `≠` show as they are; one the code font lacks is
+drawn in another face.
 
 > **Tip** To show markup that itself contains fences, open the outer block with four backticks.

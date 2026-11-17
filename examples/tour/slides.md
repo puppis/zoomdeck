@@ -1288,6 +1288,13 @@ def visit(slide):
 ```json {x=0.6 y=1.5 step=2}
 { "markup": "slides.md", "layout": { "codeSize": 18 } }
 ```
+
+```pseudo {x=0.6 y=0.4 step=3}
+procedure gcd(a, b)
+  while b ≠ 0 do            // Euclid
+    (a, b) := (b, a mod b)
+  return a
+```
 ````
 
 ```python {#py x=0.6 y=3.9 width=9 step=1}
@@ -1301,9 +1308,16 @@ def visit(slide):
 { "markup": "slides.md", "layout": { "codeSize": 18 } }
 ```
 
+```pseudo {x=0.6 y=0.4 step=3}
+procedure gcd(a, b)
+  while b ≠ 0 do            // Euclid
+    (a, b) := (b, a mod b)
+  return a
+```
+
 A fence names its language and takes the usual attributes: `#id`, `x`/`y`, `width` (the block shrinks to fit), `font_size`, `color`, `step`/`hide` and relative placement. {#listings-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-Languages: python, the C family (javascript, typescript, java, c, rust, go and more), shell, json, latex, html/xml/svg and markdown; a deck adds its own in `languages/`, and any other name is shown as plain text. Lines never wrap. {#listings-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
+Languages: python, the C family (javascript, typescript, java, c, rust, go and more), shell, json, latex, html/xml/svg and markdown; a deck adds its own in `languages/`, as the tour does for pseudocode, and any other name is shown as plain text. Lines never wrap. {#listings-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#animations width=20}

@@ -1,0 +1,6 @@
+{
+  "keywords": ["procedure", "function", "begin", "end", "if", "then", "else", "while", "do", "for", "each", "all", "in", "to", "downto", "repeat", "until", "return", "and", "or", "not", "mod", "div", "let", "var", "true", "false", "nil", "break", "continue"],
+  "types": ["integer", "boolean", "real", "string", "array", "list", "set", "map", "graph", "node", "edge"],
+  "lineComment": ["//"],
+  "strings": ["\""]
+}
