@@ -219,7 +219,9 @@ elements or serve as endpoints.
 
 Arrows and lines go from one endpoint to another: an element ID (attached at the facing bounding
 edge) or a literal `(x,y)` point. They take an optional `#id`, `label` (inline text and math,
-placed above the connection), `color`, `stroke_width`, `step` and `hide`. An arrow's `tip` is
+placed above the connection), `color`, `stroke_width`, `step` and `hide`. `buff` (0.08 on an
+arrow, 0 on a line) is the space left at both ends, `buff_start` and `buff_end` at one, measured
+along the path whatever the end joins. An arrow's `tip` is
 `triangle` (filled, the default), `open` (two strokes meeting at the point, which the shaft
 reaches) or `none`; `tip_length` and `tip_width` (half its width) set its size, uncapped. A
 connection curves with one of `bend` (degrees, as TikZ's `bend left`; `looseness`), `loop`

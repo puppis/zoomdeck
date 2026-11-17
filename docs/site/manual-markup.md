@@ -489,7 +489,8 @@ polygons, polylines and arcs stay at their own coordinates unless positioned.
 A connection runs between two endpoints, each an element `#id`, met where the straight line
 crosses its border (the outline of a circle, a dot or an ellipse, the bounding box of anything
 else), an element at one of its anchors `#id.anchor` (the anchors of [`at=`](#at), such as
-`#a.top-right`), or a point `(x,y)`; a line ends right there, an arrow a little short of it. The
+`#a.top-right`), or a point `(x,y)`; a line ends right there, an arrow a little short of it, and
+`buff`, `buff_start` and `buff_end` set that space. The
 endpoints come first, then `#id` and the attributes, comma-separated. Connections are laid out after the elements they join and cannot
 be the reference of a position or the target of another connection or attachment.
 
@@ -508,6 +509,8 @@ labels, `label_pos`, `slanted`, dashes, hand-drawn strokes and `halo_bridge` fol
 | --- | --- | --- | --- |
 | `id` | identifier | `element-N` | |
 | `from`, `to` | `#id`, `#id.anchor`, `(x,y)` | required, written before the attributes | the endpoints |
+| `buff` | units | 0.08 on an arrow, 0 on a line | the space left at both ends, between the connection and what it joins (an element's border, an anchor or a point), measured along its path; on an arrow by default at most a third of its length |
+| `buff_start`, `buff_end` | units | `buff` | the space at one end only, as TikZ's `shorten <` and `shorten >` |
 | `label` | inline markup | | text at the middle of the connection |
 | `label_side` | `above`, `below` | `above` | the side of the edge the label sits on, in the label's own frame along the edge: it reads from left to right (bottom to top on a vertical edge), and `above` is the side its letters stand on, so the left of a vertical edge |
 | `slanted` | `true`, `false` | `false` | turn the label along the edge; otherwise it stays upright, beside the middle of the edge and clear of the line |

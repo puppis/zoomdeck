@@ -1179,7 +1179,6 @@ export class MarkupRenderer {
     let b = at(target, end);
     const color = attrs.color ? parseColor(attrs.color) : this.layout.color;
     const isArrow = element.kind === 'arrow';
-    const buff = isArrow ? 0.08 : 0;
     const strokeWidth = element.kind === 'line' || 'stroke_width' in attrs ? Number(attrs.stroke_width ?? 2) : undefined;
     const width = strokeWidth ?? (isArrow ? 4 : 2);
     const dash = attrs.dashed === 'true' ? dashPattern(width) : undefined;
@@ -1201,17 +1200,23 @@ export class MarkupRenderer {
       // horizontal up to floating-point noise still meets the side, not a corner.
       if (source && !anchorOf(start)) a = boundaryPoint(source, direction);
       if (target && !anchorOf(end)) b = boundaryPoint(target, [-direction[0], -direction[1], -direction[2]]);
-      const unit = direction.map((v) => v / length) as [number, number, number];
-      const segment = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
-      const trim = Math.min(buff, segment / 3);
-      start3 = [a[0] + unit[0] * trim, a[1] + unit[1] * trim, a[2] + unit[2] * trim];
-      end3 = [b[0] - unit[0] * trim, b[1] - unit[1] * trim, b[2] - unit[2] * trim];
-      if ('wavy' in attrs) path = new Spline(waveCubics([start3[0], start3[1]], [end3[0], end3[1]], Number(attrs.wavy), numberValue(attrs, 'amplitude', element.line, 0.15) as number));
-      else if (isArrow && tip !== 'triangle') path = new Spline([lineCubic([start3[0], start3[1]], [end3[0], end3[1]])]);
+      if ('wavy' in attrs) {
+        // A wave runs between the borders; the space at its ends is cut from the wave itself.
+        const wave = new Spline(waveCubics([a[0], a[1]], [b[0], b[1]], Number(attrs.wavy), numberValue(attrs, 'amplitude', element.line, 0.15) as number));
+        const [from, to] = endGaps(element, wave.length);
+        path = from > 0 || to > 0 ? wave.part(from, wave.length - to) : wave;
+      } else {
+        const unit = direction.map((v) => v / length) as [number, number, number];
+        const [from, to] = endGaps(element, Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]));
+        start3 = [a[0] + unit[0] * from, a[1] + unit[1] * from, a[2] + unit[2] * from];
+        end3 = [b[0] - unit[0] * to, b[1] - unit[1] * to, b[2] - unit[2] * to];
+        if (isArrow && tip !== 'triangle') path = new Spline([lineCubic([start3[0], start3[1]], [end3[0], end3[1]])]);
+      }
     } else {
+      // A curve: the space at each end is measured along it.
       const curve = curvePath(element, source, target, [a[0], a[1]], [b[0], b[1]], !!anchorOf(start), !!anchorOf(end));
-      const trim = Math.min(buff, curve.length / 3);
-      path = trim > 0 ? curve.part(trim, curve.length - trim) : curve;
+      const [from, to] = endGaps(element, curve.length);
+      path = from > 0 || to > 0 ? curve.part(from, curve.length - to) : curve;
     }
     const length = path ? path.length : Math.hypot(end3[0] - start3[0], end3[1] - start3[1]);
     const [tipLength, tipWidth] = tipSize(tip, width, length, explicit('tip_length'), explicit('tip_width'));
@@ -1274,6 +1279,26 @@ export class MarkupRenderer {
     BRIDGE_PATHS.set(result, bridgePath);
     return result;
   }
+}
+
+/** The space an arrow leaves at each end unless `buff` says otherwise, so that its tip does not touch what it reaches. */
+export const ARROW_GAP = 0.08;
+
+/**
+ * The space a connection `length` long leaves at its start and its end, measured along its path:
+ * `buff` for both, `buff_start` and `buff_end` for one, as TikZ's `shorten <` and `shorten >`. By
+ * default an arrow leaves `ARROW_GAP` at each end, at most a third of its length so that a short
+ * arrow keeps a shaft, and a line none. Spaces given that leave nothing of the path are an error.
+ */
+export function endGaps(element: ElementSpec, length: number): [number, number] {
+  const attrs = element.attributes;
+  const given = (key: string) => (key in attrs ? Number(attrs[key]) : undefined);
+  const fallback = Math.min(element.kind === 'arrow' ? ARROW_GAP : 0, length / 3);
+  const gaps: [number, number] = [given('buff_start') ?? given('buff') ?? fallback, given('buff_end') ?? given('buff') ?? fallback];
+  if (gaps[0] + gaps[1] >= length - 1e-9) {
+    throw new MarkupError(`The spaces at the ends (${gaps[0]} and ${gaps[1]}) leave nothing of the ${element.kind}, which runs ${length.toFixed(2)} between its ends; lower buff, buff_start or buff_end`, element.line);
+  }
+  return gaps;
 }
 
 /** Whether `p` lies inside `obj`: in the outline of a circle, a dot or an ellipse, in the box of anything else. */

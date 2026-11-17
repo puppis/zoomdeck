@@ -174,10 +174,15 @@ describe('curved arrows and lines', () => {
   });
 
   it('wavy: wave between the outlines, and via: pass through points given from the start', async () => {
+    // Without a gap, the wave leaves and reaches the outlines on the line between them.
+    const flush = await connection('arrow', { from: '#a', to: '#b', wavy: '2', amplitude: '0.2', buff: '0' }, objects);
+    expect(distance(ends(flush)[0], [0.25, 0])).toBeLessThan(1e-9);
+    expect(distance(ends(flush)[1], [2.75, 0])).toBeLessThan(1e-9);
+    // An arrow's gap is cut from the wave itself, close to the line where the wave starts.
     const wave = await connection('arrow', { from: '#a', to: '#b', wavy: '2', amplitude: '0.2' }, objects);
     const [start, end] = ends(wave);
-    expect(start[1]).toBeCloseTo(0, 9);
-    expect(end[1]).toBeCloseTo(0, 9);
+    expect(Math.abs(start[1])).toBeLessThan(0.03);
+    expect(Math.abs(end[1])).toBeLessThan(0.03);
     expect(Math.max(...(BRIDGE_PATHS.get(wave) as BridgePath).strokes.flat().map(([, y]) => y))).toBeGreaterThan(0.15);
     const via = await connection('line', { from: '#a', to: '#b', via: '+(1,1) +(2,-1)' }, objects);
     const stroke = (BRIDGE_PATHS.get(via) as BridgePath).strokes[0];
@@ -197,6 +202,38 @@ describe('curved arrows and lines', () => {
     const corners = triangle.getVertices();
     expect(distance(corners[0], ends(arrow)[1])).toBeLessThan(1e-9);
     expect((corners[1][1] + corners[2][1]) / 2).toBeGreaterThan(ends(arrow)[1][1]);
+  });
+
+  it('leave the space buff asks for at both ends, or buff_start and buff_end at one, along the path', async () => {
+    const along = (obj: Mobject) => (BRIDGE_PATHS.get(obj) as BridgePath).ends;
+    // By default an arrow leaves its small gap at both ends and a line none, whatever it joins.
+    expect(along(await connection('arrow', {}))[0][0]).toBeCloseTo(0.08, 9);
+    expect(along(await connection('arrow', {}))[1][0]).toBeCloseTo(4 - 0.08, 9);
+    expect(along(await connection('line', {}))[0][0]).toBeCloseTo(0, 9);
+    // One value for both ends, one end alone, or both apart; points, anchors and elements alike.
+    expect(along(await connection('line', { buff: '0.3' })).map(([x]) => +x.toFixed(9))).toEqual([0.3, 3.7]);
+    expect(along(await connection('arrow', { buff_start: '0.5' })).map(([x]) => +x.toFixed(9))).toEqual([0.5, 3.92]);
+    expect(along(await connection('arrow', { buff: '0.2', buff_end: '0' })).map(([x]) => +x.toFixed(9))).toEqual([0.2, 4]);
+    expect(along(await connection('line', { from: '#a.right', to: '#b', buff_end: '0.1' }, objects)).map(([x]) => +x.toFixed(9))).toEqual([0.25, 2.65]);
+    // On a curve the space is measured along it, and the tip points along what remains.
+    const bent = await connection('arrow', { from: '#a', to: '#b', bend: '40', buff: '0' }, objects);
+    const shortened = await connection('arrow', { from: '#a', to: '#b', bend: '40', buff_end: '0.5' }, objects);
+    const curve = (bent as { markupOutline?: VMobject }).markupOutline as VMobject;
+    const outline = (shortened as { markupOutline?: VMobject }).markupOutline as VMobject;
+    const length = (vmob: VMobject) => new Spline((() => {
+      const p = vmob.getPoints();
+      const cubics: Array<[Vec, Vec, Vec, Vec]> = [];
+      for (let i = 0; i + 3 < p.length; i += 3) cubics.push([[p[i][0], p[i][1]], [p[i + 1][0], p[i + 1][1]], [p[i + 2][0], p[i + 2][1]], [p[i + 3][0], p[i + 3][1]]]);
+      return cubics;
+    })()).length;
+    expect(length(curve) - length(outline)).toBeCloseTo(0.5 + 0.08, 3);
+    const triangle = shortened.children.find((child) => child instanceof Polygon) as Polygon;
+    expect(distance(triangle.getVertices()[0], ends(shortened)[1])).toBeLessThan(1e-9);
+    // Spaces that leave nothing of the path are an error; the parser takes them on arrows and lines.
+    await expect(connection('line', { to: '(1,0)', buff: '0.5' })).rejects.toThrow(/leave nothing of the line/);
+    const parse = (body: string) => new MarkupParser().parse(`::: slide {#s}\n[[circle: #a x=-2 y=0 radius=0.3]]\n\n[[circle: #b x=2 y=0 radius=0.3]]\n\n${body}\n:::`);
+    expect(() => parse('[[line: #a -> #b, buff=0.1, buff_start=0, buff_end=0.2]]')).not.toThrow();
+    expect(() => parse('[[arrow: #a -> #b, buff_end=-1]]')).toThrow(/buff_end must be nonnegative/);
   });
 
   it('are named on arrows and lines, one way at a time, with tips on arrows only', () => {

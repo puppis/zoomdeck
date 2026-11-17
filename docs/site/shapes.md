@@ -55,12 +55,19 @@ bounding edge of anything else), an element at one of its anchors, or a literal 
 ```markdown
 [[arrow: #a0.top-right -> #b1.top-left]]
 [[line: #a0.bottom -> #b1]]
+[[arrow: #p -> (3,-2), buff_start=0.2, buff_end=0]]
 ```
 
 The anchors are those of [`at=`](positioning.html#anchor-expressions): `top-left`, `top`,
 `top-right`, `left`, `center`, `right`, `bottom-left`, `bottom`, `bottom-right`, and the
 baseline ones of text. A line ends right on its endpoints; an arrow stops a little short of each,
-so that its tip does not touch the element. An arrow's tip grows and shrinks with its
+0.08 away, so that its tip does not touch the element. `buff` sets the space left at both ends,
+between the connection and what it joins, and `buff_start` and `buff_end` the space at one end
+only, as TikZ's `shorten <` and `shorten >`: `buff_end=0` makes an arrow touch its target, and a
+message that ends on a bare process line can keep its start clear with `buff_start` alone. The
+space applies to elements, anchors and points alike and is measured along the path, cut from a
+curve itself, so a tip points along the stretch that remains; labels (`label_pos`) run along the
+shortened path, and halo bridges test crossings against the ends as drawn. An arrow's tip grows and shrinks with its
 `stroke_width` (0.3 long at the default 4) and is at most a quarter of the arrow, so a short thin
 arrow keeps a small tip, unless its size is given. Arrows and lines also take an optional `#id`, a
 `label` with inline styling and math (sized by `font_size`, set in `font`), `color` for the
