@@ -8,7 +8,7 @@
  * `markupBaselineFraction`, like prose paragraphs.
  */
 import { Group, type Mobject } from 'manim-web';
-import { MONOSPACE, StyledLine, type TextRun } from './text';
+import { MONOSPACE, StyledLine, markLines, type TextRun } from './text';
 import { tokenizeCode, type TokenClass } from './tokens';
 
 export { tokenizeCode, languageFor } from './tokens';
@@ -68,6 +68,13 @@ export function layoutCode(source: string, language: string, options: CodeLayout
   if (width > maxWidth + 1e-6) block.scale(maxWidth / width, { aboutPoint: [0, 0, 0] });
   const height = block.getHeight();
   block.markupBaselineFraction = height > 0 ? -block.getCenter()[1] / height : 0;
+  const scale = width > maxWidth + 1e-6 ? maxWidth / width : 1;
+  const lastLine = lines.reduce((last, line, index) => (line ? index : last), 0);
+  markLines(block, {
+    first: 0, last: -lastLine * pitch * scale,
+    ascent: Math.max(...present.map((line) => line.fontAscent)) * scale, descent: Math.max(...present.map((line) => line.fontDescent)) * scale,
+    interline: pitch * scale,
+  });
   block.center();
   return block;
 }

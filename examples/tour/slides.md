@@ -543,20 +543,22 @@ Name   && **bold**  && $x^2$
 longer && *italic*  && `&&` aligns columns
 ```
 
-Paragraphs wrap to `width`. Use **bold**, *italic*, `inline code` and math $e^{i\pi}+1=0$. {x=0.6 width=9}
+::: {.group #prose-column anchor=origin x=0.6 y=4.2}
+Paragraphs wrap to `width`. Use **bold**, *italic*, `inline code` and math $e^{i\pi}+1=0$. {width=9 font_size=24}
 
-[Colored spans]{color=ORANGE} take palette names, [CSS colors]{style="color:#15803D"} or hex values and [nest **emphasis** and $\sqrt{2}$]{color=GOLD_E}. {x=0.6 width=9}
+[Colored spans]{color=ORANGE} take palette names, [CSS colors]{style="color:#15803D"} or hex values and [nest **emphasis** and $\sqrt{2}$]{color=GOLD_E}. {width=9 font_size=24}
 
-- Bullet items are prose with a marker {x=0.6 width=9}
-  - Nested items indent {x=0.6 width=8.4}
-    1. Numbered lists nest too {x=0.6 width=7.8}
-- Headings set size only: `#` to `######` {x=0.6 width=9}
+- Bullet items are prose with a marker {width=9 font_size=24}
+  - Nested items indent {width=8.4 font_size=24}
+    1. Numbered lists nest too {width=7.8 font_size=24}
+- Headings set size only: `#` to `######` {width=9 font_size=24}
 
-Links like [this one](https://vite.dev) are clickable. {x=0.6 width=9}
+Links like [this one](https://vite.dev) are clickable. {width=9 font_size=24}
 
 Name   && **bold**  && $x^2$
 longer && *italic*  && `&&` aligns columns
-{x=0.6 width=9}
+{width=9 font_size=24}
+:::
 
 Blank lines separate elements, and the attributes in braces at the end of a block apply to it: `{#id x= y= width= font_size= color= step=}`. {#prose-key x=-9.35 y=-4.2 width=18.7 font_size=20}
 

@@ -253,7 +253,7 @@ Text elements take the common attributes:
 | `x`, `y` | units | flow | the position of the anchor; see [Positioning](#positioning) |
 | `width` | units | the width available in the flow | the wrapping width |
 | `height` | units | | scale the laid-out block to this height |
-| `anchor` | `center`, `top`, `bottom`, `left`, `right`, `top-left`, `top-right`, `bottom-left`, `bottom-right`, `left-baseline`, `right-baseline` | `layout.textAnchor`, left-baseline | the point of the block that `x`, `y`, `at` and the alignments place |
+| `anchor` | `center`, `top`, `bottom`, `left`, `right`, `top-left`, `top-right`, `bottom-left`, `bottom-right`, `left-baseline`, `baseline`, `right-baseline` | `layout.textAnchor`, left-baseline | the point of the block that `x`, `y`, `at` and the alignments place |
 | `at`, `dx`, `dy`, `buff`, `below`, `above`, `left-of`, `right-of`, `left-aligned`, `right-aligned`, `top-aligned`, `bottom-aligned`, `baseline-aligned` | | | relative placement, see [Positioning](#positioning) |
 | `color` | color | `layout.color` | the text color; inline spans may override parts |
 | `font` | family | `layout.font` | the typeface (text only; code and formulas have their own) |
@@ -496,6 +496,7 @@ be the reference of a position or the target of another connection or attachment
 | `color` | color | the text color | stroke and label |
 | `label_color` | color | `color` | the label alone, in a color other than the stroke's |
 | `label_pos` | 0 to 1 | 0.5 | where along the edge the label sits, from its start (0) to its end (1), as `pos` in TikZ |
+| `label_buff` | units | 0.1 | the distance between the edge and the label's lines; labels are measured by their font, so labels with and without descenders share a baseline |
 | `stroke_width` | engine units | 2 | |
 | `dashed` | `true`, `false` | `false` | draw the line, or the arrow's shaft, in dashes that begin and end it; they grow longer with `stroke_width`, the tip stays solid, and a hand-drawn connection gets hand-drawn dashes |
 | `opacity` | 0 to 1 | 1 | |
@@ -517,6 +518,7 @@ box. The targets come first, then `#id` and the attributes.
 | `buff` | units | 0.15 | distance from the element |
 | `label`, `font`, `font_size` | | | text beyond the brace, in the brace's `color` |
 | `label_color` | color | `color` | the label in a color of its own |
+| `label_buff` | units | 0.1 | the distance between the brace and the label's lines |
 | `color`, `stroke_width`, `opacity`, `step`, `hide`, `run_time`, `lag`, `href` | | | as for connections |
 | the hand-drawn attributes, `tremble` | | | |
 
@@ -567,6 +569,7 @@ hand-drawn attributes, `tremble`, and:
 | `label` | inline markup | | a caption at 80 % of the font size |
 | `label_side` | `below`, `above`, `left`, `right` | `below` | where the label sits; requires a label |
 | `label_color` | color | `color` | the label in a color of its own; requires a label |
+| `label_buff` | units | 0.15 | the distance between the symbol and the label's lines; requires a label |
 | `color`, `stroke_width`, `fill_color`, `fill_opacity` | | the text color, 2, the stroke color, 0 | |
 
 An artwork module reads any further attribute it likes, so no attribute name is rejected on
@@ -632,8 +635,12 @@ or `play` of their own. Relative references stay within a group.
 ### Flow
 
 Elements without a position flow from the top-left corner of the canvas inside
-`layout.margin` (0.65), downward, each block followed by `layout.gap` (0.35), as wide as the
-canvas minus the margins. Text wraps at that width; images and tables take it unless they say
+`layout.margin` (0.65), downward, as wide as the canvas minus the margins. Text is spaced as in
+LaTeX: the baselines of two paragraphs (blocks separated by a blank line) are
+`layout.paragraphSpacing` interlines apart (1.5; the interline is the distance between the
+baselines of two lines of one paragraph), the items of a list written without blank lines one
+interline apart, and a text and any other block (a table, a shape, an image) keep the space two
+paragraphs have between their lines. Two blocks that are not text are `layout.gap` (0.35) apart. Text wraps at that width; images and tables take it unless they say
 otherwise. Nested list items indent. A block with an explicit `y`, an `at`, or a vertical
 relative reference (`below`, `above`, `top-aligned`, `bottom-aligned`, `baseline-aligned`)
 leaves the flow; a text block with only `x` keeps its flow line and moves horizontally.
@@ -644,15 +651,15 @@ leaves the flow; a text block with only `x` keeps its flow line and moves horizo
 for text, formulas and listings (`layout.textAnchor`, `left-baseline`), the center for
 everything else, groups included. `anchor=` names another point: `center`, `top`,
 `bottom`, `left`, `right`, `top-left`, `top-right`, `bottom-left`, `bottom-right`,
-`left-baseline` or `right-baseline` (the baselines for text, formulas and listings only), and
-`origin`, the local (0, 0) of a group. For a center-anchored element an omitted coordinate is 0; for a text
+`left-baseline`, `baseline` (its middle) or `right-baseline` (the first baseline, for text,
+formulas and listings only), and `origin`, the local (0, 0) of a group. For a center-anchored element an omitted coordinate is 0; for a text
 element it is the flow position.
 
 ### Relative placement
 
 | Attribute | Meaning |
 | --- | --- |
-| `below:#id`, `above:#id`, `left-of:#id`, `right-of:#id` | put the element next to `#id` on that side, centered on it across the other axis, at distance `buff` (`layout.gap` by default); one direction at most |
+| `below:#id`, `above:#id`, `left-of:#id`, `right-of:#id` | put the element next to `#id` on that side, centered on it across the other axis, at distance `buff` (`layout.gap` by default); one direction at most. Between two texts, side by side they share the first baseline, and one below the other they are a line apart: the gap between their lines (font ascent and descent, not ink) is the line gap plus `buff` |
 | `left-aligned:#id`, `right-aligned:#id`, `top-aligned:#id`, `bottom-aligned:#id` | align that edge with the edge of `#id` |
 | `baseline-aligned:#id` | align the first baselines; both elements must be text, formulas or listings |
 | `buff` | the distance of a direction; requires one |
@@ -901,8 +908,9 @@ are relative to the file itself.
 | `codeFont` | Latin Modern Mono | inline code and listings |
 | `codeTheme` | follows `color` | a code theme of the deck, `code-themes/<name>.json` |
 | `margin` | 0.65 | distance of the flow from the canvas edges |
-| `gap` | 0.35 | distance between flowing blocks, and the default `buff` |
+| `gap` | 0.35 | distance between flowing blocks that are not text, and the default `buff` |
 | `lineGap` | 0.12 | extra space between wrapped lines |
+| `paragraphSpacing` | 1.5 | the distance between the baselines of two paragraphs in the flow, in interlines; a text and another block keep the space two paragraphs have between their lines |
 | `listIndent` | 0.6 | indentation per list level, and the minimum width of the marker column |
 | `animationTime` | 0.35 | the default `run_time` of fades and effects |
 | `defaultSlideSize` | `[16, 9]` | the canvas of slides without `width` or `height` |

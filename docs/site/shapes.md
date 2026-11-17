@@ -69,7 +69,9 @@ line and its label, `label_color` for a label in another color, `stroke_width`, 
 
 The label sits at the middle of the edge, above it by default: upright, and clear of the line
 on a slanted or vertical edge. `label_pos` moves it along the edge, from its start (0) to its
-end (1), like `pos` in TikZ: `label_pos=0.25` is a quarter of the way. `slanted=true` turns it along the edge, and `label_side=below`
+end (1), like `pos` in TikZ: `label_pos=0.25` is a quarter of the way. `label_buff` (0.1)
+sets its distance from the edge. Labels are placed by their lines, as their font measures them,
+not by their ink, so a label with descenders and one without share a baseline. `slanted=true` turns it along the edge, and `label_side=below`
 puts it on the other side. Above and below are taken in the label's own frame along the edge,
 which reads from left to right, or from bottom to top on a vertical edge, so that a label is never
 upside down: above a vertical edge is its left, whichever way the arrow points.

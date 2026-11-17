@@ -503,14 +503,17 @@ export class MarkupParser {
     // Open lists, innermost last; the marker of the current item is given to its first block only.
     const lists: Array<{ ordered: boolean; delimiter: string }> = [];
     let marker = '';
+    let tight = false;
     const listItem = (): ListItem | null => {
       if (!lists.length) return null;
-      const item = { depth: lists.length - 1, marker };
+      const item = { depth: lists.length - 1, marker, tight };
       marker = '';
       return item;
     };
     for (let index = 0; index < tokens.length; index += 1) {
       const token = tokens[index];
+      // markdown-it hides the paragraphs of a tight list, one written without blank lines between its items.
+      if (token.type === 'paragraph_open') tight = Boolean(token.hidden);
       const tokenLine = line + (token.map ? token.map[0] : 0);
       if (token.type === 'table_open') {
         // A pipe table: header row first, alignments from the delimiter row.
@@ -761,11 +764,11 @@ export class ASTTransformer {
     let allowed: Set<string> | null;
     if (item.kind === 'group') allowed = new Set(GROUP_ATTRS);
     else if (CONNECTIONS.has(item.kind)) {
-      allowed = new Set(['id', 'step', 'hide', 'color', 'from', 'to', 'dashed', 'label', 'label_color', 'label_pos', 'label_side', 'slanted', 'font', 'font_size', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
+      allowed = new Set(['id', 'step', 'hide', 'color', 'from', 'to', 'dashed', 'label', 'label_buff', 'label_color', 'label_pos', 'label_side', 'slanted', 'font', 'font_size', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
     }
     else if (ATTACHMENTS.has(item.kind)) {
       allowed = new Set(['id', 'target', 'step', 'hide', 'color', 'buff', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
-      if (item.kind === 'brace') for (const key of ['side', 'label', 'label_color', 'font_size', 'font']) allowed.add(key);
+      if (item.kind === 'brace') for (const key of ['side', 'label', 'label_buff', 'label_color', 'font_size', 'font']) allowed.add(key);
       else if (item.kind === 'blob') for (const key of ['smoothness', ...FILL_ATTRS]) allowed.add(key);
       else for (const key of ['corner_radius', ...FILL_ATTRS]) allowed.add(key);
     } else if (item.kind === 'table') {
@@ -775,7 +778,7 @@ export class ASTTransformer {
       allowed = new Set([...ELEMENT_ATTRS, ...CHART_ATTRS, ...SKETCH_ATTRS]);
     } else if (item.kind === 'icon') {
       allowed = new Set([...ELEMENT_ATTRS].filter((key) => !['width', 'height'].includes(key)));
-      for (const key of ['size', 'label', 'label_color', 'label_side', ...STROKE_ATTRS, ...FILL_ATTRS, ...SKETCH_ATTRS]) allowed.add(key);
+      for (const key of ['size', 'label', 'label_buff', 'label_color', 'label_side', ...STROKE_ATTRS, ...FILL_ATTRS, ...SKETCH_ATTRS]) allowed.add(key);
       // An artwork of the deck's own reads its directive's attributes itself: any name is allowed.
       if (!ICON_KINDS.has(item.source)) allowed = null;
     } else if (item.kind === 'custom') {
@@ -818,7 +821,7 @@ export class ASTTransformer {
     // How a label looks needs a label, when the element says so itself: a style that sets it for
     // labeled and unlabeled elements alike just has no effect on the unlabeled ones.
     const styled = styledKeys(item);
-    for (const key of ['label_side', 'slanted', 'label_pos', 'label_color']) {
+    for (const key of ['label_side', 'slanted', 'label_pos', 'label_color', 'label_buff']) {
       if (key in item.attributes && !styled.has(key) && !('label' in item.attributes)) throw new MarkupError(`${key} requires a label`, item.line);
     }
     if ('href' in item.attributes && !LINK_TARGET.test(item.attributes.href)) {
@@ -1040,10 +1043,10 @@ export class ASTTransformer {
     if (unknown.length) throw new MarkupError(`Unknown attributes: ${unknown.join(', ')}`, line);
     for (const key of [...GEOMETRY, 'font_size', 'size', 'buff', 'radius', 'corner_radius', 'stroke_width', 'fill_opacity', 'opacity', 'dx', 'dy', 'run_time', 'lag',
       'start_angle', 'scale', 'roughness', 'bowing', 'hachure_angle', 'hachure_gap', 'fill_weight', 'seed', 'smoothness', 'tremble_amplitude', 'tremble_rate',
-      'padding', 'header_opacity', 'stripe_opacity', 'min', 'max', 'row_rule_width', 'col_rule_width']) {
+      'padding', 'header_opacity', 'stripe_opacity', 'min', 'max', 'row_rule_width', 'col_rule_width', 'label_buff']) {
       if (!(key in attrs)) continue;
       const number = numberValue(attrs, key, line) as number;
-      if (['buff', 'corner_radius', 'stroke_width', 'lag', 'roughness', 'bowing', 'fill_weight', 'seed', 'tremble_amplitude', 'padding', 'row_rule_width', 'col_rule_width'].includes(key) && number < 0) {
+      if (['buff', 'corner_radius', 'stroke_width', 'lag', 'roughness', 'bowing', 'fill_weight', 'seed', 'tremble_amplitude', 'padding', 'row_rule_width', 'col_rule_width', 'label_buff'].includes(key) && number < 0) {
         throw new MarkupError(`${key} must be nonnegative`, line);
       }
       if (['radius', 'run_time', 'hachure_gap', 'tremble_rate'].includes(key) && number <= 0) throw new MarkupError(`${key} must be positive`, line);

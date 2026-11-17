@@ -690,6 +690,8 @@ export async function layoutParagraph(spans: InlineSpan[], options: ParagraphOpt
     const block = new Group(...groups) as Group & { markupBaselineFraction: number };
     const height = block.getHeight();
     block.markupBaselineFraction = height > 0 ? -block.getCenter()[1] / height : 0;
+    const lastRow = Math.max(...groups.map((group) => (group as Group & { rowNumber?: number }).rowNumber ?? 0));
+    markLines(block, { ascent, descent, interline: spacing, first: 0, last: -lastRow * spacing });
     block.center();
     return block;
   }
@@ -772,8 +774,55 @@ export async function layoutParagraph(spans: InlineSpan[], options: ParagraphOpt
   const block = new Group(...present) as Group & { markupBaselineFraction: number };
   const height = block.getHeight();
   block.markupBaselineFraction = height > 0 ? -block.getCenter()[1] / height : 0;
+  const lastLine = lineGroups.reduce((last, group, number) => (group ? number : last), 0);
+  markLines(block, { ascent, descent, interline: spacing, first: 0, last: -lastLine * spacing });
   block.center();
   return block;
+}
+
+/**
+ * The lines of a laid-out text: its first and last baselines, how far its lines reach above and
+ * below a baseline (the font's, or a taller formula's), and the distance between the baselines of
+ * consecutive lines. Placement measures text by these rather than by its ink, so that a label
+ * with descenders and one without, or two paragraphs, line up as lines of type do.
+ */
+export interface TextLines {
+  /** The y of the first baseline. */
+  first: number;
+  /** The y of the last baseline. */
+  last: number;
+  ascent: number;
+  descent: number;
+  /** The distance between the baselines of consecutive lines. */
+  interline: number;
+}
+
+type LinesMobject = Mobject & { markupLines?: { first: number; last: number; ascent: number; descent: number; interline: number } };
+
+/**
+ * Remember a text's lines, measured in its current coordinates, as fractions of its height from
+ * its center, so that moving or scaling it keeps them.
+ */
+export function markLines(obj: Mobject, lines: TextLines): void {
+  const height = obj.getHeight();
+  if (!(height > 0)) return;
+  const center = obj.getCenter()[1];
+  (obj as LinesMobject).markupLines = {
+    first: (lines.first - center) / height, last: (lines.last - center) / height,
+    ascent: lines.ascent / height, descent: lines.descent / height, interline: lines.interline / height,
+  };
+}
+
+/** The lines of a laid-out text where it is now, or null for anything that is not text. */
+export function textLines(obj: Mobject): TextLines | null {
+  const marks = (obj as LinesMobject).markupLines;
+  if (!marks) return null;
+  const height = obj.getHeight();
+  const center = obj.getCenter()[1];
+  return {
+    first: center + marks.first * height, last: center + marks.last * height,
+    ascent: marks.ascent * height, descent: marks.descent * height, interline: marks.interline * height,
+  };
 }
 
 /** Read a typographic baseline from current measured geometry. */

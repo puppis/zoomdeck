@@ -53,8 +53,9 @@ description: Every key of deck.json, the layout and presenter options, and the c
 | `codeFont` | Latin Modern Mono (bundled) | inline code and listings; the LaTeX typewriter face, sized to pair with the text face |
 | `codeTheme` | the deck's text color decides | token colors of listings, `code-themes/<name>.json`, see [Extending a deck](extending.html#languages-and-code-themes) |
 | `margin` | 0.65 | distance of the flow from the canvas edges |
-| `gap` | 0.35 | distance between flowing blocks and default `buff` |
+| `gap` | 0.35 | distance between flowing blocks that are not text, and default `buff` |
 | `lineGap` | 0.12 | extra space between wrapped lines |
+| `paragraphSpacing` | 1.5 | the distance between the baselines of two paragraphs, in interlines |
 | `listIndent` | 0.6 | marker column of list items and indentation per nesting level |
 | `animationTime` | 0.35 | duration of fades |
 | `defaultSlideSize` | `[16, 9]` | canvas of slides without `width`/`height` |

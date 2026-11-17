@@ -32,7 +32,7 @@ import {
   polylinePoints, span,
 } from './ast';
 import { MarkupParser } from './parser';
-import { MONOSPACE, baselineY, layoutParagraph, type MathPiece } from './text';
+import { MONOSPACE, baselineY, layoutParagraph, markLines, textLines, type MathPiece } from './text';
 import { layoutCode } from './code';
 import { DEFAULT_TEXT_FONT } from '../fonts';
 import { LatexError, applyLatexColors, compileMacros, expandMacros, latexErrorOf, plainMacros, preprocessLatex, type Macro, type MacroDefinition } from './latex';
@@ -55,6 +55,11 @@ export interface LayoutConfigOptions {
   margin?: number;
   gap?: number;
   lineGap?: number;
+  /**
+   * The distance between the baselines of two paragraphs in the flow, in interlines (the distance
+   * between the baselines of two lines of one paragraph); 1.5 by default.
+   */
+  paragraphSpacing?: number;
   /** Indentation of nested list items per level, and the minimum width of the marker column. */
   listIndent?: number;
   animationTime?: number;
@@ -74,6 +79,7 @@ export class LayoutConfig {
   readonly margin: number;
   readonly gap: number;
   readonly lineGap: number;
+  readonly paragraphSpacing: number;
   readonly listIndent: number;
   readonly animationTime: number;
   readonly defaultSlideSize: readonly [number, number];
@@ -90,6 +96,7 @@ export class LayoutConfig {
     this.margin = options.margin ?? 0.65;
     this.gap = options.gap ?? 0.35;
     this.lineGap = options.lineGap ?? 0.12;
+    this.paragraphSpacing = options.paragraphSpacing ?? 1.5;
     this.listIndent = options.listIndent ?? 0.6;
     this.animationTime = options.animationTime ?? DEFAULT_ANIMATION_TIME;
     this.defaultSlideSize = options.defaultSlideSize ?? Slide.defaultSize;
@@ -99,7 +106,7 @@ export class LayoutConfig {
     for (const key of ['fontSize', 'headingSize', 'codeSize', 'animationTime'] as const) {
       if (!Number.isFinite(this[key]) || this[key] <= 0) throw new Error(`${key} must be finite and positive`);
     }
-    for (const key of ['margin', 'gap', 'lineGap', 'listIndent'] as const) {
+    for (const key of ['margin', 'gap', 'lineGap', 'listIndent', 'paragraphSpacing'] as const) {
       if (!Number.isFinite(this[key]) || this[key] < 0) throw new Error(`${key} must be finite and nonnegative`);
     }
   }
@@ -273,9 +280,11 @@ export function placeRelative(
   if ('at' in attrs) {
     // One anchor of this object lands on an anchor of another object or on a literal point.
     const at = parseAt(attrs.at, item.line);
-    const target = 'point' in at.target
-      ? at.target.point
-      : anchorPoint(objects.get(at.target.id) as Mobject, at.target.anchor ?? 'center');
+    const reference = 'point' in at.target ? null : (objects.get(at.target.id) as Mobject);
+    // A text is aimed at its baseline (in the middle), anything else at its center.
+    const target = reference === null
+      ? (at.target as { point: [number, number, number] }).point
+      : anchorPoint(reference, (at.target as { anchor: string | null }).anchor ?? (textLines(reference) ? 'baseline' : 'center'));
     const mine = anchorPoint(obj, at.anchor ?? elementAnchor(item, textAnchor));
     obj.shift([target[0] - mine[0], target[1] - mine[1], 0]);
     return;
@@ -284,15 +293,31 @@ export function placeRelative(
   for (const [key, direction] of Object.entries(NEIGHBORS)) {
     if (!(key in attrs)) continue;
     const reference = objects.get(attrs[key].slice(1)) as Mobject;
-    obj.nextTo(reference, direction, Number(attrs.buff ?? gap));
+    const buff = Number(attrs.buff ?? gap);
+    obj.nextTo(reference, direction, buff);
+    // Two texts line up as lines of type: side by side on one baseline; one below the other a
+    // line apart, its first line's top `buff` below the other's last line (both measured by
+    // their fonts, not their ink), and the lines' own gap between them.
+    const mine = textLines(obj);
+    const theirs = textLines(reference);
+    if (mine && theirs) {
+      if (direction[1] === 0) obj.shift([0, theirs.first - mine.first, 0]);
+      else if (direction[1] < 0) {
+        const lead = Math.max(0, theirs.interline - theirs.ascent - theirs.descent);
+        obj.shift([0, theirs.last - theirs.descent - lead - buff - mine.ascent - mine.first, 0]);
+      } else {
+        const lead = Math.max(0, mine.interline - mine.ascent - mine.descent);
+        obj.shift([0, theirs.first + theirs.ascent + lead + buff + mine.descent - mine.last, 0]);
+      }
+    }
     // Icons line up by their symbols, not by the boxes their labels make: a label above one and below
     // the other would otherwise stagger them, and an arrow between them would slant.
-    const mine = (obj as BodyMobject).markupBody;
-    const theirs = (reference as BodyMobject).markupBody;
-    if (mine && theirs) {
+    const myBody = (obj as BodyMobject).markupBody;
+    const theirBody = (reference as BodyMobject).markupBody;
+    if (myBody && theirBody) {
       const axis = direction[0] !== 0 ? 1 : 0;
       const delta: [number, number, number] = [0, 0, 0];
-      delta[axis] = theirs.getCenter()[axis] - mine.getCenter()[axis];
+      delta[axis] = theirBody.getCenter()[axis] - myBody.getCenter()[axis];
       obj.shift(delta);
     }
   }
@@ -850,7 +875,7 @@ export class MarkupRenderer {
         const label = await this.text(this._parser.parseInlineSpans(attrs.label, element.line), size * 0.8, 6, attrs.label_color ? parseColor(attrs.label_color) : color, attrs.font);
         const side = attrs.label_side ?? 'below';
         const direction = { below: [0, -1, 0], above: [0, 1, 0], left: [-1, 0, 0], right: [1, 0, 0] }[side] as [number, number, number];
-        label.nextTo(icon, direction, 0.15);
+        placeBeside(label, icon, direction, numberValue(attrs, 'label_buff', element.line, 0.15) as number);
         const group = new Group(icon, label) as PartsMobject & BodyMobject;
         group.markupParts = [icon, label];
         group.markupBody = icon;
@@ -941,6 +966,8 @@ export class MarkupRenderer {
     } else if (element.kind === 'math') {
       const piece = await this.mathPiece(element.source, color, size);
       obj = piece.mobject;
+      // A display formula is one line on its baseline (y = 0 here), spaced as a line of prose of its size.
+      markLines(obj, { first: 0, last: 0, ascent: piece.ascent, descent: piece.descent, interline: (size / 72) * 1.2 + this.layout.lineGap });
       if (obj.getWidth() > width) obj.scale(width / obj.getWidth());
     } else if (element.kind === 'text') {
       obj = element.list?.marker
@@ -1027,7 +1054,7 @@ export class MarkupRenderer {
       if (attrs.label) {
         const size = numberValue(attrs, 'font_size', element.line, this.layout.fontSize * 0.8) as number;
         const text = await this.text(this._parser.parseInlineSpans(attrs.label, element.line), size, 6, attrs.label_color ? parseColor(attrs.label_color) : color, attrs.font);
-        text.nextTo(brace, direction, 0.1);
+        placeBeside(text, brace, direction, numberValue(attrs, 'label_buff', element.line, 0.1) as number);
         obj = new Group(brace, text);
       }
     } else {
@@ -1083,6 +1110,8 @@ export class MarkupRenderer {
     body.shift([label.getLeft()[0] + column - body.getLeft()[0], baselineY(label) - baselineY(body), 0]);
     const item = new Group(label, body) as Group & { markupBaselineFraction: number };
     item.markupBaselineFraction = (baselineY(body) - item.getCenter()[1]) / item.getHeight();
+    const lines = textLines(body);
+    if (lines) markLines(item, lines);
     return item;
   }
 
@@ -1151,12 +1180,39 @@ export class MarkupRenderer {
       const labelColor = element.attributes.label_color ? parseColor(element.attributes.label_color) : color;
       const text = await this.text(spans, size, 4, labelColor, element.attributes.font);
       const along = numberValue(element.attributes, 'label_pos', element.line, 0.5) as number;
-      placeLabel(text, connection, start3, end3, element.attributes.slanted === 'true', element.attributes.label_side === 'below' ? 'below' : 'above', along);
+      const labelGap = numberValue(element.attributes, 'label_buff', element.line, 0.1) as number;
+      placeLabel(text, connection, start3, end3, element.attributes.slanted === 'true', element.attributes.label_side === 'below' ? 'below' : 'above', along, labelGap);
       result = new Group(connection, text);
     }
     if ('opacity' in element.attributes) applyOpacity(result, Number(element.attributes.opacity));
     return result;
   }
+}
+
+/**
+ * The box a label takes as lines of type: its ink across, and from the top of its first line to
+ * the bottom of its last as its font measures them; its ink box when it is not text.
+ */
+function lineBox(text: Mobject): { x: number; y: number; width: number; height: number } {
+  const [x, y] = text.getCenter();
+  const lines = textLines(text);
+  if (!lines) return { x, y, width: text.getWidth(), height: text.getHeight() };
+  const top = lines.first + lines.ascent;
+  const bottom = lines.last - lines.descent;
+  return { x, y: (top + bottom) / 2, width: text.getWidth(), height: top - bottom };
+}
+
+/**
+ * Put a label `gap` beyond `reference` in `direction`, measured by its lines: below, the top of its
+ * first line; above, the bottom of its last; beside, its lines centered across. Labels with and
+ * without descenders so share a baseline.
+ */
+export function placeBeside(text: Mobject, reference: Mobject, direction: [number, number, number], gap: number): void {
+  text.nextTo(reference, direction, gap);
+  const box = lineBox(text);
+  if (direction[1] < 0) text.shift([0, reference.getBottom()[1] - gap - (box.y + box.height / 2), 0]);
+  else if (direction[1] > 0) text.shift([0, reference.getTop()[1] + gap - (box.y - box.height / 2), 0]);
+  else text.shift([0, reference.getCenter()[1] - box.y, 0]);
 }
 
 /**
@@ -1199,31 +1255,35 @@ function dashedConnection(start: [number, number, number], end: [number, number,
  * included); on any other edge it sits beside that point, clear of the line: upright by default,
  * or turned along the edge with `slanted`.
  */
-export function placeLabel(text: Mobject, connection: Mobject, start: [number, number, number], end: [number, number, number], slanted: boolean, side: 'above' | 'below' = 'above', along = 0.5): void {
+export function placeLabel(text: Mobject, connection: Mobject, start: [number, number, number], end: [number, number, number], slanted: boolean, side: 'above' | 'below' = 'above', along = 0.5, gap = 0.1): void {
   let angle = Math.atan2(end[1] - start[1], end[0] - start[0]);
   // Read from left to right: an edge pointing leftwards is turned around.
   if (angle > Math.PI / 2 + 1e-9) angle -= Math.PI;
   else if (angle <= -Math.PI / 2 + 1e-9) angle += Math.PI;
   const sign = side === 'below' ? -1 : 1;
   const middle = [start[0] + (end[0] - start[0]) * along, start[1] + (end[1] - start[1]) * along];
+  // The label is measured by its lines, so that labels with and without descenders sit alike.
+  const box = lineBox(text);
   if (Math.abs(Math.sin(angle)) < 1e-6) {
-    text.nextTo(connection, [0, sign, 0], 0.1);
-    text.shift([middle[0] - text.getCenter()[0], 0, 0]);
+    const edge = sign > 0 ? connection.getTop()[1] : connection.getBottom()[1];
+    text.shift([middle[0] - box.x, edge + sign * (gap + box.height / 2) - box.y, 0]);
     return;
   }
   // The normal toward the label's side, in its frame: up from its letters (to the left of a vertical edge), or the other way.
   const normal = [-Math.sin(angle) * sign, Math.cos(angle) * sign];
-  const gap = 0.1;
-  let reach: number;
   if (slanted) {
-    // Turned along the edge, the label's height is what separates it from the line.
-    reach = text.getHeight() / 2;
+    // Turned along the edge, the height of its lines is what separates it from the line; the
+    // center of its lines, off its ink center, turns with it.
+    const reach = box.height / 2;
+    const offset = box.y - text.getCenter()[1];
     text.rotate(angle);
+    const turned = [-Math.sin(angle) * offset, Math.cos(angle) * offset];
+    text.moveTo([middle[0] + normal[0] * (reach + gap) - turned[0], middle[1] + normal[1] * (reach + gap) - turned[1], 0]);
   } else {
-    // Upright, its box reaches toward the line by its half-extent across the edge.
-    reach = (Math.abs(normal[0]) * text.getWidth()) / 2 + (Math.abs(normal[1]) * text.getHeight()) / 2;
+    // Upright, its lines reach toward the edge by their half-extent across it.
+    const reach = (Math.abs(normal[0]) * box.width) / 2 + (Math.abs(normal[1]) * box.height) / 2;
+    text.shift([middle[0] + normal[0] * (reach + gap) - box.x, middle[1] + normal[1] * (reach + gap) - box.y, 0]);
   }
-  text.moveTo([middle[0] + normal[0] * (reach + gap), middle[1] + normal[1] * (reach + gap), 0]);
 }
 
 export { CONNECTIONS };

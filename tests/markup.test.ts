@@ -57,7 +57,7 @@ describe('MarkupParser', () => {
   it('keeps the nesting, markers and numbers of lists', () => {
     const source = '::: slide {#a}\n- one\n  - two\n    1. three\n    2. four\n  - five\n- six\n\n3) seven\n\n- eight {#e width=4}\n\n  more of eight\n:::';
     const items = new MarkupParser().parse(source).slides[0].items as ElementSpec[];
-    expect(items.map((item) => item.list)).toEqual([
+    expect(items.map((item) => item.list && { depth: item.list.depth, marker: item.list.marker })).toEqual([
       { depth: 0, marker: '•' }, { depth: 1, marker: '–' }, { depth: 2, marker: '1.' }, { depth: 2, marker: '2.' },
       { depth: 1, marker: '–' }, { depth: 0, marker: '•' }, { depth: 0, marker: '3)' },
       { depth: 0, marker: '•' }, { depth: 0, marker: '' },

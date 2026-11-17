@@ -32,6 +32,11 @@ supported. Blank lines separate elements: each paragraph, heading, list item, im
 listing is one element with its own attributes. Headings only change the typography; nesting
 comes from includes.
 
+As in LaTeX, a blank line between two texts makes a paragraph break, with a little more space
+than between two lines: their baselines are `layout.paragraphSpacing` interlines apart (1.5 by
+default), where the interline is the distance between two lines of one paragraph. A text and
+another block (a table, an image, a shape) keep the same space between them.
+
 ## Lists
 
 Items start with `-`, `*` or `+`, or with a number and `.` or `)`; indenting an item by two or
@@ -39,8 +44,9 @@ more spaces nests it under the previous one, to any depth. Each item is one elem
 sits in a column of `layout.listIndent` (0.6 units, wider when a number needs it), its prose
 wraps to the rest of the width with a hanging indent, and nested items are shifted by one column
 per level. Markers are `•`, `–` and `◦` by depth; numbered items show their own number with
-its delimiter, so a list may start at any value. Blank lines between items are allowed, and an
-indented paragraph after a blank line continues the item without a marker. Attributes in braces
+its delimiter, so a list may start at any value. Items written line after line follow one
+another as lines, one interline apart; blank lines between items are allowed and space them as
+paragraphs, and an indented paragraph after a blank line continues the item without a marker. Attributes in braces
 work on an item as on any paragraph; an explicit `x` is the left edge of the list, nested items
 keep their indentation to its right.
 

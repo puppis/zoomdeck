@@ -14,7 +14,7 @@ shapes, icons, tables, charts, groups and child viewports. `anchor=` chooses ano
 | Anchors | Available on |
 | --- | --- |
 | `center`, `top`, `bottom`, `left`, `right`, `top-left`, `top-right`, `bottom-left`, `bottom-right` | every element and viewport |
-| `left-baseline`, `right-baseline` | text, math and listings |
+| `left-baseline`, `baseline`, `right-baseline` | text, math and listings: the first baseline, at its left end, middle or right end |
 | `origin` | groups (their local origin) |
 
 ```markdown
@@ -27,8 +27,12 @@ shapes, icons, tables, charts, groups and child viewports. `anchor=` chooses ano
 
 ## Flow
 
-Blocks without coordinates flow downward from the top-left margin of the canvas, separated by
-`layout.gap`. Text with only `x` keeps flowing at that left edge; an explicit `y`, an `at=` or a
+Blocks without coordinates flow downward from the top-left margin of the canvas. Text is spaced
+by its lines, as in LaTeX: two paragraphs (separated by a blank line) have their baselines
+`layout.paragraphSpacing` interlines apart (1.5 by default), a little more than two lines of one
+paragraph; the items of a list written without blank lines are one interline apart; a text and
+any other block (a table, a shape, an image) keep the space two paragraphs have between their
+lines. Two blocks that are not text are `layout.gap` apart. Text with only `x` keeps flowing at that left edge; an explicit `y`, an `at=` or a
 vertical constraint leaves the flow. Elements that leave the flow do not reserve space, so later
 blocks move up. A center-anchored element with one missing coordinate defaults that axis to zero.
 
@@ -48,7 +52,10 @@ blocks move up. A center-anchored element with one missing coordinate defaults t
 ```
 
 - `below`, `above`, `left-of` and `right-of` place the element beyond the reference's bounding
-  edge, centered on the other axis, at distance `buff` (default `layout.gap`).
+  edge, centered on the other axis, at distance `buff` (default `layout.gap`). Two texts line up
+  as lines of type: side by side on one baseline, and one below the other a line apart, `buff`
+  plus the line gap between the bottom of one's last line and the top of the other's first, as
+  their font measures them.
 - `left-aligned`, `right-aligned`, `top-aligned` and `bottom-aligned` match an edge without moving
   the other axis.
 - `baseline-aligned` matches the typographic baseline of text, math or listings.
@@ -81,8 +88,9 @@ during preparation; dependency cycles are reported with their line.
 ```
 
 `at=[anchor:]#id[.anchor]` or `at=[anchor:](x,y)` puts one anchor of the element (the prefix,
-or `anchor=`, or its default) on an anchor of another element (`center` when omitted) or on a
-literal point. It replaces `x`, `y` and the relative constraints, combines with `dx`/`dy`, and
+or `anchor=`, or its default) on an anchor of another element or on a literal point. Without
+an anchor, a text is aimed at on the middle of its first baseline (`baseline`), anything else
+at its `center`. It replaces `x`, `y` and the relative constraints, combines with `dx`/`dy`, and
 follows the same reference rules. Inside directives, keep `(x,y)` tuples together; the comma
 inside parentheses does not split attributes.
 

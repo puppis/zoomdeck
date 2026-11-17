@@ -55,6 +55,8 @@ export type Attributes = Record<string, string>;
 export interface ListItem {
   depth: number;
   marker: string;
+  /** Whether the list is tight, its items written without blank lines between them: they then follow one another as lines, not paragraphs. */
+  tight?: boolean;
 }
 
 /** One element of a slide as parsed: its kind, inline spans, attributes, source text, line, heading level and list position. */
@@ -270,9 +272,10 @@ export const GROUP_ATTRS = new Set([
 ]);
 /** Anchor points: bounding-box center, edges and corners, plus the first baseline for text-like elements. */
 export const ANCHORS = new Set([
-  'center', 'top', 'bottom', 'left', 'right', 'top-left', 'top-right', 'bottom-left', 'bottom-right', 'left-baseline', 'right-baseline',
+  'center', 'top', 'bottom', 'left', 'right', 'top-left', 'top-right', 'bottom-left', 'bottom-right', 'left-baseline', 'baseline', 'right-baseline',
 ]);
-export const BASELINE_ANCHORS = new Set(['left-baseline', 'right-baseline']);
+/** The anchors on a text's first baseline: at its left end, its middle or its right end. */
+export const BASELINE_ANCHORS = new Set(['left-baseline', 'baseline', 'right-baseline']);
 /** Anchors including `origin`, the local coordinate origin of a group. */
 export const GROUP_ANCHORS = new Set([...ANCHORS, 'origin']);
 /** Anchors accepted as `layout.textAnchor`. */

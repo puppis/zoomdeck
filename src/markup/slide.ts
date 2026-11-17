@@ -24,6 +24,7 @@ import {
   stepValue,
 } from './ast';
 import { LatexError, type MacroDefinition } from './latex';
+import { textLines, type TextLines } from './text';
 import { ASTTransformer } from './parser';
 import {
   LayoutConfig, MarkupRenderer, anchorPoint, applyOpacity, elementAnchor, placeRelative, type OriginMobject, type PartsMobject,
@@ -184,6 +185,12 @@ export class MarkupSlide extends Slide {
   ): Promise<void> {
     const layout = this.renderer.layout;
     let cursor = scope.top;
+    // What the flow placed last: where it ends, and its lines when it is text. Paragraphs follow
+    // one another with their baselines `layout.paragraphSpacing` interlines apart, as in LaTeX; a
+    // text and any other block keep the space two paragraphs have between their lines; two other
+    // blocks keep `layout.gap`.
+    let previous: { bottom: number; lines: TextLines | null; tight: boolean } | null = null;
+    const paragraphGap = (lines: TextLines) => Math.max(0, layout.paragraphSpacing * lines.interline - lines.ascent - lines.descent);
     const elements = new Map<string, ElementSpec>();
     const verticalKeys = new Set([...Object.keys(NEIGHBORS), ...VERTICAL_POSITION, 'at']);
     const pointShapes = ['polyline', 'polygon', 'arc'];
@@ -226,10 +233,34 @@ export class MarkupSlide extends Slide {
       const flows = !Object.keys(attrs).some((key) => verticalKeys.has(key));
       const anchor = elementAnchor(item, layout.textAnchor);
       const textLike = item instanceof ElementSpec && TEXT_LIKE.has(item.kind);
-      const flowPlacement = () => obj.moveTo([scope.left + indent + obj.getWidth() / 2, cursor - obj.getHeight() / 2, 0]);
+      const tightItem = item instanceof ElementSpec && Boolean(item.list?.tight);
+      const flowPlacement = () => {
+        obj.moveTo([scope.left + indent + obj.getWidth() / 2, cursor - obj.getHeight() / 2, 0]);
+        if (previous === null) return;
+        const lines = textLines(obj);
+        let shift: number;
+        if (lines && previous.lines) {
+          // Between the two texts' lines, the gap of two lines of type and the extra part of the
+          // paragraph spacing, by the larger interline: of one size, their baselines are
+          // `paragraphSpacing` interlines apart; a heading keeps its descent clear without spreading
+          // the paragraph after it. The items of a tight list, with no blank line between them,
+          // follow one another as lines.
+          const spacing = previous.tight && tightItem ? 1 : layout.paragraphSpacing;
+          const lead = Math.max(0, previous.lines.interline - previous.lines.ascent - previous.lines.descent, lines.interline - lines.ascent - lines.descent);
+          const gap = (spacing - 1) * Math.max(previous.lines.interline, lines.interline) + lead;
+          shift = previous.lines.last - previous.lines.descent - gap - lines.ascent - lines.first;
+        } else if (lines) shift = previous.bottom - paragraphGap(lines) - lines.ascent - lines.first;
+        else if (previous.lines) shift = previous.lines.last - previous.lines.descent - paragraphGap(previous.lines) - obj.getTop()[1];
+        else shift = previous.bottom - layout.gap - obj.getTop()[1];
+        obj.shift([0, shift, 0]);
+      };
+      const advance = () => {
+        previous = { bottom: obj.getBottom()[1], lines: textLines(obj), tight: tightItem };
+        cursor = previous.bottom - layout.gap;
+      };
       if (!explicit) {
         flowPlacement();
-        if (flows) cursor -= obj.getHeight() + layout.gap;
+        if (flows) advance();
       } else if (item instanceof ElementSpec && pointShapes.includes(item.kind) && item.position === null) {
         // Already at its own coordinates.
       } else if (textLike && anchor !== 'center') {
@@ -243,7 +274,7 @@ export class MarkupSlide extends Slide {
             obj.shift(delta);
           }
         }
-        if (!('y' in attrs) && flows) cursor -= obj.getHeight() + layout.gap;
+        if (!('y' in attrs) && flows) advance();
       } else {
         // Center-anchored objects default an omitted axis to zero; other anchors land on the given point.
         const point = anchorPoint(obj, anchor);
