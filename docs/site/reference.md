@@ -67,11 +67,11 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
 | `circle`, `dot` | `#id radius …` (dot: radius optional) |
 | `polygon`, `polyline` | `#id points="(x,y) (x,y) …" …` |
 | `arc` | `#id x y radius angle [start_angle] …` |
-| `icon` | `[[icon: name #id size label label_side fill_color fill_opacity stroke_width …]]` (names under [Names](#names)) |
+| `icon` | `[[icon: name #id size label label_color label_side fill_color fill_opacity stroke_width …]]` (names under [Names](#names)) |
 | `artwork` | `[[artwork: name #id size label …]]`: `name.svg` or `name.js`/`.ts` from the deck's artworks folders, with any attributes the module reads ([Icons](icons.html#artworks-of-your-own)) |
 | any other name | `[[name: #id placement …]]`: a directive of the deck's own, drawn by `directives/name.ts` with the attributes it reads ([Extending a deck](extending.html#directives)) |
-| `arrow`, `line` | `[[arrow: #a -> #b, #id, label="…", label_side=above\|below, slanted=true, dashed=true, color, stroke_width, step, hide]]` with `#id`, `#id.anchor` or `(x,y)` endpoints |
-| `brace` | `[[brace: #target, #id, side, buff, label, font_size, font]]` |
+| `arrow`, `line` | `[[arrow: #a -> #b, #id, label="…", label_color, label_side=above\|below, slanted=true, dashed=true, color, stroke_width, step, hide]]` with `#id`, `#id.anchor` or `(x,y)` endpoints |
+| `brace` | `[[brace: #target, #id, side, buff, label, label_color, font_size, font]]` |
 | `box`, `blob` | `[[box: #a #b …, #id, buff, corner_radius, fill_color, fill_opacity]]`, `[[blob: #a #b …, #id, buff, smoothness, fill_color, fill_opacity]]` |
 
 | Attribute | On | Meaning |

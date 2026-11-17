@@ -762,11 +762,11 @@ export class ASTTransformer {
     let allowed: Set<string> | null;
     if (item.kind === 'group') allowed = new Set(GROUP_ATTRS);
     else if (CONNECTIONS.has(item.kind)) {
-      allowed = new Set(['id', 'step', 'hide', 'color', 'from', 'to', 'dashed', 'label', 'label_side', 'slanted', 'font', 'font_size', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
+      allowed = new Set(['id', 'step', 'hide', 'color', 'from', 'to', 'dashed', 'label', 'label_color', 'label_side', 'slanted', 'font', 'font_size', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
     }
     else if (ATTACHMENTS.has(item.kind)) {
       allowed = new Set(['id', 'target', 'step', 'hide', 'color', 'buff', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
-      if (item.kind === 'brace') for (const key of ['side', 'label', 'font_size', 'font']) allowed.add(key);
+      if (item.kind === 'brace') for (const key of ['side', 'label', 'label_color', 'font_size', 'font']) allowed.add(key);
       else if (item.kind === 'blob') for (const key of ['smoothness', ...FILL_ATTRS]) allowed.add(key);
       else for (const key of ['corner_radius', ...FILL_ATTRS]) allowed.add(key);
     } else if (item.kind === 'table') {
@@ -776,7 +776,7 @@ export class ASTTransformer {
       allowed = new Set([...ELEMENT_ATTRS, ...CHART_ATTRS, ...SKETCH_ATTRS]);
     } else if (item.kind === 'icon') {
       allowed = new Set([...ELEMENT_ATTRS].filter((key) => !['width', 'height'].includes(key)));
-      for (const key of ['size', 'label', 'label_side', ...STROKE_ATTRS, ...FILL_ATTRS, ...SKETCH_ATTRS]) allowed.add(key);
+      for (const key of ['size', 'label', 'label_color', 'label_side', ...STROKE_ATTRS, ...FILL_ATTRS, ...SKETCH_ATTRS]) allowed.add(key);
       // An artwork of the deck's own reads its directive's attributes itself: any name is allowed.
       if (!ICON_KINDS.has(item.source)) allowed = null;
     } else if (item.kind === 'custom') {
@@ -815,6 +815,7 @@ export class ASTTransformer {
         if (key in item.attributes && !('label' in item.attributes)) throw new MarkupError(`${key} requires a label`, item.line);
       }
     }
+    if ('label_color' in item.attributes && !('label' in item.attributes)) throw new MarkupError('label_color requires a label', item.line);
     if ('href' in item.attributes && !LINK_TARGET.test(item.attributes.href)) {
       throw new MarkupError(`Unsupported link target ${JSON.stringify(item.attributes.href)}; use https://, mailto:, #, / or a relative path`, item.line);
     }
@@ -1045,7 +1046,7 @@ export class ASTTransformer {
     }
     // An element's step may be -1 (shown before the slide's first visit); where that makes no sense the caller says so.
     for (const key of ['step', 'hide']) if (key in attrs && !(key === 'step' && attrs.step === '-1')) stepValue(attrs, key, line);
-    for (const key of ['color', 'fill_color', 'border_color', 'header_color', 'axis_color']) if (key in attrs) ASTTransformer._checkColor(attrs[key], line);
+    for (const key of ['color', 'fill_color', 'border_color', 'header_color', 'axis_color', 'label_color']) if (key in attrs) ASTTransformer._checkColor(attrs[key], line);
     if ('seed' in attrs && !Number.isInteger(Number(attrs.seed))) throw new MarkupError('seed must be an integer', line);
     if ('sketch' in attrs && !['true', 'false'].includes(attrs.sketch)) throw new MarkupError('sketch must be true or false', line);
     if ('fill_style' in attrs && !FILL_STYLE_NAMES.has(attrs.fill_style)) {

@@ -847,7 +847,7 @@ export class MarkupRenderer {
         : await this.artwork(element.source, { ...iconOptions, attributes: attrs, foreground: this.layout.color }, element.line);
       obj = icon;
       if (attrs.label) {
-        const label = await this.text(this._parser.parseInlineSpans(attrs.label, element.line), size * 0.8, 6, color, attrs.font);
+        const label = await this.text(this._parser.parseInlineSpans(attrs.label, element.line), size * 0.8, 6, attrs.label_color ? parseColor(attrs.label_color) : color, attrs.font);
         const side = attrs.label_side ?? 'below';
         const direction = { below: [0, -1, 0], above: [0, 1, 0], left: [-1, 0, 0], right: [1, 0, 0] }[side] as [number, number, number];
         label.nextTo(icon, direction, 0.15);
@@ -1015,7 +1015,7 @@ export class MarkupRenderer {
       obj = brace;
       if (attrs.label) {
         const size = numberValue(attrs, 'font_size', element.line, this.layout.fontSize * 0.8) as number;
-        const text = await this.text(this._parser.parseInlineSpans(attrs.label, element.line), size, 6, color, attrs.font);
+        const text = await this.text(this._parser.parseInlineSpans(attrs.label, element.line), size, 6, attrs.label_color ? parseColor(attrs.label_color) : color, attrs.font);
         text.nextTo(brace, direction, 0.1);
         obj = new Group(brace, text);
       }
@@ -1136,7 +1136,9 @@ export class MarkupRenderer {
     if (label) {
       const spans = this._parser.parseInlineSpans(label, element.line);
       const size = numberValue(element.attributes, 'font_size', element.line, this.layout.fontSize * 0.8) as number;
-      const text = await this.text(spans, size, 4, this.layout.color, element.attributes.font);
+      // The label in label_color, else in the connection's color, which is the text color unless color= sets it.
+      const labelColor = element.attributes.label_color ? parseColor(element.attributes.label_color) : color;
+      const text = await this.text(spans, size, 4, labelColor, element.attributes.font);
       placeLabel(text, connection, start3, end3, element.attributes.slanted === 'true', element.attributes.label_side === 'below' ? 'below' : 'above');
       result = new Group(connection, text);
     }

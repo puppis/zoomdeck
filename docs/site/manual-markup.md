@@ -491,6 +491,7 @@ be the reference of a position or the target of another connection or attachment
 | `slanted` | `true`, `false` | `false` | turn the label along the edge; otherwise it stays upright, beside the middle of the edge and clear of the line |
 | `font`, `font_size` | | the text face, `layout.fontSize` | the label's face and size |
 | `color` | color | the text color | stroke and label |
+| `label_color` | color | `color` | the label alone, in a color other than the stroke's |
 | `stroke_width` | engine units | 2 | |
 | `dashed` | `true`, `false` | `false` | draw the line, or the arrow's shaft, in dashes that begin and end it; they grow longer with `stroke_width`, the tip stays solid, and a hand-drawn connection gets hand-drawn dashes |
 | `opacity` | 0 to 1 | 1 | |
@@ -509,7 +510,8 @@ A brace hugs one element on one side. The target comes first, then `#id` and the
 | --- | --- | --- | --- |
 | `side` | `left`, `right`, `top`, `bottom` | `bottom` | |
 | `buff` | units | 0.15 | distance from the element |
-| `label`, `font`, `font_size` | | | text beyond the brace |
+| `label`, `font`, `font_size` | | | text beyond the brace, in the brace's `color` |
+| `label_color` | color | `color` | the label in a color of its own |
 | `color`, `stroke_width`, `opacity`, `step`, `hide`, `run_time`, `lag`, `href` | | | as for connections |
 | the hand-drawn attributes, `tremble` | | | |
 
@@ -559,6 +561,7 @@ hand-drawn attributes, `tremble`, and:
 | `size` | units | 1 | the height |
 | `label` | inline markup | | a caption at 80 % of the font size |
 | `label_side` | `below`, `above`, `left`, `right` | `below` | where the label sits; requires a label |
+| `label_color` | color | `color` | the label in a color of its own; requires a label |
 | `color`, `stroke_width`, `fill_color`, `fill_opacity` | | the text color, 2, the stroke color, 0 | |
 
 An artwork module reads any further attribute it likes, so no attribute name is rejected on

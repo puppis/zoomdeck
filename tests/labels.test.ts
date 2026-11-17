@@ -47,4 +47,13 @@ describe('the label of an arrow or a line', () => {
     expect(() => parse('[[line: #a -> #b, #e, label="x", label_side=left]]')).toThrow(/above or below/);
     expect(() => parse('[[arrow: #a -> #b, #e, label="x", slanted=yes]]')).toThrow(/true or false/);
   });
+
+  it('takes a color of its own with label_color, on arrows, lines, braces and icons', () => {
+    const parse = (body: string) => new MarkupParser().parse(`::: slide {#s}\n[[rectangle: #a x=-3 y=0 width=1 height=1]]\n\n[[rectangle: #b x=3 y=2 width=1 height=1]]\n\n${body}\n:::`);
+    expect(() => parse('[[arrow: #a -> #b, #e, label="x", color=GRAY, label_color=BLUE]]')).not.toThrow();
+    expect(() => parse('[[brace: #a, #br, label="x", label_color=#FF0000]]')).not.toThrow();
+    expect(() => parse('[[icon: user #u x=0 y=0 label="x" label_color=ORANGE]]')).not.toThrow();
+    expect(() => parse('[[line: #a -> #b, #e, label_color=BLUE]]')).toThrow(/label_color requires a label/);
+    expect(() => parse('[[arrow: #a -> #b, #e, label="x", label_color=notacolor]]')).toThrow(/Invalid color/);
+  });
 });

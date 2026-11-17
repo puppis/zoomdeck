@@ -63,8 +63,9 @@ baseline ones of text. A line ends right on its endpoints; an arrow stops a litt
 so that its tip does not touch the element. An arrow's tip grows and shrinks with its
 `stroke_width` (0.3 long at the default 4) and is at most a quarter of the arrow, so a short thin
 arrow keeps a small tip. Arrows and lines also take an optional `#id`, a
-`label` with inline styling and math (sized by `font_size`, set in `font`), `color`,
-`stroke_width`, `opacity`, `step`, `hide` and timing.
+`label` with inline styling and math (sized by `font_size`, set in `font`), `color` for the
+line and its label, `label_color` for a label in another color, `stroke_width`, `opacity`,
+`step`, `hide` and timing.
 
 The label sits at the middle of the edge, above it by default: upright, and clear of the line
 on a slanted or vertical edge. `slanted=true` turns it along the edge, and `label_side=below`
