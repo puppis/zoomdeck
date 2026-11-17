@@ -38,6 +38,8 @@ Macros from deck.json: $\N \subset \R$, $\pair{x}{y} \in \R^2$.
   ```
 
   `$\pair{x}{y}$` gives ⟨x, y⟩, `$\norm{v}$` the 2-norm and `$\norm[\infty]{v}$` the other.
+  `\boldsymbol` and `\bm` are there too, as bold italic (`\mathbfit`), unless the deck
+  defines them.
   An argument is a `{group}`, a command or a single character, as in TeX, and macros may use one
   another. They hold in every formula of the deck; a `\newcommand` inside a formula holds in that
   formula only. A formula LaTeX cannot read, such as one with an unknown command or a missing

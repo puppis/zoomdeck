@@ -426,7 +426,7 @@ export function applyStyles(item: ElementSpec | IncludeSpec | CodeSlideSpec, sty
 }
 
 /** Resolve layout dependencies iteratively, rejecting cycles before media creation. */
-export function positionOrder(elements: Map<string, ElementSpec>): string[] {
+export function positionOrder(elements: Map<string, ElementSpec | IncludeSpec | CodeSlideSpec>): string[] {
   const dependents = new Map<string, string[]>();
   const remaining = new Map<string, number>();
   for (const [identifier, item] of elements) {
@@ -478,20 +478,27 @@ export function tokenize(source: string, line: number, separators = ' \t\r\n'): 
   let quote: string | null = null;
   let escaped = false;
   let depth = 0;
-  for (const char of source) {
+  const chars = [...source];
+  for (let i = 0; i < chars.length; i++) {
+    const char = chars[i];
     if (escaped) {
       current = (current ?? '') + char;
       escaped = false;
       continue;
     }
-    if (char === '\\' && quote !== "'") {
-      escaped = true;
-      if (current === null) current = '';
+    if (quote !== null) {
+      // Inside quotes a backslash escapes the quote only; any other stays, so that `\\` is a line
+      // break and `$\to$` a formula in a label.
+      if (char === '\\' && chars[i + 1] === quote) {
+        current = (current ?? '') + quote;
+        i += 1;
+      } else if (char === quote) quote = null;
+      else current = (current ?? '') + char;
       continue;
     }
-    if (quote !== null) {
-      if (char === quote) quote = null;
-      else current = (current ?? '') + char;
+    if (char === '\\') {
+      escaped = true;
+      if (current === null) current = '';
       continue;
     }
     if (char === '"' || char === "'") {
@@ -696,6 +703,22 @@ export function endpoint(value: string, line: number): Endpoint {
     throw new MarkupError('Coordinates must be two finite numbers', line);
   }
   return [coordinates[0], coordinates[1], 0];
+}
+
+/** An end of an arrow or a line: an element, at one of its anchors or at its edge, or a point. */
+export type ConnectionEnd = { id: string; anchor: string | null } | [number, number, number];
+
+/** Parse `#id`, `#id.anchor` (as in `at=`) or `(x,y)` as an end of an arrow or a line. */
+export function connectionEnd(value: string, line: number): ConnectionEnd {
+  if (!value.startsWith('#')) return endpoint(value, line) as [number, number, number];
+  let id = value.slice(1);
+  let anchor: string | null = null;
+  const dot = id.lastIndexOf('.');
+  if (dot > 0 && GROUP_ANCHORS.has(id.slice(dot + 1))) {
+    anchor = id.slice(dot + 1);
+    id = id.slice(0, dot);
+  }
+  return { id, anchor };
 }
 
 export function polylinePoints(value: string, line: number, minimum = 2): Array<[number, number, number]> {

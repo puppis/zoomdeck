@@ -64,7 +64,10 @@ describe('LaTeX macros of the deck', () => {
   });
 
   it('checks the macros of deck.json', () => {
-    expect(compileMacros(undefined).size).toBe(0);
+    // Every deck has \boldsymbol and \bm, as bold italic, unless it defines them itself.
+    expect([...compileMacros(undefined).keys()]).toEqual(['boldsymbol', 'bm']);
+    expect(expandMacros('\\boldsymbol{x} + \\bm\\alpha', compileMacros(undefined))).toBe('\\mathbfit{x} + \\mathbfit{\\alpha}');
+    expect(compileMacros({ bm: '\\mathbf{b}' }).get('bm')).toEqual({ expansion: '\\mathbf{b}', args: 0 });
     expect(() => compileMacros({ 'my-set': 'x' })).toThrow('letters only');
     expect(() => compileMacros({ f: ['#1', 10] })).toThrow('from 1 to 9');
     expect(() => compileMacros({ f: [1, 1] })).toThrow('write an expansion');

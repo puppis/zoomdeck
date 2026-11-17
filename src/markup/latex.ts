@@ -90,9 +90,18 @@ export class LatexError extends Error {
   }
 }
 
-/** Check the macros of `deck.json` and make them ready to expand. */
+/**
+ * Macros every deck has unless it defines its own: the engine's MathJax loads no `boldsymbol`
+ * package, and bold italic is what `\boldsymbol` and `\bm` give to letters.
+ */
+const BUILT_IN_MACROS: Record<string, Macro> = {
+  boldsymbol: { expansion: '\\mathbfit{#1}', args: 1 },
+  bm: { expansion: '\\mathbfit{#1}', args: 1 },
+};
+
+/** Check the macros of `deck.json` and make them ready to expand, after the built-in ones. */
 export function compileMacros(definitions: Record<string, unknown> | undefined): Map<string, Macro> {
-  const macros = new Map<string, Macro>();
+  const macros = new Map<string, Macro>(Object.entries(BUILT_IN_MACROS));
   if (definitions === undefined || definitions === null) return macros;
   if (typeof definitions !== 'object' || Array.isArray(definitions)) throw new Error('deck.json: "macros" must map names to expansions');
   for (const [name, value] of Object.entries(definitions)) {

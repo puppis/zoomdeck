@@ -16,7 +16,7 @@ import {
   ActionSpec, AnimationStep, ElementSpec, EventSpec, GroupSpec, CodeSlideSpec, IncludeSpec, InlineSpan, MarkupDocument, MarkupError, TableSpec,
   type CellAlignment,
   type ListItem,
-  NextSpec, SkipNextSpec, SlideItem, SlideSpec, StepChange, StyleSheet, Attributes, applyStyles, attachmentTargets, checkClassName, childKey, endpoint,
+  NextSpec, SkipNextSpec, SlideItem, SlideSpec, StepChange, StyleSheet, Attributes, applyStyles, attachmentTargets, checkClassName, childKey, connectionEnd, endpoint,
   elementStep, numberValue, parseAt, parseAttributes, parseColor, parseTremble, polylinePoints, positionOrder, span, stepValue,
 } from './ast';
 
@@ -90,7 +90,7 @@ function coloredSpan(state: StateInline, silent: boolean): boolean {
   if (close < 0) throw new MarkupError('Unclosed span attributes', line);
   const attrs = parseAttributes(state.src.slice(end + 1, close + 1), line);
   if (Object.keys(attrs).some((key) => key !== 'color')) {
-    throw new MarkupError('Positioned/fragment elements must occupy a whole block', line);
+    throw new MarkupError('A [text]{…} with attributes other than color must be a block of its own: put a blank line between it and the lines around it (lines with no blank line between them form one paragraph, where a span takes color only)', line);
   }
   if (!silent) {
     const token = state.push('styled_span', 'span', 0);
@@ -666,13 +666,14 @@ export class ASTTransformer {
         if (!CONNECTIONS.has(item.kind)) continue;
         if (!('from' in item.attributes) || !('to' in item.attributes)) throw new MarkupError(`${item.kind} requires both endpoints`, item.line);
         for (const key of ['from', 'to']) {
-          const end = endpoint(item.attributes[key], item.line);
-          if (typeof end !== 'string') continue;
-          const target = elements.get(end);
-          if (!target) throw new MarkupError(`Unknown ${item.kind} endpoint #${end} in ${slide.id}`, item.line);
+          const end = connectionEnd(item.attributes[key], item.line);
+          if (Array.isArray(end)) continue;
+          const target = elements.get(end.id);
+          if (!target) throw new MarkupError(`Unknown ${item.kind} endpoint #${end.id} in ${slide.id}`, item.line);
           if (CONNECTIONS.has(target.kind) || ATTACHMENTS.has(target.kind)) {
             throw new MarkupError('Arrow/line endpoints must reference text, image, math, code, shapes, icons or groups', item.line);
           }
+          if (end.anchor) ASTTransformer._checkAnchorFor(target, end.anchor, item.line);
           scopeCheck(scope, target, 'The endpoint', item.line);
         }
         if ('label' in item.attributes) {
@@ -703,15 +704,19 @@ export class ASTTransformer {
         }
       }
       const positionable = (item: ElementSpec) => !CONNECTIONS.has(item.kind) && !ATTACHMENTS.has(item.kind);
+      // An include is a positioning reference by the id of the slide it includes, at the slide's top level.
+      const framed = new Map(slide.items.filter((item): item is IncludeSpec => item instanceof IncludeSpec).map((item) => [item.target, item]));
       for (const item of elements.values()) {
-        if (positionable(item)) ASTTransformer._checkPositioning(item, elements, scopeOf, scopeOf.get(item.id) as string);
+        if (positionable(item)) ASTTransformer._checkPositioning(item, elements, scopeOf, scopeOf.get(item.id) as string, framed);
       }
       for (const item of slide.items) {
-        if (item instanceof IncludeSpec || item instanceof CodeSlideSpec) ASTTransformer._checkPositioning(item, elements, scopeOf, '');
+        if (item instanceof IncludeSpec || item instanceof CodeSlideSpec) ASTTransformer._checkPositioning(item, elements, scopeOf, '', framed);
       }
-      const scopes = new Set(scopeOf.values());
+      const scopes = new Set([...scopeOf.values(), '']);
       for (const scope of scopes) {
-        positionOrder(new Map([...elements].filter(([id, item]) => positionable(item) && scopeOf.get(id) === scope)));
+        const members = new Map<string, ElementSpec | IncludeSpec>([...elements].filter(([id, item]) => positionable(item) && scopeOf.get(id) === scope));
+        if (scope === '') for (const [id, item] of framed) if (!members.has(id)) members.set(id, item);
+        positionOrder(members);
       }
       this.plan(slide);
     }
@@ -1050,8 +1055,14 @@ export class ASTTransformer {
 
   private static _checkPositioning(
     item: ElementSpec | IncludeSpec | CodeSlideSpec, elements: Map<string, ElementSpec>, scopeOf: Map<string, string>, scope: string,
+    includes: Map<string, IncludeSpec> = new Map(),
   ): void {
     const attrs = item.attributes;
+    // A reference names an element of the slide or, at its top level and when no element has
+    // that id, a slide it includes.
+    const lookup = (id: string): ElementSpec | IncludeSpec | undefined => elements.get(id) ?? includes.get(id);
+    const scopeOfTarget = (target: ElementSpec | IncludeSpec) => (target instanceof IncludeSpec ? '' : scopeOf.get(target.id));
+    const decoration = (target: ElementSpec | IncludeSpec) => target instanceof ElementSpec && (CONNECTIONS.has(target.kind) || ATTACHMENTS.has(target.kind));
     const keys = Object.keys(attrs);
     if (('dx' in attrs || 'dy' in attrs) && !keys.some((key) => POSITION_REFERENCES.has(key) || ['x', 'y', 'at'].includes(key))) {
       throw new MarkupError('dx and dy require coordinates, at= or a relative constraint', item.line);
@@ -1063,10 +1074,10 @@ export class ASTTransformer {
       const at = parseAt(attrs.at, item.line);
       if (at.anchor) ASTTransformer._checkAnchorFor(item, at.anchor, item.line);
       if ('id' in at.target) {
-        const target = elements.get(at.target.id);
+        const target = lookup(at.target.id);
         if (!target) throw new MarkupError(`Unknown at= reference #${at.target.id}`, item.line);
-        if (CONNECTIONS.has(target.kind) || ATTACHMENTS.has(target.kind)) throw new MarkupError('at= cannot reference an arrow, line, brace, box or blob', item.line);
-        if (scopeOf.get(target.id) !== scope) throw new MarkupError(`#${target.id} belongs to a different group`, item.line);
+        if (decoration(target)) throw new MarkupError('at= cannot reference an arrow, line, brace, box or blob', item.line);
+        if (scopeOfTarget(target) !== scope) throw new MarkupError(`#${at.target.id} belongs to a different group`, item.line);
         if (at.target.anchor) ASTTransformer._checkAnchorFor(target, at.target.anchor, item.line);
       }
       return;
@@ -1087,11 +1098,11 @@ export class ASTTransformer {
       if (!reference.startsWith('#') || !IDENTIFIER.test(reference.slice(1))) {
         throw new MarkupError(`${key} requires a slide-local #element ID`, item.line);
       }
-      const target = elements.get(reference.slice(1));
+      const target = lookup(reference.slice(1));
       if (!target) throw new MarkupError(`Unknown positioning reference ${reference}`, item.line);
-      if (CONNECTIONS.has(target.kind) || ATTACHMENTS.has(target.kind)) throw new MarkupError('Positioning references cannot target an arrow, line, brace, box or blob', item.line);
-      if (scopeOf.get(target.id) !== scope) throw new MarkupError(`${reference} belongs to a different group`, item.line);
-      if (key === 'baseline-aligned' && !TEXT_LIKE.has(target.kind)) {
+      if (decoration(target)) throw new MarkupError('Positioning references cannot target an arrow, line, brace, box or blob', item.line);
+      if (scopeOfTarget(target) !== scope) throw new MarkupError(`${reference} belongs to a different group`, item.line);
+      if (key === 'baseline-aligned' && !(target instanceof ElementSpec && TEXT_LIKE.has(target.kind))) {
         throw new MarkupError('baseline-aligned must reference text, math or code', item.line);
       }
     }

@@ -19,7 +19,7 @@ directive they are separated by spaces or commas; elsewhere by spaces. Each attr
 
 | Form | Meaning |
 | --- | --- |
-| `key=value` | a value; quote it with `"…"` or `'…'` when it holds spaces or commas, and escape a quote inside with a backslash |
+| `key=value` | a value; quote it with `"…"` or `'…'` when it holds spaces or commas. Inside the quotes a backslash before the quote escapes it and any other backslash stays, so `label="a \\ b"` breaks the line and `label="$\to$"` keeps its formula |
 | `key="(x,y) (x,y)"` | parentheses keep a tuple whole, quoted or not: `at=center:(3,-2)` |
 | `#name` | the identifier of the element, slide or child: the same as `id=name` |
 | `.name` | a [style class](#style-roles-and-classes) to apply; several are allowed, in order |
@@ -475,15 +475,17 @@ polygons, polylines and arcs stay at their own coordinates unless positioned.
 [[line: (-6,0) -> (6,0), #axis, stroke_width=1]]
 ```
 
-A connection runs between two endpoints, each an element `#id` (its border is hit where the
-straight line crosses it) or a point `(x,y)`; the endpoints come first, then `#id` and the
-attributes, comma-separated. Connections are laid out after the elements they join and cannot
+A connection runs between two endpoints, each an element `#id`, met where the straight line
+crosses its border (the outline of a circle, a dot or an ellipse, the bounding box of anything
+else), an element at one of its anchors `#id.anchor` (the anchors of [`at=`](#at), such as
+`#a.top-right`), or a point `(x,y)`; a line ends right there, an arrow a little short of it. The
+endpoints come first, then `#id` and the attributes, comma-separated. Connections are laid out after the elements they join and cannot
 be the reference of a position or the target of another connection or attachment.
 
 | Attribute | Values | Default | Meaning |
 | --- | --- | --- | --- |
 | `id` | identifier | `element-N` | |
-| `from`, `to` | | required, written before the attributes | the endpoints |
+| `from`, `to` | `#id`, `#id.anchor`, `(x,y)` | required, written before the attributes | the endpoints |
 | `label` | inline markup | | text at the middle of the connection |
 | `label_side` | `above`, `below` | `above` | the side of the edge the label sits on, in the label's own frame along the edge: it reads from left to right (bottom to top on a vertical edge), and `above` is the side its letters stand on, so the left of a vertical edge |
 | `slanted` | `true`, `false` | `false` | turn the label along the edge; otherwise it stays upright, beside the middle of the edge and clear of the line |
@@ -648,7 +650,10 @@ element it is the flow position.
 | `x` or `y` with a reference | overrides the axis the reference leaves centered |
 
 A reference names an element of the same slide and scope that is not a connection or an
-attachment. One horizontal and one vertical constraint at most, and not together with the
+attachment or, at the slide's top level, a slide it includes, by that slide's id (an element of
+the same id comes first):
+`[[include: #b below:#a]]` stacks two includes and `[caption]{#c below:#a}` puts a caption
+under one. One horizontal and one vertical constraint at most, and not together with the
 coordinate of the same axis. References may chain; a cycle is an error.
 
 ### at=

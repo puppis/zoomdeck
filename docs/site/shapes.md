@@ -48,10 +48,21 @@ like shapes.
 [[arrow: (-8.8,-5) -> #box, #pointer, color=RED, step=1]]
 ```
 
-An arrow or line goes from one endpoint to another: an element ID (attached at the facing
-bounding edge) or a literal `(x,y)` point. They take an optional `#id`, a `label` with inline
-styling and math (sized by `font_size`, set in `font`), `color`, `stroke_width`, `opacity`, `step`,
-`hide` and timing.
+An arrow or line goes from one endpoint to another: an element ID, attached where the line
+between the two meets its border (the outline of a circle, a dot or an ellipse, the facing
+bounding edge of anything else), an element at one of its anchors, or a literal `(x,y)` point:
+
+```markdown
+[[arrow: #a0.top-right -> #b1.top-left]]
+[[line: #a0.bottom -> #b1]]
+```
+
+The anchors are those of [`at=`](positioning.html#anchor-expressions): `top-left`, `top`,
+`top-right`, `left`, `center`, `right`, `bottom-left`, `bottom`, `bottom-right`, and the
+baseline ones of text. A line ends right on its endpoints; an arrow stops a little short of each,
+so that its tip does not touch the element. Arrows and lines also take an optional `#id`, a
+`label` with inline styling and math (sized by `font_size`, set in `font`), `color`,
+`stroke_width`, `opacity`, `step`, `hide` and timing.
 
 The label sits at the middle of the edge, above it by default: upright, and clear of the line
 on a slanted or vertical edge. `slanted=true` turns it along the edge, and `label_side=below`

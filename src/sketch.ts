@@ -11,7 +11,8 @@
 import rough from 'roughjs';
 import type { Drawable, OpSet, Options } from 'roughjs/bin/core';
 import type { RoughGenerator } from 'roughjs/bin/generator';
-import { VGroup, VMobject, parseSVGPathData } from 'manim-web';
+import { VGroup, VMobject } from 'manim-web';
+import { parsePathData } from './pathdata';
 
 /** Fill patterns of Rough.js. */
 export const FILL_STYLES = ['hachure', 'solid', 'zigzag', 'cross-hatch', 'dots', 'dashed', 'zigzag-line'] as const;
@@ -177,7 +178,7 @@ function signedArea(points: readonly Point[]): number {
 }
 
 function pathMobject(set: OpSet, close: boolean): VMobject | null {
-  const subpaths = parseSVGPathData(generator().opsToPath(set)).filter((subpath) => subpath.length >= 2);
+  const subpaths = parsePathData(generator().opsToPath(set)).filter((subpath) => subpath.length >= 2);
   if (!subpaths.length) return null;
   const points: number[][] = [];
   const lengths: number[] = [];
@@ -404,7 +405,7 @@ export const sketch = {
   /** Any SVG path data, with coordinates in logical units (y up), optionally scaled by `scale`. */
   path(d: string, options: SketchOptions = {}, scale = 1): VGroup {
     const o = resolve(options);
-    const subpaths = parseSVGPathData(d).map((subpath) => subpath.map(([x, y]) => toRough([x * scale, y * scale])));
+    const subpaths = parsePathData(d).map((subpath) => subpath.map(([x, y]) => toRough([x * scale, y * scale])));
     return sketchDrawable(generator().path(curvesToPath(subpaths), roughOptions(o)), o);
   },
 

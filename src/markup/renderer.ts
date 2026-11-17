@@ -19,6 +19,7 @@ import { DEFAULT_CODE_FONT, DEFAULT_HANDWRITING_FONT } from '../fonts';
 import type { CodeTheme } from './code';
 import type { Animation } from 'manim-web';
 import { blobMobject, type Rect } from '../blob';
+import { installMathPathFix } from '../pathdata';
 import { buildChart, parseChartData, type ChartType } from '../charts';
 import { buildTable, type TableRules } from './table';
 import { DEFAULT_ANIMATION_TIME, Slide, resolveSize } from '../slides';
@@ -27,7 +28,7 @@ import { VideoClip } from '../video';
 import { IframeHost } from './iframe';
 import {
   ALIGNMENTS, BRACE_SIDES, CONNECTIONS, GROUP_ANCHORS, NEIGHBORS, POSITION_REFERENCES, SHAPES, TEXT_ANCHORS, TEXT_LIKE, VIDEO_EXTENSIONS,
-  ElementSpec, CodeSlideSpec, IncludeSpec, InlineSpan, MarkupError, TableSpec, attachmentTargets, endpoint, numberValue, parseAt, parseColor,
+  ElementSpec, CodeSlideSpec, IncludeSpec, InlineSpan, MarkupError, TableSpec, attachmentTargets, connectionEnd, endpoint, numberValue, parseAt, parseColor,
   polylinePoints, span,
 } from './ast';
 import { MarkupParser } from './parser';
@@ -187,6 +188,8 @@ export type OriginMobject = Mobject & { markupOrigin?: [number, number] };
 export type PartsMobject = Mobject & { markupParts?: Mobject[] };
 /** A composite whose connections and endpoints address one part (an icon under its label). */
 export type BodyMobject = Mobject & { markupBody?: Mobject };
+/** A circle, a dot or an ellipse, whose connections end on its outline. */
+export type RoundMobject = Mobject & { markupRound?: boolean };
 
 /** The rectangles a blob encloses for an object: its parts' rectangles, else its own bounding box. */
 export function enclosedRects(obj: Mobject): Rect[] {
@@ -300,6 +303,13 @@ export function placeRelative(
 /** The point where a ray from the center of `obj` along `direction` leaves its bounding box. */
 export function boundaryPoint(obj: Mobject, direction: [number, number, number]): [number, number, number] {
   const center = obj.getCenter();
+  // A circle, a dot or an ellipse is met on its outline, not on the corner of its box.
+  if ((obj as RoundMobject).markupRound) {
+    const [rx, ry] = [obj.getWidth() / 2, obj.getHeight() / 2];
+    const reach = Math.hypot(rx > 0 ? direction[0] / rx : 0, ry > 0 ? direction[1] / ry : 0);
+    if (reach < 1e-12) return [center[0], center[1], center[2]];
+    return [center[0] + direction[0] / reach, center[1] + direction[1] / reach, center[2]];
+  }
   const half = [obj.getWidth() / 2, obj.getHeight() / 2];
   let t = Infinity;
   for (const axis of [0, 1] as const) {
@@ -348,6 +358,9 @@ const BUNDLED_FONTS = new Set([DEFAULT_TEXT_FONT, DEFAULT_CODE_FONT, DEFAULT_HAN
 const FONT_VARIANTS: Array<[suffix: string, weight: string, style: string]> = [['', '400', 'normal'], ['-Bold', '700', 'normal'], ['-Italic', '400', 'italic'], ['-BoldItalic', '700', 'italic']];
 const FONT_EXTENSIONS = ['woff2', 'woff', 'ttf', 'otf'];
 const MODULE_EXTENSIONS = ['js', 'mjs', 'ts'];
+
+// Formulas read by the engine keep every point of their glyphs (see pathdata.ts).
+installMathPathFix();
 
 /** Create engine objects for AST elements. Subclass `make` to customize. */
 export class MarkupRenderer {
@@ -803,6 +816,7 @@ export class MarkupRenderer {
       shape.setFill(fillColor, fillOpacity);
       const sketchy = sketchOptions(element, { color, strokeWidth, fillColor, fillOpacity }, element.kind === 'dot' ? 'solid' : undefined);
       if (sketchy) obj = sketchShape(element, shape, sketchy);
+      if (element.kind === 'circle' || element.kind === 'dot' || element.kind === 'ellipse') (obj as RoundMobject).markupRound = true;
     } else if (element.kind === 'icon') {
       const strokeWidth = Number(attrs.stroke_width ?? 2);
       const fillColor = attrs.fill_color ? parseColor(attrs.fill_color) : color;
@@ -1054,20 +1068,28 @@ export class MarkupRenderer {
 
   /** Create an arrow or line between laid-out objects or fixed coordinates. */
   async connection(element: ElementSpec, objects: Map<string, Mobject>): Promise<Mobject> {
-    const [start, end] = ['from', 'to'].map((key) => endpoint(element.attributes[key], element.line));
+    const [start, end] = ['from', 'to'].map((key) => connectionEnd(element.attributes[key], element.line));
     // An arrow to a labeled icon aims at the icon itself, not at the box of icon and label together.
     const body = (obj: Mobject | undefined): Mobject | null => (obj ? (obj as BodyMobject).markupBody ?? obj : null);
-    const source = typeof start === 'string' ? body(objects.get(start)) : null;
-    const target = typeof end === 'string' ? body(objects.get(end)) : null;
-    let a = source ? source.getCenter() : (start as [number, number, number]);
-    let b = target ? target.getCenter() : (end as [number, number, number]);
+    const source = Array.isArray(start) ? null : body(objects.get(start.id));
+    const target = Array.isArray(end) ? null : body(objects.get(end.id));
+    const anchorOf = (side: typeof start) => (Array.isArray(side) ? null : side.anchor);
+    // An end at a named anchor is that point; any other end of an element aims from its center.
+    const at = (obj: Mobject | null, side: typeof start): [number, number, number] => {
+      if (!obj) return side as [number, number, number];
+      const anchor = anchorOf(side);
+      return anchor ? anchorPoint(obj, anchor) : obj.getCenter();
+    };
+    let a = at(source, start);
+    let b = at(target, end);
     const direction: [number, number, number] = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
     const length = Math.hypot(...direction);
     if (length < 1e-9) throw new MarkupError('Arrow endpoints must have distinct positions', element.line);
-    // Each end sits where the line between the centers leaves the element's box: a direction that
-    // is horizontal up to floating-point noise still meets the side, not a corner.
-    if (source) a = boundaryPoint(source, direction);
-    if (target) b = boundaryPoint(target, [-direction[0], -direction[1], -direction[2]]);
+    // Each other end sits where the line between them leaves the element: on the outline of a
+    // circle, a dot or an ellipse, on the box of anything else, where a direction that is
+    // horizontal up to floating-point noise still meets the side, not a corner.
+    if (source && !anchorOf(start)) a = boundaryPoint(source, direction);
+    if (target && !anchorOf(end)) b = boundaryPoint(target, [-direction[0], -direction[1], -direction[2]]);
     const color = element.attributes.color ? parseColor(element.attributes.color) : this.layout.color;
     const isArrow = element.kind === 'arrow';
     const buff = isArrow ? 0.08 : 0;

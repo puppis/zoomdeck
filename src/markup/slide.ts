@@ -247,13 +247,28 @@ export class MarkupSlide extends Slide {
         obj.shift([target[0] - point[0], target[1] - point[1], 0]);
       }
     }
-    for (const identifier of positionOrder(elements)) {
-      placeRelative(elements.get(identifier) as ElementSpec, scope.local.get(identifier) as Mobject, scope.local, layout.gap, layout.textAnchor);
-    }
+    // Elements and, at the top level, includes are placed relative to one another in one order:
+    // an include is a reference by the id of the slide it includes, and its frame is what it measures.
+    const placed = new Map<string, ElementSpec | IncludeSpec>(elements);
+    const frames = new Map<IncludeSpec | CodeSlideSpec, Mobject>();
     if (viewportOf) {
       for (const [index, item] of items.entries()) {
-        if (item instanceof IncludeSpec || item instanceof CodeSlideSpec) placeRelative(item, viewportOf(index, item), scope.local, layout.gap);
+        if (!(item instanceof IncludeSpec || item instanceof CodeSlideSpec)) continue;
+        frames.set(item, viewportOf(index, item));
+        if (item instanceof IncludeSpec && !placed.has(item.target)) {
+          placed.set(item.target, item);
+          scope.local.set(item.target, frames.get(item) as Mobject);
+        }
       }
+    }
+    for (const identifier of positionOrder(placed)) {
+      const item = placed.get(identifier) as ElementSpec | IncludeSpec;
+      if (item instanceof IncludeSpec) placeRelative(item, frames.get(item) as Mobject, scope.local, layout.gap);
+      else placeRelative(item, scope.local.get(identifier) as Mobject, scope.local, layout.gap, layout.textAnchor);
+    }
+    // Code-authored children are no references, nor is an include whose id an element has; they follow the rest.
+    for (const [item, frame] of frames) {
+      if (item instanceof CodeSlideSpec || placed.get(item.target) !== item) placeRelative(item, frame, scope.local, layout.gap);
     }
     // Offsets apply last, after flow, explicit and relative placement.
     for (const [index, item] of items.entries()) {

@@ -56,7 +56,17 @@ blocks move up. A center-anchored element with one missing coordinate defaults t
   the free axis (`below:#h x=0`).
 
 References target elements of the same slide (and the same [group](groups.html)), including
-later ones and hidden fragments, but never arrows, lines, braces, boxes or blobs. Sizes are measured once
+later ones and hidden fragments, but never arrows, lines, braces, boxes or blobs. At the slide's
+top level they also target the slides it [includes](slides.html#includes), by their id, so
+includes stack without coordinates of their own and captions follow them:
+
+```markdown
+[[include: #first x=-4 y=2 width=4]]
+[[include: #second below:#first buff=0.3 width=4]]
+[[include: #third right-of:#second width=3]]
+[The second step]{#caption below:#second}
+```
+ Sizes are measured once
 during preparation; dependency cycles are reported with their line.
 
 ## Anchor expressions

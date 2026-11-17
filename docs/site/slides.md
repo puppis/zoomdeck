@@ -52,7 +52,8 @@ An include places the referenced slide's viewport in the current canvas. `x`, `y
 of the viewport (or the point named by `anchor=`), `width`/`height` its size (one dimension keeps
 the child's aspect ratio, two letterbox it), `angle` rotates it in radians. Without `width` and
 `height` the viewport is at most six units wide. Includes accept the relative constraints, `at=`,
-`dx`/`dy` and `.class` styles of [Positioning](positioning.html). `[[subslide: #id …]]` is the
+`dx`/`dy` and `.class` styles of [Positioning](positioning.html), and are references themselves,
+by the id of the slide they include: `[[include: #b below:#a]]` puts one under another. `[[subslide: #id …]]` is the
 same thing; `subslide` also places [code-authored children](#code-authored-children).
 
 An include referring to an **undefined** slide draws a red placeholder rather than failing, and

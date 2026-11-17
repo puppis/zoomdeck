@@ -7,7 +7,8 @@
  * matrix and inherited styles, converts every shape to cubic Bézier points and
  * keeps compound paths together so holes fill correctly.
  */
-import { VGroup, VMobject, parseSVGPathData } from 'manim-web';
+import { VGroup, VMobject } from 'manim-web';
+import { parsePathData } from './pathdata';
 import { parseCssColor } from './markup/ast';
 
 type Matrix = [number, number, number, number, number, number];
@@ -201,7 +202,7 @@ export function svgToMobject(svgText: string, options: SvgImportOptions = {}): V
     }
     const d = shapePath(element);
     if (d) {
-      const subpaths = parseSVGPathData(d).filter((subpath) => subpath.length >= 2);
+      const subpaths = parsePathData(d).filter((subpath) => subpath.length >= 2);
       if (subpaths.length) {
         const points: number[][] = [];
         const lengths: number[] = [];

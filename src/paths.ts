@@ -6,7 +6,8 @@
  * helpers build such shapes from SVG path data in logical units (y up) and
  * from closed polygons, which icons and blobs need.
  */
-import { VMobject, parseSVGPathData } from 'manim-web';
+import { VMobject } from 'manim-web';
+import { parsePathData } from './pathdata';
 
 export type Point2 = readonly [number, number];
 export type Point3 = [number, number, number];
@@ -52,7 +53,7 @@ export function setSubpaths(vmob: VMobject, subpaths: Point3[][]): VMobject {
  */
 export function pathMobject(d: string, scale = 1, close = false): VMobject {
   const subpaths: Point3[][] = [];
-  for (const subpath of parseSVGPathData(d)) {
+  for (const subpath of parsePathData(d)) {
     if (subpath.length < 2) continue;
     const converted: Point3[] = subpath.map(([x, y]) => [x * scale, y * scale, 0]);
     if (close) {
