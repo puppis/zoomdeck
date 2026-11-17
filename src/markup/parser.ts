@@ -764,7 +764,7 @@ export class ASTTransformer {
     let allowed: Set<string> | null;
     if (item.kind === 'group') allowed = new Set(GROUP_ATTRS);
     else if (CONNECTIONS.has(item.kind)) {
-      allowed = new Set(['id', 'step', 'hide', 'color', 'from', 'to', 'dashed', 'halo', 'halo_width', 'label', 'label_buff', 'label_color', 'label_pos', 'label_side', 'slanted', 'font', 'font_size', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
+      allowed = new Set(['id', 'step', 'hide', 'color', 'from', 'to', 'dashed', 'halo_bridge', 'halo_width', 'label', 'label_buff', 'label_color', 'label_pos', 'label_side', 'slanted', 'font', 'font_size', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
     }
     else if (ATTACHMENTS.has(item.kind)) {
       allowed = new Set(['id', 'target', 'step', 'hide', 'color', 'buff', 'opacity', 'href', ...STROKE_ATTRS, ...TIMING_ATTRS, ...SKETCH_ATTRS]);
@@ -810,9 +810,9 @@ export class ASTTransformer {
     if (allowed) this._checkAttrs(item.attributes, allowed, item.line);
     if (CONNECTIONS.has(item.kind)) {
       if ('dashed' in item.attributes && !['true', 'false'].includes(item.attributes.dashed)) throw new MarkupError('dashed must be true or false', item.line);
-      // A halo is true (the deck's background), false, or a color.
-      if ('halo' in item.attributes && !['true', 'false'].includes(item.attributes.halo)) ASTTransformer._checkColor(item.attributes.halo, item.line);
-      if ('halo_width' in item.attributes && !styledKeys(item).has('halo_width') && !('halo' in item.attributes)) throw new MarkupError('halo_width requires halo', item.line);
+      // A halo bridge is true (the deck's background), false, or a color.
+      if ('halo_bridge' in item.attributes && !['true', 'false'].includes(item.attributes.halo_bridge)) ASTTransformer._checkColor(item.attributes.halo_bridge, item.line);
+      if ('halo_width' in item.attributes && !styledKeys(item).has('halo_width') && !('halo_bridge' in item.attributes)) throw new MarkupError('halo_width requires halo_bridge', item.line);
       // A connection's label: on which side of the edge, in the label's own frame along it, and whether it turns along the edge.
       if ('label_side' in item.attributes && !['above', 'below'].includes(item.attributes.label_side)) throw new MarkupError('An arrow\'s or a line\'s label_side must be above or below', item.line);
       if ('slanted' in item.attributes && !['true', 'false'].includes(item.attributes.slanted)) throw new MarkupError('slanted must be true or false', item.line);

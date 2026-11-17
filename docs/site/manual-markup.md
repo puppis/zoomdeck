@@ -499,8 +499,8 @@ be the reference of a position or the target of another connection or attachment
 | `label_buff` | units | 0.1 | the distance between the edge and the label's lines; labels are measured by their font, so labels with and without descenders share a baseline |
 | `stroke_width` | engine units | 2 | |
 | `dashed` | `true`, `false` | `false` | draw the line, or the arrow's shaft, in dashes that begin and end it; they grow longer with `stroke_width`, the tip stays solid, and a hand-drawn connection gets hand-drawn dashes |
-| `halo` | `true`, `false`, a color | `false` | a wider stroke under the line (the shaft of an arrow), in the deck's background with `true` or in the color named: where it crosses a path drawn before, it passes over it, as elements draw in source order |
-| `halo_width` | engine units | `stroke_width` + 12 | the width of the halo; requires `halo` |
+| `halo_bridge` | `true`, `false`, a color | `false` | pass over the arrows and lines written before it that it crosses, as elements draw in source order: each is broken beside it by a patch in the deck's background (`true`) or in the color named; paths that join the same element, end close together (`layout.haloBridgeTolerance`), meet in a T or cross at a narrow angle are left alone |
+| `halo_width` | engine units | `stroke_width` + 12 | the width of the halo around the line, the gap it leaves in the paths it crosses; requires `halo_bridge` |
 | `opacity` | 0 to 1 | 1 | |
 | `step`, `hide`, `run_time`, `lag`, `href` | | | as for elements; connections fade only |
 | `sketch` and the hand-drawn attributes, `tremble`, `tremble_amplitude`, `tremble_rate` | | | see [Appearance](#appearance) and [tremble](#tremble) |
@@ -938,6 +938,7 @@ matter in the same way.
 | `lineGap` | 0.12 | extra space between wrapped lines |
 | `paragraphSpacing` | 1.5 | the distance between the baselines of two paragraphs in the flow, in interlines; a text and another block keep the space two paragraphs have between their lines |
 | `listIndent` | 0.6 | indentation per list level, and the minimum width of the marker column |
+| `haloBridgeTolerance` | 0.2 | two arrows or lines whose ends lie closer than this never bridge one another with `halo_bridge` |
 | `animationTime` | 0.35 | the default `run_time` of fades and effects |
 | `defaultSlideSize` | `[16, 9]` | the canvas of slides without `width` or `height` |
 | `textAnchor` | `left-baseline` | the default anchor of text (`top-left` or `center` possible) |

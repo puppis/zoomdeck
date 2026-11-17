@@ -90,19 +90,28 @@ connection (`sketch=true`) gets hand-drawn dashes.
 [[arrow: #c -> #a, #back, dashed=true, stroke_width=6, label="optional"]]
 ```
 
-`halo=true` draws a wider stroke under the line, in the deck's background, so that where it
-crosses a path drawn before it, it passes over it, the earlier path broken on each side, as in
-knot diagrams and maps. Elements draw in source order, so the path written later is on top.
-`halo=` a color gives the halo that color (on a colored shape, say), and `halo_width` its width
-(the line's width plus 12 by default). The halo follows the shaft, not an arrow's tip, and stops
-short of the ends, so that it never notches the elements a path joins. A style gives every arrow
-one at once: `arrow: halo=true` in a `::: styles` block.
+`halo_bridge=true` makes a line pass over the arrows and lines it crosses that were written
+before it: at each crossing the earlier path is broken on both sides of it, as in knot diagrams
+and maps. Elements draw in source order, so the path written later is the one on top. The gap is
+a small patch in the deck's background, only where the halo around the line, a strip
+`halo_width` engine units wide (the line's width plus 12 by default), meets the stroke of the
+path it crosses; `halo_bridge=` a color gives the patch that color instead, for paths that cross
+on a colored shape. A style bridges every arrow at once: `arrow: halo_bridge=true` in a
+`::: styles` block, and `halo_bridge=false` exempts one of them.
 
 ```markdown
 [[line: #a -> #b, #first]]
-[[arrow: #c -> #d, #over, halo=true]]
-[[line: #e -> #f, #thick, halo=YELLOW, halo_width=20]]
+[[arrow: #c -> #d, #over, halo_bridge=true]]
+[[line: #e -> #f, #thick, halo_bridge=YELLOW, halo_width=20]]
 ```
+
+Only proper crossings are bridged. Two paths that leave or reach the same element, at the same
+anchor or at two, never break one another, nor do two paths whose ends lie closer than
+`layout.haloBridgeTolerance` (0.2). A path that ends on another (a T), paths that cross at a
+narrow angle (under about 12 degrees, where the gap would grow long) and crossings so near an end
+that the gap would reach it are left alone too, so that an arrow's tip is never notched. A
+hand-drawn path is bridged where its strokes cross, and a bridge shows, hides and fades with
+its path; an animated color leaves it in the background's color.
 
 Connections are created after all other elements, so forward references work;
 they cannot anchor other elements and are not hidden implicitly when an endpoint disappears.

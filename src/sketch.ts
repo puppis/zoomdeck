@@ -71,6 +71,9 @@ interface ResolvedSketch {
 /** Vector objects built from a sketch keep the exact geometry they approximate, for paths and anchors. */
 export type OutlineMobject = VMobject & { markupOutline?: VMobject };
 
+/** A hand-drawn line or arrow, which knows the strokes of its line apart from its tip. */
+export type ShaftMobject = VGroup & { markupShaft?: VMobject[] };
+
 let generatorInstance: RoughGenerator | null = null;
 
 function generator(): RoughGenerator {
@@ -373,7 +376,9 @@ export const sketch = {
   /** A straight line from `start` to `end`, dashed when the options give a dash. */
   line(start: Point, end: Point, options: SketchOptions = {}): VGroup {
     const o = resolve(options);
-    return sketchDrawable(stroke(start, end, o), o);
+    const group = sketchDrawable(stroke(start, end, o), o) as ShaftMobject;
+    group.markupShaft = group.children.filter((child): child is VMobject => child instanceof VMobject);
+    return group;
   },
 
   /** An arrow from `start` to `end` with a filled triangular tip (`tipWidth` is the half-width). */
@@ -387,7 +392,8 @@ export const sketch = {
     const base = [end[0] - unit[0] * tip, end[1] - unit[1] * tip];
     const perpendicular = [-unit[1] * tipWidth, unit[0] * tipWidth];
     const shaftEnd = [end[0] - unit[0] * tip * 0.8, end[1] - unit[1] * tip * 0.8];
-    const group = sketchDrawable(stroke(start, shaftEnd, o), o);
+    const group = sketchDrawable(stroke(start, shaftEnd, o), o) as ShaftMobject;
+    group.markupShaft = group.children.filter((child): child is VMobject => child instanceof VMobject);
     const corners = [end, [base[0] + perpendicular[0], base[1] + perpendicular[1]], [base[0] - perpendicular[0], base[1] - perpendicular[1]]];
     const head: ResolvedSketch = { ...o, fillColor: o.color, fillOpacity: 1, fillStyle: 'solid', roughness: o.roughness * 0.6 };
     return addDrawable(group, generator().polygon(corners.map(toRough), roughOptions(head)), head);

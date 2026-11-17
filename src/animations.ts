@@ -10,6 +10,7 @@ import {
   easeInOutSine, easeInSine, easeOutSine, linear, rushFrom, rushInto, smooth, thereAndBack,
 } from 'manim-web';
 import type { Vec3 } from './geometry';
+import { FIXED_COLORS } from './bridges';
 
 /** An easing: progress in, eased progress out, both from 0 to 1. */
 export type RateFunction = (t: number) => number;
@@ -84,7 +85,8 @@ export class PropertyAnimation extends Animation {
     this._rootOpacity = this.mobject.opacity > 0 ? this.mobject.opacity : 1;
     for (const member of this.mobject.getFamily()) {
       this._opacities.set(member, { opacity: member.opacity, fill: member.fillOpacity });
-      if (member.children.length === 0) this._colors.set(member, member.color);
+      // Halo bridges keep the background's color whatever color their path takes.
+      if (member.children.length === 0 && !FIXED_COLORS.has(member)) this._colors.set(member, member.color);
     }
   }
 

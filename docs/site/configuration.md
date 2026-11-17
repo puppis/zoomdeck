@@ -123,6 +123,7 @@ and the options' folders come before the front matter's.
 | `lineGap` | 0.12 | extra space between wrapped lines |
 | `paragraphSpacing` | 1.5 | the distance between the baselines of two paragraphs, in interlines |
 | `listIndent` | 0.6 | marker column of list items and indentation per nesting level |
+| `haloBridgeTolerance` | 0.2 | arrows and lines whose ends lie closer than this never bridge one another (`halo_bridge`) |
 | `animationTime` | 0.35 | duration of fades |
 | `defaultSlideSize` | `[16, 9]` | canvas of slides without `width`/`height` |
 | `textAnchor` | `left-baseline` | default anchor of text (`top-left` or `center` possible) |

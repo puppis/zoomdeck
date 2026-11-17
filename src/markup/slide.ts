@@ -16,6 +16,7 @@ import { VideoClip, VideoPlay } from '../video';
 import { IframeHost } from './iframe';
 import { DelayedAnimation, type SlideContext } from '../runtime';
 import { markEarly, setSourceRank } from '../display';
+import { BRIDGE_PATHS, findBridges, withBridges, type BridgePath } from '../bridges';
 import {
   ATTACHMENTS, CONNECTIONS, EFFECT_NAMES, ENTER_STYLES, EXIT_STYLES, NEIGHBORS, TEXT_LIKE, VERTICAL_POSITION,
   ActionSpec, AnimationStep, ElementSpec, EventSpec, GroupSpec, CodeSlideSpec, IncludeSpec, MarkupDocument, MarkupError, NextSpec,
@@ -333,14 +334,26 @@ export class MarkupSlide extends Slide {
         scope.local.set(item.id, obj);
       }
     }
+    const drawn: [ElementSpec, Mobject][] = [];
     for (const item of items) {
       if (item instanceof ElementSpec && CONNECTIONS.has(item.kind)) {
         const obj = await located(item.line, () => this.renderer.connection(item, scope.local));
-        if (item.attributes.href) LINKED_OBJECTS.set(obj, item.attributes.href);
-        SOURCE_OBJECTS.set(obj, this.locate(item.line));
+        drawn.push([item, obj]);
         this.elements.set(item.id, obj);
         scope.local.set(item.id, obj);
       }
+    }
+    // Where an arrow or a line with halo_bridge crosses one written before it, which it is drawn
+    // over, it bridges it: a patch in the background color hides the earlier one beside it.
+    const paths = drawn.map(([, obj]) => BRIDGE_PATHS.get(obj) as BridgePath);
+    const bridges = findBridges(paths, layout.haloBridgeTolerance);
+    for (const [index, [item, plain]] of drawn.entries()) {
+      const quads = bridges.get(index);
+      const obj = quads ? withBridges(plain, quads, (paths[index].bridge as { color: string }).color) : plain;
+      if (item.attributes.href) LINKED_OBJECTS.set(obj, item.attributes.href);
+      SOURCE_OBJECTS.set(obj, this.locate(item.line));
+      this.elements.set(item.id, obj);
+      scope.local.set(item.id, obj);
     }
   }
 
@@ -573,7 +586,7 @@ export class SlideBuilder {
       effectModules?: Record<string, EffectModule>; chartModules?: Record<string, ChartModule>; directiveModules?: Record<string, DirectiveModule>;
       /** The documents `[[pdf: file #id]]` placed, loaded ahead, by id. */
       documents?: Map<string, Slide>;
-      /** The deck's background color, which halos take unless they name another. */
+      /** The deck's background color, which halo bridges take unless they name another. */
       background?: string;
     } = {},
   ): Slide {

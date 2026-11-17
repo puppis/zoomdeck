@@ -8,7 +8,8 @@ import {
   renderLatexToSVG, type Mobject,
 } from 'manim-web';
 import { loadSvgMobject } from '../svg';
-import { STROKE_UNITS, dashPattern, dashSegments, sketch, sketchSeed, type FillStyle, type OutlineMobject, type SketchOptions } from '../sketch';
+import { dashPattern, dashSegments, sketch, sketchSeed, type FillStyle, type OutlineMobject, type ShaftMobject, type SketchOptions } from '../sketch';
+import { BRIDGE_PATHS, strokePolylines, type BridgePath, type Point2 } from '../bridges';
 import { artworkFromModule, makeIcon, type ArtworkModule, type ArtworkOptions, type IconName } from '../icons';
 import { ICON_KINDS } from './ast';
 import { effectFromModule, type EffectModule, type EffectOptions } from '../animations';
@@ -62,6 +63,11 @@ export interface LayoutConfigOptions {
   paragraphSpacing?: number;
   /** Indentation of nested list items per level, and the minimum width of the marker column. */
   listIndent?: number;
+  /**
+   * Two paths whose ends lie closer than this, in logical units, never bridge one another with
+   * `halo_bridge`; 0.2 by default.
+   */
+  haloBridgeTolerance?: number;
   animationTime?: number;
   defaultSlideSize?: readonly [number, number];
   textAnchor?: 'left-baseline' | 'top-left' | 'center';
@@ -81,6 +87,7 @@ export class LayoutConfig {
   readonly lineGap: number;
   readonly paragraphSpacing: number;
   readonly listIndent: number;
+  readonly haloBridgeTolerance: number;
   readonly animationTime: number;
   readonly defaultSlideSize: readonly [number, number];
   readonly textAnchor: 'left-baseline' | 'top-left' | 'center';
@@ -98,6 +105,7 @@ export class LayoutConfig {
     this.lineGap = options.lineGap ?? 0.12;
     this.paragraphSpacing = options.paragraphSpacing ?? 1.5;
     this.listIndent = options.listIndent ?? 0.6;
+    this.haloBridgeTolerance = options.haloBridgeTolerance ?? 0.2;
     this.animationTime = options.animationTime ?? DEFAULT_ANIMATION_TIME;
     this.defaultSlideSize = options.defaultSlideSize ?? Slide.defaultSize;
     this.textAnchor = options.textAnchor ?? 'left-baseline';
@@ -106,7 +114,7 @@ export class LayoutConfig {
     for (const key of ['fontSize', 'headingSize', 'codeSize', 'animationTime'] as const) {
       if (!Number.isFinite(this[key]) || this[key] <= 0) throw new Error(`${key} must be finite and positive`);
     }
-    for (const key of ['margin', 'gap', 'lineGap', 'listIndent', 'paragraphSpacing'] as const) {
+    for (const key of ['margin', 'gap', 'lineGap', 'listIndent', 'paragraphSpacing', 'haloBridgeTolerance'] as const) {
       if (!Number.isFinite(this[key]) || this[key] < 0) throw new Error(`${key} must be finite and nonnegative`);
     }
   }
@@ -365,7 +373,7 @@ export interface MarkupRendererOptions {
   basePath?: string;
   /** The deck's LaTeX macros, in MathJax's form: an expansion, or [expansion, arguments, default of an optional first one]. */
   macros?: Record<string, MacroDefinition>;
-  /** The deck's background color, which halos take unless they name another; white by default. */
+  /** The deck's background color, which halo bridges take unless they name another; white by default. */
   background?: string;
   /** Preloaded assets keyed by document-relative path, e.g. data URIs in single-file bundles. */
   assets?: Record<string, string>;
@@ -1135,26 +1143,15 @@ export class MarkupRenderer {
   }
 
   /**
-   * The halo of an arrow or a line, when `halo` asks for one: a straight stroke `halo_width` wide
-   * (the line's width plus 12 by default), in the color `halo` names or, with `halo=true`, the
-   * deck's background, drawn under the line. Where a path drawn later crosses one drawn before,
-   * its halo hides the earlier path beside it, so that it passes over. The halo follows the
-   * shaft, not an arrow's tip, and stops half its width short of each end, so that it never
-   * notches the outline of the element a path leaves or reaches.
+   * The bridges an arrow or a line asks for with `halo_bridge`: their color, the deck's background
+   * with `true` or the color named, and the width of the halo around the line, `halo_width` engine
+   * units (the line's width plus 12 by default); null without `halo_bridge` or with `false`.
    */
-  halo(element: ElementSpec, start: [number, number, number], end: [number, number, number], strokeWidth: number, tipLength: number): Mobject | null {
-    const value = element.attributes.halo;
+  bridge(element: ElementSpec, strokeWidth: number): BridgePath['bridge'] {
+    const value = element.attributes.halo_bridge;
     if (value === undefined || value === 'false') return null;
     const color = value === 'true' ? this.background : parseColor(value);
-    const haloWidth = numberValue(element.attributes, 'halo_width', element.line, strokeWidth + 12) as number;
-    const length = Math.hypot(end[0] - start[0], end[1] - start[1]);
-    const half = haloWidth / STROKE_UNITS / 2;
-    const from = half;
-    const to = length - Math.max(half, tipLength);
-    if (!(haloWidth > strokeWidth) || to - from < 1e-6) return null;
-    const unit = [(end[0] - start[0]) / length, (end[1] - start[1]) / length];
-    const at = (distance: number): [number, number, number] => [start[0] + unit[0] * distance, start[1] + unit[1] * distance, 0];
-    return new Line({ start: at(from), end: at(to), color, strokeWidth: haloWidth });
+    return { color, width: numberValue(element.attributes, 'halo_width', element.line, strokeWidth + 12) as number };
   }
 
   /** Create an arrow or line between laid-out objects or fixed coordinates. */
@@ -1199,9 +1196,20 @@ export class MarkupRenderer {
     else if (dash) connection = dashedConnection(start3, end3, color, width, dash, isArrow, tipLength, tipWidth);
     else if (isArrow) connection = new Arrow({ start: start3, end: end3, color, tipLength, tipWidth, ...(strokeWidth !== undefined ? { strokeWidth } : {}) });
     else connection = new Line({ start: start3, end: end3, color, strokeWidth: width });
-    const halo = this.halo(element, start3, end3, width, isArrow ? tipLength : 0);
+    // The stroke as bridges see it: the shaft, which ends where an arrow's tip begins; the strokes
+    // a hand-drawn line draws, sampled.
+    const shaftEnd: Point2 = isArrow ? [end3[0] - unit[0] * tipLength, end3[1] - unit[1] * tipLength] : [end3[0], end3[1]];
+    const shaft = sketchy ? (connection as ShaftMobject).markupShaft : undefined;
+    const path: BridgePath = {
+      strokes: shaft ? shaft.flatMap(strokePolylines) : [[[start3[0], start3[1]], shaftEnd]],
+      width,
+      ends: [[start3[0], start3[1]], [end3[0], end3[1]]],
+      shaftEnds: [[start3[0], start3[1]], shaftEnd],
+      joins: [Array.isArray(start) ? null : start.id, Array.isArray(end) ? null : end.id],
+      bridge: this.bridge(element, width),
+    };
     const label = element.attributes.label;
-    let result: Mobject = halo ? new Group(halo, connection) : connection;
+    let result: Mobject = connection;
     if (label) {
       const spans = this._parser.parseInlineSpans(label, element.line);
       const size = numberValue(element.attributes, 'font_size', element.line, this.layout.fontSize * 0.8) as number;
@@ -1211,9 +1219,10 @@ export class MarkupRenderer {
       const along = numberValue(element.attributes, 'label_pos', element.line, 0.5) as number;
       const labelGap = numberValue(element.attributes, 'label_buff', element.line, 0.1) as number;
       placeLabel(text, connection, start3, end3, element.attributes.slanted === 'true', element.attributes.label_side === 'below' ? 'below' : 'above', along, labelGap);
-      result = halo ? new Group(halo, connection, text) : new Group(connection, text);
+      result = new Group(connection, text);
     }
     if ('opacity' in element.attributes) applyOpacity(result, Number(element.attributes.opacity));
+    BRIDGE_PATHS.set(result, path);
     return result;
   }
 }
