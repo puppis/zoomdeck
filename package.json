@@ -1,6 +1,6 @@
 {
   "name": "zoomdown",
-  "version": "0.6.10",
+  "version": "0.6.11",
   "description": "Zooming presentations written in Markdown and played entirely in the browser: a tree of slides visited in pre-order with a zooming camera.",
   "keywords": [
     "presentation",
