@@ -326,7 +326,7 @@ function layout(page: Page, pages: Map<string, Page>, order: string[]): string {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${page.name === 'index' ? 'ZoomDown' : `${escapeHtml(page.title)} · ZoomDown`}</title>
-<meta name="description" content="${escapeHtml(page.description)}">
+<meta name="description" content="${escapeHtml(page.description)}">${page.name === 'index' ? '\n<meta name="google-site-verification" content="ZT92z-j-tsILnRUOVjO5RiQeTtcr1Md-EprLzRNjEiw">' : ''}
 <link rel="stylesheet" href="docs.css">${player}
 <script>
 // The side columns stay hidden or shown as the reader last left them, before the page paints.
