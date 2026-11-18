@@ -308,8 +308,22 @@ export class TextBatcher {
     batch.holder.visible = false;
     this.scene.remove(batch.holder);
     batch.mesh.geometry.dispose();
-    batch.mesh.material.dispose();
     batch.texture.dispose();
+    this._retired.push(batch.mesh.material);
+  }
+
+  /**
+   * Materials of dropped batches, freed after the next render. All batches share one shader
+   * program, which the renderer deletes with the last material that uses it: freeing the old
+   * materials before the new batches are drawn (a rebuild drops them all) would make it
+   * compile the program again, which takes long on some systems.
+   */
+  private _retired: THREE.Material[] = [];
+
+  /** Free the materials of the batches dropped before the last render; the stage calls this after each render. */
+  release(): void {
+    for (const material of this._retired) material.dispose();
+    this._retired = [];
   }
 }
 

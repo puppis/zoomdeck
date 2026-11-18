@@ -167,14 +167,16 @@ export class Stage {
   /** The frame scheduled to go on with a sharpening pass that ran out of its time budget. */
   private _refreshFrame: number | null = null;
 
-  /** The camera is about to move: visible lines go back to mipmapped, unaligned sampling. */
+  /**
+   * The camera is about to move: visible lines go back to mipmapped, unaligned sampling. Nothing
+   * is drawn here: the motion that follows draws its first frame in the same task.
+   */
   unrestText(): void {
     this._cancelRefresh();
     this.textBatcher.setMotion(true);
     if (this._resting.size === 0) return;
     for (const line of this._resting) line.unrest();
     this._resting.clear();
-    this.render();
   }
 
   private _cancelRefresh(): void {
@@ -187,9 +189,12 @@ export class Stage {
    * Redraw the text lines in view at the screen's own pixel density, so that prose is sharp
    * wherever the camera has come to rest, and send the lines out of view back to the base
    * density. The result is the same whatever the budget: a pass spends at most `budgetMs`
-   * rasterizing, the largest lines on screen first, renders what it has and goes on next
-   * frame, so a stop that shows a great deal of text (the front page of a deck, say) appears
-   * at once and sharpens within a few frames. `Infinity` does it all at once, for a capture.
+   * rasterizing, the largest lines on screen first, and goes on next frame, so a stop that
+   * shows a great deal of text (the front page of a deck, say) appears at once, as the camera
+   * left it, and sharpens within a few frames. The stage is drawn once, when the last pass is
+   * done: drawing after every pass would show the text half sharpened, at the price of a whole
+   * frame each time, which on such a stop is most of the work. `Infinity` does it all at once,
+   * for a capture.
    */
   refreshText(budgetMs = 6): void {
     this._cancelRefresh();
@@ -230,38 +235,42 @@ export class Stage {
     }
     jobs.sort((a, b) => b.size - a.size);
     const started = performance.now();
-    let changed = false;
     let left = 0;
+    const redrawn: StyledLine[] = [];
     for (const job of jobs) {
       if (performance.now() - started > budgetMs) {
         left += 1;
         continue;
       }
-      if (job.line.rasterizeAt(job.density)) changed = true;
+      const changed = job.line.rasterizeAt(job.density);
       if (job.outside) {
-        if (this._resting.delete(job.line)) {
-          job.line.unrest();
-          changed = true;
-        }
+        if (this._resting.delete(job.line)) job.line.unrest();
         continue;
       }
       // At rest, the texels of a visible line sit on the screen's pixels, sampled without mipmaps.
       job.line.restOnScreen(toDevicePixel);
       this._resting.add(job.line);
-      changed = true;
+      if (changed) redrawn.push(job.line);
     }
-    // Settled: the lines in view are drawn in batches from now on, until the camera moves again.
-    if (!left) {
-      this.textBatcher.rebuild(presenter);
-      changed = true;
-    }
-    if (changed) this.render();
     if (left) {
+      // The browser may only record a canvas's drawing and rasterize it when the canvas is first
+      // used; sending this pass's rasters of the lines in view to the GPU now spreads that work
+      // over the passes rather than leaving all of it to the last one. Lines out of view are
+      // left alone: they may not be drawn at all before they are redrawn again.
+      const renderer = this.scene.renderer.getThreeRenderer();
+      for (const line of redrawn) {
+        const texture = line.lineTexture;
+        if (texture) renderer.initTexture(texture);
+      }
       this._refreshFrame = requestAnimationFrame(() => {
         this._refreshFrame = null;
         this.refreshText(budgetMs);
       });
+      return;
     }
+    // Settled: the lines in view are drawn in batches from now on, until the camera moves again.
+    this.textBatcher.rebuild(presenter);
+    this.render();
   }
 
   /**
@@ -314,12 +323,14 @@ export class Stage {
     presenter.prepareRender(this._width, this._height, bounds, view.width);
     this.textBatcher.sync();
     this.scene.render();
+    this.textBatcher.release();
     for (const callback of this.afterRender) callback();
   }
 
   dispose(): void {
     this._observer?.disconnect();
     this.textBatcher.clear();
+    this.textBatcher.release();
     this.scene.dispose();
   }
 }
