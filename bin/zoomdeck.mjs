@@ -291,18 +291,52 @@ async function serve(options) {
   if (options.open) openBrowser(url);
 }
 
-async function collectAssets(deckDir) {
+/**
+ * The files of a deck folder that may travel with an export, by their paths inside the folder. Links
+ * are followed, to folders too (a deck may link a folder it shares, such as a course's animations);
+ * a folder reached twice is walked once, and a dangling link is left behind.
+ */
+export async function collectAssets(deckDir) {
   const files = [];
+  const walked = new Set();
   async function walk(dir) {
+    const real = await fs.realpath(dir);
+    if (walked.has(real)) return;
+    walked.add(real);
     for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
       if (['node_modules', '.git', 'build', 'dist'].includes(entry.name) || entry.name.startsWith('.')) continue;
       const path = join(dir, entry.name);
-      if (entry.isDirectory()) await walk(path);
-      else files.push(path);
+      const target = entry.isSymbolicLink() ? await fs.stat(path).catch(() => null) : entry;
+      if (target?.isDirectory()) await walk(path);
+      else if (target?.isFile()) files.push(path);
     }
   }
   await walk(deckDir);
   return files;
+}
+
+/**
+ * The files a web page of the deck loads by a relative path: those its `src` and `href` attributes
+ * name, and the `./…` or `../…` paths written in its scripts (a page may try several places for its
+ * library). An iframe page needs them in an export, although the export otherwise leaves the deck's
+ * own scripts and `dist` folders behind. Only existing files inside `root` count.
+ */
+export async function pageReferences(page, root) {
+  const html = await fs.readFile(page, 'utf8');
+  const found = new Set();
+  const patterns = [/\b(?:src|href)\s*=\s*["']([^"'#?]+)/gi, /["'`](\.{1,2}\/[^"'`#?\s]+)/g];
+  for (const pattern of patterns) {
+    for (const [, ref] of html.matchAll(pattern)) {
+      if (/^(?:[a-z][a-z0-9+.-]*:|\/)/i.test(ref)) continue;
+      let path;
+      try { path = decodeURI(ref); } catch { path = ref; }
+      const file = resolve(dirname(page), path);
+      const inside = relative(root, file);
+      if (!inside || inside.startsWith('..')) continue;
+      if ((await fs.stat(file).catch(() => null))?.isFile()) found.add(file);
+    }
+  }
+  return [...found];
 }
 
 const MIME = { '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.apng': 'image/apng', '.mp4': 'video/mp4', '.m4v': 'video/mp4', '.webm': 'video/webm', '.ogv': 'video/ogg', '.mov': 'video/quicktime', '.html': 'text/html', '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf', '.otf': 'font/otf', '.json': 'application/json', '.pdf': 'application/pdf', '.csv': 'text/csv', '.tsv': 'text/tab-separated-values', '.txt': 'text/plain' };
@@ -404,7 +438,9 @@ runDeck(await pdfDeck({
       }
     }
     const unpackedRecordings = new Set();
+    const copied = new Set();
     for (const { root, key, copyTo } of sources) {
+      const pages = [];
       for (const file of await collectAssets(root)) {
         if (file === markupPath) continue;
         const ext = extname(file).toLowerCase();
@@ -435,6 +471,18 @@ runDeck(await pdfDeck({
           }
           if (recording && basename(dirname(file)) === RECORDINGS) unpackedRecordings.add(dirname(target));
           await fs.copyFile(file, target);
+          copied.add(target);
+          if (['.html', '.htm'].includes(ext)) pages.push(file);
+        }
+      }
+      // The scripts and styles the deck's web pages load travel with them, even from a dist folder.
+      for (const page of pages) {
+        for (const file of await pageReferences(page, root)) {
+          const target = copyTo(file);
+          if (copied.has(target)) continue;
+          await fs.mkdir(dirname(target), { recursive: true });
+          await fs.copyFile(file, target);
+          copied.add(target);
         }
       }
     }

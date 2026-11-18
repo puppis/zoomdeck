@@ -68,7 +68,11 @@ zoomdeck build path/to/slides.md -o out
 ```
 
 This writes `out/index.html`, `out/assets/` (the player, split in chunks loaded on demand) and
-`out/deck/` (your Markdown and assets as files). Host or copy the whole folder. Because the player
+`out/deck/` (your Markdown and assets as files). Links in the deck folder are followed, to folders
+too, so a deck may link a folder it shares with others (`animations -> ../../animations`) and the
+export holds real files. The deck's own scripts and `dist`/`build` folders stay behind, except the
+files an embedded web page loads by a relative path, including the paths its scripts try
+(`'../dist/library.js'`): those travel with the page. Host or copy the whole folder. Because the player
 is loaded as ES modules, browsers need the folder served over HTTP rather than opened from disk;
 any static server works, for example:
 
