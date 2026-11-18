@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import { resolve } from 'node:path';
 import { dropEngineMuxers } from './vite.config';
 
-// Library build: dist/zoomdeck.js (ES module) for npm consumers. The rendering
+// Library build: dist/zoomdown.js (ES module) for npm consumers. The rendering
 // engine and the other runtime dependencies stay external (pdf.js too, loaded only when a PDF
 // is opened; its worker travels as a chunk of its own); fonts and the player stylesheet are inlined.
 const stub = resolve(__dirname, 'src/stubs/empty.ts');
@@ -19,7 +19,7 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     sourcemap: true,
-    lib: { entry: resolve(__dirname, 'src/index.ts'), formats: ['es'], fileName: 'zoomdeck' },
+    lib: { entry: resolve(__dirname, 'src/index.ts'), formats: ['es'], fileName: 'zoomdown' },
     rollupOptions: { external: ['manim-web', 'three', 'markdown-it', 'gifuct-js', 'roughjs', 'pdfjs-dist', /^three\//] },
   },
 });

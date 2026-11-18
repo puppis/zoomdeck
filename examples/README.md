@@ -1,7 +1,7 @@
 # Example decks
 
 Open a deck on the development page (`npm run dev`, then `http://localhost:5173/?deck=...`) or
-preview it with `node bin/zoomdeck.mjs serve <deck>`.
+preview it with `node bin/zoomdown.mjs serve <deck>`.
 
 | Deck | Open with | What it shows |
 | --- | --- | --- |

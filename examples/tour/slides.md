@@ -1,5 +1,5 @@
 ---
-title: Zoomdeck tour
+title: ZoomDown tour
 classes: code-slides.ts
 viewport: 16x9
 layout:
@@ -25,17 +25,17 @@ heading: color=BLUE_E
 
 <!-- The documentation link of every chapter, written once: [[snippet: docs id=NAME page=PAGE]] on a slide expands to the line below with its placeholders filled. -->
 ::: snippet docs
-[Documentation ↗]{#{{id}}-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdeck/{{page}}}
+[Documentation ↗]{#{{id}}-docs x=9.35 y=5.0 anchor=right-baseline font_size=17 color=GRAY href=https://puppis.github.io/zoomdown/{{page}}}
 :::
 
 ::: slide {#tour width=44}
-# Zoomdeck {x=-21.35 y=11.4}
+# ZoomDown {x=-21.35 y=11.4}
 
-Zoomdeck makes zooming presentations: a forest of slides written in Markdown, most often a single tree, with formulas, images, diagrams and animations, that the browser plays by zooming into each slide and back out; the places where it pauses are its stops. The first seven chapters show what it does; the six sections that follow cover the dialect and the player in full, each chapter next to the markup that produces it. Press → to follow the slides in order, pick a slide from the outline (O), or click a chapter to jump to it. {x=-21.35 y=10.2 width=34 font_size=28}
+ZoomDown makes zooming presentations: a forest of slides written in Markdown, most often a single tree, with formulas, images, diagrams and animations, that the browser plays by zooming into each slide and back out; the places where it pauses are its stops. The first seven chapters show what it does; the six sections that follow cover the dialect and the player in full, each chapter next to the markup that produces it. Press → to follow the slides in order, pick a slide from the outline (O), or click a chapter to jump to it. {x=-21.35 y=10.2 width=34 font_size=28}
 
-[Documentation ↗]{#doc-link x=21.35 y=11.4 anchor=right-baseline font_size=26 color=BLUE_E href=https://puppis.github.io/zoomdeck/}
+[Documentation ↗]{#doc-link x=21.35 y=11.4 anchor=right-baseline font_size=26 color=BLUE_E href=https://puppis.github.io/zoomdown/}
 
-[Source on GitHub ↗]{#github-link x=21.35 y=10.4 anchor=right-baseline font_size=26 color=BLUE_E href=https://github.com/puppis/zoomdeck}
+[Source on GitHub ↗]{#github-link x=21.35 y=10.4 anchor=right-baseline font_size=26 color=BLUE_E href=https://github.com/puppis/zoomdown}
 
 [1 · A PDF, as it is]{#root-cap-feat-pdf x=-16.5 y=5.35 anchor=bottom font_size=22 color=BLUE_E href=#slide=feat-pdf}
 [[include: #feat-pdf x=-16.5 y=2.6 width=8.6 skip_return=true preview=true]]
@@ -107,11 +107,11 @@ Everything a slide can hold and everything the player does, one chapter per topi
 
 [[snippet: docs id=feat-pdf page=features.html#a-pdf-as-it-is]]
 
-Zoomdeck opens a PDF directly: a paper, a poster, slides typeset elsewhere. Each page is a slide, the pages are visited first to last with a cut between them, the bookmarks of the document name them in the outline, and the text stays sharp at any zoom, since pages are drawn at the density of the screen. {x=-9.35 y=3.9 width=8.6 font_size=20}
+ZoomDown opens a PDF directly: a paper, a poster, slides typeset elsewhere. Each page is a slide, the pages are visited first to last with a cut between them, the bookmarks of the document name them in the outline, and the text stays sharp at any zoom, since pages are drawn at the density of the screen. {x=-9.35 y=3.9 width=8.6 font_size=20}
 
 ```bash {#feat-pdf-cmd x=-9.35 y=0.6 width=8.6}
-zoomdeck serve paper.pdf
-zoomdeck build paper.pdf -o out
+zoomdown serve paper.pdf
+zoomdown build paper.pdf -o out
 ```
 
 [[rectangle: #feat-pdf-frame x=4.3 y=-0.5 width=10.2 height=5.74 color=GRAY stroke_width=1]]
@@ -333,7 +333,7 @@ Formulas are LaTeX, rendered by MathJax and zoomable like everything else. Diagr
 
 A deck is a forest of slides, and a slide holds prose, formulas, images, listings, tables and charts. These chapters cover everything a slide can contain. {x=-17.35 y=8.1 width=27 font_size=28}
 
-[Documentation: Slides and content ↗]{#sec-content-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/slides.html}
+[Documentation: Slides and content ↗]{#sec-content-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdown/slides.html}
 
 [Back to the overview]{#sec-content-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=tour}
 
@@ -367,7 +367,7 @@ A deck is a forest of slides, and a slide holds prose, formulas, images, listing
 
 Playing a deck: keys, the spotlight and laser, the pen and the whiteboard, the camera, links and the PDF printout in the player; a page to try a pen or a tablet; and recording a talk that plays back on the deck or exports as a video. {x=-17.35 y=8.1 width=27 font_size=28}
 
-[Documentation: Presenting ↗]{#sec-presenting-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/player.html}
+[Documentation: Presenting ↗]{#sec-presenting-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdown/player.html}
 
 [Back to the overview]{#sec-presenting-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=tour}
 
@@ -389,7 +389,7 @@ Playing a deck: keys, the spotlight and laser, the pen and the whiteboard, the c
 
 Shapes, arrows and lines, braces and boxes, icons and blobs, drawn crisply or by hand: the building blocks of diagrams. {x=-17.35 y=8.1 width=27 font_size=28}
 
-[Documentation: Diagrams ↗]{#sec-diagrams-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/shapes.html}
+[Documentation: Diagrams ↗]{#sec-diagrams-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdown/shapes.html}
 
 [Back to the overview]{#sec-diagrams-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=tour}
 
@@ -419,7 +419,7 @@ Shapes, arrows and lines, braces and boxes, icons and blobs, drawn crisply or by
 
 Where elements go and how they look: the vertical flow, coordinates and anchors, relative constraints, groups, style sheets, and the front matter that sets the deck's title, proportions, fonts and colors. {x=-17.35 y=8.1 width=27 font_size=28}
 
-[Documentation: Layout and style ↗]{#sec-layout-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/positioning.html}
+[Documentation: Layout and style ↗]{#sec-layout-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdown/positioning.html}
 
 [Back to the overview]{#sec-layout-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=tour}
 
@@ -449,7 +449,7 @@ Where elements go and how they look: the vertical flow, coordinates and anchors,
 
 What happens on each click: fragments that appear and disappear, decorations seen only in focus, animations, video, live pages and going back. {x=-17.35 y=8.1 width=27 font_size=28}
 
-[Documentation: Motion and interaction ↗]{#sec-motion-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/fragments.html}
+[Documentation: Motion and interaction ↗]{#sec-motion-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdown/fragments.html}
 
 [Back to the overview]{#sec-motion-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=tour}
 
@@ -475,7 +475,7 @@ What happens on each click: fragments that appear and disappear, decorations see
 
 Larger decks: the order in which children are visited, splitting the markup into files, and slides written in TypeScript. {x=-17.35 y=8.1 width=27 font_size=28}
 
-[Documentation: Forests, files and code ↗]{#sec-structure-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdeck/slides.html#visit-order}
+[Documentation: Forests, files and code ↗]{#sec-structure-docs x=17.35 y=9.2 anchor=right-baseline font_size=24 color=BLUE_E href=https://puppis.github.io/zoomdown/slides.html#visit-order}
 
 [Back to the overview]{#sec-structure-up x=17.35 y=8.2 anchor=right-baseline font_size=24 color=BLUE_E href=#slide=tour}
 
@@ -660,7 +660,7 @@ Raster files may be PNG, JPEG, GIF or WebP. A multi-frame APNG or GIF animates w
 
 **Tablet.** A tablet on the same network pairs from the settings and draws on the deck. {#player-tablet below:#player-links left-aligned:#player-links buff=0.5 width=9 font_size=20}
 
-**Export** (X) writes the deck as a single HTML file with the player, fonts and assets embedded (this tour is such a file) or as a static folder, where `zoomdeck serve` or the app shows it; `zoomdeck build` does the same. Print writes a PDF, a page per stop or per slide. {#player-export below:#player-tablet left-aligned:#player-tablet buff=0.5 width=9 font_size=20}
+**Export** (X) writes the deck as a single HTML file with the player, fonts and assets embedded (this tour is such a file) or as a static folder, where `zoomdown serve` or the app shows it; `zoomdown build` does the same. Print writes a PDF, a page per stop or per slide. {#player-export below:#player-tablet left-aligned:#player-tablet buff=0.5 width=9 font_size=20}
 
 Every key and gesture can be changed in the settings (,), which also hold the pen, the recording devices and the tablet pairing. {#player-more x=-9.35 y=-4.6 width=18.7 font_size=16 color=GRAY}
 :::
@@ -686,7 +686,7 @@ Every key and gesture can be changed in the settings (,), which also hold the pe
 
 [[arrow: (-9.2,-3.6) -> (-1.0,-3.6), #tablet-arrow, color=GRAY, stroke_width=1]]
 
-1. **Pair.** Start the preview so that the tablet can reach it (for this tour, `zoomdeck serve examples/tour/slides.md --host` from the checkout, or `npm run dev -- --host`). Open the settings here (⚙ or ,), choose "Show the pairing code" under Tablet and scan it with the tablet, over Wi-Fi or over the cable with Internet Sharing to the iPad switched on. {x=0.6 width=9 font_size=18}
+1. **Pair.** Start the preview so that the tablet can reach it (for this tour, `zoomdown serve examples/tour/slides.md --host` from the checkout, or `npm run dev -- --host`). Open the settings here (⚙ or ,), choose "Show the pairing code" under Tablet and scan it with the tablet, over Wi-Fi or over the cable with Internet Sharing to the iPad switched on. {x=0.6 width=9 font_size=18}
 2. **Trace** the wave and the circle on the tablet: the lines should appear here as you draw, without a visible delay. {x=0.6 width=9 font_size=18}
 3. **Press** lightly, then harder, along the strip: the width should follow. The Pen settings decide how much and redraw the strokes. {x=0.6 width=9 font_size=18}
 4. **Rest your palm** on the glass while writing in the box: a finger never draws. {x=0.6 width=9 font_size=18}
@@ -699,7 +699,7 @@ Every key and gesture can be changed in the settings (,), which also hold the pe
 These are the presenter's notes of the tablet chapter: written in a `::: notes` block of the slide, shown here and nowhere else.
 
 - The audience screen never shows them, nor does a printout.
-- `zoomdeck build --without-notes` leaves them out of an export handed to the audience.
+- `zoomdown build --without-notes` leaves them out of an export handed to the audience.
 :::
 
 Without a tablet the same checks work with a mouse, whose strokes take their width from the speed of the hand, or with a graphics tablet plugged into the computer, which draws with pressure directly. {x=-9.35 y=-4.5 width=19 font_size=18 color=GRAY}
@@ -730,7 +730,7 @@ A recording keeps your voice, the camera while you have it on, and every move on
 
 1. **Set up** once: ⚙ settings ▸ Recording ▸ Detect devices; choose the microphone and the camera, test them, and pick the corner and size of your picture. {x=2.3 width=7.4 font_size=17}
 2. **Record** with R or the ● Record button; a dialog says what will be kept, then the header counts the time. Present as usual: keys, pen, W for the whiteboard, the Camera button or C for the camera (in a corner, full frame, off), recorded while it is on; S shares the screen, which is filmed as a stream of its own whenever the deck loses the focus, to another application, a tab or a live page, and until it gets it back, the camera staying as you set it; the computer's sound comes with the share where the browser offers it. A pause leaves no gap: the talk resumes where it stopped. {x=2.3 width=7.4 font_size=17}
-3. **Stop** saves the talk in `recordings/` next to the deck when the deck is served by `zoomdeck serve`, and R later offers to continue it; elsewhere it downloads a zip and offers a video of the talk. {x=2.3 width=7.4 font_size=17}
+3. **Stop** saves the talk in `recordings/` next to the deck when the deck is served by `zoomdown serve`, and R later offers to continue it; elsewhere it downloads a zip and offers a video of the talk. {x=2.3 width=7.4 font_size=17}
 4. **Play** it with ▶ Talk in the footer: the deck follows the recording; Space pauses, ← and → seek, Esc leaves. {x=2.3 width=7.4 font_size=17}
 5. **Render video** in the list of talks, or **Export** (X), makes one video file of it: slides or whiteboard with ink, camera in a corner or full frame, and the sound. {x=2.3 width=7.4 font_size=17}
 
@@ -744,7 +744,7 @@ Try it on this very slide: record a few seconds, draw, turn the camera on with C
 
 ```markdown {#shapes-source x=-9.35 y=3.9 width=18.7}
 [[rectangle: #box x=-6.5 y=-1.5 width=3.4 height=1.8 corner_radius=0.3 color=BLUE_E fill_opacity=0.15]]
-[[circle: #disk right-of:#box buff=2.5 radius=0.9 color=GREEN_E href=https://puppis.github.io/zoomdeck/]]
+[[circle: #disk right-of:#box buff=2.5 radius=0.9 color=GREEN_E href=https://puppis.github.io/zoomdown/]]
 [[polyline: #zigzag points="(3,-2.4) (5,-0.6) (7,-2.2) (9,-0.4)" color=ORANGE]]
 [[arrow: #box -> #disk, #edge, label="**labeled** $\to$", bend=20]]
 [[line: #disk -> (1,-3.1), #drop, color=GRAY, dashed=true, label="slanted", slanted=true]]
@@ -753,7 +753,7 @@ Try it on this very slide: record a few seconds, draw, turn the camera on with C
 
 [[rectangle: #box x=-6.5 y=-1.5 width=3.4 height=1.8 corner_radius=0.3 color=BLUE_E fill_opacity=0.15]]
 
-[[circle: #disk right-of:#box buff=2.5 radius=0.9 color=GREEN_E href=https://puppis.github.io/zoomdeck/]]
+[[circle: #disk right-of:#box buff=2.5 radius=0.9 color=GREEN_E href=https://puppis.github.io/zoomdown/]]
 
 [[polyline: #zigzag points="(3,-2.4) (5,-0.6) (7,-2.2) (9,-0.4)" color=ORANGE]]
 
@@ -1045,7 +1045,7 @@ A `::: {.group #id}` container lays out its members in their own coordinates and
 
 ```yaml {#front-matter x=-9.35 y=3.9 width=9.1}
 ---
-title: Zoomdeck tour
+title: ZoomDown tour
 classes: code-slides.ts
 viewport: 16x9
 layout: { fontSize: 26, headingSize: 40, codeSize: 19 }
@@ -1059,16 +1059,16 @@ macros:
 
 ```bash {#cli x=0.6 y=3.9 width=9.1}
 # live preview: reloads on save, keeps your position
-zoomdeck serve examples/tour/slides.md
+zoomdown serve examples/tour/slides.md
 
 # a static folder, or one self-contained HTML file
-zoomdeck build examples/tour/slides.md \
+zoomdown build examples/tour/slides.md \
   -o build/tour --one-file
 ```
 
 The deck is its Markdown: the front matter between `---` lines at its top sets the title, the proportions, `layout`, `presenter`, `macros`, `styles` and the slide `classes`; `extends:` builds on a file of shared settings. {#config-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-The `zoomdeck` command previews a deck with live reload and exports it as a folder or as one file; the editor integrations described in the documentation bind both to shortcuts. {#config-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
+The `zoomdown` command previews a deck with live reload and exports it as a folder or as one file; the editor integrations described in the documentation bind both to shortcuts. {#config-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::
 
 ::: slide {#fragments width=20}
@@ -1269,7 +1269,7 @@ Table: `rules` (all, rows, cols, outer, none), `border_color`, `header_color`, `
 ```typescript {#orbit-source x=-9.35 y=2.9 width=9.1 font_size=14}
 import { BLUE_E, Circle, Dot, GOLD_E, MoveAlongPath, linear }
   from 'manim-web';
-import { Slide, type SlideContext } from 'zoomdeck';
+import { Slide, type SlideContext } from 'zoomdown';
 
 export class Orbit extends Slide {
   override build(ctx: SlideContext) {

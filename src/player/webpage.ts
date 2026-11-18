@@ -1,11 +1,11 @@
 /**
- * The deck as a web page, from the player: the preview server builds it as `zoomdeck build` does
+ * The deck as a web page, from the player: the preview server builds it as `zoomdown build` does
  * (bin/export.mjs), and this page takes the result into a folder the viewer chose, or the
  * browser's downloads, or has the server copy it into the `build/` folder next to the deck.
  */
 import type { DeckFile } from '../deck';
 
-const ENDPOINT = '/__zoomdeck/export';
+const ENDPOINT = '/__zoomdown/export';
 
 /** One self-contained HTML file, or a folder of files for a web server. */
 export type WebPageForm = 'file' | 'folder';

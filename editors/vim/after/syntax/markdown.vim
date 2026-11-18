@@ -1,18 +1,18 @@
-" Highlighting of Zoomdeck containers, directives and attributes on top of Markdown.
-syntax match zoomdeckContainer /^\s*:::\s*\%(slide\|styles\)\?/ contains=zoomdeckKeyword
-syntax match zoomdeckKeyword /\<\%(slide\|styles\)\>/ contained
-syntax match zoomdeckDirective /^\s*\[\[[a-z_]\+:/ contains=zoomdeckDirectiveName
-syntax match zoomdeckDirectiveName /[a-z_]\+/ contained
-syntax match zoomdeckDirectiveEnd /\]\]\s*$/
-syntax match zoomdeckId /#[[:alpha:]_][[:alnum:]_.-]*/
-syntax match zoomdeckAttribute /\<[[:alpha:]_][[:alnum:]_-]*\ze=/
-syntax match zoomdeckArrow /->/
+" Highlighting of ZoomDown containers, directives and attributes on top of Markdown.
+syntax match zoomdownContainer /^\s*:::\s*\%(slide\|styles\)\?/ contains=zoomdownKeyword
+syntax match zoomdownKeyword /\<\%(slide\|styles\)\>/ contained
+syntax match zoomdownDirective /^\s*\[\[[a-z_]\+:/ contains=zoomdownDirectiveName
+syntax match zoomdownDirectiveName /[a-z_]\+/ contained
+syntax match zoomdownDirectiveEnd /\]\]\s*$/
+syntax match zoomdownId /#[[:alpha:]_][[:alnum:]_.-]*/
+syntax match zoomdownAttribute /\<[[:alpha:]_][[:alnum:]_-]*\ze=/
+syntax match zoomdownArrow /->/
 
-highlight default link zoomdeckContainer PreProc
-highlight default link zoomdeckKeyword Keyword
-highlight default link zoomdeckDirective PreProc
-highlight default link zoomdeckDirectiveName Keyword
-highlight default link zoomdeckDirectiveEnd PreProc
-highlight default link zoomdeckId Identifier
-highlight default link zoomdeckAttribute Type
-highlight default link zoomdeckArrow Operator
+highlight default link zoomdownContainer PreProc
+highlight default link zoomdownKeyword Keyword
+highlight default link zoomdownDirective PreProc
+highlight default link zoomdownDirectiveName Keyword
+highlight default link zoomdownDirectiveEnd PreProc
+highlight default link zoomdownId Identifier
+highlight default link zoomdownAttribute Type
+highlight default link zoomdownArrow Operator

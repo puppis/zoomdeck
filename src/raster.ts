@@ -410,7 +410,7 @@ export class RasterImage extends Mobject implements SnapshotExtra {
         RasterImage.onUpdate?.();
       }
     } catch (error) {
-      console.error('[zoomdeck] raster frame failed', error);
+      console.error('[zoomdown] raster frame failed', error);
       this._shown = this._target;
     }
   }

@@ -5,7 +5,7 @@
  * plays it like a built-in effect.
  */
 import { thereAndBack, type Mobject } from 'manim-web';
-import { PropertyAnimation, type EffectOptions } from 'zoomdeck';
+import { PropertyAnimation, type EffectOptions } from 'zoomdown';
 
 export default function pulse(target: Mobject, { scale = 1.3, color: _color, ...timing }: EffectOptions) {
   return new PropertyAnimation(target, { scale }, { ...timing, rateFunc: thereAndBack });

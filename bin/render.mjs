@@ -1,7 +1,7 @@
 /**
  * Rendering a recorded talk into one flat video file, off the clock. The page renders the deck
  * frames (see src/player/render.ts) and sends them here as PNG pictures, each with the time it
- * is shown from, through `POST /__zoomdeck/render`; at the end it sends the plan, and ffmpeg
+ * is shown from, through `POST /__zoomdown/render`; at the end it sends the plan, and ffmpeg
  * composes the video: the deck frames, the camera in its corner or full frame and the screen
  * whole, taken from the talk's bundle, with the sound. The result is `recordings/<name>.mp4`
  * (H.264 and AAC, which every player and phone reads). A job's state is kept in
@@ -20,9 +20,9 @@ import { readDirectory, readEntry } from './bundle.mjs';
 /** Where ffmpeg may be when it is not on PATH (an app started from the Finder sees a short PATH). */
 const FFMPEG_PLACES = ['/opt/homebrew/bin/ffmpeg', '/usr/local/bin/ffmpeg', '/usr/bin/ffmpeg', 'C:\\ffmpeg\\bin\\ffmpeg.exe', 'C:\\Program Files\\ffmpeg\\bin\\ffmpeg.exe'];
 
-/** The ffmpeg executable: `ZOOMDECK_FFMPEG`, the one on PATH, or one of the usual places; null when there is none. */
+/** The ffmpeg executable: `ZOOMDOWN_FFMPEG`, the one on PATH, or one of the usual places; null when there is none. */
 export function findFfmpeg() {
-  const named = process.env.ZOOMDECK_FFMPEG;
+  const named = process.env.ZOOMDOWN_FFMPEG;
   if (named && existsSync(named)) return named;
   return findExecutable(['ffmpeg']) ?? FFMPEG_PLACES.find((place) => existsSync(place)) ?? null;
 }
@@ -356,12 +356,12 @@ async function compose(job, plan) {
     job.progress = 1;
     await persist(job);
     await writeIndex(job.folder);
-    console.log(`[zoomdeck] Rendered ${join(FOLDER, `${job.output}.mp4`)}`);
+    console.log(`[zoomdown] Rendered ${join(FOLDER, `${job.output}.mp4`)}`);
   } catch (error) {
     job.status = 'failed';
     job.error = error.message;
     await persist(job);
-    console.error(`[zoomdeck] Rendering ${job.output} failed: ${error.message}`);
+    console.error(`[zoomdown] Rendering ${job.output} failed: ${error.message}`);
   }
 }
 
@@ -429,9 +429,9 @@ function readBody(request, limit) {
  */
 export function renderStore({ roots = [], openPage = null } = {}) {
   return {
-    name: 'zoomdeck-render',
+    name: 'zoomdown-render',
     configureServer(server) {
-      server.middlewares.use('/__zoomdeck/render', async (request, response) => {
+      server.middlewares.use('/__zoomdown/render', async (request, response) => {
         const url = new URL(request.url ?? '/', 'http://localhost');
         const folder = deckFolderFor(url.searchParams.get('deck') ?? '', roots.length ? roots : [server.config.root], server.config.root);
         try {

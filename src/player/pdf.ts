@@ -141,7 +141,7 @@ export function buildPdf(document: PdfDocument, now = new Date()): Uint8Array {
   const kids = document.pages.map((_, i) => `${pageObject(i)} 0 R`).join(' ');
   object(1, `<< /Type /Catalog /Pages 2 0 R${outline.length ? ` /Outlines ${outlineRoot} 0 R /PageMode /UseOutlines` : ''} >>`);
   object(2, `<< /Type /Pages /Kids [${kids}] /Count ${pageCount} >>`);
-  object(3, `<< /Producer (Zoomdeck)${document.title ? ` /Title ${pdfString(document.title)}` : ''}${document.author ? ` /Author ${pdfString(document.author)}` : ''} /CreationDate ${pdfDate(now)} >>`);
+  object(3, `<< /Producer (ZoomDown)${document.title ? ` /Title ${pdfString(document.title)}` : ''}${document.author ? ` /Author ${pdfString(document.author)}` : ''} /CreationDate ${pdfDate(now)} >>`);
   const { pageWidth, pageHeight } = document;
   document.pages.forEach((image, i) => {
     const page = pageObject(i);

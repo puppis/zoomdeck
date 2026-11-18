@@ -1,9 +1,9 @@
 /**
  * Build the documentation site: every `docs/site/*.md` page and `docs/site/*.ipynb` notebook
  * becomes `docs/html/<name>.html` with a shared layout, navigation, previous/next links and
- * code listings highlighted by the same tokenizer the slides use. A ```zoomdeck fence in a
+ * code listings highlighted by the same tokenizer the slides use. A ```zoomdown fence in a
  * page is a live deck, played in the page by the self-contained player (`npm run
- * build:standalone`, copied to docs/html/zoomdeck/), next to its markup; a notebook's cells
+ * build:standalone`, copied to docs/html/zoomdown/), next to its markup; a notebook's cells
  * keep the decks their outputs hold, and open live in JupyterLite (`npm run docs:lite`).
  *
  *   npm run docs
@@ -24,12 +24,12 @@ const outDir = join(root, 'docs', 'html');
 const standaloneDir = join(root, 'dist', 'standalone');
 
 /**
- * Navigation: sections and their pages in reading order, from the overview of what Zoomdeck
+ * Navigation: sections and their pages in reading order, from the overview of what ZoomDown
  * does to the reference. The sidebar, the pager and the map on the index page all follow it; a
  * page's `##` headings are its subsections.
  */
 const NAV: Array<{ title: string; blurb: string; pages: string[] }> = [
-  { title: 'Features overview', blurb: 'What Zoomdeck does, shown live: a PDF, plain slides, a tree of slides, the spotlight and the pen, the camera and recording, formulas, diagrams and animations.', pages: ['index', 'features'] },
+  { title: 'Features overview', blurb: 'What ZoomDown does, shown live: a PDF, plain slides, a tree of slides, the spotlight and the pen, the camera and recording, formulas, diagrams and animations.', pages: ['index', 'features'] },
   { title: 'Getting started', blurb: 'Install, open and export a deck, set up your editor, the desktop app, and what a slide, a viewport and a stop are.', pages: ['getting-started', 'concepts', 'editors', 'desktop'] },
   { title: 'Presenting', blurb: 'The player and its tools: keys, spotlight and laser, the pen and the whiteboard, the camera, recording a talk, printing the deck, exporting it to a folder or a single file.', pages: ['player', 'exporting'] },
   { title: 'Writing slides', blurb: 'Two notebooks to try: a first deck built stage by stage, and the content of a slide; then a PDF shown as it is and a file of plain slides, the forest of slides, and prose, formulas, images, listings, tables and charts in detail.', pages: ['first-deck', 'content', 'documents', 'slides', 'text', 'math', 'images', 'code', 'tables-charts'] },
@@ -78,7 +78,7 @@ function slug(text: string): string {
   return text.toLowerCase().replace(/<[^>]+>/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
-/** The attributes of a ```zoomdeck fence: `key=value`, `key="a value"` or a bare flag. */
+/** The attributes of a ```zoomdown fence: `key=value`, `key="a value"` or a bare flag. */
 function fenceAttributes(info: string): Record<string, string> {
   const attributes: Record<string, string> = {};
   const pattern = /([a-z-]+)(?:=(?:"([^"]*)"|(\S+)))?/g;
@@ -87,14 +87,14 @@ function fenceAttributes(info: string): Record<string, string> {
 }
 
 /**
- * A live deck for a ```zoomdeck fence: the player in the page, its markup beside it. The fence
+ * A live deck for a ```zoomdown fence: the player in the page, its markup beside it. The fence
  * takes `src=path` (a PDF or a Markdown file instead of the fence's own text),
  * `without="…"` (features to leave out; the camera, the recorder and the screen unless said
  * otherwise, `without=none` keeps them all), `height=…`, `start=…`, `title=…`, `code=hidden`
  * or `code=closed` (the markup folded under the deck) and `caption="…"`.
  */
 function liveDeck(info: string, source: string): string {
-  const attrs = fenceAttributes(info.replace(/^zoomdeck\s*/, ''));
+  const attrs = fenceAttributes(info.replace(/^zoomdown\s*/, ''));
   const without = attrs.without === 'none' ? '' : attrs.without ?? DOCS_WITHOUT;
   const element: string[] = [];
   if (attrs.src) element.push(`src="${escapeHtml(attrs.src)}"`);
@@ -109,7 +109,7 @@ function liveDeck(info: string, source: string): string {
   // The markup follows the deck, folded away on request, never beside it: the deck keeps the whole width.
   const code = showCode ? `<details class="markup"${attrs.code === 'closed' ? '' : ' open'}><summary>The markup</summary><pre><code>${highlight(markup, 'markdown')}</code></pre></details>` : '';
   const caption = attrs.caption ? `<figcaption>${escapeHtml(attrs.caption)}</figcaption>` : '';
-  return `<figure class="live">\n<zoom-deck ${element.join(' ')}>${inline}</zoom-deck>\n${code}${caption}\n</figure>\n`;
+  return `<figure class="live">\n<zoom-down ${element.join(' ')}>${inline}</zoom-down>\n${code}${caption}\n</figure>\n`;
 }
 
 /** A Markdown renderer with heading anchors (collected into `headings`), admonitions and live decks. */
@@ -139,10 +139,10 @@ function makeMarkdown(headings: Page['headings'], entries: Page['entries'] = [])
     if (['Note', 'Tip', 'Warning'].includes(label)) return `<blockquote class="admonition ${label.toLowerCase()}">`;
     return defaultBlockquote(tokens, index, options, env, self);
   };
-  // ```zoomdeck fences become live decks.
-  md.core.ruler.push('zoomdeck', (state) => {
+  // ```zoomdown fences become live decks.
+  md.core.ruler.push('zoomdown', (state) => {
     for (const token of state.tokens) {
-      if (token.type !== 'fence' || !/^zoomdeck(\s|$)/.test(token.info.trim())) continue;
+      if (token.type !== 'fence' || !/^zoomdown(\s|$)/.test(token.info.trim())) continue;
       token.type = 'html_block';
       token.content = liveDeck(token.info.trim(), token.content);
     }
@@ -222,7 +222,7 @@ interface NotebookCell {
 
 interface Notebook {
   cells: NotebookCell[];
-  metadata?: { zoomdeck?: { title?: string; description?: string } };
+  metadata?: { zoomdown?: { title?: string; description?: string } };
 }
 
 const text = (value: string | string[] | undefined): string => (Array.isArray(value) ? value.join('') : value ?? '');
@@ -230,12 +230,12 @@ const text = (value: string | string[] | undefined): string => (Array.isArray(va
 /**
  * A notebook as a page: Markdown cells as prose, code cells as listings followed by their
  * outputs (HTML outputs verbatim, so the decks they hold play in the page), and a badge that
- * opens the notebook live in JupyterLite. The title comes from the notebook's `zoomdeck`
+ * opens the notebook live in JupyterLite. The title comes from the notebook's `zoomdown`
  * metadata or from a leading `#` heading, which the layout prints itself.
  */
 function parseNotebook(name: string, json: string): Page {
   const notebook = JSON.parse(json) as Notebook;
-  const meta = notebook.metadata?.zoomdeck ?? {};
+  const meta = notebook.metadata?.zoomdown ?? {};
   const headings: Page['headings'] = [];
   const md = makeMarkdown(headings);
   let title = meta.title;
@@ -260,7 +260,7 @@ function parseNotebook(name: string, json: string): Page {
       const data = output.data ?? {};
       if (data['text/html']) {
         // The helper's own loader tag goes: the page loads the player once, under its version.
-        const html = text(data['text/html']).replace(/<script type="module" src="[^"]*zoomdeck\.js"><\/script>\s*/g, '');
+        const html = text(data['text/html']).replace(/<script type="module" src="[^"]*zoomdown\.js"><\/script>\s*/g, '');
         return `<div class="cell-output">${html}</div>`;
       }
       if (data['image/png']) return `<div class="cell-output"><img alt="" src="data:image/png;base64,${text(data['image/png']).replace(/\n/g, '')}"></div>`;
@@ -319,25 +319,25 @@ function layout(page: Page, pages: Map<string, Page>, order: string[]): string {
     ? `<nav class="outline" aria-label="On this page"><h4>On this page</h4><ul>${page.headings.map((h) => `<li><a href="#${h.id}">${escapeHtml(h.text)}</a></li>`).join('')}</ul></nav>`
     : '';
   // Pages with live decks load the self-contained player; the chunks it needs follow on demand.
-  const player = body.includes('<zoom-deck') ? `\n<script type="module" src="zoomdeck/zoomdeck.js${playerVersion ? `?v=${playerVersion}` : ''}"></script>` : '';
+  const player = body.includes('<zoom-down') ? `\n<script type="module" src="zoomdown/zoomdown.js${playerVersion ? `?v=${playerVersion}` : ''}"></script>` : '';
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${page.name === 'index' ? 'Zoomdeck' : `${escapeHtml(page.title)} · Zoomdeck`}</title>
+<title>${page.name === 'index' ? 'ZoomDown' : `${escapeHtml(page.title)} · ZoomDown`}</title>
 <meta name="description" content="${escapeHtml(page.description)}">
 <link rel="stylesheet" href="docs.css">${player}
 <script>
 // The side columns stay hidden or shown as the reader last left them, before the page paints.
-try { for (const side of ['nav', 'outline']) if (localStorage.getItem('zoomdeck-docs-' + side) === 'hidden') document.documentElement.classList.add(side + '-hidden'); } catch (e) {}
+try { for (const side of ['nav', 'outline']) if (localStorage.getItem('zoomdown-docs-' + side) === 'hidden') document.documentElement.classList.add(side + '-hidden'); } catch (e) {}
 </script>
 </head>
 <body>
 <a class="skip" href="#content">Skip to content</a>
 <header class="top">
   <button class="menu" aria-label="Toggle navigation" onclick="document.body.classList.toggle('nav-open')">☰</button>
-  <a class="brand" href="index.html">Zoomdeck</a>
+  <a class="brand" href="index.html">ZoomDown</a>
   <span class="tagline">zooming presentations in the browser</span>
   <form class="search" role="search" onsubmit="return false">
     <input type="search" id="search" placeholder="Search the documentation" aria-label="Search the documentation" autocomplete="off" aria-controls="search-results" aria-expanded="false">
@@ -354,7 +354,7 @@ for (const button of document.querySelectorAll('.side-toggle')) {
   const sync = () => button.setAttribute('aria-pressed', String(!document.documentElement.classList.contains(side + '-hidden')));
   button.addEventListener('click', () => {
     const hidden = document.documentElement.classList.toggle(side + '-hidden');
-    try { localStorage.setItem('zoomdeck-docs-' + side, hidden ? 'hidden' : 'shown'); } catch (e) {}
+    try { localStorage.setItem('zoomdown-docs-' + side, hidden ? 'hidden' : 'shown'); } catch (e) {}
     sync();
   });
   sync();
@@ -497,13 +497,13 @@ async function main(): Promise<void> {
   await fs.copyFile(join(sourceDir, 'docs.css'), join(outDir, 'docs.css'));
   // The files live decks load (a sample PDF, images) and the self-contained player they run in.
   if (await exists(join(sourceDir, 'live'))) await copyDir(join(sourceDir, 'live'), join(outDir, 'live'));
-  if (await exists(standaloneDir)) await copyDir(standaloneDir, join(outDir, 'zoomdeck'));
+  if (await exists(standaloneDir)) await copyDir(standaloneDir, join(outDir, 'zoomdown'));
   else console.warn('dist/standalone/ is missing: run `npm run build:standalone` first, or the live decks of the pages will not play');
   console.log(`Built ${pages.size} pages into docs/html/`);
   if (!process.argv.includes('--no-tour')) {
     // The tour deck as one self-contained page, so the documentation can open it anywhere.
-    const stage = await fs.mkdtemp(join(tmpdir(), 'zoomdeck-tour-'));
-    execFileSync(process.execPath, [join(root, 'bin', 'zoomdeck.mjs'), 'build', join(root, 'examples', 'tour', 'slides.md'), '-o', stage, '--one-file'], { stdio: 'inherit' });
+    const stage = await fs.mkdtemp(join(tmpdir(), 'zoomdown-tour-'));
+    execFileSync(process.execPath, [join(root, 'bin', 'zoomdown.mjs'), 'build', join(root, 'examples', 'tour', 'slides.md'), '-o', stage, '--one-file'], { stdio: 'inherit' });
     await fs.copyFile(join(stage, 'offline.html'), join(outDir, 'tour.html'));
     await fs.rm(stage, { recursive: true, force: true });
     console.log('Exported the tour deck to docs/html/tour.html');

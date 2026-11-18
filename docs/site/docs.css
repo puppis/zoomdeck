@@ -86,7 +86,7 @@ article img { max-width: 100%; border-radius: 8px; border: 1px solid var(--borde
 }
 /* Live decks: the player in the page, as wide as the text column, its markup folded under it. */
 figure.live { margin: 18px 0 28px; }
-figure.live zoom-deck { border: 1px solid var(--border); }
+figure.live zoom-down { border: 1px solid var(--border); }
 figure.live details.markup { margin: 8px 0 0; }
 figure.live details.markup summary { cursor: pointer; font-size: 13px; color: var(--muted); }
 figure.live details.markup pre { margin: 6px 0 0; max-height: 360px; overflow: auto; font-size: 12.5px; }
@@ -95,7 +95,7 @@ figure.live figcaption { font-size: 14px; color: var(--muted); margin-top: 6px; 
 .cell { margin: 14px 0 24px; }
 .cell pre.cell-input { margin: 0 0 8px; border-left: 4px solid var(--accent); }
 .cell .cell-output, .cell pre.cell-output { margin: 0; }
-.cell .cell-output zoom-deck { border: 1px solid var(--border); }
+.cell .cell-output zoom-down { border: 1px solid var(--border); }
 .cell pre.cell-stream { background: var(--sidebar-bg); color: var(--fg); }
 .cell pre.cell-error { background: var(--warn); color: var(--fg); }
 .cell .cell-magic { color: var(--tk-comment); }

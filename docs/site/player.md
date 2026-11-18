@@ -95,7 +95,7 @@ With the default gestures:
   click behave like the `→` key.
 
 - **Alt + click** an element to open its source line in your editor, when the deck is served by
-  `zoomdeck serve --editor …` (the element nearest to the pointer counts, a text inside a tile
+  `zoomdown serve --editor …` (the element nearest to the pointer counts, a text inside a tile
   before the tile); the `E` key opens the line of the current stop. See
   [Editors](editors.html#forward-and-inverse-search).
 - **Click** a link to follow it, that is a press and release without movement: a Markdown link, or
@@ -164,7 +164,7 @@ vector ink on top. The page therefore loads at once on any tablet, answers the p
 immediately, and accepts no gesture other than drawing: a pencil or a finger never selects,
 scrolls or zooms anything.
 
-1. Serve the deck so that other devices can reach it: `zoomdeck serve talk/slides.md --host`, or
+1. Serve the deck so that other devices can reach it: `zoomdown serve talk/slides.md --host`, or
    `npm run dev -- --host` from the checkout. Pairing needs this server; an exported HTML file
    opened from disk cannot pair. The server answers to its addresses, to any `.local` name and
    to the computer's own host name; a request under another name is refused, as a guard against
@@ -203,7 +203,7 @@ current step's, rendered from their Markdown. The Notes button on the tablet fol
 away and brings it back; it is absent while the stop has no notes. The presenter decides whether
 notes go to the tablets at all, with a checkbox in the Tablet section of the settings, on by
 default. The notes are part of the deck, so an export meant for the audience is made with
-`zoomdeck build --without-notes`.
+`zoomdown build --without-notes`.
 
 The pad follows the presentation and cannot move it, so a stray touch never changes the slide.
 Strokes, undo, redo, clear, and the whiteboard with its scrolling are shared both ways; each
@@ -276,7 +276,7 @@ and survives edits to the deck that leave its slides in place; the player warns 
 changed since the talk was recorded.
 
 The header shows the running time while recording. **Pause** stops both the microphone and the
-clock, and resuming leaves the gap out of the talk. When the deck is served by `zoomdeck serve`,
+clock, and resuming leaves the gap out of the talk. When the deck is served by `zoomdown serve`,
 the desktop app or the development page, the bundle is written in the `recordings/` folder next
 to the deck *while you talk*: each media file begins in it as its capture starts and receives its
 chunks second by second, and **Stop** only adds the timeline and the archive's directory, a few
@@ -290,7 +290,7 @@ continued. Until the page closes the talk also stays in the list of talks, to pl
 export, and a panel offers to make a video of it at once (**Make the video now**): the page
 composes the recorded tracks into a WebM file while the talk plays once, in real time, and saves
 it where you choose (Chrome and Edge) or in the downloads. The zip keeps the tracks apart for
-Zoomdeck; the video plays anywhere. The recording is named after the date and time,
+ZoomDown; the video plays anywhere. The recording is named after the date and time,
 `talk-2026-11-13-1030`.
 
 **Filming the screen.** A talk may leave the deck for a while: a demonstration in another
@@ -393,8 +393,8 @@ recorded with, or full frame where the presenter switched to it. Your keys, taps
 deck, the pen, the whiteboard, the spotlight, links and the outline are off until you leave the
 recording, so that nothing of yours gets mixed with what the timeline replays.
 
-**Rendering a video.** A talk is a bundle that only Zoomdeck plays; a flat video file plays
-anywhere. Where the deck is served by `zoomdeck serve`, the desktop app or the development page
+**Rendering a video.** A talk is a bundle that only ZoomDown plays; a flat video file plays
+anywhere. Where the deck is served by `zoomdown serve`, the desktop app or the development page
 and the computer has [ffmpeg](https://ffmpeg.org), **Render video** in the list of talks, or
 **Export** with the talk chosen and its first way of making the video, renders the talk *off
 the clock*: a page of its own
@@ -454,7 +454,7 @@ being filmed. The result is a WebM file (VP9 and Opus), `<name>.video.webm`; `ff
 talk.video.webm -c:v libx264 -c:a aac talk.mp4` turns it into an MP4 when a tool or a site wants
 one.
 
-**What travels where.** The folder export (`zoomdeck build … -o folder`) copies the `recordings/`
+**What travels where.** The folder export (`zoomdown build … -o folder`) copies the `recordings/`
 folder, unpacking each bundle into its plain files, which a static host streams best, so a deck
 published that way shows its Talk button to viewers (a bundle copied as it is next to a deck
 plays too: the player reads it by byte ranges, fetching each media file whole); the single-file
@@ -534,10 +534,10 @@ Looping stops (`play=loop`, `stop({ loop: true })`) repeat until the next click.
 
 ## Editing preview
 
-`zoomdeck serve` and the dev page reload when the deck's files change and return to the
+`zoomdown serve` and the dev page reload when the deck's files change and return to the
 slide and step you were on, using a bookmark saved just before the reload. Parse and reference
 errors are shown with the offending line. The editor and the player also follow each other:
-`zoomdeck jump <file> <line>` shows the stop of a source line, and `E` or Alt + click opens the
+`zoomdown jump <file> <line>` shows the stop of a source line, and `E` or Alt + click opens the
 source of a stop or of an element in the editor named by `--editor`; [Editors](editors.html#forward-and-inverse-search)
 explains both and the ready-made setups. [Exporting a deck](exporting.html) makes the same
 player a static folder or one self-contained HTML file, settings and deep links included.

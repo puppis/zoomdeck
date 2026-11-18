@@ -8,7 +8,7 @@ import { ElementSpec } from '../src/markup/ast';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { deckFolders } from '../bin/zoomdeck.mjs';
+import { deckFolders } from '../bin/zoomdown.mjs';
 import { svgToMobject } from '../src/svg';
 
 const options = { size: 2, color: '#112233', strokeWidth: 2, fillColor: '#112233', fillOpacity: 0, sketch: null, attributes: {}, foreground: '#000000' };
@@ -102,7 +102,7 @@ describe('the search folders of a deck', () => {
   });
 
   it('are read from the front matter by the command, existing ones only, with artworks/ next to the Markdown', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'zoomdeck-folders-'));
+    const dir = mkdtempSync(join(tmpdir(), 'zoomdown-folders-'));
     try {
       mkdirSync(join(dir, 'shared'));
       mkdirSync(join(dir, 'src', 'artworks'), { recursive: true });

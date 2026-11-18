@@ -1,12 +1,12 @@
 /**
  * Editor synchronization for the preview server, in both directions:
  *
- * - forward search, editor → browser: `zoomdeck jump <file> <line>` (or a request to
- *   `/__zoomdeck/sync/jump`) tells every player page served here to show the stop of that
+ * - forward search, editor → browser: `zoomdown jump <file> <line>` (or a request to
+ *   `/__zoomdown/sync/jump`) tells every player page served here to show the stop of that
  *   line. Running previews register themselves in a small directory under the OS temporary
  *   folder, so the command finds the server that serves a file without being told its port.
  * - inverse search, browser → editor: the player posts the source of its current stop to
- *   `/__zoomdeck/sync/edit`, and the server opens it with the editor named by `--editor`
+ *   `/__zoomdown/sync/edit`, and the server opens it with the editor named by `--editor`
  *   (a preset such as `emacs`, `sublime`, `code`, or a command template with `{file}` and
  *   `{line}`).
  */
@@ -16,10 +16,10 @@ import { tmpdir } from 'node:os';
 import { delimiter, isAbsolute, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const EVENT = 'zoomdeck:jump';
+const EVENT = 'zoomdown:jump';
 
 /** Where running previews register: one JSON file per server, named after its port. */
-export const REGISTRY_DIR = join(tmpdir(), 'zoomdeck-previews');
+export const REGISTRY_DIR = join(tmpdir(), 'zoomdown-previews');
 
 /** A path with forward slashes, as the player and the registry compare them. */
 export function slashes(path) {
@@ -197,7 +197,7 @@ export function previewsFor(file, entries = previews()) {
 
 /** Ask a running preview to show the stop of `line` in `file`. */
 export async function requestJump(entry, file, line) {
-  const response = await fetch(`http://127.0.0.1:${entry.port}/__zoomdeck/sync/jump`, {
+  const response = await fetch(`http://127.0.0.1:${entry.port}/__zoomdown/sync/jump`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ file: slashes(resolve(file)), line }),
@@ -252,7 +252,7 @@ export function documentPath(file, root) {
  */
 export function editorSync({ editor = null, roots = [], deck = null } = {}) {
   return {
-    name: 'zoomdeck-editor-sync',
+    name: 'zoomdown-editor-sync',
     configureServer(server) {
       const root = slashes(server.config.root);
       /** The most recent jump, for a page that was reloading when it was sent. */
@@ -266,7 +266,7 @@ export function editorSync({ editor = null, roots = [], deck = null } = {}) {
       if (server.httpServer?.listening) register();
       else server.httpServer?.once('listening', register);
 
-      server.middlewares.use('/__zoomdeck/sync', async (request, response) => {
+      server.middlewares.use('/__zoomdown/sync', async (request, response) => {
         const url = new URL(request.url ?? '/', 'http://localhost');
         try {
           if (url.pathname === '/' || url.pathname === '') {
@@ -295,10 +295,10 @@ export function editorSync({ editor = null, roots = [], deck = null } = {}) {
             }
             try {
               const command = await openInEditor(editor, file, line);
-              console.log(`[zoomdeck] Opened ${file}:${line} with ${command[0]}`);
+              console.log(`[zoomdown] Opened ${file}:${line} with ${command[0]}`);
               reply(response, 200, { ok: true, command });
             } catch (error) {
-              console.warn(`[zoomdeck] ${error.message}`);
+              console.warn(`[zoomdown] ${error.message}`);
               reply(response, 200, { ok: false, error: error.message });
             }
             return;

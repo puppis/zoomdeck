@@ -57,7 +57,7 @@ export function defineDeck(definition: DeckDefinition): ResolvedDeck {
   const viewport = definition.viewport ?? { width: 16, height: 9 };
   if (!(viewport.width > 0) || !(viewport.height > 0)) throw new Error('viewport dimensions must be positive');
   return {
-    title: definition.title ?? 'Zoomdeck',
+    title: definition.title ?? 'ZoomDown',
     deck: definition.deck,
     presenter,
     foreground: definition.foreground ?? '#000000',

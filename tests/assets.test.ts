@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
-import { collectAssets, pageReferences } from '../bin/zoomdeck.mjs';
+import { collectAssets, pageReferences } from '../bin/zoomdown.mjs';
 
 const roots: string[] = [];
 afterEach(() => {
@@ -11,7 +11,7 @@ afterEach(() => {
 
 /** A course folder with shared animations, and a deck that links them instead of copying them. */
 function course(): { deck: string; shared: string } {
-  const root = mkdtempSync(join(tmpdir(), 'zoomdeck-assets-'));
+  const root = mkdtempSync(join(tmpdir(), 'zoomdown-assets-'));
   roots.push(root);
   const shared = join(root, 'animations');
   mkdirSync(join(shared, 'dist'), { recursive: true });

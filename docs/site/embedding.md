@@ -16,7 +16,7 @@ whenever the box is resized.
 ## Mounting
 
 ```ts
-import { mountDeck } from 'zoomdeck';
+import { mountDeck } from 'zoomdown';
 
 const deck = await mountDeck(document.querySelector('#lecture'), '/decks/lecture/slides.md', {
   features: { camera: false, screen: false, record: false },
@@ -68,26 +68,26 @@ settings themselves (pen, keys, rendering) are shared with the standalone player
 browser, so a key bound once holds everywhere; a page that hides the settings dialog keeps the
 defaults, or whatever the viewer set elsewhere.
 
-## Without a bundler: the `<zoom-deck>` element
+## Without a bundler: the `<zoom-down>` element
 
 ```html
-<script type="module" src="https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js"></script>
+<script type="module" src="https://puppis.github.io/zoomdown/zoomdown/zoomdown.js"></script>
 
-<zoom-deck src="talk/slides.md" without="camera record"></zoom-deck>
+<zoom-down src="talk/slides.md" without="camera record"></zoom-down>
 
-<zoom-deck without="camera record screen" title="Inline">
+<zoom-down without="camera record screen" title="Inline">
 <script type="text/markdown">
 ::: slide {#hello}
 # Written inside the page
 :::
 </script>
-</zoom-deck>
+</zoom-down>
 ```
 
 A page without a build step loads the self-contained player, one module with the engine, the
 fonts and the stylesheet inside (`npm run build:standalone` writes it to `dist/standalone/`, and
 the documentation site serves a copy at the address above; MathJax and pdf.js follow as
-separate files only when a deck needs them). The `<zoom-deck>` element then shows a deck:
+separate files only when a deck needs them). The `<zoom-down>` element then shows a deck:
 `src` names a Markdown file, read with its front matter, or a PDF, or the Markdown is written
 inside the element, in a `<script type="text/markdown">` child, which the browser keeps
 verbatim; Markdown written inside may have front matter too. The
@@ -97,7 +97,7 @@ stop, `title` the deck, `outline` opens the outline, `use-location` lets the dec
 `#step=` in the page's URL, `background` and `foreground` set the canvas and text colors. The handle is `element.handle` once the element's `ready` promise
 resolves (a `deck` event fires then too), and setting `element.source` to new Markdown shows
 another deck in place. The module also exports everything the package does, so a page can
-`import { mountDeck } from '…/zoomdeck.js'` as well.
+`import { mountDeck } from '…/zoomdown.js'` as well.
 
 ## Driving the deck
 
@@ -139,7 +139,7 @@ and the listeners.
 ## In a notebook
 
 ```python
-import zoomdeck_nb
+import zoomdown_nb
 ```
 
 ```markdown
@@ -149,9 +149,9 @@ import zoomdeck_nb
 :::
 ```
 
-`docs/site/zoomdeck_nb.py` is a small helper for Jupyter. Once imported, a cell that starts
+`docs/site/zoomdown_nb.py` is a small helper for Jupyter. Once imported, a cell that starts
 with `%%deck` holds the Markdown of a deck and nothing else, and its output shows the deck:
-the player is loaded from the documentation site (or from the URL in the `ZOOMDECK_BUNDLE`
+the player is loaded from the documentation site (or from the URL in the `ZOOMDOWN_BUNDLE`
 environment variable) and the deck wears the notebook's colors. Options follow on the magic
 line: `--without camera,record`, `--title "A name"`, `--start 2`, `--outline`, `--height 500px`.
 `%deck paper.pdf` shows a PDF or a Markdown file by its address, and from code

@@ -5,7 +5,7 @@ import { editorSync } from './bin/sync.mjs';
 import { isRecordingFile, recordingStore } from './bin/recordings.mjs';
 import { renderStore } from './bin/render.mjs';
 import { exportStore, exportWriting } from './bin/export.mjs';
-import { buildDeck } from './bin/zoomdeck.mjs';
+import { buildDeck } from './bin/zoomdown.mjs';
 
 // Development server: serves the player page and the example decks from this checkout.
 const optionalStubs = Object.fromEntries(
@@ -25,7 +25,7 @@ export const UNUSED_ENGINE_CHUNKS = /(?:^|[\\/])(?:(?:mp4|webm)-muxer|jspdf\.es\
 
 export function dropEngineMuxers(stub: string): Plugin {
   return {
-    name: 'zoomdeck-drop-unused-engine-chunks',
+    name: 'zoomdown-drop-unused-engine-chunks',
     enforce: 'pre',
     resolveId(id, importer) {
       if (UNUSED_ENGINE_CHUNKS.test(id) && importer && /manim-web/.test(importer)) return stub;
@@ -38,7 +38,7 @@ export function dropEngineMuxers(stub: string): Plugin {
 function deckReload(): Plugin {
   const dir = resolve(__dirname, 'examples');
   return {
-    name: 'zoomdeck-deck-reload',
+    name: 'zoomdown-deck-reload',
     configureServer(server) {
       server.watcher.add(dir);
       const onChange = (file: string) => {
@@ -55,14 +55,14 @@ export default defineConfig({
   root: resolve(__dirname),
   plugins: [
     dropEngineMuxers(resolve(__dirname, 'src/stubs/empty.ts')), deckReload(), padRelay(),
-    // Editor jumps for the example decks; ZOOMDECK_EDITOR names the editor the player opens.
-    editorSync({ editor: process.env.ZOOMDECK_EDITOR ?? null, roots: [resolve(__dirname, 'examples')] }),
+    // Editor jumps for the example decks; ZOOMDOWN_EDITOR names the editor the player opens.
+    editorSync({ editor: process.env.ZOOMDOWN_EDITOR ?? null, roots: [resolve(__dirname, 'examples')] }),
     recordingStore({ roots: [resolve(__dirname, 'examples')] }),
     renderStore({ roots: [resolve(__dirname, 'examples')] }),
     exportStore({ roots: [resolve(__dirname, 'examples')], build: buildDeck }),
   ],
   // A deck's own modules import the package by name, as they do under the command and the app.
-  resolve: { alias: { ...optionalStubs, zoomdeck: resolve(__dirname, 'src/index.ts') } },
+  resolve: { alias: { ...optionalStubs, zoomdown: resolve(__dirname, 'src/index.ts') } },
   optimizeDeps: { entries: ['index.html'] },
   // With --host, a tablet reaches the server by the computer's name (Name.local) as well as by its address.
   server: { fs: { allow: [resolve(__dirname), resolve(__dirname, '..')] }, allowedHosts: allowedHosts() },

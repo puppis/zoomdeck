@@ -1,6 +1,6 @@
-"""Show Zoomdeck decks in a Jupyter notebook.
+"""Show ZoomDown decks in a Jupyter notebook.
 
-    import zoomdeck_nb
+    import zoomdown_nb
 
 then, in a cell of its own, the Markdown of a deck and nothing else:
 
@@ -9,8 +9,8 @@ then, in a cell of its own, the Markdown of a deck and nothing else:
     # Hello, $e^{i\\pi} + 1 = 0$
     :::
 
-The cell's output loads the Zoomdeck player once (from the documentation site, or from the URL
-in the ZOOMDECK_BUNDLE environment variable) and shows the deck in it, with the player's own
+The cell's output loads the ZoomDown player once (from the documentation site, or from the URL
+in the ZOOMDOWN_BUNDLE environment variable) and shows the deck in it, with the player's own
 controls; edit the cell and run it again to see the deck change. The line after `%%deck` may
 carry options: `--without camera,record`, `--title "A name"`, `--start 2`, `--outline`,
 `--height 500px`. `%deck paper.pdf` (one line) shows a PDF or a Markdown file by its address. The same from code: `deck("::: slide ...")` and `deck(src="paper.pdf")` return
@@ -27,8 +27,8 @@ from typing import Iterable
 
 __all__ = ["deck", "BUNDLE", "load_ipython_extension"]
 
-#: Where the player's self-contained module is served from unless ZOOMDECK_BUNDLE says otherwise.
-BUNDLE = os.environ.get("ZOOMDECK_BUNDLE", "https://puppis.github.io/zoomdeck/zoomdeck/zoomdeck.js")
+#: Where the player's self-contained module is served from unless ZOOMDOWN_BUNDLE says otherwise.
+BUNDLE = os.environ.get("ZOOMDOWN_BUNDLE", "https://puppis.github.io/zoomdown/zoomdown/zoomdown.js")
 
 #: Features a notebook has no use for by default; pass without=() to keep them all.
 DEFAULT_WITHOUT: tuple[str, ...] = ("camera", "record", "screen")
@@ -44,7 +44,7 @@ class _Html:
         return self.markup
 
     def __repr__(self) -> str:
-        return "<Zoomdeck deck>"
+        return "<ZoomDown deck>"
 
 
 def deck(
@@ -86,7 +86,7 @@ def deck(
         # The script's text is read verbatim by the element; only its own end tag must not appear.
         body = '<script type="text/markdown">\n' + source.replace("</script", "<\\/script") + "\n</script>"
     script = f'<script type="module" src="{html.escape(bundle or BUNDLE, quote=True)}"></script>'
-    return _Html(f"{script}\n<zoom-deck {' '.join(attributes)}>{body}</zoom-deck>")
+    return _Html(f"{script}\n<zoom-down {' '.join(attributes)}>{body}</zoom-down>")
 
 
 def _options(line: str) -> dict:
@@ -130,7 +130,7 @@ def _magic(line: str, cell: str | None = None):
 
 
 def load_ipython_extension(ipython) -> None:
-    """Register the `deck` magic (IPython calls this for `%load_ext zoomdeck_nb`)."""
+    """Register the `deck` magic (IPython calls this for `%load_ext zoomdown_nb`)."""
     ipython.register_magic_function(_magic, magic_kind="line_cell", magic_name="deck")
 
 

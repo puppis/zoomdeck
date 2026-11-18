@@ -5,7 +5,7 @@ description: Turn a deck into a static folder or into one self-contained HTML fi
 
 <a class="try" href="tour.html#slide=player">Open in the tour ↗</a>
 
-A deck exports from the player itself, where `zoomdeck serve` or the desktop app shows it, or
+A deck exports from the player itself, where `zoomdown serve` or the desktop app shows it, or
 from the command line. Two forms exist, and the player also prints a deck to a
 [PDF](#a-pdf-printout).
 
@@ -26,7 +26,7 @@ row, *What*, offers this deck as a web page and each recorded talk as a video (s
   the deck, as `build/<name>.html` or `build/<name>/`. Or the browser's downloads, the folder
   form as a zip.
 
-The server builds the deck exactly as `zoomdeck build` does, in some seconds for a small deck
+The server builds the deck exactly as `zoomdown build` does, in some seconds for a small deck
 (the tour takes about ten), while the dialog counts the time; closing it abandons the export.
 An earlier export of the same name is replaced, at the place chosen or in `build/`, but a folder
 holding anything else is never touched: the dialog asks for another name instead. The `build/`
@@ -39,7 +39,7 @@ talks only.
 ### One self-contained file
 
 ```bash
-zoomdeck build path/to/slides.md -o out --one-file
+zoomdown build path/to/slides.md -o out --one-file
 ```
 
 This writes `out/offline.html`: the player, the engine, the bundled fonts, your Markdown source
@@ -64,7 +64,7 @@ Three things to know:
 ### A static folder
 
 ```bash
-zoomdeck build path/to/slides.md -o out
+zoomdown build path/to/slides.md -o out
 ```
 
 This writes `out/index.html`, `out/assets/` (the player, split in chunks loaded on demand) and
@@ -112,7 +112,7 @@ deck and in the single file alike, since the browser does the rendering; see
 Programmatic use goes through the same entry points as the dev page:
 
 ```ts
-import { runDeck, loadMarkupDeck } from 'zoomdeck';
+import { runDeck, loadMarkupDeck } from 'zoomdown';
 
 runDeck(await loadMarkupDeck({ url: '/decks/lecture/slides.md', title: 'Lecture 1', showOutline: true }));
 ```

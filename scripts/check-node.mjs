@@ -22,7 +22,7 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
   const version = process.versions.node;
   if (!supported(version)) {
     console.error(`
-Zoomdeck needs Node.js ${REQUIRED}; this is Node ${version}.
+ZoomDown needs Node.js ${REQUIRED}; this is Node ${version}.
 Install a supported release from https://nodejs.org/ (or run "nvm install --lts"), then run npm install again.
 `);
     process.exit(1);

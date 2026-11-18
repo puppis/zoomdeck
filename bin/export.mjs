@@ -1,19 +1,19 @@
 /**
  * The player's export of a deck as a web page. The page names its deck and the form; the server
- * builds it as `zoomdeck build` does, into a folder of its own outside the deck, and the page
+ * builds it as `zoomdown build` does, into a folder of its own outside the deck, and the page
  * takes the result from there: file by file into a folder the viewer chose, as one file or a zip
  * for the browser's downloads, or the server copies it into the `build/` folder next to the deck.
  *
- *   GET    /__zoomdeck/export                       { ok: true }: the endpoint is here
- *   POST   /__zoomdeck/export?op=start&deck=<url>&form=folder|file[&notes=0][&outline=1][&scene=]
+ *   GET    /__zoomdown/export                       { ok: true }: the endpoint is here
+ *   POST   /__zoomdown/export?op=start&deck=<url>&form=folder|file[&notes=0][&outline=1][&scene=]
  *                                                   { id }: the build is queued
- *   GET    /__zoomdeck/export?id=                   { status, error, files: [{ path, size }] }
- *   GET    /__zoomdeck/export?id=&file=<path>       one file of the result (`&as=<name>`: a download)
- *   GET    /__zoomdeck/export?id=&zip=<name>        the whole result as `<name>.zip`, a download
- *   POST   /__zoomdeck/export?id=&op=place&name=    copied to `build/<name>/` (`build/<name>.html` for one file)
- *   GET    /__zoomdeck/export?op=check&deck=&form=&name=   whether build/<name> may receive an export, before one is built
- *   POST   /__zoomdeck/export?op=writing            the page is writing files: the deck does not reload meanwhile
- *   DELETE /__zoomdeck/export?id=                   the result is forgotten
+ *   GET    /__zoomdown/export?id=                   { status, error, files: [{ path, size }] }
+ *   GET    /__zoomdown/export?id=&file=<path>       one file of the result (`&as=<name>`: a download)
+ *   GET    /__zoomdown/export?id=&zip=<name>        the whole result as `<name>.zip`, a download
+ *   POST   /__zoomdown/export?id=&op=place&name=    copied to `build/<name>/` (`build/<name>.html` for one file)
+ *   GET    /__zoomdown/export?op=check&deck=&form=&name=   whether build/<name> may receive an export, before one is built
+ *   POST   /__zoomdown/export?op=writing            the page is writing files: the deck does not reload meanwhile
+ *   DELETE /__zoomdown/export?id=                   the result is forgotten
  *
  * One build runs at a time; a result nobody asks for is removed after an hour, and all of them
  * when the server stops.
@@ -25,7 +25,7 @@ import { randomUUID } from 'node:crypto';
 import { BundleWriter } from './bundle.mjs';
 import { documentPath, slashes } from './sync.mjs';
 
-export const ENDPOINT = '/__zoomdeck/export';
+export const ENDPOINT = '/__zoomdown/export';
 
 /** How long a write announced by the page keeps the deck from reloading, in milliseconds. */
 const WRITING_LEASE = 15_000;
@@ -130,11 +130,11 @@ async function zipOf(job, name) {
 
 /**
  * Serve the export endpoint. `roots` are the folders whose decks this server shows; `build` is
- * `buildDeck` of bin/zoomdeck.mjs (passed in, since that module serves this one).
+ * `buildDeck` of bin/zoomdown.mjs (passed in, since that module serves this one).
  */
 export function exportStore({ roots = [], build }) {
   return {
-    name: 'zoomdeck-export',
+    name: 'zoomdown-export',
     configureServer(server) {
       const jobs = new Map();
       let queue = Promise.resolve();
@@ -159,11 +159,11 @@ export function exportStore({ roots = [], build }) {
           await build({ positional: [job.deck], output: job.out, oneFile: job.form === 'file', showOutline: job.outline, withoutNotes: !job.notes, scene: job.scene, watch: [] });
           job.files = await listFiles(job.out);
           job.status = 'done';
-          console.log(`[zoomdeck] Exported ${basename(job.deck)} as ${job.form === 'file' ? 'one HTML file' : `a folder of ${job.files.length} files`}`);
+          console.log(`[zoomdown] Exported ${basename(job.deck)} as ${job.form === 'file' ? 'one HTML file' : `a folder of ${job.files.length} files`}`);
         } catch (error) {
           job.status = 'failed';
           job.error = error instanceof Error ? error.message : String(error);
-          if (!job.abandoned) console.error(`[zoomdeck] Export failed: ${job.error}`);
+          if (!job.abandoned) console.error(`[zoomdown] Export failed: ${job.error}`);
         }
         job.touched = Date.now();
         // Given up on while it was built: its folder goes now that nothing writes into it.
@@ -201,7 +201,7 @@ export function exportStore({ roots = [], build }) {
                 reply(response, 404, { ok: false, error: 'This deck is not served here' });
                 return;
               }
-              const dir = await fs.realpath(await fs.mkdtemp(join(tmpdir(), 'zoomdeck-export-')));
+              const dir = await fs.realpath(await fs.mkdtemp(join(tmpdir(), 'zoomdown-export-')));
               const job = {
                 id: randomUUID(),
                 deck,

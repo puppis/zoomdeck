@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { Writable } from 'node:stream';
 import { deckFileFor, exportName, exportStore, exportWriting, placeTarget } from '../bin/export.mjs';
 import { readDirectory, readEntry } from '../bin/bundle.mjs';
-import { buildDeck } from '../bin/zoomdeck.mjs';
+import { buildDeck } from '../bin/zoomdown.mjs';
 import { defaultWebExportName, webExportName } from '../src/player/webpage';
 
 /** A response the handler writes into, JSON or a streamed file alike. */
@@ -50,7 +50,7 @@ afterEach(() => {
 
 /** The endpoint over a deck folder, with a build that writes a small result and remembers its options. */
 function setUp(fail = false) {
-  const root = mkdtempSync(join(tmpdir(), 'zoomdeck-export-test-'));
+  const root = mkdtempSync(join(tmpdir(), 'zoomdown-export-test-'));
   dirs.push(root);
   const deckDir = join(root, 'talk');
   mkdirSync(deckDir);
@@ -188,7 +188,7 @@ describe('the export of a deck as a web page, from the player', () => {
     expect(defaultWebExportName({ url: 'http://127.0.0.1:8000/@fs/Users/me/Downloads/Lecture%203.PDF' }, 'Title')).toBe('Lecture-3');
     expect(deckFileFor('http://localhost:5178/examples/tour/slides.md', ['/repo/examples'], '/repo')).toBe(join('/repo/examples/tour/slides.md'));
     expect(deckFileFor('http://localhost:5178/src/index.ts', ['/repo/examples'], '/repo')).toBeNull();
-    const dir = mkdtempSync(join(tmpdir(), 'zoomdeck-place-'));
+    const dir = mkdtempSync(join(tmpdir(), 'zoomdown-place-'));
     dirs.push(dir);
     expect(await placeTarget(dir, 'web', 'file')).toBe(join(dir, 'build', 'web.html'));
   });

@@ -62,7 +62,7 @@ A blob flows around the parts of a composite target separately: the members of a
 ## From code
 
 ```ts
-import { blobMobject, blobOutline, engine } from 'zoomdeck';
+import { blobMobject, blobOutline, engine } from 'zoomdown';
 
 const rects = [{ x: 0, y: 0, width: 2, height: 1 }, { x: 1.5, y: -1.6, width: 1, height: 1 }];
 const curve = blobMobject(rects, { buff: 0.4, smoothness: 0.7 });

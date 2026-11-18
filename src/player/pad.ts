@@ -2,7 +2,7 @@
  * The companion tablet: a light page showing a picture of the presenter's
  * current slide, following the presenter's stop and drawing on it. Devices exchange small messages through
  * the preview server's WebSocket (the one Vite uses for reloads), so pairing
- * works wherever the deck is served by `zoomdeck serve` or `npm run dev`, and
+ * works wherever the deck is served by `zoomdown serve` or `npm run dev`, and
  * nowhere else. Every page in the same room sees every message; a page
  * ignores its own.
  */
@@ -50,7 +50,7 @@ interface Envelope {
   message: PadMessage;
 }
 
-const EVENT = 'zoomdeck:pad';
+const EVENT = 'zoomdown:pad';
 
 /** Whether this page can reach the relay at all (only under the preview or development server). */
 export function padLinkAvailable(): boolean {
@@ -109,7 +109,7 @@ function remembered(storage: () => Storage, key: string, make: () => string): st
  * admission of a tablet is decided by the presenter, on the pairing code or its trust.
  */
 export function padRoom(): string {
-  return remembered(() => localStorage, 'zoomdeck:pad-room', () => token(6));
+  return remembered(() => localStorage, 'zoomdown:pad-room', () => token(6));
 }
 
 /**
@@ -118,7 +118,7 @@ export function padRoom(): string {
  * so a code scanned once does not admit a tablet for good.
  */
 export function padCode(): string {
-  return remembered(() => sessionStorage, 'zoomdeck:pad-code', () => token(6));
+  return remembered(() => sessionStorage, 'zoomdown:pad-code', () => token(6));
 }
 
 /** The name a tablet gives itself, from what the browser tells. */
@@ -135,7 +135,7 @@ export function describeDevice(): string {
 
 /** This tablet's identity, made the first time and kept in the browser. */
 export function padDevice(): PadDevice {
-  const raw = remembered(() => localStorage, 'zoomdeck:pad-device', () => JSON.stringify({ id: token(12), name: describeDevice() }));
+  const raw = remembered(() => localStorage, 'zoomdown:pad-device', () => JSON.stringify({ id: token(12), name: describeDevice() }));
   try {
     const parsed = JSON.parse(raw) as Partial<PadDevice>;
     if (typeof parsed.id === 'string' && parsed.id) return { id: parsed.id, name: typeof parsed.name === 'string' && parsed.name ? parsed.name : describeDevice() };
@@ -144,7 +144,7 @@ export function padDevice(): PadDevice {
   }
   const device = { id: token(12), name: describeDevice() };
   try {
-    localStorage.setItem('zoomdeck:pad-device', JSON.stringify(device));
+    localStorage.setItem('zoomdown:pad-device', JSON.stringify(device));
   } catch {
     /* storage unavailable */
   }
@@ -163,7 +163,7 @@ export interface PairingInfo {
 /** Ask the server how a tablet can reach it. */
 export async function fetchPairingInfo(): Promise<PairingInfo | null> {
   try {
-    const response = await fetch('/__zoomdeck/pad.json', { cache: 'no-store' });
+    const response = await fetch('/__zoomdown/pad.json', { cache: 'no-store' });
     if (!response.ok) return null;
     return (await response.json()) as PairingInfo;
   } catch {

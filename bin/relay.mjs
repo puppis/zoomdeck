@@ -1,12 +1,12 @@
 /**
- * Vite plugin shared by `zoomdeck serve` and the development server: relays
+ * Vite plugin shared by `zoomdown serve` and the development server: relays
  * the companion-tablet messages between the pages connected to the server's
  * WebSocket, and tells a page which network addresses a tablet can use.
  */
 import { hostname, networkInterfaces, platform } from 'node:os';
 import { execFileSync } from 'node:child_process';
 
-const EVENT = 'zoomdeck:pad';
+const EVENT = 'zoomdown:pad';
 
 /** IPv4 addresses of this machine other than the loopback, private ranges first. */
 export function lanAddresses() {
@@ -72,12 +72,12 @@ export function listensOnLan(host) {
 
 export function padRelay() {
   return {
-    name: 'zoomdeck-pad-relay',
+    name: 'zoomdown-pad-relay',
     configureServer(server) {
       server.ws.on(EVENT, (data) => {
         server.ws.send(EVENT, data);
       });
-      server.middlewares.use('/__zoomdeck/pad.json', (_request, response) => {
+      server.middlewares.use('/__zoomdown/pad.json', (_request, response) => {
         const address = server.httpServer?.address();
         const port = address && typeof address === 'object' ? address.port : server.config.server.port ?? 0;
         const lan = listensOnLan(server.config.server.host);

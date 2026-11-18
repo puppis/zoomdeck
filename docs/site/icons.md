@@ -85,7 +85,7 @@ built in) places one like an icon, with `size`, `label`, `label_side` and a posi
   `attributes` of the directive as strings, and returns a mobject, several, or a list of parts;
   or it exports `parts`, path data in the unit box like the built-in icons, which are then
   drawn exactly like them, hand-drawn look included. A module may import `manim-web` and
-  `zoomdeck` as the slide classes do. Attributes the module reads (`lit=red` above) are free.
+  `zoomdown` as the slide classes do. Attributes the module reads (`lit=red` above) are free.
 
 Compound figures belong here too: a module returns a `VGroup` of whatever shapes, labels and
 icons it likes, or a list of them, in which case a blob around the artwork flows around each
@@ -99,7 +99,7 @@ languages, code themes, themes, snippets, directives and slide classes, work the
 ## From code
 
 ```ts
-import { makeIcon, ICON_NAMES, engine } from 'zoomdeck';
+import { makeIcon, ICON_NAMES, engine } from 'zoomdown';
 
 const store = makeIcon('database', { size: 1.5, color: engine.GOLD_E, fillColor: engine.GOLD_E, fillOpacity: 0.3 });
 const sketched = makeIcon('cloud', { size: 2, sketch: { seed: 7, roughness: 1.5 } });

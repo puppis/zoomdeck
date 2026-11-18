@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * zoomdeck command line: preview a deck while editing, or build a
+ * zoomdown command line: preview a deck while editing, or build a
  * static HTML bundle (optionally a single self-contained file).
  *
- *   zoomdeck serve <deck> [--port N] [--host] [--no-open] [--editor NAME] [--watch PATH]...   (port 8000 or the next free one)
- *   zoomdeck build <deck> -o <folder> [--one-file] [--show-outline] [--without-notes]
- *   zoomdeck jump <file> <line>        show, in the running preview, the stop of a source line
+ *   zoomdown serve <deck> [--port N] [--host] [--no-open] [--editor NAME] [--watch PATH]...   (port 8000 or the next free one)
+ *   zoomdown build <deck> -o <folder> [--one-file] [--show-outline] [--without-notes]
+ *   zoomdown jump <file> <line>        show, in the running preview, the stop of a source line
  *
  * `<deck>` is a Markdown file (its settings in its front matter), a PDF, or a JS/TS module
  * exporting a deck definition (optionally `--scene Name` for a named export).
@@ -29,24 +29,24 @@ import { resolveSettings } from '../src/markup/frontmatter.mjs';
 const here = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(here, '..');
 const require = createRequire(import.meta.url);
-/** `zoomdeck` and `manim-web` resolve against this package from a deck anywhere on disk. */
+/** `zoomdown` and `manim-web` resolve against this package from a deck anywhere on disk. */
 const resolveDeps = resolveFromPackage(packageRoot);
 
 function usage(message) {
   if (message) console.error(`error: ${message}\n`);
   console.error(`usage:
-  zoomdeck serve <deck> [--port N] [--host] [--no-open] [--editor NAME] [--scene Name] [--watch PATH]...
+  zoomdown serve <deck> [--port N] [--host] [--no-open] [--editor NAME] [--scene Name] [--watch PATH]...
       --host also listens on the network, so a tablet can pair with the player
       --editor opens the source of a stop from the player (inverse search): a name such as
                emacs, sublime, code, vim or jetbrains, or a command with {file} and {line}
-  zoomdeck build <deck> -o <folder> [--one-file] [--show-outline] [--without-notes] [--scene Name]
+  zoomdown build <deck> -o <folder> [--one-file] [--show-outline] [--without-notes] [--scene Name]
       --without-notes leaves the presenter's ::: notes out of the export, for a deck handed to the audience
-  zoomdeck jump <file> <line>          move the running preview to the stop that shows the line`);
+  zoomdown jump <file> <line>          move the running preview to the stop that shows the line`);
   process.exit(message ? 2 : 0);
 }
 
 export function parseArgs(argv) {
-  const options = { watch: [], open: true, oneFile: false, showOutline: false, withoutNotes: false, port: null, host: false, output: null, scene: null, editor: process.env.ZOOMDECK_EDITOR || null, positional: [] };
+  const options = { watch: [], open: true, oneFile: false, showOutline: false, withoutNotes: false, port: null, host: false, output: null, scene: null, editor: process.env.ZOOMDOWN_EDITOR || null, positional: [] };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--port') options.port = Number(argv[++i]);
@@ -75,7 +75,7 @@ const optionalStubs = Object.fromEntries(
 /** Replace the engine's lazily loaded chunks for unused features (video/PDF export, loaders, passes, Typst) with the empty stub. */
 const UNUSED_ENGINE_CHUNKS = /(?:^|[\\/])(?:(?:mp4|webm)-muxer|jspdf\.es\.min|lottie|html2canvas|GLTFLoader|OBJLoader|MTLLoader|BokehPass|UnrealBloomPass|FontLoader|TextGeometry|wasm-pack-shim)-[\w-]+\.js$/;
 const dropEngineMuxers = {
-  name: 'zoomdeck-drop-unused-engine-chunks',
+  name: 'zoomdown-drop-unused-engine-chunks',
   enforce: 'pre',
   resolveId(id, importer) {
     if (UNUSED_ENGINE_CHUNKS.test(id) && importer && /manim-web/.test(importer)) return optionalStubs.pptxgenjs;
@@ -209,7 +209,7 @@ export async function startPreview(options) {
   const folders = kind === 'markdown' ? await deckFolders(deckPath) : { all: [], extended: [] };
   const watchRoots = [...new Set([deckDir, ...options.watch, ...folders.all, ...folders.extended])];
   const reloadPlugin = {
-    name: 'zoomdeck-reload',
+    name: 'zoomdown-reload',
     configureServer(server) {
       for (const root of watchRoots) server.watcher.add(root);
       const onChange = (file) => {
@@ -264,7 +264,7 @@ async function serve(options) {
     usage(error.message);
   }
   const { server, url, port, kind, watchRoots } = preview;
-  console.log(`Zoomdeck preview (${kind}) at ${url}`);
+  console.log(`ZoomDown preview (${kind}) at ${url}`);
   if (options.host) {
     const lan = lanAddresses();
     if (lan.length) console.log(`On the network: ${lan.map((address) => `http://${address}:${port}/`).join(', ')} (pair a tablet from the player's settings)`);
@@ -273,7 +273,7 @@ async function serve(options) {
   if (options.port !== null && options.port !== 0 && port !== options.port) console.log(`(port ${options.port} was busy)`);
   if (options.editor) console.log(`Inverse search: E or Alt+click in the player opens the source with "${options.editor}"`);
   else console.log('Inverse search is off (pass --editor emacs|sublime|code|vim|jetbrains or a command with {file} and {line})');
-  console.log(`Forward search: zoomdeck jump <file> <line> moves this preview to the stop of a line`);
+  console.log(`Forward search: zoomdown jump <file> <line> moves this preview to the stop of a line`);
   console.log(`Watching ${watchRoots.map((root) => relative(process.cwd(), root) || '.').join(', ')} — press Ctrl+C to stop`);
   const stop = (reason) => {
     if (reason) console.log(reason);
@@ -341,7 +341,7 @@ export async function pageReferences(page, root) {
 
 const MIME = { '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp', '.apng': 'image/apng', '.mp4': 'video/mp4', '.m4v': 'video/mp4', '.webm': 'video/webm', '.ogv': 'video/ogg', '.mov': 'video/quicktime', '.html': 'text/html', '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf', '.otf': 'font/otf', '.json': 'application/json', '.pdf': 'application/pdf', '.csv': 'text/csv', '.tsv': 'text/tab-separated-values', '.txt': 'text/plain' };
 
-/** `zoomdeck build`: the arguments checked as the command line reports them, then the build. */
+/** `zoomdown build`: the arguments checked as the command line reports them, then the build. */
 async function build(options) {
   const deckPath = resolveDeckPath(options.positional[0] ?? usage('build needs a deck path'));
   if (!existsSync(deckPath)) usage(`deck not found: ${deckPath}`);
@@ -368,7 +368,7 @@ export async function buildDeck(options) {
   const deckDir = dirname(deckPath);
   const outDir = options.output;
   await fs.mkdir(outDir, { recursive: true });
-  const stageDir = await fs.realpath(await fs.mkdtemp(join(tmpdir(), 'zoomdeck-')));
+  const stageDir = await fs.realpath(await fs.mkdtemp(join(tmpdir(), 'zoomdown-')));
   try {
     return await buildInto(options, { deckPath, kind, deckDir, outDir, stageDir });
   } finally {
@@ -540,7 +540,7 @@ runDeck(await loadMarkupDeck({
   await fs.writeFile(entryFile, entrySource);
   const htmlFile = join(stageDir, 'index.html');
   await fs.writeFile(htmlFile, `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Zoomdeck</title></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ZoomDown</title></head>
 <body><script type="module" src="./entry.ts"></script></body></html>
 `);
   const buildOut = options.oneFile ? join(stageDir, 'out') : outDir;
@@ -653,7 +653,7 @@ async function jump(options) {
   file = resolve(file);
   const targets = previewsFor(file);
   if (!targets.length) {
-    console.error(`No preview is running; start one with: zoomdeck serve ${JSON.stringify(file)}`);
+    console.error(`No preview is running; start one with: zoomdown serve ${JSON.stringify(file)}`);
     process.exit(1);
   }
   let sent = 0;
@@ -671,7 +671,7 @@ async function jump(options) {
 
 export { EDITOR_PRESETS };
 
-// The command line runs only when this file is the program (also through the `zoomdeck` link
+// The command line runs only when this file is the program (also through the `zoomdown` link
 // npm makes); imported by the desktop app, it only lends its functions.
 const invoked = process.argv[1] ? (() => { try { return realpathSync(process.argv[1]); } catch { return process.argv[1]; } })() : '';
 if (invoked && pathToFileURL(invoked).href === import.meta.url) {

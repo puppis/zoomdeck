@@ -4,7 +4,7 @@ import type { Plugin } from 'vite';
 export function lanAddresses(): string[];
 /** Whether a Vite `server.host` value makes the server reachable from other machines. */
 export function listensOnLan(host: string | boolean | undefined): boolean;
-/** Relays companion-tablet messages between connected pages and serves `/__zoomdeck/pad.json`. */
+/** Relays companion-tablet messages between connected pages and serves `/__zoomdown/pad.json`. */
 export function padRelay(): Plugin;
 
 /** The host names the server answers to besides localhost and plain addresses: any `.local` name and the computer's own. */

@@ -55,7 +55,7 @@ every construct of this page live, each next to the listing that produced it; op
   page's size, zoomed into once and then turned page by page with cuts (docs/site/documents.md).
 - `::: notes … :::` inside a slide, or `::: notes {step=N}`, holds the presenter's notes in
   Markdown; they are shown on the companion tablet under the picture of the current stop, never
-  on the canvas, and `zoomdeck build --without-notes` leaves them out of an export.
+  on the canvas, and `zoomdown build --without-notes` leaves them out of an export.
 - Includes without `step` are visited in source order after all numbered steps of their parent;
   `step=N` interleaves a visit with the parent's fragments. On return the parent resumes with its
   previous state, and children keep their final appearance.

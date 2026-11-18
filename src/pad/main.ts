@@ -535,7 +535,7 @@ class Pad {
 // home-screen icon (a plain /pad.html) finds the presenter again, and the code is dropped from the
 // address, since it admits the tablet for the presenter's session only.
 const params = new URLSearchParams(location.search);
-const ROOM_KEY = 'zoomdeck:pad-room';
+const ROOM_KEY = 'zoomdown:pad-room';
 let room = params.get('room');
 const code = params.get('code') ?? undefined;
 try {

@@ -1,16 +1,16 @@
-"""Run the zoomdeck command from Sublime Text with the PATH of the user's login shell.
+"""Run the zoomdown command from Sublime Text with the PATH of the user's login shell.
 
 Sublime Text started from the Dock, a launcher or a menu inherits the bare system PATH, not
 the one your shell profile builds (where nvm, Homebrew or npm's global bin directory live),
-so a plain build system fails with "zoomdeck: command not found" even though a terminal finds
-the command. This plugin provides the `zoomdeck_exec` build target: it asks your login shell
+so a plain build system fails with "zoomdown: command not found" even though a terminal finds
+the command. This plugin provides the `zoomdown_exec` build target: it asks your login shell
 once for its PATH, caches it, and runs the build system's command with it. The command itself
-can be changed in Zoomdeck.sublime-settings ("command": a name or an absolute path, or
-"node /path/to/Zoomdeck/bin/zoomdeck.mjs").
+can be changed in ZoomDown.sublime-settings ("command": a name or an absolute path, or
+"node /path/to/ZoomDown/bin/zoomdown.mjs").
 
 It also connects the editor and the browser in both directions: the preview is started with
 `--editor` pointing at this Sublime Text, so E or Alt+click in the player opens the source line
-here (inverse search), and `zoomdeck_jump` (Ctrl+Alt+J) shows the stop of the cursor line in
+here (inverse search), and `zoomdown_jump` (Ctrl+Alt+J) shows the stop of the cursor line in
 the browser (forward search).
 """
 import os
@@ -35,23 +35,23 @@ def login_shell_path():
         shell = os.environ.get('SHELL') or '/bin/bash'
         try:
             result = subprocess.run(
-                [shell, '-l', '-i', '-c', 'printf "__ZOOMDECK__%s__ZOOMDECK__" "$PATH"'],
+                [shell, '-l', '-i', '-c', 'printf "__ZOOMDOWN__%s__ZOOMDOWN__" "$PATH"'],
                 stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=20,
             )
-            match = re.search(r'__ZOOMDECK__(.*?)__ZOOMDECK__', result.stdout.decode('utf-8', 'replace'), re.S)
+            match = re.search(r'__ZOOMDOWN__(.*?)__ZOOMDOWN__', result.stdout.decode('utf-8', 'replace'), re.S)
             if match and match.group(1).strip():
                 path = match.group(1).strip()
             else:
-                print('Zoomdeck: the login shell did not report a PATH; using the editor PATH')
+                print('ZoomDown: the login shell did not report a PATH; using the editor PATH')
         except Exception as error:  # noqa: BLE001 - any failure falls back to the editor's PATH
-            print('Zoomdeck: could not read the login shell PATH:', error)
+            print('ZoomDown: could not read the login shell PATH:', error)
     _cached_path = path
     return path
 
 
-def zoomdeck_command():
-    """The command line prefix that runs zoomdeck, as a list."""
-    command = sublime.load_settings('Zoomdeck.sublime-settings').get('command') or 'zoomdeck'
+def zoomdown_command():
+    """The command line prefix that runs zoomdown, as a list."""
+    command = sublime.load_settings('ZoomDown.sublime-settings').get('command') or 'zoomdown'
     return command.split()
 
 
@@ -80,13 +80,13 @@ def editor_template():
     return '"%s" {file}:{line}' % subl_path()
 
 
-class ZoomdeckExecCommand(ExecCommand):
-    """`exec` with the login shell's PATH and the configurable zoomdeck command."""
+class ZoomdownExecCommand(ExecCommand):
+    """`exec` with the login shell's PATH and the configurable zoomdown command."""
 
     def run(self, cmd=None, **kwargs):
         if cmd:
-            if cmd[0] == 'zoomdeck':
-                cmd = zoomdeck_command() + list(cmd[1:])
+            if cmd[0] == 'zoomdown':
+                cmd = zoomdown_command() + list(cmd[1:])
             # The preview opens source lines here when the player asks (E, Alt+click).
             if 'serve' in cmd and '--editor' not in cmd:
                 cmd = cmd + ['--editor', editor_template()]
@@ -95,20 +95,20 @@ class ZoomdeckExecCommand(ExecCommand):
 
 
 def log(message):
-    """Append a line to Zoomdeck.log in the cache folder and echo it on the console."""
-    print('Zoomdeck:', message)
+    """Append a line to ZoomDown.log in the cache folder and echo it on the console."""
+    print('ZoomDown:', message)
     try:
-        with open(os.path.join(sublime.cache_path(), 'Zoomdeck.log'), 'a', encoding='utf-8') as handle:
+        with open(os.path.join(sublime.cache_path(), 'ZoomDown.log'), 'a', encoding='utf-8') as handle:
             handle.write('%s %s\n' % (time.strftime('%H:%M:%S'), message))
     except Exception:  # noqa: BLE001
         pass
 
 
-class ZoomdeckJumpCommand(sublime_plugin.TextCommand):
+class ZoomdownJumpCommand(sublime_plugin.TextCommand):
     """Forward search: save, then show the stop of the cursor line in the running preview.
 
     Everything slow (reading the login shell's PATH, running the command) happens off the UI
-    thread; the outcome goes to the status bar, the console and Zoomdeck.log in the cache folder,
+    thread; the outcome goes to the status bar, the console and ZoomDown.log in the cache folder,
     and a failure also to a dialog.
     """
 
@@ -116,7 +116,7 @@ class ZoomdeckJumpCommand(sublime_plugin.TextCommand):
         view = self.view
         path = view.file_name()
         if not path:
-            sublime.status_message('Zoomdeck: save the deck to a file first')
+            sublime.status_message('ZoomDown: save the deck to a file first')
             return
         if view.is_dirty():
             view.run_command('save')
@@ -125,7 +125,7 @@ class ZoomdeckJumpCommand(sublime_plugin.TextCommand):
         sublime.set_timeout_async(lambda: self._send(path, line), 0)
 
     def _send(self, path, line):
-        command = zoomdeck_command() + ['jump', path, str(line)]
+        command = zoomdown_command() + ['jump', path, str(line)]
         shown = ' '.join(command)
         try:
             env = dict(os.environ, PATH=login_shell_path())
@@ -133,23 +133,23 @@ class ZoomdeckJumpCommand(sublime_plugin.TextCommand):
             output = result.stdout.decode('utf-8', 'replace').strip()
             if result.returncode == 0:
                 log('jump sent: %s' % output)
-                sublime.status_message('Zoomdeck: line %d sent to the preview' % line)
+                sublime.status_message('ZoomDown: line %d sent to the preview' % line)
                 return
             problem = output or 'the command failed with status %d' % result.returncode
         except Exception as error:  # noqa: BLE001
             problem = 'cannot run the command: %s' % error
         log('jump failed: %s -- %s' % (shown, problem))
         # A jump that fails means a missing preview or command, which deserves more than a status flash.
-        sublime.set_timeout(lambda: sublime.error_message('Zoomdeck: the jump to line %d failed.\n\n%s\n\nCommand: %s' % (line, problem, shown)), 0)
+        sublime.set_timeout(lambda: sublime.error_message('ZoomDown: the jump to line %d failed.\n\n%s\n\nCommand: %s' % (line, problem, shown)), 0)
 
     def is_enabled(self):
         return bool(self.view.file_name())
 
 
-class ZoomdeckForgetPathCommand(sublime_plugin.WindowCommand):
+class ZoomdownForgetPathCommand(sublime_plugin.WindowCommand):
     """Re-read the login shell's PATH on the next build (after installing the command, for example)."""
 
     def run(self):
         global _cached_path
         _cached_path = None
-        sublime.status_message('Zoomdeck: the PATH will be read again on the next build')
+        sublime.status_message('ZoomDown: the PATH will be read again on the next build')

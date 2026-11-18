@@ -120,7 +120,7 @@ unless `min`/`max` move it.
 ## From code
 
 ```ts
-import { buildChart, parseChartData, buildTable } from 'zoomdeck';
+import { buildChart, parseChartData, buildTable } from 'zoomdown';
 
 const data = parseChartData('Region, 2023, 2024\nNorth, 3.2, 5\nSouth, 2.1, 3.1');
 const chart = await buildChart(data, { type: 'bar', width: 6, height: 3, values: true }, makeLabel);

@@ -4,7 +4,7 @@ import { documentPath as serverDocumentPath, editorCommand, previewsFor, splitCo
 import { MarkupParser, ASTTransformer } from '../src/markup/parser';
 import type { NavigationData } from '../src/runtime';
 
-const ROOT = '/home/me/Zoomdeck';
+const ROOT = '/home/me/ZoomDown';
 const MAIN = 'http://127.0.0.1:8000/@fs/home/me/decks/talk/slides.md';
 const PART = 'http://127.0.0.1:8000/@fs/home/me/decks/talk/parts/end.md';
 const at = (file: string, line: number) => ({ file, line });
@@ -37,12 +37,12 @@ const navigation: NavigationData = {
 describe('document paths', () => {
   it('turns the server URLs of a deck into file paths', () => {
     expect(documentPath(MAIN, ROOT)).toBe('/home/me/decks/talk/slides.md');
-    expect(documentPath('http://localhost:5173/examples/tour/slides.md', ROOT)).toBe('/home/me/Zoomdeck/examples/tour/slides.md');
-    expect(documentPath('http://localhost:5173/@fs/C:/Users/me/a%20b/slides.md', 'C:/Zoomdeck')).toBe('C:/Users/me/a b/slides.md');
+    expect(documentPath('http://localhost:5173/examples/tour/slides.md', ROOT)).toBe('/home/me/ZoomDown/examples/tour/slides.md');
+    expect(documentPath('http://localhost:5173/@fs/C:/Users/me/a%20b/slides.md', 'C:/ZoomDown')).toBe('C:/Users/me/a b/slides.md');
     expect(documentPath('/already/a/path.md', ROOT)).toBe('/already/a/path.md');
     expect(documentPath('', ROOT)).toBeNull();
     expect(serverDocumentPath(MAIN, ROOT)).toBe('/home/me/decks/talk/slides.md');
-    expect(serverDocumentPath('http://localhost:5173/examples/tour/slides.md', ROOT)).toBe('/home/me/Zoomdeck/examples/tour/slides.md');
+    expect(serverDocumentPath('http://localhost:5173/examples/tour/slides.md', ROOT)).toBe('/home/me/ZoomDown/examples/tour/slides.md');
     expect(serverDocumentPath(null, ROOT)).toBeNull();
   });
 });
@@ -91,8 +91,8 @@ describe('inverse search', () => {
     expect(editorCommand('code', file, 12)).toEqual(['code', '--goto', `${file}:12`]);
     expect(editorCommand('webstorm', file, 12)).toEqual(['webstorm', '--line', '12', file]);
     expect(editorCommand('"/Applications/My Editor.app/bin/edit" --line {line} {file}', file, 3)).toEqual(['/Applications/My Editor.app/bin/edit', '--line', '3', file]);
-    expect(editorCommand("nvim --server /tmp/nvim.sock --remote-send \"<C-\\><C-N>:call zoomdeck#Open({line}, '{file}')<CR>\"", file, 3))
-      .toEqual(['nvim', '--server', '/tmp/nvim.sock', '--remote-send', `<C-\\><C-N>:call zoomdeck#Open(3, '${file}')<CR>`]);
+    expect(editorCommand("nvim --server /tmp/nvim.sock --remote-send \"<C-\\><C-N>:call zoomdown#Open({line}, '{file}')<CR>\"", file, 3))
+      .toEqual(['nvim', '--server', '/tmp/nvim.sock', '--remote-send', `<C-\\><C-N>:call zoomdown#Open(3, '${file}')<CR>`]);
     expect(editorCommand('', file, 1)).toBeNull();
     expect(editorCommand(null, file, 1)).toBeNull();
     expect(() => editorCommand('notepad', file, 1)).toThrow(/Unknown editor/);
@@ -124,7 +124,7 @@ describe('step lines', () => {
 import { isBareImport, isInside, resolveFromPackage } from '../bin/resolve.mjs';
 
 describe('resolving a deck\'s imports from the package', () => {
-  const root = '/checkout/Zoomdeck';
+  const root = '/checkout/ZoomDown';
   const plugin = resolveFromPackage(root);
   const resolveId = plugin.resolveId as (this: { resolve: (...args: unknown[]) => Promise<unknown> }, source: string, importer: string | undefined, options: object) => Promise<unknown>;
 
@@ -132,21 +132,21 @@ describe('resolving a deck\'s imports from the package', () => {
     expect(isBareImport('manim-web')).toBe(true);
     expect(isBareImport('@scope/pkg/sub')).toBe(true);
     for (const path of ['./a', '../a', '/abs/a', 'C:/a', 'C:\\a', 'file:///a', 'virtual:x', '\0id']) expect(isBareImport(path)).toBe(false);
-    expect(isInside('/checkout/Zoomdeck/src/x.ts', root)).toBe(true);
-    expect(isInside('/checkout/Zoomdeck-other/x.ts', root)).toBe(false);
+    expect(isInside('/checkout/ZoomDown/src/x.ts', root)).toBe(true);
+    expect(isInside('/checkout/ZoomDown-other/x.ts', root)).toBe(false);
   });
 
-  it('answers zoomdeck with the source entry and bare imports from elsewhere as if from the package', async () => {
+  it('answers zoomdown with the source entry and bare imports from elsewhere as if from the package', async () => {
     const calls: unknown[][] = [];
-    const context = { resolve: async (...args: unknown[]) => { calls.push(args); return { id: '/checkout/Zoomdeck/node_modules/manim-web/index.js' }; } };
-    expect(await resolveId.call(context, 'zoomdeck', '/elsewhere/deck/code-slides.ts', {})).toBe('/checkout/Zoomdeck/src/index.ts');
+    const context = { resolve: async (...args: unknown[]) => { calls.push(args); return { id: '/checkout/ZoomDown/node_modules/manim-web/index.js' }; } };
+    expect(await resolveId.call(context, 'zoomdown', '/elsewhere/deck/code-slides.ts', {})).toBe('/checkout/ZoomDown/src/index.ts');
     expect(await resolveId.call(context, './other', '/elsewhere/deck/code-slides.ts', {})).toBeNull();
-    expect(await resolveId.call(context, 'manim-web', '/checkout/Zoomdeck/src/index.ts', {})).toBeNull();
+    expect(await resolveId.call(context, 'manim-web', '/checkout/ZoomDown/src/index.ts', {})).toBeNull();
     expect(await resolveId.call(context, 'manim-web', undefined, {})).toBeNull();
     expect(calls.length).toBe(0);
     const resolved = await resolveId.call(context, 'manim-web', '/elsewhere/deck/code-slides.ts', { isEntry: false });
-    expect(resolved).toEqual({ id: '/checkout/Zoomdeck/node_modules/manim-web/index.js' });
-    expect(calls).toEqual([['manim-web', '/checkout/Zoomdeck/src/index.ts', { isEntry: false, skipSelf: true }]]);
+    expect(resolved).toEqual({ id: '/checkout/ZoomDown/node_modules/manim-web/index.js' });
+    expect(calls).toEqual([['manim-web', '/checkout/ZoomDown/src/index.ts', { isEntry: false, skipSelf: true }]]);
   });
 });
 

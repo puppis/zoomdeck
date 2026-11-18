@@ -12,7 +12,7 @@ and the next `---` (or `...`):
 
 ```markdown
 ---
-title: Zoomdeck tour
+title: ZoomDown tour
 classes: code-slides.ts
 viewport: 16x9
 layout:
@@ -35,7 +35,7 @@ styles:
 ```
 
 The front matter's lines are left blank when the slides are parsed, so every line keeps its
-number, in error messages and for `zoomdeck jump`. Every way of opening the deck (the command
+number, in error messages and for `zoomdown jump`. Every way of opening the deck (the command
 line, the desktop app, a page that mounts it, a notebook) reads the same settings, and the
 default title is the same everywhere; a file without front matter has the defaults. YAML single
 quotes keep backslashes as written, so a macro is `'\mathbb{N}'`, not `"\\mathbb{N}"`; they
@@ -146,9 +146,9 @@ and the options' folders come before the front matter's.
 ## Command line
 
 ```bash
-node bin/zoomdeck.mjs serve <deck> [--port N] [--host] [--no-open] [--editor NAME] [--scene Name] [--watch PATH]...
-node bin/zoomdeck.mjs build <deck> -o <folder> [--one-file] [--show-outline] [--without-notes] [--scene Name]
-node bin/zoomdeck.mjs jump <file> <line>
+node bin/zoomdown.mjs serve <deck> [--port N] [--host] [--no-open] [--editor NAME] [--scene Name] [--watch PATH]...
+node bin/zoomdown.mjs build <deck> -o <folder> [--one-file] [--show-outline] [--without-notes] [--scene Name]
+node bin/zoomdown.mjs jump <file> <line>
 ```
 
 `<deck>` is a Markdown file, a PDF or a JS/TS module exporting a deck definition; a `.json`
@@ -157,7 +157,7 @@ commands read the front matter, with the files it extends. `serve` watches the d
 the folders its settings name, the folders of the files it extends and any `--watch` path,
 `--host` also listens on the network for a tablet, and `--editor` names the editor (`emacs`,
 `sublime`, `code`, `vim`, `jetbrains`, … or a command with `{file}` and `{line}`;
-`ZOOMDECK_EDITOR` is the default) that the player's E key and Alt + click open source lines
+`ZOOMDOWN_EDITOR` is the default) that the player's E key and Alt + click open source lines
 with. `jump` moves the running preview to the stop of a source line. `build` writes
 `index.html`, `assets/` and `deck/` into the folder, or `offline.html` with `--one-file`;
 `--without-notes` leaves the presenter's `::: notes` out of either. Code decks in `--one-file`
@@ -168,7 +168,7 @@ mode embed the code but not images they load themselves.
 `npm run dev` serves `index.html`, which reads `?deck=` (a Markdown file, a PDF or a module
 path, also `/@fs/absolute/path`) and `&scene=` for named exports, and opens
 `examples/tour/slides.md` when `deck` is omitted. Files under `examples/` trigger a reload on
-change, and `zoomdeck jump` and the inverse search work there too (set `ZOOMDECK_EDITOR` before
+change, and `zoomdown jump` and the inverse search work there too (set `ZOOMDOWN_EDITOR` before
 `npm run dev`).
 
 ## Package scripts

@@ -522,11 +522,11 @@ export function markupDeck(options: MarkupDeckOptions): ResolvedDeck {
 
 /**
  * A deck's title when its front matter gives none: the name of the folder holding the Markdown
- * (`tour` for `tour/slides.md`), else the file's own name, else Zoomdeck. The same wherever the
+ * (`tour` for `tour/slides.md`), else the file's own name, else ZoomDown. The same wherever the
  * deck is opened or built.
  */
 export function defaultTitle(location: string | undefined): string {
-  if (!location) return 'Zoomdeck';
+  if (!location) return 'ZoomDown';
   let path = location;
   try {
     path = decodeURIComponent(new URL(location, 'file:///').pathname);
@@ -536,5 +536,5 @@ export function defaultTitle(location: string | undefined): string {
   const parts = path.split('/').filter(Boolean);
   const file = parts.pop();
   const folder = parts.pop();
-  return folder ?? file?.replace(/\.[^.]+$/, '') ?? 'Zoomdeck';
+  return folder ?? file?.replace(/\.[^.]+$/, '') ?? 'ZoomDown';
 }

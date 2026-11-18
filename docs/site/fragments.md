@@ -53,7 +53,7 @@ fade. The reveal is always a fade, so `enter=` is refused there. On a root slide
 flat document and on a `preview=true` child, where everything shows from the start anyway,
 `step=-1` is the same as no step.
 
-```zoomdeck {height=5}
+```zoomdown {height=5}
 ::: slide {#early-parent width=16 height=5}
 
 One click shows the tile's caption, the next visits the child. {x=-7 y=1.8 font_size=20}

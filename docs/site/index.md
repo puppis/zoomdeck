@@ -1,13 +1,13 @@
 ---
-title: Zoomdeck
+title: ZoomDown
 description: Zooming presentations written in Markdown and played entirely in the browser.
 ---
 
-Zoomdeck is inspired by [Slajdomat](https://github.com/bojanczyk/slajdomat), Mikołaj Bojańczyk’s program for zooming slides, which I used for many years and which gave me the idea of a talk as a tree of slides that the camera zooms through. Zoomdeck takes a different direction though: its slides are written mainly in a markup language, whereas Slajdomat draws them in a graphical editor (Figma).
+ZoomDown is inspired by [Slajdomat](https://github.com/bojanczyk/slajdomat), Mikołaj Bojańczyk’s program for zooming slides, which I used for many years and which gave me the idea of a talk as a tree of slides that the camera zooms through. ZoomDown takes a different direction though: its slides are written mainly in a markup language, whereas Slajdomat draws them in a graphical editor (Figma).
 
-## What Zoomdeck does
+## What ZoomDown does
 
-A Zoomdeck presentation is a **forest of slides**, most often a single tree. Each slide has its
+A ZoomDown presentation is a **forest of slides**, most often a single tree. Each slide has its
 own logical canvas and a small animation program; child slides sit inside their parent's canvas
 as viewports. Presenting means visiting each tree in pre-order: the camera zooms into each child,
 plays its steps and zooms back out (or cuts, when you prefer), so the audience always sees where
@@ -26,13 +26,13 @@ deck itself or exports as a video, and prints every stage to a PDF. The same dec
 while you edit it and [exports](exporting.html) to a static folder or to a single HTML file
 that plays from disk.
 
-**See it:** the **[tour deck](tour.html)** is itself a Zoomdeck presentation, a tour of every
+**See it:** the **[tour deck](tour.html)** is itself a ZoomDown presentation, a tour of every
 feature with the markup that produces it next to the result. **Source:**
-[github.com/puppis/zoomdeck](https://github.com/puppis/zoomdeck).
+[github.com/puppis/zoomdown](https://github.com/puppis/zoomdown).
 
 ## Start here
 
-1. **[A quick tour](features.html)**: the main things Zoomdeck does, each shown live on the
+1. **[A quick tour](features.html)**: the main things ZoomDown does, each shown live on the
    page next to the markup that produces it: a PDF opened as it is, plain slides, a tree of
    slides, the spotlight, the pen and the whiteboard, the camera and recordings, formulas,
    diagrams and animations.
@@ -53,7 +53,7 @@ its "Open in the tour" badge.
 
 ## The tour deck
 
-The tour is Zoomdeck's own demonstration and the companion of these pages: a presentation in
+The tour is ZoomDown's own demonstration and the companion of these pages: a presentation in
 which every chapter shows a feature next to the listing that produces it, organized in the same
 sections as this documentation. **[Open the tour](tour.html)**: its front page lists the
 sections and jumps to any of them on a click, and each chapter links back to its page here.
@@ -70,8 +70,8 @@ for a deck of your own.
 
 ## The project
 
-Zoomdeck lives at [github.com/puppis/zoomdeck](https://github.com/puppis/zoomdeck); this site and
-the tour are published from it at [puppis.github.io/zoomdeck](https://puppis.github.io/zoomdeck/).
+ZoomDown lives at [github.com/puppis/zoomdown](https://github.com/puppis/zoomdown); this site and
+the tour are published from it at [puppis.github.io/zoomdown](https://puppis.github.io/zoomdown/).
 It needs Node.js 20.19 or newer (or 22.12 or newer) to install and build, and a browser with
 WebGL 2 to play decks; nothing else, no Python, LaTeX or video tools. Exported decks are plain
 HTML files.

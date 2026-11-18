@@ -64,7 +64,7 @@ describe('player settings', () => {
     const loaded = loadSettings();
     expect(loaded.pointer).toEqual({ pen: 'Control', pointer: 'Shift', advance: null, edit: 'Alt' });
     expect(loaded.pointerMode).toBe('laser');
-    localStorage.setItem('zoomdeck:settings', JSON.stringify({ pointer: { pen: 'Hyper' }, pointerMode: 'torch' }));
+    localStorage.setItem('zoomdown:settings', JSON.stringify({ pointer: { pen: 'Hyper' }, pointerMode: 'torch' }));
     const fallback = loadSettings();
     expect(fallback.pointer.pen).toBe('');
     expect(fallback.pointerMode).toBe('spotlight');
@@ -101,7 +101,7 @@ describe('key defaults that changed', () => {
     older.bindings.replay = ['r'];
     older.bindings.record = ['Shift+r'];
     const { print: _print, ...withoutPrint } = older.bindings;
-    localStorage.setItem('zoomdeck:settings', JSON.stringify({ ...older, bindings: withoutPrint }));
+    localStorage.setItem('zoomdown:settings', JSON.stringify({ ...older, bindings: withoutPrint }));
     const moved = loadSettings();
     expect(moved.bindings.record).toEqual(['r']);
     expect(moved.bindings.replay).toEqual(['a']);

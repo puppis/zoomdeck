@@ -1,10 +1,10 @@
 /**
  * The self-contained entry: everything the package exports, engine included, plus a
- * `<zoom-deck>` element, so that a page without a bundler, or the output cell of a notebook,
+ * `<zoom-down>` element, so that a page without a bundler, or the output cell of a notebook,
  * shows a deck with one script tag:
  *
- *     <script type="module" src="zoomdeck.standalone.js"></script>
- *     <zoom-deck src="talk/slides.md" without="camera record"></zoom-deck>
+ *     <script type="module" src="zoomdown.standalone.js"></script>
+ *     <zoom-down src="talk/slides.md" without="camera record"></zoom-down>
  *
  * `src` is a Markdown file (its settings in its front matter) or a PDF; without it the deck is the
  * Markdown written inside the element, in a `<script type="text/markdown">` child (verbatim) or as its text.
@@ -23,13 +23,13 @@ export * from './index';
 import { mountDeck, loadMarkupDeck, pdfDeck, FEATURES, type DeckHandle, type Feature, type ResolvedDeck } from './index';
 import { splitFrontMatter } from './markup/frontmatter.mjs';
 
-const STYLE_ID = 'zoom-deck-style';
+const STYLE_ID = 'zoom-down-style';
 
 function ensureStyle(): void {
   if (typeof document === 'undefined' || document.getElementById(STYLE_ID)) return;
   const style = document.createElement('style');
   style.id = STYLE_ID;
-  style.textContent = 'zoom-deck { display: block; position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; } zoom-deck:not(:defined) { visibility: hidden; }';
+  style.textContent = 'zoom-down { display: block; position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; } zoom-down:not(:defined) { visibility: hidden; }';
   document.head.append(style);
 }
 
@@ -38,7 +38,7 @@ export function featuresWithout(without: string | null): Partial<Record<Feature,
   const flags: Partial<Record<Feature, boolean>> = {};
   for (const name of (without ?? '').split(/[\s,]+/).filter(Boolean)) {
     if ((FEATURES as readonly string[]).includes(name)) flags[name as Feature] = false;
-    else console.warn(`[zoomdeck] <zoom-deck without="…">: no feature named ${JSON.stringify(name)}`);
+    else console.warn(`[zoomdown] <zoom-down without="…">: no feature named ${JSON.stringify(name)}`);
   }
   return flags;
 }
@@ -68,7 +68,7 @@ export function pageColors(element: HTMLElement): { background: string; foregrou
 }
 
 /** A deck in an element of the page; see the module comment. */
-export class ZoomDeckElement extends HTMLElement {
+export class ZoomDownElement extends HTMLElement {
   static observedAttributes = ['src', 'without', 'start', 'title', 'outline', 'use-location', 'background', 'foreground'];
   private static readonly _scheme = typeof matchMedia !== 'undefined' ? matchMedia('(prefers-color-scheme: dark)') : null;
   private _onScheme: (() => void) | null = null;
@@ -130,7 +130,7 @@ export class ZoomDeckElement extends HTMLElement {
 
   /** While the deck wears the page's colours, a change of colour scheme mounts it again in the new ones. */
   private _followScheme(on: boolean): void {
-    const scheme = ZoomDeckElement._scheme;
+    const scheme = ZoomDownElement._scheme;
     if (!scheme) return;
     if (on && !this._onScheme) {
       this._onScheme = () => this._schedule();
@@ -174,7 +174,7 @@ export class ZoomDeckElement extends HTMLElement {
         this._queued = false;
         const generation = this._generation;
         void this._mount(generation).then(resolve, (error) => {
-          console.error('[zoomdeck] <zoom-deck> could not show its deck', error);
+          console.error('[zoomdown] <zoom-down> could not show its deck', error);
           this._settled = true;
           resolve(null);
         });
@@ -243,4 +243,4 @@ export class ZoomDeckElement extends HTMLElement {
   }
 }
 
-if (typeof customElements !== 'undefined' && !customElements.get('zoom-deck')) customElements.define('zoom-deck', ZoomDeckElement);
+if (typeof customElements !== 'undefined' && !customElements.get('zoom-down')) customElements.define('zoom-down', ZoomDownElement);

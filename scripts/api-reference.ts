@@ -85,7 +85,7 @@ export function apiEntries(entry = join(root, 'src', 'index.ts')): ApiEntry[] {
   for (const exported of checker.getExportsOfModule(moduleSymbol)) {
     const name = exported.getName();
     if (name === 'engine') {
-      entries.push({ name, kind: 'namespace', module: 'manim-web', signature: "import { engine } from 'zoomdeck'", doc: 'The whole animation engine, re-exported: every mobject, animation, color and rate function a slide class or a module of the deck may need, under one name, so that a deck shares the player\'s copy of it.', members: [] });
+      entries.push({ name, kind: 'namespace', module: 'manim-web', signature: "import { engine } from 'zoomdown'", doc: 'The whole animation engine, re-exported: every mobject, animation, color and rate function a slide class or a module of the deck may need, under one name, so that a deck shares the player\'s copy of it.', members: [] });
       continue;
     }
     const symbol = exported.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(exported) : exported;

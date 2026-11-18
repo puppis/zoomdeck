@@ -382,7 +382,7 @@ export class PlayerUI {
     const aside = el(
       'aside',
       { 'aria-label': 'Slide outline' },
-      el('div', { class: 'brand', text: 'ZOOMDECK' }),
+      el('div', { class: 'brand', text: 'ZOOMDOWN' }),
       el('h1', { class: 'deck-title', text: deck.title }),
       el('p', { class: 'hint', text: 'Explore the slides or follow the presentation.' }),
       this._slides,
@@ -826,7 +826,7 @@ export class PlayerUI {
       case 'whiteboard': this.toggleWhiteboard(); break;
       case 'edit':
         if (this._editSource) this._editSource();
-        else this.notice('Open the deck with zoomdeck serve to jump to the editor');
+        else this.notice('Open the deck with zoomdown serve to jump to the editor');
         break;
       case 'camera': void this.toggleCamera(); break;
       case 'screen': void this.toggleScreen(); break;
@@ -1827,7 +1827,7 @@ export class PlayerUI {
       for (const entry of entries) download(entry.blob, entry.name);
       this.notice('Recording downloaded: put the files in a recordings/ folder next to the deck');
     }
-    // The talk stays playable here until the page closes, and a video of it is offered: the bundle is a file only Zoomdeck plays.
+    // The talk stays playable here until the page closes, and a video of it is offered: the bundle is a file only ZoomDown plays.
     this._memoryTalks.set(name, { timeline, files: new Map(entries.slice(0, -1).map((entry) => [entry.name, entry.blob])), urls: new Map() });
     await this._refreshRecordings();
     this._offerVideo(name);
@@ -1863,7 +1863,7 @@ export class PlayerUI {
       })();
     });
     later.addEventListener('click', () => offer.remove());
-    offer.append(el('span', { text: `Make a video of ${name}? The recorded tracks are composed in this page while the talk plays once, in real time, into a file that plays anywhere; the zip keeps them apart for Zoomdeck. Until this page closes, Export can also make it later.` }), go, later);
+    offer.append(el('span', { text: `Make a video of ${name}? The recorded tracks are composed in this page while the talk plays once, in real time, into a file that plays anywhere; the zip keeps them apart for ZoomDown. Until this page closes, Export can also make it later.` }), go, later);
     this.root.append(offer);
   }
 
@@ -2485,7 +2485,7 @@ export class PlayerUI {
     const web = this._webExportAvailable();
     const talks = this._exportableTalks();
     if (!web && !talks.length) {
-      this.notice('Nothing to export here: the deck becomes a web page where zoomdeck serve or the desktop app shows it, and recorded talks become videos');
+      this.notice('Nothing to export here: the deck becomes a web page where zoomdown serve or the desktop app shows it, and recorded talks become videos');
       return;
     }
     for (const stale of this.root.querySelectorAll('dialog.export')) stale.remove();
@@ -2493,7 +2493,7 @@ export class PlayerUI {
     const close = el('button', { class: 'close', 'aria-label': 'Close', text: '×' });
     const what = el('select', { 'aria-label': 'What to export' });
     const deckGroup = el('optgroup', { label: 'This deck' });
-    const webOption = el('option', { value: 'web', text: web ? 'As a web page (HTML)' : 'As a web page (HTML), where zoomdeck serve or the desktop app shows the deck' });
+    const webOption = el('option', { value: 'web', text: web ? 'As a web page (HTML)' : 'As a web page (HTML), where zoomdown serve or the desktop app shows the deck' });
     webOption.disabled = !web;
     deckGroup.append(webOption);
     what.append(deckGroup);
@@ -2656,7 +2656,7 @@ export class PlayerUI {
     let target: FileSystemFileHandle | null = null;
     if (destination === 'pick') {
       try {
-        if (form === 'folder') folder = (await (window as DirectoryPickerWindow).showDirectoryPicker?.({ id: 'zoomdeck-export', mode: 'readwrite' })) ?? null;
+        if (form === 'folder') folder = (await (window as DirectoryPickerWindow).showDirectoryPicker?.({ id: 'zoomdown-export', mode: 'readwrite' })) ?? null;
         else target = (await (window as SavePickerWindow).showSaveFilePicker?.({ suggestedName: `${name}.html`, types: [{ description: 'Web page', accept: { 'text/html': ['.html'] } }] })) ?? null;
       } catch (error) {
         // Dismissed, the dialog stays as it was; a picker that fails says so, and another place can be chosen.
@@ -3012,7 +3012,7 @@ export class PlayerUI {
       category.pane.hidden = !on;
     }
     try {
-      localStorage.setItem('zoomdeck:settings-category', chosen.id);
+      localStorage.setItem('zoomdown:settings-category', chosen.id);
     } catch {
       /* storage unavailable */
     }
@@ -3298,7 +3298,7 @@ export class PlayerUI {
       )],
       ['tablet', 'Tablet', el('section', { class: 'tablet', role: 'tabpanel', id: 'zd-settings-tablet' },
         el('h3', { text: 'Tablet' }),
-        el('p', { class: 'note', text: 'A tablet on the same network can show this deck and draw on it: open the code or address below on the tablet. It follows the presentation and cannot move it; strokes drawn on either device appear on both. The code admits a tablet for this session; a tablet you trust (from the prompt on the deck, or here) comes back on its own, without the code. Pairing needs the preview server started with --host (zoomdeck serve --host, or npm run dev -- --host); the desktop app listens on the network by itself.' }),
+        el('p', { class: 'note', text: 'A tablet on the same network can show this deck and draw on it: open the code or address below on the tablet. It follows the presentation and cannot move it; strokes drawn on either device appear on both. The code admits a tablet for this session; a tablet you trust (from the prompt on the deck, or here) comes back on its own, without the code. Pairing needs the preview server started with --host (zoomdown serve --host, or npm run dev -- --host); the desktop app listens on the network by itself.' }),
         this._pairingStatus,
         this._padList,
         pairButton,
@@ -3342,7 +3342,7 @@ export class PlayerUI {
     });
     let remembered: string | null = null;
     try {
-      remembered = localStorage.getItem('zoomdeck:settings-category');
+      remembered = localStorage.getItem('zoomdown:settings-category');
     } catch {
       /* storage unavailable */
     }
@@ -3653,7 +3653,7 @@ export class PlayerUI {
       return;
     }
     if (!info.lan || info.addresses.length === 0) {
-      this._pairingPanel.append(el('p', { class: 'note', text: 'The server listens on this computer only. Restart it with --host (zoomdeck serve --host, or npm run dev -- --host; the desktop app listens on the network unless started with --local) so the tablet can reach it, then come back here.' }));
+      this._pairingPanel.append(el('p', { class: 'note', text: 'The server listens on this computer only. Restart it with --host (zoomdown serve --host, or npm run dev -- --host; the desktop app listens on the network unless started with --local) so the tablet can reach it, then come back here.' }));
       return;
     }
     // One code per name or address: the computer's name on the network outlives a change of
@@ -4190,7 +4190,7 @@ export class PlayerUI {
         event.preventDefault();
         const at = { x: event.clientX, y: event.clientY };
         if (this._editSource) this._whenModifiersReleased(() => this._editSource?.(at));
-        else this.notice('Open the deck with zoomdeck serve to jump to the editor');
+        else this.notice('Open the deck with zoomdown serve to jump to the editor');
         return;
       }
       const drawing = this._drawingTool(event.pointerType);

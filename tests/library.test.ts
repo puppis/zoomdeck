@@ -8,7 +8,7 @@ import { LayoutConfig, MarkupRenderer } from '../src/markup/renderer';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { deckFolders, LIBRARY_KINDS } from '../bin/zoomdeck.mjs';
+import { deckFolders, LIBRARY_KINDS } from '../bin/zoomdown.mjs';
 
 const FONT_VARIANT_COUNT = 4; // regular, bold, italic, bold italic
 const FONT_EXTENSION_COUNT = 4; // woff2, woff, ttf, otf
@@ -131,7 +131,7 @@ describe('the fonts, languages and code themes of a deck', () => {
 
 describe('the library folders of a deck, by the command', () => {
   it('are named in the front matter or stand next to the Markdown under their standard names', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'zoomdeck-library-'));
+    const dir = mkdtempSync(join(tmpdir(), 'zoomdown-library-'));
     try {
       mkdirSync(join(dir, 'shared'));
       for (const { folder } of LIBRARY_KINDS) if (folder) mkdirSync(join(dir, 'src', folder), { recursive: true });

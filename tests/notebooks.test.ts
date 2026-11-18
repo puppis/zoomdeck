@@ -6,7 +6,7 @@ import { SlideBuilder } from '../src/markup/slide';
 
 const site = join(__dirname, '..', 'docs', 'site');
 
-/** The decks written in the documentation: the %%deck cells of the notebooks and the ```zoomdeck fences of the pages. */
+/** The decks written in the documentation: the %%deck cells of the notebooks and the ```zoomdown fences of the pages. */
 function decks(): Array<{ where: string; source: string }> {
   const found: Array<{ where: string; source: string }> = [];
   for (const file of readdirSync(site)) {
@@ -19,7 +19,7 @@ function decks(): Array<{ where: string; source: string }> {
       });
     } else if (file.endsWith('.md')) {
       const text = readFileSync(join(site, file), 'utf8');
-      for (const match of text.matchAll(/```zoomdeck([^\n]*)\n([\s\S]*?)```/g)) {
+      for (const match of text.matchAll(/```zoomdown([^\n]*)\n([\s\S]*?)```/g)) {
         if (!/\bsrc=/.test(match[1])) found.push({ where: `${file} fence at ${text.slice(0, match.index).split('\n').length}`, source: match[2] });
       }
     }

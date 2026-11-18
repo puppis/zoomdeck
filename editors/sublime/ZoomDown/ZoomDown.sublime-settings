@@ -1,0 +1,6 @@
+{
+  // The command the build system runs. Normally the global `zoomdown` created by `npm link`;
+  // an absolute path (the output of `which zoomdown`) or "node /path/to/ZoomDown/bin/zoomdown.mjs"
+  // also work. Copy this file to Packages/User/ZoomDown.sublime-settings to change it.
+  "command": "zoomdown"
+}

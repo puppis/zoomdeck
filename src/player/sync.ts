@@ -1,7 +1,7 @@
 /**
  * Editor synchronization under the preview server: forward search moves the player to the
  * stop that shows a line of the deck's source, inverse search opens the source of the current
- * stop in the editor. Both go through the server's `/__zoomdeck/sync` endpoints, so neither
+ * stop in the editor. Both go through the server's `/__zoomdown/sync` endpoints, so neither
  * exists in an exported deck.
  */
 import type { NavigationData } from '../runtime';
@@ -15,8 +15,8 @@ export interface JumpMessage {
   root: string;
 }
 
-const EVENT = 'zoomdeck:jump';
-const ENDPOINT = '/__zoomdeck/sync';
+const EVENT = 'zoomdown:jump';
+const ENDPOINT = '/__zoomdown/sync';
 
 /** Whether this page can reach the server's endpoints (only under the preview or development server). */
 export function editorSyncAvailable(): boolean {

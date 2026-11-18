@@ -1,5 +1,5 @@
 /**
- * The desktop app: the same player and preview server as `zoomdeck serve`, in a window of its
+ * The desktop app: the same player and preview server as `zoomdown serve`, in a window of its
  * own. It starts the server in this process (so pairing, recordings, the editor sync and the
  * command's flags all work as in the browser), opens the deck in a Chromium window, and adds
  * what a desktop program is expected to have: menus, Open and Open Recent, the system's
@@ -8,13 +8,13 @@
  * opens that deck; started bare it asks for one in the folder used last, and the first time it
  * offers to copy the tour deck to a folder of the user's, out of the app.
  *
- *   Zoomdeck [slides.md | paper.pdf | deck.ts] [--local] [--port N] [--editor NAME] [--watch PATH] [--scene Name]
+ *   ZoomDown [slides.md | paper.pdf | deck.ts] [--local] [--port N] [--editor NAME] [--watch PATH] [--scene Name]
  */
 import { app, BrowserWindow, Menu, dialog, shell, session, desktopCapturer, screen, systemPreferences } from 'electron';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve, basename } from 'node:path';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { startPreview, parseArgs, resolveDeckPath, deckKind } from '../bin/zoomdeck.mjs';
+import { startPreview, parseArgs, resolveDeckPath, deckKind } from '../bin/zoomdown.mjs';
 import { FOLDER as RECORDINGS } from '../bin/recordings.mjs';
 import { listJobs, resumeRenders } from '../bin/render.mjs';
 import { copyTour, TOUR_FOLDER } from './tour.mjs';
@@ -23,8 +23,8 @@ const here = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(here, '..');
 /** The tour deck inside the app: the source of the copies, never opened in place. */
 const TOUR_SOURCE = join(packageRoot, 'examples', 'tour');
-const DOCS = 'https://puppis.github.io/zoomdeck/';
-const REPOSITORY = 'https://github.com/puppis/zoomdeck';
+const DOCS = 'https://puppis.github.io/zoomdown/';
+const REPOSITORY = 'https://github.com/puppis/zoomdown';
 const FLAGS = new Set(['--host', '--local', '--port', '--editor', '--watch', '--scene']);
 const WITH_VALUE = new Set(['--port', '--editor', '--watch', '--scene']);
 /**
@@ -54,7 +54,7 @@ const argv = ownArguments(process.argv.slice(app.isPackaged ? 1 : 2));
 const localOnly = argv.includes('--local');
 const options = parseArgs(argv.filter((arg) => arg !== '--local'));
 options.host = options.host || !localOnly;
-const smokeShot = process.env.ZOOMDECK_SMOKE || null;
+const smokeShot = process.env.ZOOMDOWN_SMOKE || null;
 
 let win = null;
 let preview = null;
@@ -152,11 +152,11 @@ async function openDeck(deckPath) {
     target = resolveDeckPath(deckPath);
   } catch (error) {
     // A deck.json from before: say where its settings go now.
-    dialog.showErrorBox('Zoomdeck', error.message);
+    dialog.showErrorBox('ZoomDown', error.message);
     return;
   }
   if (!existsSync(target) || !deckKind(target)) {
-    dialog.showErrorBox('Zoomdeck', `Not a deck: ${deckPath}\nOpen a Markdown file, a PDF or a slide module.`);
+    dialog.showErrorBox('ZoomDown', `Not a deck: ${deckPath}\nOpen a Markdown file, a PDF or a slide module.`);
     return;
   }
   const previous = preview;
@@ -174,11 +174,11 @@ async function openDeck(deckPath) {
       openRenderPage,
     });
   } catch (error) {
-    dialog.showErrorBox('Zoomdeck', `The deck could not be served:\n${error.message}`);
+    dialog.showErrorBox('ZoomDown', `The deck could not be served:\n${error.message}`);
     return;
   }
   current = target;
-  console.log(`Zoomdeck preview at ${preview.url}`);
+  console.log(`ZoomDown preview at ${preview.url}`);
   remember(target);
   if (!win) createWindow();
   await win.loadURL(preview.url);
@@ -191,7 +191,7 @@ function createWindow() {
     height: 820,
     minWidth: 640,
     minHeight: 400,
-    title: 'Zoomdeck',
+    title: 'ZoomDown',
     backgroundColor: '#ffffff',
     webPreferences: { contextIsolation: true, sandbox: true },
   });
@@ -203,7 +203,7 @@ function createWindow() {
     if (/^https?:/.test(url)) shell.openExternal(url);
     return { action: 'deny' };
   });
-  // ZOOMDECK_SMOKE=<file.png>: wait for the deck to be ready, capture the window to the file and quit.
+  // ZOOMDOWN_SMOKE=<file.png>: wait for the deck to be ready, capture the window to the file and quit.
   if (smokeShot) {
     win.webContents.once('did-finish-load', async () => {
       const started = Date.now();
@@ -273,7 +273,7 @@ async function offerTour() {
     deck = copyTour(TOUR_SOURCE, chosen.filePaths[0]);
   } catch (error) {
     if (error.code !== 'EEXIST') {
-      dialog.showErrorBox('Zoomdeck', `The tour could not be copied:\n${error.message}`);
+      dialog.showErrorBox('ZoomDown', `The tour could not be copied:\n${error.message}`);
       return false;
     }
     const { response } = await dialog.showMessageBox(win ?? undefined, {
@@ -300,7 +300,7 @@ async function start() {
   if (!store.decks.length && !store.folder) {
     const { response } = await dialog.showMessageBox({
       type: 'none',
-      message: 'Welcome to Zoomdeck',
+      message: 'Welcome to ZoomDown',
       detail: 'Open a deck of yours (a Markdown file, a PDF or a slide module), or copy the tour deck with its examples to a folder of yours and start from there.',
       buttons: ['Open a Deck…', 'Copy the Tour…', 'Quit'],
       defaultId: 1,

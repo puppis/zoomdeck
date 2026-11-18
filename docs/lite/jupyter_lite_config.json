@@ -1,7 +1,7 @@
 {
   "LiteBuildConfig": {
     "contents": [
-      "../site/zoomdeck_nb.py",
+      "../site/zoomdown_nb.py",
       "../site/first-deck.ipynb",
       "../site/content.ipynb",
       "../site/diagrams.ipynb",

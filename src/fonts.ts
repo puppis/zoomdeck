@@ -48,7 +48,7 @@ export function loadDefaultFonts(): Promise<void> {
         await face.load();
         document.fonts.add(face);
       } catch (error) {
-        console.warn(`[zoomdeck] could not load ${family} (${style} ${weight}):`, error);
+        console.warn(`[zoomdown] could not load ${family} (${style} ${weight}):`, error);
       }
     }),
   ).then(() => undefined);

@@ -1,0 +1,7 @@
+[
+  { "caption": "ZoomDown: Preview deck", "command": "build", "args": { "build_system": "Packages/ZoomDown/ZoomDown.sublime-build", "variant": "Preview" } },
+  { "caption": "ZoomDown: Jump to this line in the browser", "command": "zoomdown_jump" },
+  { "caption": "ZoomDown: Build HTML file", "command": "build", "args": { "build_system": "Packages/ZoomDown/ZoomDown.sublime-build" } },
+  { "caption": "ZoomDown: Build static folder", "command": "build", "args": { "build_system": "Packages/ZoomDown/ZoomDown.sublime-build", "variant": "Build folder" } },
+  { "caption": "ZoomDown: Re-read the shell PATH", "command": "zoomdown_forget_path" }
+]

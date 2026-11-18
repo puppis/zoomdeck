@@ -1,6 +1,6 @@
 /** Code-authored slides imported by the tour through `[[import: Orbit ...]]`. */
 import { BLUE_E, Circle, Dot, GOLD_E, MoveAlongPath, Text, linear } from 'manim-web';
-import { Slide, type SlideContext } from 'zoomdeck';
+import { Slide, type SlideContext } from 'zoomdown';
 
 /** A dot travelling once around a circle, then a stop. */
 export class Orbit extends Slide {

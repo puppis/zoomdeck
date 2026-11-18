@@ -12,7 +12,7 @@ import { LayoutConfig, boundaryPoint } from '../src/markup/renderer';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { deckFolders } from '../bin/zoomdeck.mjs';
+import { deckFolders } from '../bin/zoomdown.mjs';
 
 describe('snippets', () => {
   const load = async () => {
@@ -240,7 +240,7 @@ describe('themes', () => {
 
 describe('the command', () => {
   it('finds the directives, snippets and transitions folders next to the Markdown', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'zoomdeck-extending-'));
+    const dir = mkdtempSync(join(tmpdir(), 'zoomdown-extending-'));
     try {
       for (const folder of ['directives', 'snippets', 'transitions']) mkdirSync(join(dir, folder));
       writeFileSync(join(dir, 'slides.md'), '::: slide {#a}\nx\n:::\n');

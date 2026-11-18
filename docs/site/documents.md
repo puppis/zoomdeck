@@ -9,17 +9,17 @@ below is the real player: click one to give it the focus, then press → and ←
 
 ## A PDF
 
-Zoomdeck opens a PDF directly: a paper, a poster, slides typeset elsewhere. Each page becomes a
+ZoomDown opens a PDF directly: a paper, a poster, slides typeset elsewhere. Each page becomes a
 slide, the pages are visited first to last, and the player cuts from one to the next with no
 zoom and no fade, as a document is read. The bookmarks of the document, where it has them, name
 the pages in the outline; the others are numbered. Here, three pages typeset with LaTeX:
 
-```zoomdeck src=live/slides.pdf without="camera record screen"
+```zoomdown src=live/slides.pdf without="camera record screen"
 ```
 
 ```bash
-zoomdeck serve paper.pdf                       # present it
-zoomdeck build paper.pdf -o out/paper --one-file   # a page that plays it, file embedded
+zoomdown serve paper.pdf                       # present it
+zoomdown build paper.pdf -o out/paper --one-file   # a page that plays it, file embedded
 ```
 
 The command, the development page (`/?deck=path/to/paper.pdf`), the desktop app and
@@ -62,7 +62,7 @@ slide otherwise: it has steps, fragments and animations, as the second one here,
 include children of its own, which are entered and left with the usual zooms, as the third one
 does.
 
-```zoomdeck
+```zoomdown
 ::: slide {#first width=20}
 # A deck of plain slides
 
@@ -107,7 +107,7 @@ pages, a file of plain slides a forest of single slides, and a talk with one sli
 all the others is a single tree, the most common deck of all. Here, a forest of two trees: a
 tree of two children, then a second root.
 
-```zoomdeck
+```zoomdown
 ::: slide {#lecture width=20}
 # A tree with two children
 

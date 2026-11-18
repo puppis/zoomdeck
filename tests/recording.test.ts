@@ -421,7 +421,7 @@ describe('the recordings folder', () => {
   afterEach(() => rmSync(folder, { recursive: true, force: true }));
 
   it('indexes the timelines it holds, checks names and keeps the preview from reloading on them', async () => {
-    folder = mkdtempSync(join(tmpdir(), 'zoomdeck-rec-'));
+    folder = mkdtempSync(join(tmpdir(), 'zoomdown-rec-'));
     const recordings = join(folder, 'recordings');
     mkdirSync(recordings);
     const timeline: Timeline = { version: 1, deck: { title: 'Deck', hash: 'x' }, recorded: '2026-11-13T09:05:00.000Z', duration: 1234, media: [{ file: 'a.webm', type: 'video/webm', video: true, start: 0, duration: 1234 }], pip: { corner: 'bottom-right', size: 0.25 }, events: [] };
@@ -447,7 +447,7 @@ describe('the recordings folder', () => {
   });
 
   it('indexes the talks kept as bundles, names their file, and closes a bundle cut short on the way', async () => {
-    folder = mkdtempSync(join(tmpdir(), 'zoomdeck-rec-'));
+    folder = mkdtempSync(join(tmpdir(), 'zoomdown-rec-'));
     const recordings = join(folder, 'recordings');
     const timeline: Timeline = { version: 1, deck: { title: 'Deck', hash: 'x' }, recorded: '2026-11-14T09:05:00.000Z', duration: 2000, media: [{ file: 'b.webm', type: 'video/webm', video: true, start: 0, duration: 2000 }], pip: { corner: 'bottom-right', size: 0.25 }, events: [] };
     const writer = await BundleWriter.open(join(recordings, 'b.zip'), 'b.json');

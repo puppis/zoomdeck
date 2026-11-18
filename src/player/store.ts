@@ -36,7 +36,7 @@ export interface RecordingIndex {
   recordings: RecordingEntry[];
 }
 
-const ENDPOINT = '/__zoomdeck/recordings';
+const ENDPOINT = '/__zoomdown/recordings';
 
 /** Whether this page runs under the preview or development server, which can write the deck folder. */
 export function recordingStoreAvailable(): boolean {

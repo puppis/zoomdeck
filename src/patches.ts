@@ -12,9 +12,9 @@ import * as THREE from 'three';
 import { Mobject } from 'manim-web';
 
 /** Marker stored in `userData` of every display group created by this library. */
-export const DISPLAY_GROUP_FLAG = 'zoomdeckDisplay';
+export const DISPLAY_GROUP_FLAG = 'zoomdownDisplay';
 /** `userData` key under which a display group names the slide it draws. */
-export const DISPLAY_SLIDE_KEY = 'zoomdeckSlide';
+export const DISPLAY_SLIDE_KEY = 'zoomdownSlide';
 
 let installed = false;
 

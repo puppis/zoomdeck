@@ -1,6 +1,6 @@
 ---
 title: A quick tour
-description: The main things Zoomdeck does, each shown live with the markup that produces it.
+description: The main things ZoomDown does, each shown live with the markup that produces it.
 ---
 
 <a class="try" href="tour.html">The tour deck ↗</a>
@@ -12,17 +12,17 @@ and ← or with its buttons; the markup under a deck is all it takes to write it
 
 <a class="try" href="tour.html#slide=feat-pdf">This chapter in the tour ↗</a>
 
-Zoomdeck opens a PDF directly: a paper, a poster, slides typeset elsewhere. Each page is a
+ZoomDown opens a PDF directly: a paper, a poster, slides typeset elsewhere. Each page is a
 slide, the pages are visited first to last with a cut between them, the bookmarks name them in
 the outline, and the text stays sharp at any zoom because pages are drawn at the density of the
 screen. The pen, the spotlight, recording and printing work on a PDF as on any deck.
 
-```zoomdeck src=live/slides.pdf without="camera record screen print"
+```zoomdown src=live/slides.pdf without="camera record screen print"
 ```
 
 ```bash
-zoomdeck serve paper.pdf          # present it
-zoomdeck build paper.pdf -o out   # export a page that plays it
+zoomdown serve paper.pdf          # present it
+zoomdown build paper.pdf -o out   # export a page that plays it
 ```
 
 ## Plain slides, in a row
@@ -32,7 +32,7 @@ zoomdeck build paper.pdf -o out   # export a page that plays it
 A deck of your own is a Markdown file of `::: slide` containers. Slides that include no other
 slide are simply visited in order, with cuts and no animation, like the pages of a document.
 
-```zoomdeck
+```zoomdown
 ::: slide {#one}
 # One
 
@@ -62,7 +62,7 @@ size. The camera zooms into each child in turn, goes from a child straight to it
 and zooms back out after the last one. Here a root has two children and the second child has a
 child of its own: first child, next sibling, then down again.
 
-```zoomdeck
+```zoomdown
 ::: slide {#talk width=20}
 # A talk as a tree
 
@@ -109,7 +109,7 @@ Hold **Shift** while moving the pointer to dim everything but a circle around it
 either, and Shift + drag draws a highlight. Both work on any deck, including a PDF, and are
 recorded with a talk. Try it on the deck below.
 
-```zoomdeck code=hidden
+```zoomdown code=hidden
 ::: slide {#spot width=20}
 ## Spotlight and laser
 
@@ -131,7 +131,7 @@ pairs with the player as a drawing pad (Settings → Tablet), so you write on it
 sees the slide: pressure, palm rejection, erasing with a finger. **W** opens the whiteboard, an
 infinite canvas of its own that keeps what you wrote and comes back when you need it again.
 
-```zoomdeck code=hidden
+```zoomdown code=hidden
 ::: slide {#ink width=20}
 ## Pen and whiteboard
 
@@ -155,7 +155,7 @@ With ffmpeg on the computer a talk is also rendered off the clock, faster than r
 one MP4 file. The deck below has these controls on; each asks the browser for permission
 the first time.
 
-```zoomdeck without=none code=hidden
+```zoomdown without=none code=hidden
 ::: slide {#rec width=20}
 ## Camera and recording
 
@@ -175,7 +175,7 @@ grow, change color, morph into one another, get highlighted,
 or are written stroke by stroke in the bundled handwriting face, one step per click. The deck
 below has three slides: a formula, a diagram, and five steps of motion.
 
-```zoomdeck
+```zoomdown
 ::: slide {#formula width=20}
 ## A formula and its parts
 

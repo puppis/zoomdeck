@@ -10,3 +10,7 @@ export function deckSettings(deckPath: string): Promise<{ settings: import('../s
 export function startPreview(options: Record<string, unknown>): Promise<{ server: unknown; url: string; port: number; deckPath: string; kind: string; watchRoots: string[] }>;
 /** Build a deck into a static folder, or with `oneFile` into one `offline.html`; resolves with the page written. Throws on errors. */
 export function buildDeck(options: Record<string, unknown>): Promise<{ target: string }>;
+/** The files of a deck folder that may travel with an export, as absolute paths; links are followed. */
+export function collectAssets(deckDir: string): Promise<string[]>;
+/** The existing files inside `root` that a web page of the deck loads by a relative path. */
+export function pageReferences(page: string, root: string): Promise<string[]>;

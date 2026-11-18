@@ -527,7 +527,7 @@ export class MarkupRenderer {
               await face.load();
               document.fonts.add(face);
             } catch (error) {
-              console.warn(`[zoomdeck] could not load the font ${clean}${suffix} from ${url}:`, error);
+              console.warn(`[zoomdown] could not load the font ${clean}${suffix} from ${url}:`, error);
             }
             break;
           }
@@ -580,7 +580,7 @@ export class MarkupRenderer {
           const profile = (await (await fetch(url)).json()) as Language & { aliases?: string[] };
           registerLanguage(key, profile);
         } catch (error) {
-          console.warn(`[zoomdeck] the language profile ${url} could not be read:`, error);
+          console.warn(`[zoomdown] the language profile ${url} could not be read:`, error);
         }
       })();
       this._languages.set(key, pending);
@@ -595,7 +595,7 @@ export class MarkupRenderer {
       if (!name) return undefined;
       const url = await this._fileIn(`${name}.json`, [...this.codeThemes, ...this.paths]);
       if (!url) {
-        console.warn(`[zoomdeck] no code theme ${name}.json in the deck's code-themes folders`);
+        console.warn(`[zoomdown] no code theme ${name}.json in the deck's code-themes folders`);
         return undefined;
       }
       return (await (await fetch(url)).json()) as CodeTheme;

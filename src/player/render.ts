@@ -386,7 +386,7 @@ export async function renderTalk(playback: Playback, player: Player, stage: Stag
   return cancelled ? null : { frames: sent, clips: log.clips };
 }
 
-const ENDPOINT = '/__zoomdeck/render';
+const ENDPOINT = '/__zoomdown/render';
 
 /** What the server says about rendering: whether it can (ffmpeg), whether it opens render pages itself (the desktop app), and the jobs. */
 export interface RenderStatus {

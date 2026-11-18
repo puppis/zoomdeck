@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { MarkupParser } from '../src/markup/parser';
 import { ElementSpec } from '../src/markup/ast';
 import { sanitizePads } from '../src/player/settings';
-import { stripNotes } from '../bin/zoomdeck.mjs';
+import { stripNotes } from '../bin/zoomdown.mjs';
 
 const DECK = [
   '::: slide {#a width=20}',

@@ -208,7 +208,7 @@ Notes for step 2 only.
 
 Notes blocks inside a slide hold the presenter's notes. They are never laid out: they go to
 the [companion tablet](player.html#a-tablet-as-a-drawing-pad), under the picture, the slide's
-notes first and the current step's after them. `step=N` is the only attribute. `zoomdeck build
+notes first and the current step's after them. `step=N` is the only attribute. `zoomdown build
 --without-notes` leaves them out of an export.
 
 ### [[import]]
@@ -369,7 +369,7 @@ lines never wrap, `width` scales the block down to fit. The languages built in a
 (`xml`, `svg`, `xhtml`), `markdown` (`md`, `slides`, `zs`, this dialect) and plain `text`; any
 other name is looked for as `languages/<name>.json` and shown plain when absent. Token colors
 follow the text color, or `layout.codeTheme`. A fence named `chart` is a chart, not a listing;
-`zoomdeck` fences exist only in this documentation.
+`zoomdown` fences exist only in this documentation.
 
 ### Tables
 

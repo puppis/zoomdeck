@@ -1,16 +1,16 @@
 ---
 title: Getting started
-description: Get Zoomdeck as a desktop app or from the sources, open a deck, present it, export it to a folder or a single file, and set up your editor.
+description: Get ZoomDown as a desktop app or from the sources, open a deck, present it, export it to a folder or a single file, and set up your editor.
 ---
 
-[A quick tour](features.html) showed what Zoomdeck does; this page gets it onto your computer
+[A quick tour](features.html) showed what ZoomDown does; this page gets it onto your computer
 and a deck of yours into it. There are two ways in: the desktop app, which needs nothing else,
-and the sources, which bring the `zoomdeck` command and the live development page.
+and the sources, which bring the `zoomdown` command and the live development page.
 
 ## The desktop app
 
 Download the build for your system from the
-[releases](https://github.com/puppis/zoomdeck/releases): a `.dmg` for macOS, an `.AppImage` or
+[releases](https://github.com/puppis/zoomdown/releases): a `.dmg` for macOS, an `.AppImage` or
 `.deb` for Linux, an installer or a portable `.exe` for Windows. The app is the player and the
 preview server in a window of its own: open a Markdown file or a PDF from the File menu, by
 dropping it on the app, or by double-clicking it, and present as in the browser.
@@ -24,11 +24,11 @@ inside the build with `crypto.hash is not a function`) and a browser with WebGL 
 no Python, no LaTeX, no video tools; formulas render through MathJax and the fonts are bundled.
 
 ```bash
-git clone https://github.com/puppis/zoomdeck.git Zoomdeck
-cd Zoomdeck
+git clone https://github.com/puppis/zoomdown.git ZoomDown
+cd ZoomDown
 npm install        # dependencies, and this documentation into docs/html/
 npm run dev        # the development page, with the tour deck
-npm link           # optional: the `zoomdeck` command, from any folder
+npm link           # optional: the `zoomdown` command, from any folder
 ```
 
 `npm run dev` serves `http://localhost:5173/`, which opens the tour deck; `?deck=` selects
@@ -36,8 +36,8 @@ another: `/?deck=path/to/slides.md`, `/?deck=path/to/paper.pdf`, or
 `/?deck=examples/tree-deck&scene=Demo` for a code-authored deck. The page reloads when a deck
 file changes and comes back to the stop you were looking at.
 
-`npm link` puts a `zoomdeck` command on your path that runs the checkout as it is (so `git pull`
-updates it; `npm unlink -g zoomdeck` removes it). Without it, `node bin/zoomdeck.mjs` from the
+`npm link` puts a `zoomdown` command on your path that runs the checkout as it is (so `git pull`
+updates it; `npm unlink -g zoomdown` removes it). Without it, `node bin/zoomdown.mjs` from the
 checkout does the same. If a shell or an editor answers `command not found`, npm's global `bin`
 folder (`npm prefix -g` prints its parent) is not on that program's `PATH`; the editor setups
 below find the command on their own, and [Editors](editors.html) covers the rest.
@@ -45,8 +45,8 @@ below find the command on their own, and [Editors](editors.html) covers the rest
 ## Open a deck
 
 ```bash
-zoomdeck serve talk/slides.md          # also paper.pdf
-zoomdeck serve talk/slides.md --host   # reachable on the network, for a tablet
+zoomdown serve talk/slides.md          # also paper.pdf
+zoomdown serve talk/slides.md --host   # reachable on the network, for a tablet
 ```
 
 The preview opens the deck in your browser at `http://127.0.0.1:8000/` (or the next free port,
@@ -66,8 +66,8 @@ each tool, and chapters 4 to 6 of the [tour](tour.html#slide=feat-spotlight) sho
 ## Export it
 
 ```bash
-zoomdeck build talk/slides.md -o out/talk             # a folder: index.html, assets/, deck/
-zoomdeck build talk/slides.md -o out/talk --one-file  # one HTML file, every asset inside
+zoomdown build talk/slides.md -o out/talk             # a folder: index.html, assets/, deck/
+zoomdown build talk/slides.md -o out/talk --one-file  # one HTML file, every asset inside
 ```
 
 **Export** in the player's footer (X) does the same from the deck you are looking at, into a

@@ -28,7 +28,7 @@ describe('zip archives', () => {
     expect(new DataView(bytes.buffer).getUint16(bytes.length - 12, true)).toBe(2);
     expect(bytes.length).toBe(30 + 9 + media.length + 30 + 9 + timeline.length + 2 * (46 + 9) + 22);
     // A zip tool, when the machine has one, reads the files back unchanged.
-    const dir = mkdtempSync(join(tmpdir(), 'zoomdeck-zip-'));
+    const dir = mkdtempSync(join(tmpdir(), 'zoomdown-zip-'));
     try {
       const file = join(dir, 'talk.zip');
       writeFileSync(file, bytes);

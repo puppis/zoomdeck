@@ -1,0 +1,60 @@
+%YAML 1.2
+---
+# ZoomDown's Markdown dialect: Markdown plus slide containers, directives and attribute blocks.
+# Requires Sublime Text 4 (the `extends` key). Select it with View ▸ Syntax ▸ ZoomDown Markdown;
+# files whose first line opens a slide or styles block pick it automatically.
+name: ZoomDown Markdown
+scope: text.html.markdown.zoomdown
+version: 2
+extends: Packages/Markdown/Markdown.sublime-syntax
+file_extensions: []
+first_line_match: '^(?:<!--.*?-->\s*)?:::\s*(?:slide|styles)\b'
+contexts:
+  main:
+    - meta_prepend: true
+    - match: '^\s*(:::)\s*(slide|styles)?(?=\s*(?:\{|$))'
+      captures:
+        1: punctuation.definition.block.zoomdown
+        2: keyword.control.container.zoomdown
+      push: line-attributes
+    - match: '^\s*(\[\[)([a-z_]+)(:)'
+      captures:
+        1: punctuation.definition.directive.zoomdown
+        2: keyword.control.directive.zoomdown
+        3: punctuation.separator.zoomdown
+      push: directive
+    - match: '(?=\{[^{}\n]*\}\s*$)'
+      push: line-attributes
+  line-attributes:
+    - meta_content_scope: meta.attributes.zoomdown
+    - match: $
+      pop: true
+    - include: attributes
+  directive:
+    - meta_content_scope: meta.directive.zoomdown
+    - match: '\]\]'
+      scope: punctuation.definition.directive.zoomdown
+      pop: true
+    - include: attributes
+  attributes:
+    - match: '"'
+      scope: punctuation.definition.string.begin.zoomdown
+      push:
+        - meta_scope: string.quoted.double.zoomdown
+        - match: '\\.'
+          scope: constant.character.escape.zoomdown
+        - match: '"'
+          scope: punctuation.definition.string.end.zoomdown
+          pop: true
+    - match: '#[A-Za-z_][\w.-]*'
+      scope: entity.name.tag.id.zoomdown
+    - match: '\.[A-Za-z_][\w-]*'
+      scope: entity.other.attribute-name.class.zoomdown
+    - match: '->'
+      scope: keyword.operator.arrow.zoomdown
+    - match: '([A-Za-z_][\w-]*)(=|:)(?=\S)'
+      captures:
+        1: variable.parameter.zoomdown
+        2: keyword.operator.assignment.zoomdown
+    - match: '-?\d+(?:\.\d+)?'
+      scope: constant.numeric.zoomdown

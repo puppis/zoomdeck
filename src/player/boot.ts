@@ -127,7 +127,7 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
       const share = progressShare(event);
       if (share) ui.setLoading(share);
       const message = progressMessage(event);
-      if (message && log) console.info(`[zoomdeck] [+${((performance.now() - started) / 1000).toFixed(1)}s] ${message}`);
+      if (message && log) console.info(`[zoomdown] [+${((performance.now() - started) / 1000).toFixed(1)}s] ${message}`);
     },
   });
   stage.attach(presenter);
@@ -185,10 +185,10 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
       });
     };
   }
-  if (log) console.info(`[zoomdeck] [+${((performance.now() - started) / 1000).toFixed(1)}s] Ready: ${navigation.clips.length} clips; ${RASTER_STATS.count} text rasters in ${Math.round(RASTER_STATS.ms)} ms`);
+  if (log) console.info(`[zoomdown] [+${((performance.now() - started) / 1000).toFixed(1)}s] Ready: ${navigation.clips.length} clips; ${RASTER_STATS.count} text rasters in ${Math.round(RASTER_STATS.ms)} ms`);
 
   // The same-origin editing shell transfers a logical bookmark across reloads.
-  const windowWithPosition = window as Window & { zoomdeckPosition?: () => Bookmark | null };
+  const windowWithPosition = window as Window & { zoomdownPosition?: () => Bookmark | null };
   const position = () => {
     const current = player.index;
     const slide = navigation.slides.find((item) => item.id === navigation.clips[current]?.slide);
@@ -207,10 +207,10 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
       atEnd: player.atEnd,
     };
   };
-  if (useLocation) windowWithPosition.zoomdeckPosition = position;
+  if (useLocation) windowWithPosition.zoomdownPosition = position;
   let resume: Bookmark | null = null;
   let hashStep: number | null = null;
-  const storageKey = `zoomdeck:${location.pathname}${location.search}`;
+  const storageKey = `zoomdown:${location.pathname}${location.search}`;
   if (useLocation) {
     try {
       resume = JSON.parse(new URLSearchParams(location.search).get('resume') ?? 'null');
@@ -308,7 +308,7 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
     destroyed = true;
     abort.abort();
     stages.delete(stage);
-    if (useLocation && windowWithPosition.zoomdeckPosition === position) delete windowWithPosition.zoomdeckPosition;
+    if (useLocation && windowWithPosition.zoomdownPosition === position) delete windowWithPosition.zoomdownPosition;
     player.dispose();
     ui.dispose();
     links.dispose();

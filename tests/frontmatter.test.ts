@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parseSettings, resolveSettings, splitFrontMatter } from '../src/markup/frontmatter.mjs';
 import { defaultTitle, loadMarkupDeck, markupDeck } from '../src/markup/deck';
-import { deckFolders, deckSettings, resolveDeckPath } from '../bin/zoomdeck.mjs';
+import { deckFolders, deckSettings, resolveDeckPath } from '../bin/zoomdown.mjs';
 
 /** Files in memory, by URL, read and joined as a browser would. */
 function memory(files: Record<string, string>) {
@@ -93,13 +93,13 @@ describe('a deck and its front matter', () => {
   it('is titled after its folder when the front matter gives no title', () => {
     expect(defaultTitle('https://x.org/talks/graphs/slides.md')).toBe('graphs');
     expect(defaultTitle('/slides.md')).toBe('slides');
-    expect(defaultTitle(undefined)).toBe('Zoomdeck');
+    expect(defaultTitle(undefined)).toBe('ZoomDown');
   });
 });
 
 describe('the command and front matter', () => {
   it('reads a deck\'s settings and folders from its front matter and the files it extends, and refuses a JSON file', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'zoomdeck-front-'));
+    const dir = mkdtempSync(join(tmpdir(), 'zoomdown-front-'));
     try {
       mkdirSync(join(dir, 'course', 'fonts'), { recursive: true });
       mkdirSync(join(dir, 'course', 'talk'), { recursive: true });

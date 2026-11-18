@@ -28,7 +28,7 @@ export function spaceSvgPathNumbers(svg: string): string {
 let installed = false;
 
 /**
- * Formulas reach the engine as MathJax SVG markup read with `DOMParser`, where Zoomdeck cannot
+ * Formulas reach the engine as MathJax SVG markup read with `DOMParser`, where ZoomDown cannot
  * reach the path data otherwise: space it there, for MathJax output only (it carries
  * `data-mml-node`). Installed once; every other document is parsed as it is.
  */

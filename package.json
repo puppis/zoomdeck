@@ -1,5 +1,5 @@
 {
-  "name": "zoomdeck",
+  "name": "zoomdown",
   "version": "0.6.10",
   "description": "Zooming presentations written in Markdown and played entirely in the browser: a tree of slides visited in pre-order with a zooming camera.",
   "keywords": [
@@ -17,27 +17,27 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/puppis/zoomdeck.git"
+    "url": "git+https://github.com/puppis/zoomdown.git"
   },
-  "homepage": "https://puppis.github.io/zoomdeck/",
+  "homepage": "https://puppis.github.io/zoomdown/",
   "bugs": {
-    "url": "https://github.com/puppis/zoomdeck/issues"
+    "url": "https://github.com/puppis/zoomdown/issues"
   },
   "type": "module",
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   },
   "bin": {
-    "zoomdeck": "./bin/zoomdeck.mjs"
+    "zoomdown": "./bin/zoomdown.mjs"
   },
-  "main": "./dist/zoomdeck.js",
-  "module": "./dist/zoomdeck.js",
+  "main": "./dist/zoomdown.js",
+  "module": "./dist/zoomdown.js",
   "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",
-      "import": "./dist/zoomdeck.js",
-      "default": "./dist/zoomdeck.js"
+      "import": "./dist/zoomdown.js",
+      "default": "./dist/zoomdown.js"
     },
     "./source": "./src/index.ts",
     "./package.json": "./package.json"
@@ -64,7 +64,7 @@
     "build": "vite build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "serve": "node bin/zoomdeck.mjs serve",
+    "serve": "node bin/zoomdown.mjs serve",
     "build:standalone": "vite build --config vite.bundle.config.ts",
     "docs": "npm run build:standalone && vite-node scripts/build-docs.ts",
     "docs:lite": "python docs/lite/build-wheel.py && jupyter lite build --lite-dir docs/lite --output-dir docs/html/lite",
@@ -100,8 +100,8 @@
     "vitest": "^5.1.0"
   },
   "build": {
-    "appId": "io.github.puppis.zoomdeck",
-    "productName": "Zoomdeck",
+    "appId": "io.github.puppis.zoomdown",
+    "productName": "ZoomDown",
     "copyright": "MIT License",
     "asar": false,
     "extraMetadata": {
@@ -146,8 +146,8 @@
         }
       ],
       "extendInfo": {
-        "NSCameraUsageDescription": "Zoomdeck shows and records your camera while you present, when you turn it on.",
-        "NSMicrophoneUsageDescription": "Zoomdeck records your voice when you record a talk."
+        "NSCameraUsageDescription": "ZoomDown shows and records your camera while you present, when you turn it on.",
+        "NSMicrophoneUsageDescription": "ZoomDown records your voice when you record a talk."
       }
     },
     "win": {
@@ -181,7 +181,7 @@
     "publish": {
       "provider": "github",
       "owner": "puppis",
-      "repo": "zoomdeck"
+      "repo": "zoomdown"
     }
   },
   "overrides": {

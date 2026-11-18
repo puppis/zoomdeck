@@ -4,7 +4,7 @@
  * around each of them instead of around their common box.
  */
 import { Dot, Line, type Mobject } from 'manim-web';
-import type { ArtworkOptions } from 'zoomdeck';
+import type { ArtworkOptions } from 'zoomdown';
 
 const STARS: Array<[number, number]> = [[-0.5, 0.45], [-0.1, 0.1], [0.3, 0.5], [0.5, -0.25], [-0.25, -0.5]];
 const EDGES: Array<[number, number]> = [[0, 1], [1, 2], [2, 3], [3, 4], [4, 1]];

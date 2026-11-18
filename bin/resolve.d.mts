@@ -4,5 +4,5 @@ import type { Plugin } from 'vite';
 export function isBareImport(source: string): boolean;
 /** Whether `file` lies inside `root`. */
 export function isInside(file: string, root: string): boolean;
-/** Resolves `zoomdeck` to the package source and other bare imports of modules outside the package against it. */
+/** Resolves `zoomdown` to the package source and other bare imports of modules outside the package against it. */
 export function resolveFromPackage(packageRoot: string): Plugin;

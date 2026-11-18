@@ -60,7 +60,7 @@ LaTeX `align`: in a block that contains `&&`, every line of the source is a row 
 cell, each column is as wide as its widest cell, and a cell starts where the columns before it
 end, plus a gap of one em. Spaces around `&&` are free, so the source itself can be aligned:
 
-```zoomdeck {height=4}
+```zoomdown {height=4}
 ::: slide {#columns width=16 height=4}
 
 This is a         && test             && (be careful) \\

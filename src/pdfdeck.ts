@@ -184,7 +184,7 @@ export class PageImage extends Mobject {
       await this._task.promise;
     } catch (error) {
       if ((error as { name?: string })?.name === 'RenderingCancelledException') return;
-      console.error('[zoomdeck] PDF page failed to draw', error);
+      console.error('[zoomdown] PDF page failed to draw', error);
       // Give up on this density rather than asking again and again.
       this._shown = pixels;
       return;

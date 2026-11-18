@@ -1,11 +1,11 @@
-"""Prepare the JupyterLite build: pack docs/site/zoomdeck_nb.py as a wheel, and write the
+"""Prepare the JupyterLite build: pack docs/site/zoomdown_nb.py as a wheel, and write the
 lab's configuration so that its Python kernel loads the wheel when it starts (a notebook then
 just imports the helper, as it does in a local Jupyter where the file sits next to it).
 
     python docs/lite/build-wheel.py
 
 The wheel is fetched by the kernel from the published site, whose address is
-https://puppis.github.io/zoomdeck/ unless the ZOOMDECK_SITE environment variable says otherwise
+https://puppis.github.io/zoomdown/ unless the ZOOMDOWN_SITE environment variable says otherwise
 (a local server while testing). A wheel is a zip with the module and a dist-info folder;
 nothing but the standard library is needed to write one, so the documentation build has no
 Python packaging dependency.
@@ -22,10 +22,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 LITE = ROOT / "docs" / "lite"
-MODULE = ROOT / "docs" / "site" / "zoomdeck_nb.py"
-NAME = "zoomdeck_nb"
+MODULE = ROOT / "docs" / "site" / "zoomdown_nb.py"
+NAME = "zoomdown_nb"
 VERSION = "0.1.0"
-SITE = os.environ.get("ZOOMDECK_SITE", "https://puppis.github.io/zoomdeck/").rstrip("/") + "/"
+SITE = os.environ.get("ZOOMDOWN_SITE", "https://puppis.github.io/zoomdown/").rstrip("/") + "/"
 
 
 def record_line(name: str, data: bytes) -> str:
@@ -43,7 +43,7 @@ def main() -> None:
     files = {
         f"{NAME}.py": source,
         f"{info}/METADATA": f"Metadata-Version: 2.1\nName: {NAME}\nVersion: {VERSION}\nSummary: {summary}\nLicense: MIT\n".encode(),
-        f"{info}/WHEEL": b"Wheel-Version: 1.0\nGenerator: zoomdeck\nRoot-Is-Purelib: true\nTag: py3-none-any\n",
+        f"{info}/WHEEL": b"Wheel-Version: 1.0\nGenerator: zoomdown\nRoot-Is-Purelib: true\nTag: py3-none-any\n",
         f"{info}/top_level.txt": f"{NAME}\n".encode(),
     }
     record = "\n".join(record_line(name, data) for name, data in files.items()) + f"\n{info}/RECORD,,\n"
@@ -54,7 +54,7 @@ def main() -> None:
     config = {
         "jupyter-lite-schema-version": 0,
         "jupyter-config-data": {
-            "appName": "Zoomdeck notebooks",
+            "appName": "ZoomDown notebooks",
             "litePluginSettings": {
                 "@jupyterlite/pyodide-kernel-extension:kernel": {
                     "loadPyodideOptions": {"packages": [f"{SITE}lite/files/{wheel.name}"]},

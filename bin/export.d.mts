@@ -11,5 +11,5 @@ export function deckFileFor(deck: string, roots: string[], root: string): string
 export function listFiles(dir: string): Promise<Array<{ path: string; size: number }>>;
 /** Where a result goes in the deck's build/ folder; throws when something there that is not an earlier export would be replaced. */
 export function placeTarget(deckDir: string, name: string, form: 'folder' | 'file'): Promise<string>;
-/** Serve the export endpoint; `build` is buildDeck of bin/zoomdeck.mjs. */
+/** Serve the export endpoint; `build` is buildDeck of bin/zoomdown.mjs. */
 export function exportStore(options: { roots?: string[]; build: (options: Record<string, unknown>) => Promise<{ target: string }> }): Plugin;

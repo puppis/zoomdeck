@@ -128,7 +128,7 @@ export class VideoClip extends VideoMobject implements SnapshotExtra {
     } finally {
       if (timer) clearTimeout(timer);
     }
-    if (this.loadFailure) console.warn(`[zoomdeck] video ${video?.currentSrc || video?.src || ''}: ${this.loadFailure}`);
+    if (this.loadFailure) console.warn(`[zoomdown] video ${video?.currentSrc || video?.src || ''}: ${this.loadFailure}`);
     if (video && !this._listening) {
       this._listening = true;
       for (const event of ['seeked', 'loadeddata']) {

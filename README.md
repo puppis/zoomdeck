@@ -1,8 +1,8 @@
-# Zoomdeck
+# ZoomDown
 
-Repository: <https://github.com/puppis/zoomdeck> · Documentation and tour: <https://puppis.github.io/zoomdeck/>
+Repository: <https://github.com/puppis/zoomdown> · Documentation and tour: <https://puppis.github.io/zoomdown/>
 
-Zoomdeck is inspired by [Slajdomat](https://github.com/bojanczyk/slajdomat), Mikołaj Bojańczyk’s program for zooming slides, which I used for many years and which gave me the idea of a talk as a tree of slides that the camera zooms through. Zoomdeck takes a different direction though: its slides are written mainly in a markup language, whereas Slajdomat draws them in a graphical editor (Figma).
+ZoomDown is inspired by [Slajdomat](https://github.com/bojanczyk/slajdomat), Mikołaj Bojańczyk’s program for zooming slides, which I used for many years and which gave me the idea of a talk as a tree of slides that the camera zooms through. ZoomDown takes a different direction though: its slides are written mainly in a markup language, whereas Slajdomat draws them in a graphical editor (Figma).
 
 Author a presentation as a forest of **slides**, most often a single tree, each slide with its own logical canvas and a small
 animation program, and present it as a zooming slideshow that runs **entirely in the browser**.
@@ -12,11 +12,11 @@ each child and back out to its parent, and cuts from one root to the next.
 
 ## Documentation
 
-The topic-by-topic documentation is published at <https://puppis.github.io/zoomdeck/>, with the
-tour deck playable at <https://puppis.github.io/zoomdeck/tour.html>. Its sources live in
+The topic-by-topic documentation is published at <https://puppis.github.io/zoomdown/>, with the
+tour deck playable at <https://puppis.github.io/zoomdown/tour.html>. Its sources live in
 `docs/site/*.md`, and in `docs/site/*.ipynb` for the pages written as notebooks, and are built
 into static pages in `docs/html/`, together with `docs/html/tour.html`, the tour deck as one
-self-contained file. Live decks in the pages (a `zoomdeck` fence, or the output of a notebook
+self-contained file. Live decks in the pages (a `zoomdown` fence, or the output of a notebook
 cell) run in the self-contained player, `dist/standalone/`, which the build copies next to the
 pages; `npm run docs:lite` (JupyterLite, a Python tool) adds the notebooks as an editable
 in-browser lab, and the Pages workflow publishes all of it.
@@ -25,8 +25,8 @@ in-browser lab, and the Pages workflow publishes all of it.
 committed: every checkout builds its own, and the Pages workflow builds and publishes it. The site covers getting started, concepts,
 every part of the dialect, code-authored slides, the player, the editors, the desktop app,
 exporting, extending and embedding a deck, the configuration, a one-page reference and two
-reference manuals, [the markup language in full](https://puppis.github.io/zoomdeck/manual-markup.html)
-and [the API in full](https://puppis.github.io/zoomdeck/api.html), with an alphabetical index; a
+reference manuals, [the markup language in full](https://puppis.github.io/zoomdown/manual-markup.html)
+and [the API in full](https://puppis.github.io/zoomdown/api.html), with an alphabetical index; a
 search box on every page finds any name. `docs/markup.md` is the compact dialect reference and
 `docs/roadmap.md` the plan of remaining work.
 
@@ -51,7 +51,7 @@ search box on every page finds any name. `docs/markup.md` is the compact dialect
   `src=data.csv`, and folders next to the Markdown that add snippets, directives, fonts, effects,
   camera transitions, chart types, languages, code themes, themes, artworks and slide classes by
   name. The dialect is documented in [docs/markup.md](docs/markup.md), in full in
-  [the manual](https://puppis.github.io/zoomdeck/manual-markup.html), and demonstrated live by the tour deck.
+  [the manual](https://puppis.github.io/zoomdown/manual-markup.html), and demonstrated live by the tour deck.
 - **The browser player**: slide outline, breadcrumb, previous/next stops (backwards steps play
   the stop in reverse), replay, Home, speed, a settings dialog with editable key bindings, undo
   and redo of strokes,
@@ -74,8 +74,8 @@ search box on every page finds any name. `docs/markup.md` is the compact dialect
 - **A PDF printout** (`P`): every stage of the deck, or the last stage of each slide,
   drawn by the deck's own renderer at up to 4K and stored losslessly, one per page, with the
   slides as bookmarks.
-- **An editing preview** (`zoomdeck serve`) that reloads on save and restores the current
-  slide and step, and **static exports** (`zoomdeck build`, `--one-file`, or the player's
+- **An editing preview** (`zoomdown serve`) that reloads on save and restores the current
+  slide and step, and **static exports** (`zoomdown build`, `--one-file`, or the player's
   **Export** button), one dialog that also turns recorded talks into videos.
 
 ## How playback works
@@ -97,7 +97,7 @@ download. Installing a supported Node (for example with `nvm install --lts`) and
 `npm install` again fixes it.
 
 ```bash
-cd Zoomdeck
+cd ZoomDown
 npm install
 npm run dev
 ```
@@ -115,18 +115,18 @@ chosen through the query string:
 
 ```bash
 # Live preview while editing: reloads on save and keeps your current slide/step.
-node bin/zoomdeck.mjs serve examples/tour/slides.md
+node bin/zoomdown.mjs serve examples/tour/slides.md
 
 # Static bundle: index.html + assets/ + deck/ (copy or host the whole folder).
-node bin/zoomdeck.mjs build examples/tour/slides.md -o build/tour
+node bin/zoomdown.mjs build examples/tour/slides.md -o build/tour
 
 # One portable file with every asset embedded as a data URI.
-node bin/zoomdeck.mjs build examples/tour/slides.md -o build/tour --one-file
+node bin/zoomdown.mjs build examples/tour/slides.md -o build/tour --one-file
 ```
 
 `serve` accepts `--port N`, `--host` (for a tablet), `--no-open`, `--editor NAME` (the editor the
 player opens source lines with: E for the current stop, Alt + click for an element), `--scene
-Name` (for module decks) and repeatable `--watch PATH`; `zoomdeck jump <file> <line>` moves the
+Name` (for module decks) and repeatable `--watch PATH`; `zoomdown jump <file> <line>` moves the
 running preview to the stop of a source line. `build` accepts `--show-outline`, `--without-notes` (an export for the audience, without the `::: notes`) and `--scene Name`. The deck argument is a
 Markdown file (its settings in its front matter), a PDF, or a JS/TS module exporting a deck
 definition; a `.json` path is refused. Code-authored decks in `--one-file` mode embed the code but
@@ -146,7 +146,7 @@ npm run desktop:build                        # the installers for this system, i
 `desktop:build` writes a `.dmg` and a `.zip` on macOS (signed ad hoc by `desktop/sign.mjs`, so
 the first launch asks once), an installer and a portable `.exe` on Windows, an `.AppImage` and a
 `.deb` on Linux. The "Desktop app" workflow builds all three on a version tag and attaches them to
-the release; [The desktop app](https://puppis.github.io/zoomdeck/desktop.html) says what each
+the release; [The desktop app](https://puppis.github.io/zoomdown/desktop.html) says what each
 system asks on the first launch.
 
 ## Markdown decks
@@ -192,14 +192,14 @@ paths.
 
 Decks are written in Markdown. For the rare slide that needs the full animation engine, a
 `Slide` subclass in a TypeScript file can be placed in a Markdown deck with
-`[[subslide: Name]]`; [Code-authored slides](https://puppis.github.io/zoomdeck/code-slides.html)
+`[[subslide: Name]]`; [Code-authored slides](https://puppis.github.io/zoomdown/code-slides.html)
 explains how, and `examples/tree-deck.ts` shows an entire deck written that way.
 
 ## Project layout
 
 ```text
-Zoomdeck/
-├── bin/                      zoomdeck.mjs (serve / build / jump, Vite based), the sync, relay and recordings endpoints, the talk bundles
+ZoomDown/
+├── bin/                      zoomdown.mjs (serve / build / jump, Vite based), the sync, relay and recordings endpoints, the talk bundles
 ├── src/
 │   ├── slides.ts             Slide, PlaceholderSlide, Visit, walk, pageSequence
 │   ├── runtime.ts            SlideContext, Presenter, clips, snapshots, PresenterConfig
@@ -209,7 +209,7 @@ Zoomdeck/
 │   ├── raster.ts, video.ts, pdfdeck.ts        images and movies, video clips, PDFs as decks or children
 │   ├── player/               stage, player, UI, boot, recorder, print, pad protocol, settings
 │   ├── pad/                  the companion tablet page
-│   ├── element.ts            the <zoom-deck> element of the self-contained bundle
+│   ├── element.ts            the <zoom-down> element of the self-contained bundle
 │   ├── deck.ts, index.ts     deck definitions and the public API (`engine` re-exports the renderer)
 │   └── dev.ts                the development page (index.html and pad.html sit at the root)
 ├── scripts/                  build-docs.ts, api-reference.ts, check-node.mjs
@@ -222,18 +222,18 @@ Zoomdeck/
 
 Run `npm test` for the unit tests and `npm run typecheck` for TypeScript.
 
-## The `zoomdeck` command
+## The `zoomdown` command
 
-`npm link` inside the checkout (after `npm install`) creates a global `zoomdeck` command that
-runs the checkout; `zoomdeck --help` confirms it, `node bin/zoomdeck.mjs` is the equivalent
+`npm link` inside the checkout (after `npm install`) creates a global `zoomdown` command that
+runs the checkout; `zoomdown --help` confirms it, `node bin/zoomdown.mjs` is the equivalent
 without the link. If a shell or an editor reports `command not found`, npm's global `bin`
 directory (`npm prefix -g`) is missing from that program's `PATH`; the
 [Getting started](docs/site/getting-started.md) page explains the fixes.
 
 ## Editors
 
-`editors/` holds ready-to-use configurations that bind the live preview (`zoomdeck serve`, which
-reloads the browser on save and keeps your position), the forward search (`zoomdeck jump`, the
+`editors/` holds ready-to-use configurations that bind the live preview (`zoomdown serve`, which
+reloads the browser on save and keeps your position), the forward search (`zoomdown jump`, the
 stop of the cursor line) and the one-file export to shortcuts, let the browser open a stop's or
 an element's source line in the editor (inverse search), save decks as you type and highlight
 the dialect: a VS Code grammar with tasks and key bindings, a Sublime Text package, an Emacs
@@ -252,17 +252,17 @@ mode, a Vim/Neovim plugin and JetBrains External Tools. The documentation page
 - Presenter notes appear on the companion tablet only; the presenting screen has no notes panel.
 - GIF loop counts are not read from the file (GIFs loop indefinitely unless `plays` is given).
 
-## Using Zoomdeck in your own project
+## Using ZoomDown in your own project
 
-The package ships a compiled ES module (`dist/zoomdeck.js`, built by `npm run build:lib` and on
+The package ships a compiled ES module (`dist/zoomdown.js`, built by `npm run build:lib` and on
 `npm pack`) with type declarations, so any bundler-based project can depend on it:
 
 ```bash
-npm install zoomdeck
+npm install zoomdown
 ```
 
 ```ts
-import { runDeck, loadMarkupDeck } from 'zoomdeck';
+import { runDeck, loadMarkupDeck } from 'zoomdown';
 
 runDeck(await loadMarkupDeck({ url: '/decks/lecture/slides.md', title: 'Lecture 1' }));
 ```
@@ -271,7 +271,7 @@ A deck can also be one element of a larger page, in a box between paragraphs, dr
 page's own script, with the features the page has no use for left out:
 
 ```ts
-import { mountDeck } from 'zoomdeck';
+import { mountDeck } from 'zoomdown';
 
 const deck = await mountDeck(document.querySelector('#lecture'), '/decks/lecture/slides.md', {
   features: { camera: false, screen: false, record: false },
@@ -284,11 +284,11 @@ The player fills the element, leaves the page's title, styles and URL alone, and
 while it has the focus; `examples/embed/index.html` shows it in use. The runtime dependencies
 (`manim-web`, `three`, `markdown-it`, `gifuct-js`, `roughjs`, `pdfjs-dist`) are installed with it
 and left external, so your bundler resolves them once. The TypeScript sources remain available as
-`zoomdeck/source` for projects that prefer to compile them. Without a bundler, a page can load
+`zoomdown/source` for projects that prefer to compile them. Without a bundler, a page can load
 the self-contained module (`npm run build:standalone` writes it to `dist/standalone/`, and the
-documentation site serves it) and write `<zoom-deck src="talk/slides.md" without="camera record">`,
-or the Markdown inside the element. Or use the command line: `zoomdeck serve <deck>` for editing
-and `zoomdeck build <deck> -o <folder> [--one-file]` for a static or single-file export that needs
+documentation site serves it) and write `<zoom-down src="talk/slides.md" without="camera record">`,
+or the Markdown inside the element. Or use the command line: `zoomdown serve <deck>` for editing
+and `zoomdown build <deck> -o <folder> [--one-file]` for a static or single-file export that needs
 nothing else.
 
 ## License

@@ -5,7 +5,7 @@
  * the engine should show; `[[artwork: traffic-light #id ...]]` places it like an icon.
  */
 import { Circle, RoundedRectangle, VGroup } from 'manim-web';
-import type { ArtworkOptions } from 'zoomdeck';
+import type { ArtworkOptions } from 'zoomdown';
 
 export default function trafficLight({ size = 1, color = '#000000', strokeWidth = 2, attributes }: ArtworkOptions): VGroup {
   const lit = attributes.lit ?? 'green';

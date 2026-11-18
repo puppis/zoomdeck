@@ -15,7 +15,7 @@ description: sketch=true renders shapes, icons, arrows, lines, braces, boxes and
 
 Any [shape](shapes.html), [icon](icons.html), connection or attachment (braces, [boxes and
 blobs](enclosures.html)) takes `sketch=true` and is then drawn as if by hand: a slightly wobbly outline traced twice, and a fill made of hatching lines instead of a flat
-color. The geometry comes from [Rough.js](https://roughjs.com/); Zoomdeck turns its strokes into
+color. The geometry comes from [Rough.js](https://roughjs.com/); ZoomDown turns its strokes into
 ordinary vector objects, so hand-drawn shapes animate, fade, transform, serve as anchors and
 endpoints, and export exactly like crisp ones.
 
@@ -82,7 +82,7 @@ The same works from the front matter (`styles: { shape: sketch=true }`); see [St
 Code-authored slides get the same drawings through the `sketch` helper, in logical units:
 
 ```ts
-import { sketch, engine } from 'zoomdeck';
+import { sketch, engine } from 'zoomdown';
 
 const cloud = sketch.ellipse(4, 2, { color: engine.BLUE_E, fillColor: engine.BLUE_E, fillOpacity: 0.4, seed: 3 });
 const pointer = sketch.arrow([-3, -2], [0, -1], { color: engine.RED, strokeWidth: 3 });

@@ -174,7 +174,7 @@ export function svgToMobject(svgText: string, options: SvgImportOptions = {}): V
   const declared = /xlink:/.test(svgText) && !/xmlns:xlink\s*=/.test(svgText) ? svgText.replace(/<svg\b/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"') : svgText;
   const document = new DOMParser().parseFromString(declared, 'image/svg+xml');
   const error = document.querySelector('parsererror');
-  if (error) console.warn(`[zoomdeck] SVG not well formed; parts may be missing: ${(error.textContent ?? '').trim().split('\n')[0]}`);
+  if (error) console.warn(`[zoomdown] SVG not well formed; parts may be missing: ${(error.textContent ?? '').trim().split('\n')[0]}`);
   const root = document.querySelector('svg');
   if (!root) throw new Error('No <svg> element found');
   const viewBox = (root.getAttribute('viewBox') ?? '').split(/[\s,]+/).filter(Boolean).map(Number);
@@ -229,7 +229,7 @@ export function svgToMobject(svgText: string, options: SvgImportOptions = {}): V
       if (subpaths.length) emit(element, subpaths, matrix, style, own);
       return;
     }
-    if (tag === 'text') console.warn('[zoomdeck] SVG <text> elements are not supported; convert text to paths');
+    if (tag === 'text') console.warn('[zoomdown] SVG <text> elements are not supported; convert text to paths');
     for (const child of Array.from(element.children)) walk(child, matrix, style, depth + 1, own, emit);
   };
   const regions = new Map<string, Region | null>();
@@ -243,9 +243,9 @@ export function svgToMobject(svgText: string, options: SvgImportOptions = {}): V
     const source = document.getElementById(id);
     let region: Region | null = null;
     const expected = kind === 'mask' ? 'mask' : 'clippath';
-    if (!source || source.tagName.toLowerCase() !== expected) console.warn(`[zoomdeck] SVG ${kind} #${id} not found; drawn in full`);
+    if (!source || source.tagName.toLowerCase() !== expected) console.warn(`[zoomdown] SVG ${kind} #${id} not found; drawn in full`);
     else if ((source.getAttribute(kind === 'mask' ? 'maskContentUnits' : 'clipPathUnits') ?? 'userSpaceOnUse') !== 'userSpaceOnUse') {
-      console.warn(`[zoomdeck] SVG ${kind} #${id} in objectBoundingBox units is not supported; drawn in full`);
+      console.warn(`[zoomdown] SVG ${kind} #${id} in objectBoundingBox units is not supported; drawn in full`);
     } else {
       // A mask lets through its light (or, with mask-type alpha, its opaque) shapes, less its dark ones; a clip path all its shapes.
       const alpha = kind === 'mask' && (declaredStyle(source, 'mask-type') ?? '').trim() === 'alpha';

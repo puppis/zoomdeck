@@ -6,7 +6,7 @@ import { cpSync, existsSync, mkdirSync } from 'node:fs';
 import { join, sep } from 'node:path';
 
 /** The folder the copy gets inside the one chosen. */
-export const TOUR_FOLDER = 'zoomdeck-tour';
+export const TOUR_FOLDER = 'zoomdown-tour';
 
 /**
  * Copy the tour folder `source` into `parent`, and return the deck's path. A copy that exists

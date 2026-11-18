@@ -35,7 +35,7 @@ keys (`snippets`, `directives`, `fonts`, `effects`, `transitions`, `charts`, `la
 `codeThemes`, `themes`, `artworks`, `slides`), relative to the file that names them, so a library
 shared between talks lives once: `effects: ../shared/effects`, or the same line in a file the
 talks extend ([Configuration](configuration.html#shared-settings)). The `paths` folders are
-searched last for every kind. Modules may import `manim-web` and `zoomdeck` as
+searched last for every kind. Modules may import `manim-web` and `zoomdown` as
 [code-authored slides](code-slides.html) do, and need no `node_modules` of their own.
 
 ## Snippets
@@ -70,7 +70,7 @@ with its caption, or a footer.
 ```ts
 // directives/gauge.ts
 import { Arc, Line, VGroup, type Mobject } from 'manim-web';
-import type { DirectiveOptions } from 'zoomdeck';
+import type { DirectiveOptions } from 'zoomdown';
 
 export default async function gauge({ attributes, color, text }: DirectiveOptions): Promise<Mobject[]> {
   const level = Number(attributes.level ?? 0.5);
@@ -110,7 +110,7 @@ them, so a deck keeps its typography on a machine that never installed the font.
 ```ts
 // effects/pulse.ts
 import { thereAndBack, type Mobject } from 'manim-web';
-import { PropertyAnimation, type EffectOptions } from 'zoomdeck';
+import { PropertyAnimation, type EffectOptions } from 'zoomdown';
 
 export default function pulse(target: Mobject, { scale = 1.3, color: _color, ...timing }: EffectOptions) {
   return new PropertyAnimation(target, { scale }, { ...timing, rateFunc: thereAndBack });
@@ -132,7 +132,7 @@ before any step plays.
 ```ts
 // transitions/swoop.ts
 import { smooth } from 'manim-web';
-import type { CameraState } from 'zoomdeck';
+import type { CameraState } from 'zoomdown';
 
 // The camera widens on the way, as if lifting off before landing on the next slide.
 export default function swoop(start: CameraState, target: CameraState, alpha: number): CameraState {
@@ -156,7 +156,7 @@ The move keeps `transitionTime`. Transitions load when the deck is built.
 
 ```ts
 // charts/donut.ts
-import { type ChartData, type ChartOptions, type LabelFactory, CHART_COLORS } from 'zoomdeck';
+import { type ChartData, type ChartOptions, type LabelFactory, CHART_COLORS } from 'zoomdown';
 import { Annulus, VGroup } from 'manim-web';
 
 export default function donut(data: ChartData, options: ChartOptions, label: LabelFactory): VGroup { /* … */ }

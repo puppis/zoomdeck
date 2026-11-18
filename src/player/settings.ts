@@ -307,7 +307,7 @@ export interface PlayerSettings {
   pads: PadSettings;
 }
 
-const STORAGE_KEY = 'zoomdeck:settings';
+const STORAGE_KEY = 'zoomdown:settings';
 const MODIFIERS = ['Control', 'Alt', 'Meta', 'Shift'];
 
 /** Normalize a key event to a binding string such as `Meta+Shift+z` or `ArrowRight`. */

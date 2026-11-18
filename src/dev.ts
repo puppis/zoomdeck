@@ -29,7 +29,7 @@ async function main(): Promise<void> {
   if (!definition) throw new Error(`Deck module ${deckPath} has no export ${scene ?? 'default'}`);
   const running = await runDeck({ ...definition, file: definition.file ?? { url: file, scene } });
   // A handle for measuring from the console on the development page (draw calls, frame times).
-  (window as Window & { zoomdeck?: unknown }).zoomdeck = running;
+  (window as Window & { zoomdown?: unknown }).zoomdown = running;
 }
 
 main().catch((error) => {

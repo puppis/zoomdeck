@@ -22,7 +22,7 @@ describe('talk bundles', () => {
   afterEach(() => rmSync(dir, { recursive: true, force: true }));
 
   it('is written while the talk runs, patched at each seam, and read back by any zip tool', async () => {
-    dir = mkdtempSync(join(tmpdir(), 'zoomdeck-bundle-'));
+    dir = mkdtempSync(join(tmpdir(), 'zoomdown-bundle-'));
     const file = join(dir, 'recordings', 'talk.zip');
     const writer = await BundleWriter.open(file, 'talk.json');
     expect(existsSync(journalPath(file))).toBe(true);
@@ -55,7 +55,7 @@ describe('talk bundles', () => {
   });
 
   it('keeps a side lane in a file beside the bundle and appends it once the main lane is between entries', async () => {
-    dir = mkdtempSync(join(tmpdir(), 'zoomdeck-bundle-'));
+    dir = mkdtempSync(join(tmpdir(), 'zoomdown-bundle-'));
     const file = join(dir, 'talk.zip');
     const writer = await BundleWriter.open(file, 'talk.json');
     await writer.begin('talk.webm');
@@ -86,7 +86,7 @@ describe('talk bundles', () => {
   });
 
   it('keeps two side lanes at once, each in its own file, and the journal names both', async () => {
-    dir = mkdtempSync(join(tmpdir(), 'zoomdeck-bundle-'));
+    dir = mkdtempSync(join(tmpdir(), 'zoomdown-bundle-'));
     const file = join(dir, 'talk.zip');
     const writer = await BundleWriter.open(file, 'talk.json');
     await writer.begin('talk.webm');
@@ -112,7 +112,7 @@ describe('talk bundles', () => {
   });
 
   it('continues a talk by cutting the timeline and directory away and appending more', async () => {
-    dir = mkdtempSync(join(tmpdir(), 'zoomdeck-bundle-'));
+    dir = mkdtempSync(join(tmpdir(), 'zoomdown-bundle-'));
     const file = join(dir, 'talk.zip');
     let writer = await BundleWriter.open(file, 'talk.json');
     await writer.putFile('talk.webm', Buffer.from('first'));
@@ -135,7 +135,7 @@ describe('talk bundles', () => {
   });
 
   it('recovers a talk cut short from its journal: the open entry is closed, the draft timeline written', async () => {
-    dir = mkdtempSync(join(tmpdir(), 'zoomdeck-bundle-'));
+    dir = mkdtempSync(join(tmpdir(), 'zoomdown-bundle-'));
     const file = join(dir, 'talk.zip');
     const writer = await BundleWriter.open(file, 'talk.json');
     await writer.putFile('talk.webm', Buffer.from('whole part'));
@@ -160,7 +160,7 @@ describe('talk bundles', () => {
   });
 
   it('describes files and offsets past 4 GiB in zip64 fields, which the reader follows', async () => {
-    dir = mkdtempSync(join(tmpdir(), 'zoomdeck-bundle-'));
+    dir = mkdtempSync(join(tmpdir(), 'zoomdown-bundle-'));
     const file = join(dir, 'huge.zip');
     const date = new Date(2026, 10, 15, 10, 30);
     const size = 5_000_000_000;

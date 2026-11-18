@@ -1,7 +1,7 @@
 /**
  * Recordings of talks, kept in a `recordings/` folder next to the deck, one bundle
  * `<name>.zip` each (see bundle.mjs): the media files and the timeline. The player writes a
- * bundle through `POST /__zoomdeck/recordings` while the talk runs (open, begin a media file,
+ * bundle through `POST /__zoomdown/recordings` while the talk runs (open, begin a media file,
  * its chunks, end it, drafts of the timeline, finish), so that stopping leaves nothing to copy;
  * `GET` with a file name streams one entry of a bundle, with ranges, for playback; `PUT` keeps a
  * file the player produced (an exported video) beside the bundle; `DELETE` removes a talk. The
@@ -216,10 +216,10 @@ export async function releaseBundles() {
  */
 export function recordingStore({ roots = [], limit = 4 * 1024 * 1024 * 1024 } = {}) {
   return {
-    name: 'zoomdeck-recordings',
+    name: 'zoomdown-recordings',
     configureServer(server) {
       server.httpServer?.on('close', () => void releaseBundles());
-      server.middlewares.use('/__zoomdeck/recordings', async (request, response) => {
+      server.middlewares.use('/__zoomdown/recordings', async (request, response) => {
         const url = new URL(request.url ?? '/', 'http://localhost');
         const name = url.searchParams.get('name') ?? '';
         const folder = deckFolderFor(url.searchParams.get('deck') ?? '', roots.length ? roots : [server.config.root], server.config.root);
@@ -245,7 +245,7 @@ export function recordingStore({ roots = [], limit = 4 * 1024 * 1024 * 1024 } = 
               }
               const writer = await BundleWriter.open(bundle, `${name}.json`);
               sessions.set(bundle, writer);
-              console.log(`[zoomdeck] ${writer.names.length ? 'Continuing' : 'Recording'} ${join(FOLDER, `${name}.zip`)}`);
+              console.log(`[zoomdown] ${writer.names.length ? 'Continuing' : 'Recording'} ${join(FOLDER, `${name}.zip`)}`);
               reply(response, 200, { ok: true, file: `${name}.zip`, parts: writer.names.length });
               return;
             }
@@ -295,7 +295,7 @@ export function recordingStore({ roots = [], limit = 4 * 1024 * 1024 * 1024 } = 
               await writer.finish();
               const index = await writeIndex(target);
               const { size } = await fs.stat(bundle);
-              console.log(`[zoomdeck] Saved ${join(FOLDER, `${name}.zip`)} (${(size / 1e6).toFixed(1)} MB, ${writer.names.length - 1} media file${writer.names.length === 2 ? '' : 's'})`);
+              console.log(`[zoomdown] Saved ${join(FOLDER, `${name}.zip`)} (${(size / 1e6).toFixed(1)} MB, ${writer.names.length - 1} media file${writer.names.length === 2 ? '' : 's'})`);
               reply(response, 200, { ok: true, file: `${name}.zip`, index });
               return;
             }
@@ -313,7 +313,7 @@ export function recordingStore({ roots = [], limit = 4 * 1024 * 1024 * 1024 } = 
             const body = await readBody(request, limit);
             await fs.mkdir(target, { recursive: true });
             await fs.writeFile(join(target, file), body);
-            console.log(`[zoomdeck] Saved ${join(FOLDER, file)} (${(body.length / 1e6).toFixed(1)} MB)`);
+            console.log(`[zoomdown] Saved ${join(FOLDER, file)} (${(body.length / 1e6).toFixed(1)} MB)`);
             reply(response, 200, { ok: true, file });
             return;
           }
