@@ -538,8 +538,12 @@ export function tokenize(source: string, line: number, separators = ' \t\r\n'): 
   return tokens;
 }
 
-/** Parse an attribute list (`{#id x=2 .class flag}`) into a map; commas also separate attributes inside directives. */
-export function parseAttributes(source: string, line: number, options: { commas?: boolean } = {}): Attributes {
+/**
+ * Parse an attribute list (`{#id x=2 .class flag}`) into a map; commas also separate attributes
+ * inside directives. `style=` is read as CSS and becomes `color`, unless `css` is false: the
+ * arguments of a snippet are plain values, whatever their names.
+ */
+export function parseAttributes(source: string, line: number, options: { commas?: boolean; css?: boolean } = {}): Attributes {
   source = source.trim();
   if (source.startsWith('{') && source.endsWith('}')) source = source.slice(1, -1);
   const result: Attributes = {};
@@ -565,7 +569,7 @@ export function parseAttributes(source: string, line: number, options: { commas?
     if (key in result) throw new MarkupError(`Duplicate attribute ${JSON.stringify(key)}`, line);
     result[key] = value;
   }
-  if ('style' in result) {
+  if ('style' in result && options.css !== false) {
     if ('color' in result) throw new MarkupError('Use either color= or style= for color, not both', line);
     result.color = cssColor(result.style, line);
     delete result.style;

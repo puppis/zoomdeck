@@ -42,6 +42,22 @@ describe('snippets', () => {
     expect(source).toContain('[Another note]{#two-note x=0 y=-2}');
   });
 
+  it('take any argument name as written, style and color included', async () => {
+    const main = [
+      '::: snippet edge',
+      '[[line: (0,0) -> (1,0), #{{id}}, .{{style|thin}} color={{color|BLUE}}]]',
+      ':::',
+      '',
+      '::: slide {#a}',
+      '[[snippet: edge id=e style=heavy-edge color=RED]]',
+      ':::',
+    ].join('\n');
+    const { source } = await expandImports(main, { load });
+    expect(source).toContain('[[line: (0,0) -> (1,0), #e, .heavy-edge color=RED]]');
+    // Outside a snippet's arguments, style= is still CSS.
+    expect(() => new MarkupParser().parse('::: slide {#a}\n[t]{#t style=heavy-edge}\n:::')).toThrow(/CSS declaration/);
+  });
+
   it('come from the snippets folders otherwise, and name what is missing', async () => {
     const snippet = async (name: string) => (name === 'frame' ? '[[rectangle: #{{id}} x={{x}} y=0 width=4 height=2]]' : null);
     const { source, origins } = await expandImports('::: slide {#a}\n[[snippet: frame id=f x=3]]\n:::', { load, snippet });

@@ -146,7 +146,8 @@ export async function expandImports(source: string, options: ExpandOptions): Pro
         const [, name, rest] = use;
         if (stack.includes(`snippet:${name}`)) throw new MarkupError(`${where}: the snippet ${name} uses itself`);
         if (stack.length >= maxDepth) throw new MarkupError(`${where}: snippets and imports nested deeper than ${maxDepth}`);
-        const attributes = parseAttributes(rest, index + 1, { commas: true });
+        // The arguments fill placeholders as written: `style=` is a name like any other here.
+        const attributes = parseAttributes(rest, index + 1, { commas: true, css: false });
         const inPlace = defined.get(name);
         const fromFolder = inPlace ? null : await options.snippet?.(name);
         if (!inPlace && fromFolder == null) {
