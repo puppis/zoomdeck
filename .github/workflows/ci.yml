@@ -17,4 +17,4 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
-      - run: node bin/zoomdown.mjs build examples/tour/slides.md -o build/tour
+      - run: node bin/zoomdown.mjs build examples/tour/slides.zd -o build/tour

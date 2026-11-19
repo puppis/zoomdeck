@@ -45,7 +45,7 @@ read: its settings move into the front matter, without `markup`, and `imports` i
 
 | Setting | Kind | Default | Meaning |
 | --- | --- | --- | --- |
-| `title` | text | the name of the folder holding the Markdown (`tour` for `tour/slides.md`) | the page title and outline root label |
+| `title` | text | the name of the folder holding the Markdown (`tour` for `tour/slides.zd`) | the page title and outline root label |
 | `root` | text | none | the root slide ID, when you want it checked explicitly; an error on a forest |
 | `background` | text | white | canvas background color |
 | `viewport` | `16x9` (also `16:9`) or `{ width: 16, height: 9 }` | 16 × 9 | proportions the camera fits (the stage reveals surrounding canvas when it has room) |
