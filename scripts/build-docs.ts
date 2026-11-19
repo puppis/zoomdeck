@@ -503,7 +503,7 @@ async function main(): Promise<void> {
   if (!process.argv.includes('--no-tour')) {
     // The tour deck as one self-contained page, so the documentation can open it anywhere.
     const stage = await fs.mkdtemp(join(tmpdir(), 'zoomdown-tour-'));
-    execFileSync(process.execPath, [join(root, 'bin', 'zoomdown.mjs'), 'build', join(root, 'examples', 'tour', 'slides.md'), '-o', stage, '--one-file'], { stdio: 'inherit' });
+    execFileSync(process.execPath, [join(root, 'bin', 'zoomdown.mjs'), 'build', join(root, 'examples', 'tour', 'slides.zd'), '-o', stage, '--one-file'], { stdio: 'inherit' });
     await fs.copyFile(join(stage, 'offline.html'), join(outDir, 'tour.html'));
     await fs.rm(stage, { recursive: true, force: true });
     console.log('Exported the tour deck to docs/html/tour.html');

@@ -7,7 +7,7 @@
   // ZoomDown.sublime-settings.
   "target": "zoomdown_exec",
   "cancel": { "kill": true },
-  "selector": "text.html.markdown, source.json",
+  "selector": "text.html.markdown.zoomdown",
   "working_dir": "$file_path",
   "cmd": ["zoomdown", "build", "$file", "-o", "$file_path/build", "--one-file"],
   "variants": [

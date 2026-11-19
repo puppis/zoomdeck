@@ -2,6 +2,8 @@
 export function parseArgs(argv: string[]): Record<string, unknown>;
 export function stripNotes(text: string): string;
 export function resolveDeckPath(path: string): string;
+/** The extensions of markup files: `.zd`, then the Markdown ones decks had before it. */
+export const MARKUP_EXTENSIONS: string[];
 export function deckKind(deckPath: string): 'markdown' | 'pdf' | 'module' | null;
 export const LIBRARY_KINDS: ReadonlyArray<{ key: string; folder: string | null; modules: boolean }>;
 export function deckFolders(deckPath: string): Promise<{ paths: string[]; artworks: string[]; fonts: string[]; effects: string[]; charts: string[]; languages: string[]; codeThemes: string[]; themes: string[]; slides: string[]; directives: string[]; snippets: string[]; transitions: string[]; all: string[]; extended: string[] }>;

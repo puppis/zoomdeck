@@ -7,7 +7,7 @@ description: The front matter of a deck's Markdown: every setting, the layout an
 
 ## Front matter
 
-A deck is its Markdown file. Its settings sit at the top, as YAML between a first line `---`
+A deck is its `.zd` file (or, for a deck written before `.zd`, its `.md` file). Its settings sit at the top, as YAML between a first line `---`
 and the next `---` (or `...`):
 
 ```markdown
@@ -56,7 +56,7 @@ read: its settings move into the front matter, without `markup`, and `imports` i
 | `macros` | map | none | LaTeX macros for every formula, in MathJax's form: an expansion, or `[expansion, number of arguments]`, or `[expansion, number of arguments, default of an optional first argument]` (see [Mathematics](math.html)) |
 | `styles` | map | none | named styles applied by `.class` tokens and roles, a name to an attribute string or a map, see [Styles](styles.html) |
 | `classes` | path | none | module exporting `Slide` classes for `[[subslide: Name]]`, relative to the file |
-| `extends` | path | none | a Markdown or YAML file whose settings this one builds on, below |
+| `extends` | path | none | a deck's `.zd` (or `.md`) file or a YAML file whose settings this one builds on, below |
 | `paths` | folder or list of folders | none | folders searched, after the Markdown file's own, for the files it names: imported Markdown, images, videos, pages; as in `[../shared, figures]` |
 | `artworks` | folder or list of folders | `artworks/` | folders with artworks of the deck's own, `name.svg` or `name.js`/`.ts`, for `[[artwork: name]]`; an `artworks/` folder next to the Markdown is searched anyway, then the `paths`; see [Icons](icons.html#artworks-of-your-own) |
 | `snippets`, `directives`, `fonts`, `effects`, `transitions`, `charts`, `languages`, `codeThemes`, `themes`, `slides` | folder or list of folders | the folder of the same name | folders with snippets, directive modules, fonts, effect modules, camera transitions, chart modules, language profiles, code themes, themes and slide classes of the deck's own; the folder of the same name (`code-themes/` for `codeThemes`) next to the Markdown is searched anyway, then the `paths`; see [Extending a deck](extending.html) |
@@ -66,7 +66,7 @@ unknown setting is an error that lists the allowed ones.
 
 ## Shared settings
 
-`extends: path` builds on another file's settings: a Markdown file, whose front matter is used,
+`extends: path` builds on another file's settings: a `.zd` (or `.md`) file, whose front matter is used,
 or a `.yaml`/`.yml` file, which is all settings. Settings shared by several talks live there once:
 
 ```yaml
@@ -151,7 +151,7 @@ node bin/zoomdown.mjs build <deck> -o <folder> [--one-file] [--show-outline] [--
 node bin/zoomdown.mjs jump <file> <line>
 ```
 
-`<deck>` is a Markdown file, a PDF or a JS/TS module exporting a deck definition; a `.json`
+`<deck>` is a `.zd` file (or a deck's `.md`), a PDF or a JS/TS module exporting a deck definition; a `.json`
 path is refused, with a message saying to move its settings into the front matter. Both
 commands read the front matter, with the files it extends. `serve` watches the deck's folder,
 the folders its settings name, the folders of the files it extends and any `--watch` path,
@@ -165,9 +165,9 @@ mode embed the code but not images they load themselves.
 
 ## Development page
 
-`npm run dev` serves `index.html`, which reads `?deck=` (a Markdown file, a PDF or a module
+`npm run dev` serves `index.html`, which reads `?deck=` (a `.zd` or `.md` file, a PDF or a module
 path, also `/@fs/absolute/path`) and `&scene=` for named exports, and opens
-`examples/tour/slides.md` when `deck` is omitted. Files under `examples/` trigger a reload on
+`examples/tour/slides.zd` when `deck` is omitted. Files under `examples/` trigger a reload on
 change, and `zoomdown jump` and the inverse search work there too (set `ZOOMDOWN_EDITOR` before
 `npm run dev`).
 

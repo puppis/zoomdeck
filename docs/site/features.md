@@ -29,7 +29,7 @@ zoomdown build paper.pdf -o out   # export a page that plays it
 
 <a class="try" href="tour.html#slide=feat-plain">This chapter in the tour ↗</a>
 
-A deck of your own is a Markdown file of `::: slide` containers. Slides that include no other
+A deck of your own is a `.zd` file of `::: slide` containers. Slides that include no other
 slide are simply visited in order, with cuts and no animation, like the pages of a document.
 
 ```zoomdown

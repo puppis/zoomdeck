@@ -440,10 +440,10 @@ describe('the recordings folder', () => {
     expect(NAME.test('talk-2026-11-13-0905')).toBe(true);
     expect(NAME.test('../etc')).toBe(false);
     expect(isRecordingFile(join(folder, 'recordings', 'a.webm'))).toBe(true);
-    expect(isRecordingFile(join(folder, 'slides.md'))).toBe(false);
-    expect(deckFolderFor(`${folder}/slides.md`, [folder], '/x')).toBe(folder);
+    expect(isRecordingFile(join(folder, 'slides.zd'))).toBe(false);
+    expect(deckFolderFor(`${folder}/slides.zd`, [folder], '/x')).toBe(folder);
     expect(deckFolderFor(`${folder}/`, [folder], '/x')).toBe(folder);
-    expect(deckFolderFor('/elsewhere/slides.md', [folder], '/x')).toBeNull();
+    expect(deckFolderFor('/elsewhere/slides.zd', [folder], '/x')).toBeNull();
   });
 
   it('indexes the talks kept as bundles, names their file, and closes a bundle cut short on the way', async () => {

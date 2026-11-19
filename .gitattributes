@@ -1,0 +1,2 @@
+# Decks (.zd) are Markdown with the ZoomDown dialect: GitHub highlights them as Markdown.
+*.zd linguist-language=Markdown

@@ -18,14 +18,14 @@ whenever the box is resized.
 ```ts
 import { mountDeck } from 'zoomdown';
 
-const deck = await mountDeck(document.querySelector('#lecture'), '/decks/lecture/slides.md', {
+const deck = await mountDeck(document.querySelector('#lecture'), '/decks/lecture/slides.zd', {
   features: { camera: false, screen: false, record: false },
 });
 ```
 
 The first argument is the element: give it a size with your own CSS (a height, or an
-`aspect-ratio`), since the player fills it. The second is the deck: the URL of a Markdown file
-or of a PDF, or a deck definition made with `defineDeck`, `loadMarkupDeck`, `markupDeck` or
+`aspect-ratio`), since the player fills it. The second is the deck: the URL of a `.zd` file
+(or a deck's `.md`) or of a PDF, or a deck definition made with `defineDeck`, `loadMarkupDeck`, `markupDeck` or
 `pdfDeck`. `loadMarkupDeck({ url })` reads the Markdown, its front matter, the files it extends,
 its slide classes (through the browser's own `import`, so a bundler is not required for them)
 and its themes before the player starts; it is the way to open a deck by URL, and a URL given to
@@ -73,7 +73,7 @@ defaults, or whatever the viewer set elsewhere.
 ```html
 <script type="module" src="https://puppis.github.io/zoomdown/zoomdown/zoomdown.js"></script>
 
-<zoom-down src="talk/slides.md" without="camera record"></zoom-down>
+<zoom-down src="talk/slides.zd" without="camera record"></zoom-down>
 
 <zoom-down without="camera record screen" title="Inline">
 <script type="text/markdown">
@@ -88,7 +88,7 @@ A page without a build step loads the self-contained player, one module with the
 fonts and the stylesheet inside (`npm run build:standalone` writes it to `dist/standalone/`, and
 the documentation site serves a copy at the address above; MathJax and pdf.js follow as
 separate files only when a deck needs them). The `<zoom-down>` element then shows a deck:
-`src` names a Markdown file, read with its front matter, or a PDF, or the Markdown is written
+`src` names a deck's `.zd` file (or `.md`), read with its front matter, or a PDF, or the Markdown is written
 inside the element, in a `<script type="text/markdown">` child, which the browser keeps
 verbatim; Markdown written inside may have front matter too. The
 element is as wide as its container and 16:9 unless the page sizes it. Its attributes are the
@@ -154,7 +154,7 @@ with `%%deck` holds the Markdown of a deck and nothing else, and its output show
 the player is loaded from the documentation site (or from the URL in the `ZOOMDOWN_BUNDLE`
 environment variable) and the deck wears the notebook's colors. Options follow on the magic
 line: `--without camera,record`, `--title "A name"`, `--start 2`, `--outline`, `--height 500px`.
-`%deck paper.pdf` shows a PDF or a Markdown file by its address, and from code
+`%deck paper.pdf` shows a PDF or a deck's `.zd` file by its address, and from code
 `deck(markdown)` and `deck(src="…")` return the same display objects. It works in JupyterLab,
 the classic notebook and JupyterLite alike. The documentation's own notebooks, such as
 [Your first deck, stage by stage](first-deck.html), are built this way: the site renders the

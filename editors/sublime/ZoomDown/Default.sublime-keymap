@@ -1,8 +1,8 @@
 [
   { "keys": ["ctrl+alt+b"], "command": "build", "args": { "build_system": "Packages/ZoomDown/ZoomDown.sublime-build", "variant": "Preview" },
-    "context": [{ "key": "selector", "operator": "equal", "operand": "text.html.markdown" }] },
+    "context": [{ "key": "selector", "operator": "equal", "operand": "text.html.markdown.zoomdown" }] },
   { "keys": ["ctrl+alt+j"], "command": "zoomdown_jump",
-    "context": [{ "key": "selector", "operator": "equal", "operand": "text.html.markdown" }] },
+    "context": [{ "key": "selector", "operator": "equal", "operand": "text.html.markdown.zoomdown" }] },
   { "keys": ["ctrl+alt+p"], "command": "build", "args": { "build_system": "Packages/ZoomDown/ZoomDown.sublime-build" },
-    "context": [{ "key": "selector", "operator": "equal", "operand": "text.html.markdown" }] }
+    "context": [{ "key": "selector", "operator": "equal", "operand": "text.html.markdown.zoomdown" }] }
 ]

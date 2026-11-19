@@ -42,7 +42,7 @@ search box on every page finds any name. `docs/markup.md` is the compact dialect
   `transitionTime`, `transition` (`zoom`, `cut` or a module of the deck's own; a slide's own setting governs the camera's arrival at it), `pauseOnEntry`/`pauseOnReturn`.
 - **Selective rendering** (`onlyThis`), **placeholders**, **`startHere`**.
 - **A Markdown dialect**: `::: slide {#id}` containers, includes and subslides with placement and
-  visit steps, `[[import: path.md]]` to split a deck into files, styled prose with inline math, display math, images (SVG with its clip paths and masks, raster, animated APNG/GIF
+  visit steps, `[[import: path.zd]]` to split a deck into files, styled prose with inline math, display math, images (SVG with its clip paths and masks, raster, animated APNG/GIF
   and videos with `play=once|loop`), live pages (`iframe:`), syntax-highlighted code listings, vector shapes, diagram icons (`icon:`), arrows and lines with
   labels, open tips, bends, loops, waves and curves through points (crisp, or hand-drawn with `sketch=true` through Rough.js), boxes and blobs around several elements, pipe tables and bar/line/pie charts, a `tremble=` vibration, anchor-based and relative positioning, named styles, groups, `focus_only`, fragments
   (`step`, `hide`, `show:`/`hide:`), animation directives (`animate:`, `effect:`, `transform:`,
@@ -106,8 +106,8 @@ The development page opens the **tour deck** (`examples/tour/`), a tour of every
 dialect and the player in which each slide shows the listing that produces it. Other decks are
 chosen through the query string:
 
-- `http://localhost:5173/?deck=examples/tour/slides.md`: a Markdown deck, its settings in its front matter
-- `http://localhost:5173/?deck=path/to/slides.md`: any other Markdown deck
+- `http://localhost:5173/?deck=examples/tour/slides.zd`: a deck in the Markdown dialect, its settings in its front matter
+- `http://localhost:5173/?deck=path/to/slides.zd`: any other Markdown deck
 - `http://localhost:5173/?deck=path/to/paper.pdf`: a PDF, page after page
 - `http://localhost:5173/?deck=examples/tree-deck&scene=Demo`: a named export of a module
 
@@ -115,21 +115,21 @@ chosen through the query string:
 
 ```bash
 # Live preview while editing: reloads on save and keeps your current slide/step.
-node bin/zoomdown.mjs serve examples/tour/slides.md
+node bin/zoomdown.mjs serve examples/tour/slides.zd
 
 # Static bundle: index.html + assets/ + deck/ (copy or host the whole folder).
-node bin/zoomdown.mjs build examples/tour/slides.md -o build/tour
+node bin/zoomdown.mjs build examples/tour/slides.zd -o build/tour
 
 # One portable file with every asset embedded as a data URI.
-node bin/zoomdown.mjs build examples/tour/slides.md -o build/tour --one-file
+node bin/zoomdown.mjs build examples/tour/slides.zd -o build/tour --one-file
 ```
 
 `serve` accepts `--port N`, `--host` (for a tablet), `--no-open`, `--editor NAME` (the editor the
 player opens source lines with: E for the current stop, Alt + click for an element), `--scene
 Name` (for module decks) and repeatable `--watch PATH`; `zoomdown jump <file> <line>` moves the
 running preview to the stop of a source line. `build` accepts `--show-outline`, `--without-notes` (an export for the audience, without the `::: notes`) and `--scene Name`. The deck argument is a
-Markdown file (its settings in its front matter), a PDF, or a JS/TS module exporting a deck
-definition; a `.json` path is refused. Code-authored decks in `--one-file` mode embed the code but
+`.zd` file (its settings in its front matter; `.md`, the extension decks had before, still works),
+a PDF, or a JS/TS module exporting a deck definition; a `.json` path is refused. Code-authored decks in `--one-file` mode embed the code but
 not images they load themselves.
 
 ### The desktop app
@@ -138,7 +138,7 @@ not images they load themselves.
 player and preview server, built with electron-builder:
 
 ```bash
-npm run desktop -- examples/tour/slides.md   # run the app from the checkout, with a deck
+npm run desktop -- examples/tour/slides.zd   # run the app from the checkout, with a deck
 npm run desktop:dir                          # an unpacked build, for a quick try
 npm run desktop:build                        # the installers for this system, in release/
 ```
@@ -152,8 +152,10 @@ system asks on the first launch.
 ## Markdown decks
 
 Write slides in the Markdown dialect ([docs/markup.md](docs/markup.md); the tour deck under
-`examples/tour/` shows every construct next to its source) and put the deck's settings in the
-YAML front matter at the top of the file:
+`examples/tour/` shows every construct next to its source) in a file with the extension `.zd`,
+and put the deck's settings in the YAML front matter at the top of the file. The extension lets
+the desktop app open decks on a double-click and the editor setups tell them from other Markdown;
+a deck saved as `.md` before `.zd` was introduced still opens everywhere.
 
 ```markdown
 ---
@@ -264,7 +266,7 @@ npm install zoomdown
 ```ts
 import { runDeck, loadMarkupDeck } from 'zoomdown';
 
-runDeck(await loadMarkupDeck({ url: '/decks/lecture/slides.md', title: 'Lecture 1' }));
+runDeck(await loadMarkupDeck({ url: '/decks/lecture/slides.zd', title: 'Lecture 1' }));
 ```
 
 A deck can also be one element of a larger page, in a box between paragraphs, driven from the
@@ -273,7 +275,7 @@ page's own script, with the features the page has no use for left out:
 ```ts
 import { mountDeck } from 'zoomdown';
 
-const deck = await mountDeck(document.querySelector('#lecture'), '/decks/lecture/slides.md', {
+const deck = await mountDeck(document.querySelector('#lecture'), '/decks/lecture/slides.zd', {
   features: { camera: false, screen: false, record: false },
 });
 deck.on('stop', ({ index, slide }) => console.log(index, slide));
@@ -286,7 +288,7 @@ while it has the focus; `examples/embed/index.html` shows it in use. The runtime
 and left external, so your bundler resolves them once. The TypeScript sources remain available as
 `zoomdown/source` for projects that prefer to compile them. Without a bundler, a page can load
 the self-contained module (`npm run build:standalone` writes it to `dist/standalone/`, and the
-documentation site serves it) and write `<zoom-down src="talk/slides.md" without="camera record">`,
+documentation site serves it) and write `<zoom-down src="talk/slides.zd" without="camera record">`,
 or the Markdown inside the element. Or use the command line: `zoomdown serve <deck>` for editing
 and `zoomdown build <deck> -o <folder> [--one-file]` for a static or single-file export that needs
 nothing else.

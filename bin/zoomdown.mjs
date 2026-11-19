@@ -177,10 +177,16 @@ export async function deckFolders(deckPath) {
   return result;
 }
 
+/**
+ * The extensions of markup files: `.zd`, the ZoomDown extension, and the Markdown ones that decks
+ * had before it, still read the same way.
+ */
+export const MARKUP_EXTENSIONS = ['.zd', '.md', '.markdown'];
+
 /** The kind of deck a file holds, by its extension; null for a file the command cannot serve. */
 export function deckKind(deckPath) {
   const ext = extname(deckPath).toLowerCase();
-  if (ext === '.md' || ext === '.markdown') return 'markdown';
+  if (MARKUP_EXTENSIONS.includes(ext)) return 'markdown';
   if (ext === '.pdf') return 'pdf';
   if (['.ts', '.js', '.mjs', '.tsx'].includes(ext)) return 'module';
   return null;
@@ -444,7 +450,7 @@ runDeck(await pdfDeck({
       for (const file of await collectAssets(root)) {
         if (file === markupPath) continue;
         const ext = extname(file).toLowerCase();
-        if (['.md', '.markdown'].includes(ext)) {
+        if (MARKUP_EXTENSIONS.includes(ext)) {
           const text = await fs.readFile(file, 'utf8');
           files[key(file)] = options.withoutNotes ? stripNotes(text) : text;
           continue;

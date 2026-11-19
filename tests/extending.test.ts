@@ -62,7 +62,10 @@ describe('snippets', () => {
     const snippet = async (name: string) => (name === 'frame' ? '[[rectangle: #{{id}} x={{x}} y=0 width=4 height=2]]' : null);
     const { source, origins } = await expandImports('::: slide {#a}\n[[snippet: frame id=f x=3]]\n:::', { load, snippet });
     expect(source).toContain('[[rectangle: #f x=3 y=0 width=4 height=2]]');
-    expect(origins[1]).toEqual({ file: 'snippets/frame.md', line: 1 });
+    expect(origins[1]).toEqual({ file: 'snippets/frame.zd', line: 1 });
+    // A loader that says which file it read, such as an older deck's frame.md, is named by it.
+    const named = async (name: string) => (name === 'frame' ? { text: '[[dot: #{{id}} x=0 y=0]]', file: 'snippets/frame.md' } : null);
+    expect((await expandImports('::: slide {#a}\n[[snippet: frame id=f]]\n:::', { load, snippet: named })).origins[1]).toEqual({ file: 'snippets/frame.md', line: 1 });
     await expect(expandImports('[[snippet: frame id=f]]', { load, snippet })).rejects.toThrow(/snippet frame needs x=/);
     await expect(expandImports('[[snippet: nope id=f]]', { load, snippet })).rejects.toThrow(/unknown snippet nope/);
     await expect(expandImports('::: snippet loop\n[[snippet: loop]]\n:::\n[[snippet: loop]]', { load })).rejects.toThrow(/uses itself/);
@@ -259,8 +262,8 @@ describe('the command', () => {
     const dir = mkdtempSync(join(tmpdir(), 'zoomdown-extending-'));
     try {
       for (const folder of ['directives', 'snippets', 'transitions']) mkdirSync(join(dir, folder));
-      writeFileSync(join(dir, 'slides.md'), '::: slide {#a}\nx\n:::\n');
-      const folders = await deckFolders(join(dir, 'slides.md'));
+      writeFileSync(join(dir, 'slides.zd'), '::: slide {#a}\nx\n:::\n');
+      const folders = await deckFolders(join(dir, 'slides.zd'));
       expect(folders.directives).toEqual([join(dir, 'directives')]);
       expect(folders.snippets).toEqual([join(dir, 'snippets')]);
       expect(folders.transitions).toEqual([join(dir, 'transitions')]);

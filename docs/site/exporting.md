@@ -39,7 +39,7 @@ talks only.
 ### One self-contained file
 
 ```bash
-zoomdown build path/to/slides.md -o out --one-file
+zoomdown build path/to/slides.zd -o out --one-file
 ```
 
 This writes `out/offline.html`: the player, the engine, the bundled fonts, your Markdown source
@@ -64,7 +64,7 @@ Three things to know:
 ### A static folder
 
 ```bash
-zoomdown build path/to/slides.md -o out
+zoomdown build path/to/slides.zd -o out
 ```
 
 This writes `out/index.html`, `out/assets/` (the player, split in chunks loaded on demand) and
@@ -93,7 +93,7 @@ The folder export also copies the deck's `recordings/` folder, unpacking each ta
 its media files and timeline, so a published deck shows its Talk button and plays its
 [recorded talks](player.html#recording-a-talk); a static host serves them like any other file.
 
-The deck argument is a Markdown file (its settings in its front matter), a PDF (its pages, with the
+The deck argument is a `.zd` file (its settings in its front matter; a deck's `.md` too), a PDF (its pages, with the
 file copied into `deck/` beside `index.html`, or embedded in the single file) or a JS/TS module exporting a deck
 definition. The export records nothing in advance: like the dev page, the exported player
 runs the deck's program once when it loads, so changes to the Markdown require a new export while
@@ -114,7 +114,7 @@ Programmatic use goes through the same entry points as the dev page:
 ```ts
 import { runDeck, loadMarkupDeck } from 'zoomdown';
 
-runDeck(await loadMarkupDeck({ url: '/decks/lecture/slides.md', title: 'Lecture 1', showOutline: true }));
+runDeck(await loadMarkupDeck({ url: '/decks/lecture/slides.zd', title: 'Lecture 1', showOutline: true }));
 ```
 
 Bundle this with Vite (or any bundler that handles ES modules and assets) to obtain a page of

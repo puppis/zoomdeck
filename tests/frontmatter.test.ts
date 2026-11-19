@@ -44,7 +44,7 @@ describe('front matter', () => {
       'https://x.org/course/talk/base.md': '---\nextends: ../shared.yaml\nlayout: { fontSize: 26 }\n---\n',
     };
     const deck = '---\nextends: base.md\ntitle: Talk one\nmacros: { R: \'\\mathbb{R}\' }\nartworks: [mine]\n---\n::: slide {#a}\n:::';
-    const { settings, body, extended } = await resolveSettings(deck, 'https://x.org/course/talk/slides.md', memory(files));
+    const { settings, body, extended } = await resolveSettings(deck, 'https://x.org/course/talk/slides.zd', memory(files));
     expect(settings.title).toBe('Talk one');
     expect(settings.layout).toEqual({ fontSize: 26, headingSize: 40 });
     expect(settings.macros).toEqual({ N: '\\mathbb{N}', R: '\\mathbb{R}' });
@@ -77,14 +77,14 @@ describe('a deck and its front matter', () => {
 
   it('is read with the files it extends when the deck is opened by its URL', async () => {
     const files: Record<string, string> = {
-      'https://x.org/talk/slides.md': '---\nextends: ../shared.yaml\ntitle: Talk\n---\n::: slide {#a}\nx\n:::',
+      'https://x.org/talk/slides.zd': '---\nextends: ../shared.yaml\ntitle: Talk\n---\n::: slide {#a}\nx\n:::',
       'https://x.org/shared.yaml': 'viewport: 16x12\nbackground: "#102030"',
     };
     globalThis.fetch = (async (url: string) => {
       const found = url in files;
       return { ok: found, status: found ? 200 : 404, headers: new Headers({ 'content-type': 'text/plain' }), text: async () => files[url] ?? '' } as Response;
     }) as typeof fetch;
-    const deck = await loadMarkupDeck({ url: 'https://x.org/talk/slides.md' });
+    const deck = await loadMarkupDeck({ url: 'https://x.org/talk/slides.zd' });
     expect(deck.title).toBe('Talk');
     expect(deck.viewport).toEqual({ width: 16, height: 12 });
     expect(deck.background).toBe('#102030');
@@ -104,8 +104,8 @@ describe('the command and front matter', () => {
       mkdirSync(join(dir, 'course', 'fonts'), { recursive: true });
       mkdirSync(join(dir, 'course', 'talk'), { recursive: true });
       writeFileSync(join(dir, 'course', 'shared.yaml'), 'fonts: fonts\nlayout: { fontSize: 22 }\n');
-      writeFileSync(join(dir, 'course', 'talk', 'slides.md'), '---\nextends: ../shared.yaml\ntitle: Talk\n---\n::: slide {#a}\nx\n:::\n');
-      const deck = join(dir, 'course', 'talk', 'slides.md');
+      writeFileSync(join(dir, 'course', 'talk', 'slides.zd'), '---\nextends: ../shared.yaml\ntitle: Talk\n---\n::: slide {#a}\nx\n:::\n');
+      const deck = join(dir, 'course', 'talk', 'slides.zd');
       const { settings } = await deckSettings(deck);
       expect(settings.title).toBe('Talk');
       expect(settings.layout).toEqual({ fontSize: 22 });

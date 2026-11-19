@@ -1,4 +1,5 @@
 {
+  "files.associations": { "*.zd": "markdown" },
   "files.autoSave": "afterDelay",
   "files.autoSaveDelay": 600,
   "[markdown]": {

@@ -75,7 +75,7 @@ describe('the fonts, languages and code themes of a deck', () => {
       } as unknown as Response;
     }) as typeof fetch;
     const renderer = new MarkupRenderer({
-      basePath: 'https://x.org/talk/slides.md', languages: ['languages/'], codeThemes: ['code-themes/'], paths: ['https://x.org/shared/'],
+      basePath: 'https://x.org/talk/slides.zd', languages: ['languages/'], codeThemes: ['code-themes/'], paths: ['https://x.org/shared/'],
       layout: new LayoutConfig({ codeTheme: 'sepia' }),
     });
     expect(await renderer.prepareCode('pony')).toEqual({ keyword: '#884400' });
@@ -111,7 +111,7 @@ describe('the fonts, languages and code themes of a deck', () => {
       }
     } as unknown as typeof FontFace;
     try {
-      const renderer = new MarkupRenderer({ basePath: 'https://x.org/talk/slides.md', fonts: ['fonts/'] });
+      const renderer = new MarkupRenderer({ basePath: 'https://x.org/talk/slides.zd', fonts: ['fonts/'] });
       await renderer.ensureFont('Inter');
       await renderer.ensureFont('Inter');
       expect(loaded.map(([, , variant]) => variant)).toEqual(['400 normal', '700 normal']);
@@ -135,9 +135,9 @@ describe('the library folders of a deck, by the command', () => {
     try {
       mkdirSync(join(dir, 'shared'));
       for (const { folder } of LIBRARY_KINDS) if (folder) mkdirSync(join(dir, 'src', folder), { recursive: true });
-      writeFileSync(join(dir, 'src', 'slides.md'), '---\nfonts: ../shared\nthemes: [../absent]\n---\n::: slide {#a}\nx\n:::\n');
+      writeFileSync(join(dir, 'src', 'slides.zd'), '---\nfonts: ../shared\nthemes: [../absent]\n---\n::: slide {#a}\nx\n:::\n');
       writeFileSync(join(dir, 'src', 'bare.md'), '::: slide {#a}\nx\n:::\n');
-      const folders = await deckFolders(join(dir, 'src', 'slides.md'));
+      const folders = await deckFolders(join(dir, 'src', 'slides.zd'));
       expect(folders.fonts).toEqual([join(dir, 'shared'), join(dir, 'src', 'fonts')]);
       expect(folders.codeThemes).toEqual([join(dir, 'src', 'code-themes')]);
       expect(folders.themes).toEqual([join(dir, 'src', 'themes')]);

@@ -96,7 +96,7 @@ Children of a page keep their zooms; only the pages themselves cut. {font_size=2
 
 A slide that would rather pan to its neighbour says `transition=zoom`; the slides then glide
 past one another, since they are laid out side by side. The same file is at
-`examples/document/pages.md` in the repository.
+`examples/document/pages.zd` in the repository.
 
 ## Forests and trees
 

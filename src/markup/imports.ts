@@ -1,5 +1,5 @@
 /**
- * File imports: `[[import: path.md]]` splices another Markdown file into the
+ * File imports: `[[import: path.zd]]` splices another markup file into the
  * document before parsing. Between slides the file contributes slides and
  * style blocks; inside a slide it contributes elements and directives. Every
  * line of the expanded text remembers the file and line it came from, so
@@ -32,8 +32,11 @@ export interface ExpandedSource {
 export interface ExpandOptions {
   /** Load an imported file by its path relative to the main document. */
   load: (path: string) => Promise<string>;
-  /** Load the snippet `name.md` from the deck's snippets folders; null when no folder has it. */
-  snippet?: (name: string) => Promise<string | null>;
+  /**
+   * Load the snippet `name` from the deck's snippets folders (`name.zd`, or `name.md`): its text,
+   * or its text and the file it came from, which errors name; null when no folder has it.
+   */
+  snippet?: (name: string) => Promise<string | { text: string; file: string } | null>;
   /** Most deeply nested import allowed; 8 by default. */
   maxDepth?: number;
 }
@@ -149,12 +152,13 @@ export async function expandImports(source: string, options: ExpandOptions): Pro
         // The arguments fill placeholders as written: `style=` is a name like any other here.
         const attributes = parseAttributes(rest, index + 1, { commas: true, css: false });
         const inPlace = defined.get(name);
-        const fromFolder = inPlace ? null : await options.snippet?.(name);
-        if (!inPlace && fromFolder == null) {
-          throw new MarkupError(`${where}: unknown snippet ${name}: no ::: snippet ${name} block and no ${name}.md in the deck's snippets folders`);
+        const loaded = inPlace ? null : await options.snippet?.(name);
+        const fromFolder = typeof loaded === 'string' ? { text: loaded, file: `snippets/${name}.zd` } : loaded ?? null;
+        if (!inPlace && fromFolder === null) {
+          throw new MarkupError(`${where}: unknown snippet ${name}: no ::: snippet ${name} block and no ${name}.zd (or ${name}.md) in the deck's snippets folders`);
         }
-        const body = fillSnippet(name, inPlace ? inPlace.body : (fromFolder as string), attributes, where);
-        const snippetFile = inPlace ? inPlace.file : `snippets/${name}.md`;
+        const body = fillSnippet(name, inPlace ? inPlace.body : (fromFolder as { text: string }).text, attributes, where);
+        const snippetFile = inPlace ? inPlace.file : (fromFolder as { file: string }).file;
         const first = inPlace ? inPlace.line : 1;
         await expand(body, snippetFile, [...stack, `snippet:${name}`], (line) => ({ file: snippetFile, line: first + line - 1 }));
         continue;
@@ -166,7 +170,7 @@ export async function expandImports(source: string, options: ExpandOptions): Pro
         continue;
       }
       const path = importPath(match[1]);
-      if (!path) throw new MarkupError(`${where}: import takes one file path, as in [[import: parts/intro.md]]`);
+      if (!path) throw new MarkupError(`${where}: import takes one file path, as in [[import: parts/intro.zd]]`);
       const resolved = resolvePath(path, file);
       if (stack.includes(resolved) || resolved === '') throw new MarkupError(`${where}: ${resolved || path} imports itself`);
       if (stack.length >= maxDepth) throw new MarkupError(`${where}: imports nested deeper than ${maxDepth} files`);

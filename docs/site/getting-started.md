@@ -12,8 +12,9 @@ and the sources, which bring the `zoomdown` command and the live development pag
 Download the build for your system from the
 [releases](https://github.com/puppis/zoomdown/releases): a `.dmg` for macOS, an `.AppImage` or
 `.deb` for Linux, an installer or a portable `.exe` for Windows. The app is the player and the
-preview server in a window of its own: open a Markdown file or a PDF from the File menu, by
-dropping it on the app, or by double-clicking it, and present as in the browser.
+preview server in a window of its own: open a deck (a `.zd` file) or a PDF from the File menu,
+by dropping it on the app, or by double-clicking it, since the installers make the app the one
+that opens `.zd` files, and present as in the browser.
 The builds are not signed by a registered developer, so each system warns once the first time;
 [The desktop app](desktop.html) says what to click, and what the app's menus offer.
 
@@ -32,7 +33,7 @@ npm link           # optional: the `zoomdown` command, from any folder
 ```
 
 `npm run dev` serves `http://localhost:5173/`, which opens the tour deck; `?deck=` selects
-another: `/?deck=path/to/slides.md`, `/?deck=path/to/paper.pdf`, or
+another: `/?deck=path/to/slides.zd`, `/?deck=path/to/paper.pdf`, or
 `/?deck=examples/tree-deck&scene=Demo` for a code-authored deck. The page reloads when a deck
 file changes and comes back to the stop you were looking at.
 
@@ -45,13 +46,13 @@ below find the command on their own, and [Editors](editors.html) covers the rest
 ## Open a deck
 
 ```bash
-zoomdown serve talk/slides.md          # also paper.pdf
-zoomdown serve talk/slides.md --host   # reachable on the network, for a tablet
+zoomdown serve talk/slides.zd          # also paper.pdf
+zoomdown serve talk/slides.zd --host   # reachable on the network, for a tablet
 ```
 
 The preview opens the deck in your browser at `http://127.0.0.1:8000/` (or the next free port,
 printed in the terminal), reloads it on every save and keeps your position. The argument is a
-Markdown file (its settings in its front matter), a PDF, or a JS/TS module exporting a deck. Ctrl+C stops the server; it also stops by itself when the
+`.zd` file (its settings in its front matter; a deck's `.md` too), a PDF, or a JS/TS module exporting a deck. Ctrl+C stops the server; it also stops by itself when the
 program that started it, an editor's build panel say, ends.
 
 ## Present it
@@ -66,8 +67,8 @@ each tool, and chapters 4 to 6 of the [tour](tour.html#slide=feat-spotlight) sho
 ## Export it
 
 ```bash
-zoomdown build talk/slides.md -o out/talk             # a folder: index.html, assets/, deck/
-zoomdown build talk/slides.md -o out/talk --one-file  # one HTML file, every asset inside
+zoomdown build talk/slides.zd -o out/talk             # a folder: index.html, assets/, deck/
+zoomdown build talk/slides.zd -o out/talk --one-file  # one HTML file, every asset inside
 ```
 
 **Export** in the player's footer (X) does the same from the deck you are looking at, into a
@@ -78,8 +79,12 @@ player's Print button writes a PDF with a page per stage or per slide.
 
 ## Write a first deck
 
-A deck is a Markdown file, and nothing more is needed to start; the title and other settings
-go in its front matter, between `---` lines at the top, when you want them.
+A deck is a Markdown file with the extension `.zd`, and nothing more is needed to start; the
+title and other settings go in its front matter, between `---` lines at the top, when you want
+them. The extension marks the file as a deck: the system opens it with the desktop app, and the
+[editor setups](editors.html) give it the dialect's highlighting and shortcuts while leaving other
+Markdown alone. A deck written before `.zd`, as `slides.md`, still opens everywhere; renaming it
+(and its imported parts) is all it takes to move it over.
 
 ```markdown
 ---
@@ -111,17 +116,17 @@ from there:
 
 ```text
 talk/
-├── slides.md        the slides, in the Markdown dialect; its front matter holds the title,
+├── slides.zd        the slides, in the Markdown dialect; its front matter holds the title,
 │                    colors, typography, presenter options, styles, macros
-├── assets/          images, videos, pages referenced from slides.md
-├── parts/           optional: Markdown files spliced in with [[import: path.md]]
+├── assets/          images, videos, pages referenced from slides.zd
+├── parts/           optional: more markup, spliced in with [[import: path.zd]]
 ├── artworks/        optional: artworks of your own, name.svg or name.ts, for [[artwork: name]]
 ├── snippets/, directives/, fonts/, effects/, …  optional: markup used many times, directives, fonts, effects, camera transitions, chart types, languages, code themes, themes, slide classes
 ├── code-slides.ts   optional: Slide classes used by [[subslide: Name]]
 └── recordings/      talks recorded by the player (one zip bundle each), when the deck is served
 ```
 
-Paths in `slides.md` resolve relative to the Markdown file, then in the folders `paths` names
+Paths in `slides.zd` resolve relative to it, then in the folders `paths` names
 in the front matter, so figures shared between talks can stay in one place. The optional folders
 extend the player by name, one file each; [Extending a deck](extending.html) lists them.
 

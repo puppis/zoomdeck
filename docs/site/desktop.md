@@ -31,9 +31,9 @@ The builds are not signed by a registered developer, so the systems warn once:
 ## Using it
 
 Started from a deck (double-clicked or dropped on the app, or passed on the command line) the
-app presents it at once. Started bare, it asks for a deck (a Markdown file, a PDF or a slide
-module), in the folder you used last; the very first time it offers instead to copy the tour
-deck, with its examples, to a folder of yours, and opens the copy's `slides.md`.
+app presents it at once. Started bare, it asks for a deck (a `.zd` file, a PDF or a slide
+module; a deck kept as `.md` opens too), in the folder you used last; the very first time it offers instead to copy the tour
+deck, with its examples, to a folder of yours, and opens the copy's `slides.zd`.
 **File ▸ Copy the Tour Deck…** does the same later, into a `zoomdown-tour` folder inside the one
 you choose; a copy already
 there is opened as it is, or its files written afresh while the talks recorded in it stay. The
@@ -51,11 +51,11 @@ The command line takes the preview's flags:
 
 ```bash
 # macOS
-/Applications/ZoomDown.app/Contents/MacOS/ZoomDown path/to/slides.md --editor code
+/Applications/ZoomDown.app/Contents/MacOS/ZoomDown path/to/slides.zd --editor code
 # Linux
-./ZoomDown.AppImage path/to/slides.md --port 8000
+./ZoomDown.AppImage path/to/slides.zd --port 8000
 # Windows
-ZoomDown.exe path\to\slides.md --watch path\to\parts
+ZoomDown.exe path\to\slides.zd --watch path\to\parts
 ```
 
 The app listens on the network, so a [tablet](player.html#a-tablet-as-a-drawing-pad) can pair
@@ -71,6 +71,27 @@ reaches it like any preview.
 the screen the window is on, whole. The computer's sound comes with it as a loopback of the
 output where the platform allows it (Windows, and macOS 13 and later), without a virtual audio
 device; where it does not, the share carries the picture alone.
+
+## Opening decks from the system
+
+Decks have the extension `.zd`, and installing the app makes it the program that opens them, so a
+double-click on a deck in the Finder, the Explorer or the file manager presents it:
+
+- **macOS**: the app declares the type "ZoomDown deck" (`.zd`, a kind of plain text, so Quick
+  Look shows the markup) and opens it by default once it is in Applications; the Finder may need
+  a moment, or a first start of the app, to notice. To use another program for a deck, choose
+  File ▸ Get Info ▸ Open with.
+- **Windows**: the installer (`ZoomDown Setup …exe`) registers `.zd` files; the portable `.exe`
+  registers nothing, so choose it once with Open with ▸ Choose another app and "Always use this
+  app".
+- **Linux**: the `.deb` package adds the type `text/x-zoomdown` for `*.zd` and lists the app for
+  it; the AppImage registers nothing by itself (a tool such as AppImageLauncher, or the file
+  manager's Open With dialog, sets it up).
+
+A deck written before `.zd`, as `slides.md`, opens from the app's File menu, by dropping it on
+the app or from the command line; the system keeps opening `.md` files with your usual
+Markdown program. Renaming the deck to `.zd` (its imported parts may keep their names) makes the
+double-click work for it too.
 
 ## Building it yourself
 

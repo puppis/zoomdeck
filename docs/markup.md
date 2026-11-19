@@ -1,7 +1,10 @@
 # The Markdown dialect
 
-A deck is a Markdown file made of **slides**, each a `::: slide {#id} … :::` container with its own
-logical canvas. Slides reference each other with `[[include: #id …]]` directives, which form a
+A deck is a `.zd` file, Markdown made of **slides**, each a `::: slide {#id} … :::` container with
+its own logical canvas. The extension tells the system to open the file with the desktop app and
+tells editors that it is a deck rather than any Markdown; a deck saved as `.md` or `.markdown`,
+the extensions before `.zd`, opens as before, and so do imported files, snippets and themes kept
+that way. Slides reference each other with `[[include: #id …]]` directives, which form a
 forest, most often a single tree, whose trees the player walks in pre-order while zooming and
 whose roots it visits first to last with cuts between them. The tour deck in `examples/tour/` shows
 every construct of this page live, each next to the listing that produced it; open it with
@@ -65,13 +68,13 @@ every construct of this page live, each next to the listing that produced it; op
 ```markdown
 ::: slide {#intro}
 ## Introduction
-[[import: parts/footer.md]]
+[[import: parts/footer.zd]]
 :::
 
-[[import: parts/appendix.md]]
+[[import: parts/appendix.zd]]
 ```
 
-`[[import: path.md]]` splices another Markdown file into the document before parsing. Between
+`[[import: path.zd]]` splices another Markdown file into the document before parsing. Between
 slides it contributes slides and `::: styles` blocks; inside a slide it contributes elements and
 directives. Paths are relative to the importing file, imported files may import others (cycles
 are errors), import lines inside fenced code are left alone, and error messages name the

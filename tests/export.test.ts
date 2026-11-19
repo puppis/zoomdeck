@@ -54,7 +54,7 @@ function setUp(fail = false) {
   dirs.push(root);
   const deckDir = join(root, 'talk');
   mkdirSync(deckDir);
-  writeFileSync(join(deckDir, 'slides.md'), '::: slide {#a}\nx\n:::\n');
+  writeFileSync(join(deckDir, 'slides.zd'), '::: slide {#a}\nx\n:::\n');
   const builds: Array<Record<string, unknown>> = [];
   const build = async (options: Record<string, unknown>) => {
     builds.push(options);
@@ -92,7 +92,7 @@ function setUp(fail = false) {
     }
     throw new Error('the export never ended');
   };
-  return { root, deckDir, builds, call, finished, deckUrl: `file://${join(deckDir, 'slides.md')}` };
+  return { root, deckDir, builds, call, finished, deckUrl: `file://${join(deckDir, 'slides.zd')}` };
 }
 
 describe('the export of a deck as a web page, from the player', () => {
@@ -105,7 +105,7 @@ describe('the export of a deck as a web page, from the player', () => {
     expect(status.status).toBe('done');
     expect(status.files).toEqual([{ path: 'assets/player.js', size: 14 }, { path: 'index.html', size: 19 }]);
     expect(builds[0]).toMatchObject({ oneFile: false, withoutNotes: true, showOutline: true, scene: 'Main' });
-    expect(String(builds[0].positional)).toMatch(/talk[\\/]slides\.md$/);
+    expect(String(builds[0].positional)).toMatch(/talk[\\/]slides\.zd$/);
     const file = await call('GET', { id, file: 'assets/player.js' });
     expect(file.body().toString()).toBe('console.log(1)');
     expect(file.headers['content-type']).toBe('text/javascript');
@@ -182,11 +182,11 @@ describe('the export of a deck as a web page, from the player', () => {
     expect(exportName('../../etc')).toBe('etc');
     expect(exportName('')).toBe('deck');
     expect(webExportName('  .hidden name ')).toBe('hidden-name');
-    expect(defaultWebExportName({ url: 'http://127.0.0.1:8000/@fs/Users/me/My%20Talk/slides.md' }, 'Title')).toBe('My-Talk');
+    expect(defaultWebExportName({ url: 'http://127.0.0.1:8000/@fs/Users/me/My%20Talk/slides.zd' }, 'Title')).toBe('My-Talk');
     expect(defaultWebExportName(null, 'A title')).toBe('A-title');
     // A PDF's export is named after the PDF, wherever it lies.
     expect(defaultWebExportName({ url: 'http://127.0.0.1:8000/@fs/Users/me/Downloads/Lecture%203.PDF' }, 'Title')).toBe('Lecture-3');
-    expect(deckFileFor('http://localhost:5178/examples/tour/slides.md', ['/repo/examples'], '/repo')).toBe(join('/repo/examples/tour/slides.md'));
+    expect(deckFileFor('http://localhost:5178/examples/tour/slides.zd', ['/repo/examples'], '/repo')).toBe(join('/repo/examples/tour/slides.zd'));
     expect(deckFileFor('http://localhost:5178/src/index.ts', ['/repo/examples'], '/repo')).toBeNull();
     const dir = mkdtempSync(join(tmpdir(), 'zoomdown-place-'));
     dirs.push(dir);
@@ -195,7 +195,7 @@ describe('the export of a deck as a web page, from the player', () => {
 
   it('reports a build that cannot start by an error, never by ending the process', async () => {
     await expect(buildDeck({ positional: [] })).rejects.toThrow(/deck path/);
-    await expect(buildDeck({ positional: ['/nowhere/slides.md'], output: '/tmp/x' })).rejects.toThrow(/deck not found/);
+    await expect(buildDeck({ positional: ['/nowhere/slides.zd'], output: '/tmp/x' })).rejects.toThrow(/deck not found/);
     // A deck.json is no deck: its settings belong in the Markdown's front matter.
     await expect(buildDeck({ positional: ['/nowhere/deck.json'], output: '/tmp/x' })).rejects.toThrow(/front matter/);
   });

@@ -5,7 +5,7 @@ import { MarkupParser, ASTTransformer } from '../src/markup/parser';
 import type { NavigationData } from '../src/runtime';
 
 const ROOT = '/home/me/ZoomDown';
-const MAIN = 'http://127.0.0.1:8000/@fs/home/me/decks/talk/slides.md';
+const MAIN = 'http://127.0.0.1:8000/@fs/home/me/decks/talk/slides.zd';
 const PART = 'http://127.0.0.1:8000/@fs/home/me/decks/talk/parts/end.md';
 const at = (file: string, line: number) => ({ file, line });
 
@@ -36,19 +36,19 @@ const navigation: NavigationData = {
 
 describe('document paths', () => {
   it('turns the server URLs of a deck into file paths', () => {
-    expect(documentPath(MAIN, ROOT)).toBe('/home/me/decks/talk/slides.md');
-    expect(documentPath('http://localhost:5173/examples/tour/slides.md', ROOT)).toBe('/home/me/ZoomDown/examples/tour/slides.md');
-    expect(documentPath('http://localhost:5173/@fs/C:/Users/me/a%20b/slides.md', 'C:/ZoomDown')).toBe('C:/Users/me/a b/slides.md');
+    expect(documentPath(MAIN, ROOT)).toBe('/home/me/decks/talk/slides.zd');
+    expect(documentPath('http://localhost:5173/examples/tour/slides.zd', ROOT)).toBe('/home/me/ZoomDown/examples/tour/slides.zd');
+    expect(documentPath('http://localhost:5173/@fs/C:/Users/me/a%20b/slides.zd', 'C:/ZoomDown')).toBe('C:/Users/me/a b/slides.zd');
     expect(documentPath('/already/a/path.md', ROOT)).toBe('/already/a/path.md');
     expect(documentPath('', ROOT)).toBeNull();
-    expect(serverDocumentPath(MAIN, ROOT)).toBe('/home/me/decks/talk/slides.md');
-    expect(serverDocumentPath('http://localhost:5173/examples/tour/slides.md', ROOT)).toBe('/home/me/ZoomDown/examples/tour/slides.md');
+    expect(serverDocumentPath(MAIN, ROOT)).toBe('/home/me/decks/talk/slides.zd');
+    expect(serverDocumentPath('http://localhost:5173/examples/tour/slides.zd', ROOT)).toBe('/home/me/ZoomDown/examples/tour/slides.zd');
     expect(serverDocumentPath(null, ROOT)).toBeNull();
   });
 });
 
 describe('forward search', () => {
-  const main = '/home/me/decks/talk/slides.md';
+  const main = '/home/me/decks/talk/slides.zd';
   const part = '/home/me/decks/talk/parts/end.md';
 
   it('finds the stop at which everything written up to a line has appeared', () => {
@@ -85,7 +85,7 @@ describe('inverse search', () => {
   });
 
   it('builds editor commands from presets and templates without splitting paths', () => {
-    const file = '/Users/me/My Decks/slides.md';
+    const file = '/Users/me/My Decks/slides.zd';
     expect(editorCommand('emacs', file, 12)).toEqual(['emacsclient', '--no-wait', '+12', file]);
     expect(editorCommand('Sublime', file, 12)).toEqual(['subl', `${file}:12`]);
     expect(editorCommand('code', file, 12)).toEqual(['code', '--goto', `${file}:12`]);
@@ -105,7 +105,7 @@ describe('inverse search', () => {
       { port: 8001, pid: 1, roots: ['/home/me/decks/talk'], deck: null, editor: null, started: 2 },
       { port: 8000, pid: 1, roots: ['/home/me/decks/other', '/home/me/shared'], deck: null, editor: null, started: 1 },
     ];
-    expect(previewsFor('/home/me/decks/talk/slides.md', entries).map((entry) => entry.port)).toEqual([8001]);
+    expect(previewsFor('/home/me/decks/talk/slides.zd', entries).map((entry) => entry.port)).toEqual([8001]);
     expect(previewsFor('/home/me/shared/footer.md', entries).map((entry) => entry.port)).toEqual([8000]);
     expect(previewsFor('/home/me/decks/talkative/x.md', entries).map((entry) => entry.port)).toEqual([8001, 8000]);
   });

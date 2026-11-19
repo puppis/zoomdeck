@@ -4,20 +4,20 @@
     "mac": "cmd+alt+b",
     "command": "workbench.action.tasks.runTask",
     "args": "ZoomDown: preview",
-    "when": "editorLangId == markdown"
+    "when": "resourceExtname == .zd"
   },
   {
     "key": "ctrl+alt+j",
     "mac": "cmd+alt+j",
     "command": "workbench.action.tasks.runTask",
     "args": "ZoomDown: jump to this line",
-    "when": "editorLangId == markdown"
+    "when": "resourceExtname == .zd"
   },
   {
     "key": "ctrl+alt+p",
     "mac": "cmd+alt+p",
     "command": "workbench.action.tasks.runTask",
     "args": "ZoomDown: build HTML",
-    "when": "editorLangId == markdown"
+    "when": "resourceExtname == .zd"
   }
 ]

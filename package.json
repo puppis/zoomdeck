@@ -127,6 +127,16 @@
       "buildResources": "desktop/resources"
     },
     "npmRebuild": false,
+    "fileAssociations": [
+      {
+        "ext": "zd",
+        "name": "ZoomDown deck",
+        "description": "ZoomDown deck",
+        "mimeType": "text/x-zoomdown",
+        "role": "Viewer",
+        "rank": "Owner"
+      }
+    ],
     "mac": {
       "category": "public.app-category.productivity",
       "target": [
@@ -147,7 +157,25 @@
       ],
       "extendInfo": {
         "NSCameraUsageDescription": "ZoomDown shows and records your camera while you present, when you turn it on.",
-        "NSMicrophoneUsageDescription": "ZoomDown records your voice when you record a talk."
+        "NSMicrophoneUsageDescription": "ZoomDown records your voice when you record a talk.",
+        "UTExportedTypeDeclarations": [
+          {
+            "UTTypeIdentifier": "io.github.puppis.zoomdown.deck",
+            "UTTypeDescription": "ZoomDown deck",
+            "UTTypeConformsTo": [
+              "net.daringfireball.markdown",
+              "public.plain-text"
+            ],
+            "UTTypeTagSpecification": {
+              "public.filename-extension": [
+                "zd"
+              ],
+              "public.mime-type": [
+                "text/x-zoomdown"
+              ]
+            }
+          }
+        ]
       }
     },
     "win": {

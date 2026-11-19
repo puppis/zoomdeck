@@ -686,7 +686,7 @@ Every key and gesture can be changed in the settings (,), which also hold the pe
 
 [[arrow: (-9.2,-3.6) -> (-1.0,-3.6), #tablet-arrow, color=GRAY, stroke_width=1]]
 
-1. **Pair.** Start the preview so that the tablet can reach it (for this tour, `zoomdown serve examples/tour/slides.md --host` from the checkout, or `npm run dev -- --host`). Open the settings here (⚙ or ,), choose "Show the pairing code" under Tablet and scan it with the tablet, over Wi-Fi or over the cable with Internet Sharing to the iPad switched on. {x=0.6 width=9 font_size=18}
+1. **Pair.** Start the preview so that the tablet can reach it (for this tour, `zoomdown serve examples/tour/slides.zd --host` from the checkout, or `npm run dev -- --host`). Open the settings here (⚙ or ,), choose "Show the pairing code" under Tablet and scan it with the tablet, over Wi-Fi or over the cable with Internet Sharing to the iPad switched on. {x=0.6 width=9 font_size=18}
 2. **Trace** the wave and the circle on the tablet: the lines should appear here as you draw, without a visible delay. {x=0.6 width=9 font_size=18}
 3. **Press** lightly, then harder, along the strip: the width should follow. The Pen settings decide how much and redraw the strokes. {x=0.6 width=9 font_size=18}
 4. **Rest your palm** on the glass while writing in the box: a finger never draws. {x=0.6 width=9 font_size=18}
@@ -1059,10 +1059,10 @@ macros:
 
 ```bash {#cli x=0.6 y=3.9 width=9.1}
 # live preview: reloads on save, keeps your position
-zoomdown serve examples/tour/slides.md
+zoomdown serve examples/tour/slides.zd
 
 # a static folder, or one self-contained HTML file
-zoomdown build examples/tour/slides.md \
+zoomdown build examples/tour/slides.zd \
   -o build/tour --one-file
 ```
 
@@ -1185,39 +1185,39 @@ Mark one slide or include with `start_here=true` to open playback there. While e
 [[snippet: docs id=imports page=slides.html#splitting-a-deck-into-files]]
 
 ```markdown {#imports-source x=-9.35 y=3.9 width=9.1}
-<!-- slides.md -->
+<!-- slides.zd -->
 ::: slide {#imports width=20}
 ## Importing markup from files
-[[import: parts/footer.md]]
+[[import: parts/footer.zd]]
 [[include: #appendix x=5 y=-1.4 width=5 preview=true]]
 :::
 
-[[import: parts/appendix.md]]
+[[import: parts/appendix.zd]]
 ```
 
 ```markdown {#imports-parts x=0.6 y=3.9 width=9.1 font_size=16}
-<!-- parts/footer.md -->
-[Imported from parts/footer.md]{#footer x=-9.35 y=-5.15 color=GRAY}
+<!-- parts/footer.zd -->
+[Imported from parts/footer.zd]{#footer x=-9.35 y=-5.15 color=GRAY}
 
-<!-- parts/appendix.md -->
+<!-- parts/appendix.zd -->
 ::: slide {#appendix}
-## Defined in parts/appendix.md
+## Defined in parts/appendix.zd
 
 [A file imported between slides adds its slides
  and styles; include them like any other.]{...}
 :::
 ```
 
-[[import: parts/footer.md]]
+[[import: parts/footer.zd]]
 
 [[include: #appendix x=5 y=-1.4 width=5 preview=true]]
 
-`[[import: path.md]]` splices a file in before parsing: between slides it adds slides and style blocks, inside a slide it adds elements. `[[snippet: name key=value]]` expands markup written once, a `::: snippet` block or `snippets/name.md`, filling its `{{placeholders}}`. {#imports-key x=-9.35 y=-3.45 width=18.7 font_size=20}
+`[[import: path.zd]]` splices a file in before parsing: between slides it adds slides and style blocks, inside a slide it adds elements. `[[snippet: name key=value]]` expands markup written once, a `::: snippet` block or `snippets/name.zd`, filling its `{{placeholders}}`. {#imports-key x=-9.35 y=-3.45 width=18.7 font_size=20}
 
 Paths are relative to the importing file, a file may import others, and errors name the file and line. {#imports-more x=-9.35 y=-4.65 width=18.7 font_size=16 color=GRAY}
 :::
 
-[[import: parts/appendix.md]]
+[[import: parts/appendix.zd]]
 
 ::: slide {#tables width=20}
 ## Tables and charts

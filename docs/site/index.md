@@ -60,7 +60,7 @@ sections and jumps to any of them on a click, and each chapter links back to its
 
 The tour is a single self-contained HTML file next to these pages, exported from
 `examples/tour/` when you run `npm install` (and again by `npm run docs`); it runs from disk or
-from any web server, and `npm run dev` opens the same deck live. Its sources (`slides.md`, with
+from any web server, and `npm run dev` opens the same deck live. Its sources (`slides.zd`, with
 its settings in the front matter, `code-slides.ts` and a few assets) are a good starting point
 for a deck of your own.
 

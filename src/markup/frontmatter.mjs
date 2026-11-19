@@ -140,7 +140,7 @@ export async function resolveSettings(text, location, io, seen = []) {
   const extended = [];
   if (own.extends) {
     const target = own.extends;
-    if (!/\.(?:md|markdown|ya?ml)$/i.test(target)) throw new Error(`${location}: extends names a Markdown or YAML file, not ${target}`);
+    if (!/\.(?:zd|md|markdown|ya?ml)$/i.test(target)) throw new Error(`${location}: extends names a ZoomDown, Markdown or YAML file, not ${target}`);
     let other;
     try {
       other = await io.read(target);

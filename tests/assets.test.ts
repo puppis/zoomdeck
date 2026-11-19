@@ -27,7 +27,7 @@ const LIBRARY = ['../../dist/renderer.js?v=1', '../dist/renderer.js?v=1'];
   );
   const deck = join(root, 'slides', 'deck');
   mkdirSync(deck, { recursive: true });
-  writeFileSync(join(deck, 'slides.md'), '# Deck');
+  writeFileSync(join(deck, 'slides.zd'), '# Deck');
   symlinkSync('../../animations', join(deck, 'animations'));
   // A link back up the tree must not make the walk loop.
   symlinkSync('..', join(shared, 'echo', 'up'));
@@ -39,7 +39,7 @@ describe('the files an export takes from a deck folder', () => {
   it('follows links to folders, walks each folder once and leaves dangling links and dist folders behind', async () => {
     const { deck } = course();
     const files = (await collectAssets(deck)).map((file: string) => relative(deck, file)).sort();
-    expect(files).toEqual(['animations/echo/events.yaml', 'animations/echo/index.html', 'animations/echo/style.css', 'slides.md']);
+    expect(files).toEqual(['animations/echo/events.yaml', 'animations/echo/index.html', 'animations/echo/style.css', 'slides.zd']);
   });
 
   it('finds the files a page loads, also the paths its scripts try, inside the deck only', async () => {

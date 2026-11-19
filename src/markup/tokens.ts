@@ -99,7 +99,7 @@ const ALIASES: Record<string, string> = {
   sh: 'shell', bash: 'shell', zsh: 'shell', shell: 'shell', console: 'shell', fish: 'shell',
   tex: 'latex', latex: 'latex',
   json: 'json', json5: 'json', jsonc: 'json',
-  md: 'markup', markdown: 'markup', slides: 'markup', zs: 'markup',
+  zd: 'markup', md: 'markup', markdown: 'markup', slides: 'markup', zs: 'markup',
   html: 'tags', xml: 'tags', svg: 'tags', xhtml: 'tags',
   txt: 'text', text: 'text', plain: 'text', '': 'text',
 };

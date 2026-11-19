@@ -149,13 +149,13 @@ takes the same placement attributes as an include.
 ```markdown
 ::: slide {#intro}
 ## Introduction
-[[import: parts/footer.md]]
+[[import: parts/footer.zd]]
 :::
 
-[[import: parts/appendix.md]]
+[[import: parts/appendix.zd]]
 ```
 
-`[[import: path.md]]` splices another Markdown file into the document before it is parsed.
+`[[import: path.zd]]` splices another Markdown file into the document before it is parsed.
 `[[snippet: name key=value …]]` does the same with a snippet, markup defined once with
 `{{placeholders}}` and used many times ([Extending a deck](extending.html#snippets)).
 Between slides the file contributes slides and `::: styles` blocks; inside a slide it contributes

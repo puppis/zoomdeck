@@ -78,7 +78,7 @@ export interface MarkupDeckOptions {
   languages?: string[];
   /** Folders with code themes (`name.json`) for `layout.codeTheme`; `code-themes/` next to the document is searched anyway. */
   codeThemes?: string[];
-  /** Folders with themes, style sheets as `name.md` (`::: styles` blocks); `themes/` next to the document is searched anyway. */
+  /** Folders with themes, style sheets as `name.zd` or `name.md` (`::: styles` blocks); `themes/` next to the document is searched anyway. */
   themes?: string[];
   /** The theme(s) to apply, by name, before the deck's own `styles`. */
   theme?: string | string[];
@@ -86,7 +86,7 @@ export interface MarkupDeckOptions {
   slides?: string[];
   /** Folders with directive modules for `[[name: …]]` the dialect does not know; `directives/` next to the document is searched anyway. */
   directives?: string[];
-  /** Folders with snippets, `name.md` with `{{placeholders}}`, for `[[snippet: name …]]`; `snippets/` next to the document is searched anyway. */
+  /** Folders with snippets, `name.zd` or `name.md` with `{{placeholders}}`, for `[[snippet: name …]]`; `snippets/` next to the document is searched anyway. */
   snippets?: string[];
   /** Folders with camera transition modules for `transition=name`; `transitions/` next to the document is searched anyway. */
   transitions?: string[];
@@ -209,6 +209,18 @@ function libraryReader(options: MarkupDeckOptions, base: string | undefined, pat
   };
 }
 
+/**
+ * A markup file of the library folders by its name: `name.zd`, else `name.md` (the extension of
+ * markup files before `.zd`), with the file name found; null when no folder has either.
+ */
+async function readMarkup(read: ReturnType<typeof libraryReader>, name: string, folders: string[]): Promise<{ text: string; file: string } | null> {
+  for (const file of [`${name}.zd`, `${name}.md`]) {
+    const text = await read(file, folders);
+    if (text !== null) return { text, file };
+  }
+  return null;
+}
+
 /** What a theme sets: styles, and the deck settings a Markdown theme gives under `layout:`, `presenter:` and `deck:`. */
 export interface ThemeParts {
   styles?: Record<string, string | Record<string, unknown>>;
@@ -307,8 +319,8 @@ function withSettings(options: MarkupDeckOptions, settings: DeckSettings): Marku
 
 /**
  * Build a deck definition from a markup document: read it, take the settings of its front matter
- * and of the files it `extends`, load its slide classes, and apply the theme(s) it names (`name.md`
- * in the themes folders, in order, under the deck's own styles, layout, presenter settings,
+ * and of the files it `extends`, load its slide classes, and apply the theme(s) it names (`name.zd`
+ * or `name.md` in the themes folders, in order, under the deck's own styles, layout, presenter settings,
  * background and viewport). Options given here win over the front matter. The way to open a deck
  * by its URL: every setting is known before the player starts.
  */
@@ -345,9 +357,9 @@ export async function loadMarkupDeck(options: MarkupDeckOptions): Promise<Resolv
   const read = libraryReader(merged, deckBase(merged), folders.paths);
   let theme: ThemeParts = {};
   for (const name of names) {
-    const markdown = await read(`${name}.md`, folders.themes);
-    if (markdown === null) throw new MarkupError(`No theme ${name}.md in the deck's themes folders`);
-    theme = mergeThemes(theme, parseTheme(markdown));
+    const found = await readMarkup(read, name, folders.themes);
+    if (found === null) throw new MarkupError(`No theme ${name}.zd (or ${name}.md) in the deck's themes folders`);
+    theme = mergeThemes(theme, parseTheme(found.text));
   }
   return markupDeck(applyTheme(merged, theme));
 }
@@ -413,7 +425,10 @@ export function markupDeck(options: MarkupDeckOptions): ResolvedDeck {
       const { paths } = folders;
       const read = libraryReader(options, base, paths);
       const expanded = await expandImports(source as string, {
-        snippet: (name) => read(`${name}.md`, folders.snippets),
+        snippet: async (name) => {
+          const found = await readMarkup(read, name, folders.snippets);
+          return found && { text: found.text, file: `snippets/${found.file}` };
+        },
         load: async (path) => {
           const clean = path.replace(/^\.\//, '');
           const preloaded = files[path] ?? files[clean];
@@ -521,8 +536,8 @@ export function markupDeck(options: MarkupDeckOptions): ResolvedDeck {
 }
 
 /**
- * A deck's title when its front matter gives none: the name of the folder holding the Markdown
- * (`tour` for `tour/slides.md`), else the file's own name, else ZoomDown. The same wherever the
+ * A deck's title when its front matter gives none: the name of the folder holding the markup
+ * (`tour` for `tour/slides.zd`), else the file's own name, else ZoomDown. The same wherever the
  * deck is opened or built.
  */
 export function defaultTitle(location: string | undefined): string {

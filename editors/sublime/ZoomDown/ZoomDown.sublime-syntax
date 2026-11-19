@@ -1,13 +1,14 @@
 %YAML 1.2
 ---
 # ZoomDown's Markdown dialect: Markdown plus slide containers, directives and attribute blocks.
-# Requires Sublime Text 4 (the `extends` key). Select it with View ▸ Syntax ▸ ZoomDown Markdown;
-# files whose first line opens a slide or styles block pick it automatically.
+# Requires Sublime Text 4 (the `extends` key). Decks (.zd files) and files whose first line opens a
+# slide or styles block pick it automatically; others, such as a deck kept as .md, through
+# View ▸ Syntax ▸ ZoomDown Markdown.
 name: ZoomDown Markdown
 scope: text.html.markdown.zoomdown
 version: 2
 extends: Packages/Markdown/Markdown.sublime-syntax
-file_extensions: []
+file_extensions: [zd]
 first_line_match: '^(?:<!--.*?-->\s*)?:::\s*(?:slide|styles)\b'
 contexts:
   main:

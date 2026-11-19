@@ -4,9 +4,9 @@
  * shows a deck with one script tag:
  *
  *     <script type="module" src="zoomdown.standalone.js"></script>
- *     <zoom-down src="talk/slides.md" without="camera record"></zoom-down>
+ *     <zoom-down src="talk/slides.zd" without="camera record"></zoom-down>
  *
- * `src` is a Markdown file (its settings in its front matter) or a PDF; without it the deck is the
+ * `src` is a deck's markup file, `.zd` (or `.md`), its settings in its front matter, or a PDF; without it the deck is the
  * Markdown written inside the element, in a `<script type="text/markdown">` child (verbatim) or as its text.
  * `without` leaves features out, `start` names the first stop, `title` the deck, `outline`
  * opens the outline, `use-location` lets the deck write `#step=` in the page's URL (for a page

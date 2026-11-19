@@ -164,7 +164,7 @@ vector ink on top. The page therefore loads at once on any tablet, answers the p
 immediately, and accepts no gesture other than drawing: a pencil or a finger never selects,
 scrolls or zooms anything.
 
-1. Serve the deck so that other devices can reach it: `zoomdown serve talk/slides.md --host`, or
+1. Serve the deck so that other devices can reach it: `zoomdown serve talk/slides.zd --host`, or
    `npm run dev -- --host` from the checkout. Pairing needs this server; an exported HTML file
    opened from disk cannot pair. The server answers to its addresses, to any `.local` name and
    to the computer's own host name; a request under another name is refused, as a guard against

@@ -8,7 +8,10 @@
  * opens that deck; started bare it asks for one in the folder used last, and the first time it
  * offers to copy the tour deck to a folder of the user's, out of the app.
  *
- *   ZoomDown [slides.md | paper.pdf | deck.ts] [--local] [--port N] [--editor NAME] [--watch PATH] [--scene Name]
+ *   ZoomDown [slides.zd | paper.pdf | deck.ts] [--local] [--port N] [--editor NAME] [--watch PATH] [--scene Name]
+ *
+ * The installers register the app for `.zd` files, so the system opens a deck with it on a
+ * double-click; a deck's `.md` (the extension before `.zd`) opens from the app or the command line.
  */
 import { app, BrowserWindow, Menu, dialog, shell, session, desktopCapturer, screen, systemPreferences } from 'electron';
 import { fileURLToPath } from 'node:url';
@@ -17,7 +20,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { startPreview, parseArgs, resolveDeckPath, deckKind } from '../bin/zoomdown.mjs';
 import { FOLDER as RECORDINGS } from '../bin/recordings.mjs';
 import { listJobs, resumeRenders } from '../bin/render.mjs';
-import { copyTour, TOUR_FOLDER } from './tour.mjs';
+import { copyTour, tourDeck, TOUR_FOLDER } from './tour.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(here, '..');
@@ -147,6 +150,8 @@ function remember(deckPath) {
 
 /** Serve `deckPath` (replacing the deck served so far) and show it in the window. */
 async function openDeck(deckPath) {
+  // Linux file managers hand the desktop entry's %U a file:// URL rather than a path.
+  if (/^file:\/\//i.test(deckPath)) deckPath = fileURLToPath(deckPath);
   let target;
   try {
     target = resolveDeckPath(deckPath);
@@ -156,7 +161,7 @@ async function openDeck(deckPath) {
     return;
   }
   if (!existsSync(target) || !deckKind(target)) {
-    dialog.showErrorBox('ZoomDown', `Not a deck: ${deckPath}\nOpen a Markdown file, a PDF or a slide module.`);
+    dialog.showErrorBox('ZoomDown', `Not a deck: ${deckPath}\nOpen a ZoomDown deck (.zd, or .md), a PDF or a slide module.`);
     return;
   }
   const previous = preview;
@@ -245,7 +250,7 @@ async function chooseDeck(folder = readStore().folder) {
     ...(folder ? { defaultPath: folder } : {}),
     properties: ['openFile'],
     filters: [
-      { name: 'Decks', extensions: ['md', 'markdown', 'pdf', 'ts', 'js', 'mjs', 'tsx'] },
+      { name: 'Decks', extensions: ['zd', 'md', 'markdown', 'pdf', 'ts', 'js', 'mjs', 'tsx'] },
       { name: 'All files', extensions: ['*'] },
     ],
   });
@@ -285,7 +290,7 @@ async function offerTour() {
       cancelId: 2,
     });
     if (response === 2) return false;
-    deck = response === 1 ? copyTour(TOUR_SOURCE, chosen.filePaths[0], { replace: true }) : join(error.target, 'slides.md');
+    deck = response === 1 ? copyTour(TOUR_SOURCE, chosen.filePaths[0], { replace: true }) : tourDeck(error.target);
   }
   await openDeck(deck);
   return Boolean(current);
@@ -301,7 +306,7 @@ async function start() {
     const { response } = await dialog.showMessageBox({
       type: 'none',
       message: 'Welcome to ZoomDown',
-      detail: 'Open a deck of yours (a Markdown file, a PDF or a slide module), or copy the tour deck with its examples to a folder of yours and start from there.',
+      detail: 'Open a deck of yours (a .zd file, a PDF or a slide module), or copy the tour deck with its examples to a folder of yours and start from there.',
       buttons: ['Open a Deck…', 'Copy the Tour…', 'Quit'],
       defaultId: 1,
       cancelId: 2,

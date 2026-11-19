@@ -188,7 +188,7 @@ strings or maps; the `::: styles` definition wins. How styles are applied is und
 A snippet is markup written once and expanded wherever `[[snippet: name key=value …]]` stands
 on a line of its own, before anything is parsed. It is defined in a `::: snippet name` block
 anywhere (in the document or an imported file), whose lines run to the `:::` that closes it,
-nested containers included, or in `snippets/name.md`. Placeholders `{{key}}` take the
+nested containers included, or in `snippets/name.zd`. Placeholders `{{key}}` take the
 attribute of the use; `{{key|default}}` has a value when the use gives none; a key with
 neither is an error naming the snippet. Snippets may use imports and other snippets, eight
 levels deep; a snippet that uses itself is an error. Errors inside an expansion name the block
@@ -214,10 +214,11 @@ notes first and the current step's after them. `step=N` is the only attribute. `
 ### [[import]]
 
 ```markdown
-[[import: parts/footer.md]]
+[[import: parts/footer.zd]]
 ```
 
-An import, on a line of its own, splices a Markdown file in before parsing: between slides it
+An import, on a line of its own, splices another markup file in before parsing (`.zd`, or
+any other extension, `.md` included): between slides it
 adds slides and style blocks, inside a slide it adds elements and directives. The path is
 relative to the importing file, then searched in the `paths` folders; it may be quoted. Imports
 nest eight levels deep and may not form a cycle. Errors in an imported file name the file and
@@ -906,7 +907,7 @@ alike.
 
 ## The front matter
 
-A deck is its Markdown file, and its settings are the YAML front matter at its top: the lines
+A deck is its `.zd` file (a deck written before `.zd` may keep its `.md`), and its settings are the YAML front matter at its top: the lines
 between a first line `---` and the next `---` or `...`. They are left blank when the slides are
 parsed, so every line keeps its number. Relative paths in it are relative to the file that names
 them. An unknown setting is an error that lists the allowed ones.
@@ -939,7 +940,7 @@ styles:
 | `macros` | map | LaTeX macros for every formula: name to an expansion, or to `[expansion, number of arguments]`, or to `[expansion, number of arguments, default of the optional first one]`, as in MathJax; single quotes keep backslashes as written, `'\mathbb{N}'` |
 | `styles` | map | named styles, a name to an attribute string or a map |
 | `theme` | name or list | themes applied under the deck's own settings |
-| `extends` | path | a Markdown file (its front matter) or a `.yaml`/`.yml` file (all settings) this one builds on, below |
+| `extends` | path | a `.zd` or `.md` file (its front matter) or a `.yaml`/`.yml` file (all settings) this one builds on, below |
 | `paths` | folder or list of folders | searched, after the Markdown's own folder, for imports, images, videos, pages and data files |
 | `artworks`, `fonts`, `effects`, `transitions`, `charts`, `languages`, `codeThemes`, `themes`, `slides`, `directives`, `snippets` | folder or list of folders | the deck's library, besides the folder of the same name next to the Markdown (`code-themes/` for `codeThemes`); see [Extending a deck](extending.html) |
 
@@ -995,7 +996,7 @@ Next to the Markdown, each of these folders extends the player by name when it e
 the folders the settings above list: `artworks/` (`name.svg`, `name.ts`), `fonts/`
 (`Family.woff2` and `-Bold`, `-Italic`, `-BoldItalic`), `effects/`, `transitions/`, `charts/`,
 `directives/`, `slides/` (modules), `languages/` (`lang.json`), `code-themes/` (`name.json`),
-`themes/` (`name.md`), `snippets/` (`name.md`). The `paths` folders are
+`themes/` (`name.zd`), `snippets/` (`name.zd`; for both, a `name.md` is found too). The `paths` folders are
 searched last for every kind. [Extending a deck](extending.html) describes each file format.
 
 ### Theme files

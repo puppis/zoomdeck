@@ -24,7 +24,8 @@
 ;;
 ;; Install: (add-to-list 'load-path "/path/to/ZoomDown/editors/emacs")
 ;;          (require 'zoomdown)
-;; Files that open with `::: slide' or `::: styles' use the mode automatically.
+;; Decks (.zd files) use the mode automatically, and so do files that open with
+;; `::: slide' or `::: styles'.
 
 ;;; Code:
 
@@ -228,6 +229,9 @@ by `zoomdown-preview' or `zoomdown serve'."
       (define-key map (kbd "C-M-p") #'zoomdown-build)
       (use-local-map map)))
   (when zoomdown-autosave (zoomdown-autosave-mode 1)))
+
+;;;###autoload
+(add-to-list 'auto-mode-alist '("\\.zd\\'" . zoomdown-mode))
 
 ;;;###autoload
 (add-to-list 'magic-mode-alist

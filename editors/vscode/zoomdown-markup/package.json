@@ -1,13 +1,16 @@
 {
   "name": "zoomdown-markup",
   "displayName": "ZoomDown markup",
-  "description": "Highlights ZoomDown slide containers, directives and attributes inside Markdown files.",
-  "version": "0.1.0",
+  "description": "Opens ZoomDown decks (.zd) as Markdown and highlights their slide containers, directives and attributes.",
+  "version": "0.2.0",
   "publisher": "zoomdown",
   "license": "MIT",
   "engines": { "vscode": "^1.80.0" },
   "categories": ["Programming Languages"],
   "contributes": {
+    "languages": [
+      { "id": "markdown", "extensions": [".zd"] }
+    ],
     "grammars": [
       {
         "scopeName": "markdown.zoomdown.injection",

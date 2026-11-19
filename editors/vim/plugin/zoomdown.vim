@@ -4,13 +4,14 @@
 "   :ZoomDownJump     (<leader>zj, Ctrl+Alt+J)  show the stop of the cursor line in the browser
 "   :ZoomDownBuild    (<leader>zp, Ctrl+Alt+P)  export one self-contained HTML file to ./build
 "
-" Buffers whose first lines open a slide or styles block get the mappings and
-" are saved automatically after `updatetime` idle milliseconds (default 1 s).
+" Decks (.zd files, which ftdetect/zoomdown.vim makes Markdown) get the mappings
+" and are saved automatically after `updatetime` idle milliseconds (default 1 s);
+" so do .md buffers whose first lines open a slide or styles block.
 " The preview is started with an editor command for the inverse search: E, or
 " Alt+click on an element, in the browser moves this Vim to the source line.
 " That needs a server name: Neovim always has one; Vim needs +clientserver and
 " `vim --servername NAME` (gvim and MacVim set one by themselves).
-" Install: copy the `plugin` and `after` folders into ~/.vim or ~/.config/nvim
+" Install: copy the `plugin`, `ftdetect` and `after` folders into ~/.vim or ~/.config/nvim
 " (or point your plugin manager at ZoomDown/editors/vim).
 
 if exists('g:loaded_zoomdown') | finish | endif
@@ -143,5 +144,6 @@ endfunction
 
 augroup zoomdown
   autocmd!
+  autocmd BufReadPost,BufNewFile *.zd call s:Setup()
   autocmd BufReadPost,BufNewFile *.md if s:IsDeck() | call s:Setup() | endif
 augroup END

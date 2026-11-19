@@ -5,7 +5,7 @@ description: Folders next to the Markdown that add to the player by name, withou
 
 A deck extends the player by putting files in folders next to its Markdown. Each folder holds
 one kind of thing, one file per name, and the name is what the Markdown says: `[[snippet: card …]]`
-expands `snippets/card.md`, `[[gauge: …]]` draws with `directives/gauge.ts`, `[[effect: pulse …]]`
+expands `snippets/card.zd`, `[[gauge: …]]` draws with `directives/gauge.ts`, `[[effect: pulse …]]`
 plays `effects/pulse.ts`, `transition=swoop` moves the camera with `transitions/swoop.ts`,
 `type=donut` draws with `charts/donut.ts`, `` ```zig `` colors with `languages/zig.json`, and
 `font: Inter` loads `fonts/Inter.woff2`. Nothing registers
@@ -16,8 +16,8 @@ files copied into the folder export or embedded in the single file.
 
 ```text
 talk/
-├── slides.md
-├── snippets/        card.md             [[snippet: card id=one title="…"]]
+├── slides.zd
+├── snippets/        card.zd             [[snippet: card id=one title="…"]]
 ├── directives/      gauge.ts            [[gauge: #g level=0.7]]
 ├── fonts/           Inter.woff2, Inter-Bold.woff2, Inter-Italic.woff2, Inter-BoldItalic.woff2
 ├── effects/         pulse.ts            [[effect: pulse #id, step=N]], enter=pulse
@@ -25,7 +25,7 @@ talk/
 ├── charts/          donut.ts            ```chart {type=donut src=data.csv}
 ├── languages/       zig.json            ```zig
 ├── code-themes/     sepia.json          layout: { codeTheme: sepia }
-├── themes/          lecture.md          theme: lecture
+├── themes/          lecture.zd          theme: lecture
 ├── artworks/        rocket.svg, gate.ts [[artwork: rocket]], [[artwork: gate]]
 └── slides/          Orbit.ts            [[subslide: Orbit]]
 ```
@@ -56,7 +56,7 @@ searched last for every kind. Modules may import `manim-web` and `zoomdown` as
 ```
 
 A snippet is markup written once and used many times: a `::: snippet name` block anywhere in
-the document (or an imported file), or the file `snippets/name.md`. `[[snippet: name key=value …]]`
+the document (or an imported file), or the file `snippets/name.zd` (`snippets/name.md` is found too). `[[snippet: name key=value …]]`
 on a line of its own is replaced by the snippet's lines before anything is parsed, with every
 `{{key}}` filled from the attributes of the use; `{{key|default}}` has a value when the use gives
 none, and a key with neither is an error that names the snippet. A snippet may hold whole slides,
@@ -203,7 +203,7 @@ the color the deck's text color gives them.
 ## Themes
 
 ```markdown
-<!-- themes/lecture.md -->
+<!-- themes/lecture.zd -->
 ::: styles
 heading: color=BLUE_E
 body: font_size=30
@@ -218,7 +218,7 @@ A theme is a deck's look kept apart from its slides: a Markdown file whose `::: 
 every line, when it has no block) define [styles](styles.html), with three reserved names for the
 settings that are not styles: `layout:` takes the keys of `layout` in the front matter,
 `presenter:` those of `presenter`, and `deck:` takes `background=` and `viewport=16x9`.
-`theme: lecture` in the front matter applies `themes/lecture.md`; a list `[lecture, wide]`
+`theme: lecture` in the front matter applies `themes/lecture.zd` (or `themes/lecture.md`); a list `[lecture, wide]`
 applies several, later ones over earlier. The deck's own `styles`, `layout`, `presenter`,
 `background` and `viewport` win over the theme key by key, and its `::: styles` block over
 everything. Since styles cover the roles (`heading`, `body`, `code`, `chart`, `table`, …) and any

@@ -19,8 +19,8 @@ This page is the short reference, one line per construct. [The markup language, 
 | `[[include: #slide, placement, step, start_here, only_this, return_to_parent, skip_return, transition, preview]]` | a child slide placed in this one; `subslide: #id` is the same |
 | `[[subslide: ClassName, placement, step, …]]` | a code-authored child ([Code-authored slides](code-slides.html)) |
 | `[[pdf: file.pdf #id, placement, step, preview, …]]` | a PDF placed in the slide: its pages as children, cut through one after the other ([PDFs, flat decks and forests](documents.html#a-pdf-inside-a-slide)) |
-| `[[import: path.md]]` | splices a Markdown file in, between slides or inside one |
-| `[[snippet: name key=value …]]`, `::: snippet name … :::` | expands markup defined once, in a block or in `snippets/name.md`, filling its `{{key}}` placeholders ([Extending a deck](extending.html#snippets)) |
+| `[[import: path.zd]]` | splices a Markdown file in, between slides or inside one |
+| `[[snippet: name key=value …]]`, `::: snippet name … :::` | expands markup defined once, in a block or in `snippets/name.zd`, filling its `{{key}}` placeholders ([Extending a deck](extending.html#snippets)) |
 | `::: styles … :::` | style definitions, `name: attributes` per line, at the top of the file |
 | `::: notes {step=N} … :::` | the presenter's notes of a slide, or of one step, shown on the companion tablet only ([Presenter notes](slides.html#presenter-notes)) |
 | `::: {.element attrs} … :::` | attributes for one paragraph, heading, image, formula, table or listing |

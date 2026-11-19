@@ -65,7 +65,7 @@ describe('the search folders of a deck', () => {
       asked.push(`${init?.method ?? 'GET'} ${url}`);
       return { ok: url.endsWith('/shared/pic.png'), headers: new Headers({ 'content-type': 'image/png' }) } as Response;
     }) as typeof fetch;
-    const renderer = new MarkupRenderer({ basePath: 'https://x.org/talk/slides.md', paths: ['https://x.org/shared/', 'extra/'] });
+    const renderer = new MarkupRenderer({ basePath: 'https://x.org/talk/slides.zd', paths: ['https://x.org/shared/', 'extra/'] });
     expect(await renderer.locate('pic.png')).toBe('https://x.org/shared/pic.png');
     expect(asked).toEqual(['HEAD https://x.org/talk/pic.png', 'HEAD https://x.org/shared/pic.png']);
     // Nothing answers: the document's own URL, so the error names it.
@@ -86,7 +86,7 @@ describe('the search folders of a deck', () => {
       const page = !url.endsWith('.svg');
       return { ok: true, headers: new Headers({ 'content-type': page ? 'text/html' : 'image/svg+xml' }) } as Response;
     }) as typeof fetch;
-    const renderer = new MarkupRenderer({ basePath: 'https://x.org/talk/slides.md', paths: ['https://x.org/shared/'] });
+    const renderer = new MarkupRenderer({ basePath: 'https://x.org/talk/slides.zd', paths: ['https://x.org/shared/'] });
     // Every candidate answers with the page: nothing is found, the document's own URL comes back.
     expect(await renderer.locate('pic.png')).toBe('https://x.org/talk/pic.png');
     // A page is what an embedded page should be.
@@ -97,7 +97,7 @@ describe('the search folders of a deck', () => {
 
   it('without search folders, resolve as before and never ask', async () => {
     globalThis.fetch = (async () => { throw new Error('should not be called'); }) as typeof fetch;
-    const renderer = new MarkupRenderer({ basePath: 'https://x.org/talk/slides.md' });
+    const renderer = new MarkupRenderer({ basePath: 'https://x.org/talk/slides.zd' });
     expect(await renderer.locate('pic.png')).toBe('https://x.org/talk/pic.png');
   });
 
@@ -106,8 +106,8 @@ describe('the search folders of a deck', () => {
     try {
       mkdirSync(join(dir, 'shared'));
       mkdirSync(join(dir, 'src', 'artworks'), { recursive: true });
-      writeFileSync(join(dir, 'src', 'slides.md'), '---\npaths: [../shared, ../absent]\nartworks: ../shared\n---\n::: slide {#a}\nx\n:::\n');
-      const folders = await deckFolders(join(dir, 'src', 'slides.md'));
+      writeFileSync(join(dir, 'src', 'slides.zd'), '---\npaths: [../shared, ../absent]\nartworks: ../shared\n---\n::: slide {#a}\nx\n:::\n');
+      const folders = await deckFolders(join(dir, 'src', 'slides.zd'));
       expect(folders.paths).toEqual([join(dir, 'shared')]);
       expect(folders.artworks).toEqual([join(dir, 'shared'), join(dir, 'src', 'artworks')]);
       expect(folders.all.length).toBe(3);

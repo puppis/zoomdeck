@@ -5,10 +5,10 @@ preview it with `node bin/zoomdown.mjs serve <deck>`.
 
 | Deck | Open with | What it shows |
 | --- | --- | --- |
-| **Tour** | `http://localhost:5173/` (the default) or `?deck=examples/tour/slides.md` | A tour of every feature of the Markdown dialect and the player, one chapter per topic, each showing the listing that produces it. It is the live companion of the documentation (`docs/html/index.html`), which links to its chapters with `#slide=` deep links. |
+| **Tour** | `http://localhost:5173/` (the default) or `?deck=examples/tour/slides.zd` | A tour of every feature of the Markdown dialect and the player, one chapter per topic, each showing the listing that produces it. It is the live companion of the documentation (`docs/html/index.html`), which links to its chapters with `#slide=` deep links. |
 | Tree deck | `?deck=examples/tree-deck&scene=Demo` (also `MovingFrames`, `AutomaticTree`) | Code-authored slides with nesting, resumable subcalls, replacement transforms, trackers, an animated viewport and automatic child traversal. |
 | A deck inside a page | `http://localhost:5173/examples/embed/index.html` | The tour mounted with `mountDeck` in a resizable box of an ordinary page, with the page's own buttons and slide menu driving it, and a second deck with most features left out. |
-| Flat documents | `?deck=examples/document/pages.md` and `?deck=examples/document/paper.pdf` | A Markdown file whose slides include none of the others, read page after page with cuts between them (one page has a child of its own, which zooms as usual), and a three-page PDF opened directly, its pages named by its bookmarks. |
+| Flat documents | `?deck=examples/document/pages.zd` and `?deck=examples/document/paper.pdf` | A Markdown file whose slides include none of the others, read page after page with cuts between them (one page has a child of its own, which zooms as usual), and a three-page PDF opened directly, its pages named by its bookmarks. |
 
 ## The tour as a template
 
@@ -16,16 +16,16 @@ preview it with `node bin/zoomdown.mjs serve <deck>`.
 
 ```text
 tour/
-├── slides.md        the slides, their settings in the front matter at the top: title,
+├── slides.zd        the slides, their settings in the front matter at the top: title,
 │                    typography, presenter options, styles, macros, slide classes
 ├── code-slides.ts   Slide classes used by [[subslide: Name]]
-├── parts/           Markdown files spliced in with [[import: path.md]]
+├── parts/           Markdown files spliced in with [[import: path.zd]]
 ├── artworks/        artworks of the deck's own: an SVG and two modules, for [[artwork: name]]
 ├── effects/         an effect of the deck's own, pulse.ts, for [[effect: pulse ...]]
 └── assets/          images, an animated PNG, a video, an embeddable page
 
 The documentation links on every chapter slide come from one `::: snippet docs` block at the top
-of slides.md. Other folders extend the player the same way when a deck has them: `snippets/`,
+of slides.zd. Other folders extend the player the same way when a deck has them: `snippets/`,
 `directives/`, `fonts/`, `transitions/`, `charts/`, `languages/`, `code-themes/`, `themes/` and
 `slides/`, one file per name.
 ```

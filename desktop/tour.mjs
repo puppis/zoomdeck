@@ -5,6 +5,16 @@
 import { cpSync, existsSync, mkdirSync } from 'node:fs';
 import { join, sep } from 'node:path';
 
+/**
+ * The deck of a copy of the tour: `slides.zd`, or the `slides.md` of a copy made before decks
+ * took the `.zd` extension.
+ */
+export function tourDeck(target) {
+  const deck = join(target, 'slides.zd');
+  const older = join(target, 'slides.md');
+  return !existsSync(deck) && existsSync(older) ? older : deck;
+}
+
 /** The folder the copy gets inside the one chosen. */
 export const TOUR_FOLDER = 'zoomdown-tour';
 
@@ -19,5 +29,5 @@ export function copyTour(source, parent, { replace = false } = {}) {
   mkdirSync(target, { recursive: true });
   // The deck's own files; a static build of it, if one was made in place, is not part of the deck.
   cpSync(source, target, { recursive: true, force: true, filter: (path) => !path.slice(source.length).split(sep).includes('build') });
-  return join(target, 'slides.md');
+  return join(target, 'slides.zd');
 }
