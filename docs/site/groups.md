@@ -33,8 +33,8 @@ Member IDs without an explicit `#id` are prefixed with the group ID (`automaton.
 
 ## One element of the slide
 
-The group is then a single element: `x`, `y` place its center unless `anchor=` names another
-point, `origin` (the local `(0,0)`) included; relative constraints, `at=`, `dx`/`dy`, `width` (the
+The group is then a single element: `x`, `y` place its `origin` (the local `(0,0)`) unless
+`anchor=` names a bounding-box point such as `center`; relative constraints, `at=`, `dx`/`dy`, `width` (the
 members' wrapping width), `opacity`, `step`, `hide`, `focus_only` and `enter`/`exit` apply to the
 whole. A group can be an `at=` or relative reference, an arrow endpoint, a brace or box target, and
 the target of an [animation](animations.html).

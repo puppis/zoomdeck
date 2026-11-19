@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { Circle, Rectangle } from 'manim-web';
+import { Circle, Group, Rectangle } from 'manim-web';
 import { MarkupParser } from '../src/markup/parser';
-import { connectionEnd, parseAttributes } from '../src/markup/ast';
-import { boundaryPoint, type RoundMobject } from '../src/markup/renderer';
+import { ElementSpec, GroupSpec, connectionEnd, parseAttributes } from '../src/markup/ast';
+import { anchorPoint, boundaryPoint, elementAnchor, placeRelative, type OriginMobject, type RoundMobject } from '../src/markup/renderer';
 
 const parse = (body: string, children = '') => new MarkupParser().parse(`::: slide {#r}\n${body}\n:::\n${children}`);
 const CHILDREN = '::: slide {#a}\nA\n:::\n::: slide {#b}\nB\n:::\n::: slide {#c}\nC\n:::';
@@ -23,6 +23,43 @@ describe('includes as positioning references', () => {
 
   it('keeps includes out of groups', () => {
     expect(() => parse('[[include: #a]]\n\n::: {.group #g}\n[t]{#t below:#a}\n:::', CHILDREN)).toThrow(/different group/);
+  });
+});
+
+describe('the anchor of a group', () => {
+  const group = (attrs: string) => parse(`::: {.group #g ${attrs}}\n[[dot: #d x=0 y=0]]\n:::`).slides[0].items[0] as GroupSpec;
+  // Members whose box spans (0,0) to (4,2) in local coordinates: the local origin is the box's bottom-left corner.
+  const members = () => {
+    const box = new Rectangle({ width: 4, height: 2 });
+    box.moveTo([2, 1, 0]);
+    const obj = new Group(box) as OriginMobject;
+    obj.markupOrigin = [-2, -1];
+    return obj;
+  };
+  const near = (point: number[], x: number, y: number) => {
+    expect(point[0]).toBeCloseTo(x, 9);
+    expect(point[1]).toBeCloseTo(y, 9);
+  };
+
+  it('is its local origin unless anchor= names another point', () => {
+    expect(elementAnchor(group('x=1 y=2'))).toBe('origin');
+    expect(elementAnchor(group('x=1 y=2 anchor=center'))).toBe('center');
+    expect(elementAnchor(parse('[[circle: #c x=0 y=0 radius=1]]').slides[0].items[0] as ElementSpec)).toBe('center');
+  });
+
+  it('puts the origin where at= or a coordinate says', () => {
+    const at = members();
+    placeRelative(group('at=(3,-1)'), at, new Map(), 0.3);
+    near(anchorPoint(at, 'origin'), 3, -1);
+    near(at.getCenter(), 5, 0);
+    const centered = members();
+    placeRelative(group('at=(3,-1) anchor=center'), centered, new Map(), 0.3);
+    near(centered.getCenter(), 3, -1);
+    // Below a reference, with x moving the origin, not the center, to the given abscissa.
+    const reference = new Rectangle({ width: 1, height: 1 });
+    const below = members();
+    placeRelative(new GroupSpec('g', [], { below: '#r', x: '-2' }), below, new Map([['r', reference]]), 0.3);
+    near(anchorPoint(below, 'origin'), -2, -0.5 - 0.3 - 2);
   });
 });
 

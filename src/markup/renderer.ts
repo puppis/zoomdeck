@@ -30,7 +30,7 @@ import { VideoClip } from '../video';
 import { IframeHost } from './iframe';
 import {
   ALIGNMENTS, BRACE_SIDES, CONNECTIONS, GROUP_ANCHORS, NEIGHBORS, POSITION_REFERENCES, SHAPES, TEXT_ANCHORS, TEXT_LIKE, VIDEO_EXTENSIONS,
-  ElementSpec, CodeSlideSpec, IncludeSpec, InlineSpan, MarkupError, TableSpec, attachmentTargets, connectionEnd, endpoint, numberValue, parseAt, parseColor,
+  ElementSpec, CodeSlideSpec, GroupSpec, IncludeSpec, InlineSpan, MarkupError, TableSpec, attachmentTargets, connectionEnd, endpoint, numberValue, parseAt, parseColor,
   polylinePoints, span,
 } from './ast';
 import { MarkupParser } from './parser';
@@ -190,10 +190,14 @@ function sketchShape(element: ElementSpec, crisp: VMobject, options: SketchOptio
   return rough;
 }
 
-/** The anchor name an item is positioned by: its `anchor` attribute, else the text default or the center. */
+/**
+ * The anchor name an item is positioned by: its `anchor` attribute, else the text default for text,
+ * the local origin for a group, or the center.
+ */
 export function elementAnchor(item: ElementSpec | IncludeSpec | CodeSlideSpec, textAnchor = 'left-baseline'): string {
   const explicit = item.attributes.anchor;
   if (explicit) return explicit;
+  if (item instanceof GroupSpec) return 'origin';
   return item instanceof ElementSpec && TEXT_LIKE.has(item.kind) ? textAnchor : 'center';
 }
 

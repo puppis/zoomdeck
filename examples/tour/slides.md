@@ -561,7 +561,7 @@ Name   && **bold**  && $x^2$
 longer && *italic*  && `&&` aligns columns
 ```
 
-::: {.group #prose-column anchor=origin x=0.6 y=4.2}
+::: {.group #prose-column x=0.6 y=4.2}
 Paragraphs wrap to `width`. Use **bold**, *italic*, `inline code` and math $e^{i\pi}+1=0$. {width=9 font_size=24}
 
 [Colored spans]{color=ORANGE} take palette names, [CSS colors]{style="color:#15803D"} or hex values and [nest **emphasis** and $\sqrt{2}$]{color=GOLD_E}. {width=9 font_size=24}
@@ -1009,7 +1009,7 @@ Named styles come from `styles` in the front matter or a `::: styles` block: `.c
 [[snippet: docs id=groups page=groups.html]]
 
 ```markdown {#groups-source x=-9.35 y=3.9 width=9.1 font_size=17}
-::: {.group #automaton x=2 y=-0.5 anchor=origin step=1}
+::: {.group #automaton x=2 y=-0.5 step=1}
 [[circle: #q0 x=0 y=0 radius=0.6 color=BLUE_E]]
 [$q_0$]{at=#q0.center anchor=center}
 [[circle: #q1 x=3 y=0 radius=0.6 color=BLUE_E]]
@@ -1021,7 +1021,7 @@ Named styles come from `styles` in the front matter or a `::: styles` block: `.c
 [[box: #automaton, #gbox, buff=0.3, color=GREEN_E, step=2]]
 ```
 
-::: {.group #automaton x=2 y=-0.5 anchor=origin step=1}
+::: {.group #automaton x=2 y=-0.5 step=1}
 [[circle: #q0 x=0 y=0 radius=0.6 color=BLUE_E]]
 [$q_0$]{at=#q0.center anchor=center}
 [[circle: #q1 x=3 y=0 radius=0.6 color=BLUE_E]]
@@ -1033,7 +1033,7 @@ Named styles come from `styles` in the front matter or a `::: styles` block: `.c
 
 [[box: #automaton, #gbox, buff=0.3, color=GREEN_E, step=2]]
 
-A `::: {.group #id}` container lays out its members in their own coordinates and behaves as one element: `x`, `y` place its center, or with `anchor=origin` its local origin (the red dot), and it fades in and out as a whole. {#groups-key x=-9.35 y=-3.5 width=18.7 font_size=22}
+A `::: {.group #id}` container lays out its members in their own coordinates and behaves as one element: `x`, `y` place its local origin (the red dot), and it fades in and out as a whole. {#groups-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
 `anchor=` picks a bounding-box point instead of the origin; relative constraints and `at=` work on the group, and braces, boxes, blobs and arrows attach to it. Members reference only other members. {#groups-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::

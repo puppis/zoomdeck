@@ -8,8 +8,9 @@ description: Anchors, flow, explicit coordinates, relative constraints, at= expr
 ## Anchors
 
 `x`, `y` position an element's **anchor**. The default anchor is `left-baseline` for prose,
-headings, math and listings (the left edge and the first baseline) and `center` for images,
-shapes, icons, tables, charts, groups and child viewports. `anchor=` chooses another point:
+headings, math and listings (the left edge and the first baseline), `origin` for groups (their
+local `(0,0)`) and `center` for images, shapes, icons, tables, charts and child viewports.
+`anchor=` chooses another point:
 
 | Anchors | Available on |
 | --- | --- |

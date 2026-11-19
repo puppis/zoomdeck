@@ -359,16 +359,17 @@ Attributes at the end of a block describe that block; brackets around the whole 
 and an `.element` container wraps exactly one paragraph, heading, image, listing or display formula.
 IDs are unique within their slide; omitted IDs become `element-N`.
 
-`x`, `y` position the element's **anchor**: for prose, headings, math and listings the default
-is `left-baseline` (the left edge and the first baseline), for images, shapes and child viewports
-it is `center`. `anchor=` chooses another point: `center`, `top`, `bottom`, `left`, `right`,
-`top-left`, `top-right`, `bottom-left`, `bottom-right`, or `left-baseline` / `right-baseline` for
-text-like elements (`layout.textAnchor` changes the text default). Blocks without coordinates flow
-downward from the top-left margin; text with only `x` keeps flowing at that edge, while an explicit
-`y` or a vertical constraint leaves the flow; a center-anchored element defaults an omitted axis to
-zero. `dx` and `dy` shift the final position of any positioned element. `width` controls wrapping,
-image width and the maximum formula or listing width; `height` scales the result; `font_size`
-overrides the layout size; `opacity` (0 to 1) makes any element translucent.
+`x`, `y` position the element's **anchor**: for prose, headings, math and listings the default is
+`left-baseline` (the left edge and the first baseline), for images, shapes and child viewports it
+is `center`, for groups their `origin`. `anchor=` chooses another point: `center`, `top`, `bottom`,
+`left`, `right`, `top-left`, `top-right`, `bottom-left`, `bottom-right`, or `left-baseline` /
+`right-baseline` for text-like elements (`layout.textAnchor` changes the text default). Blocks
+without coordinates flow downward from the top-left margin; text with only `x` keeps flowing at
+that edge, while an explicit `y` or a vertical constraint leaves the flow; any other element, or
+text anchored at its center, defaults an omitted axis to zero. `dx` and `dy` shift the final
+position of any positioned element. `width` controls wrapping, image width and the maximum formula
+or listing width; `height` scales the result; `font_size` overrides the layout size; `opacity` (0
+to 1) makes any element translucent.
 
 ### Anchor expressions
 

@@ -277,7 +277,7 @@ export class MarkupSlide extends Slide {
         }
         if (!('y' in attrs) && flows) advance();
       } else {
-        // Center-anchored objects default an omitted axis to zero; other anchors land on the given point.
+        // The anchor lands on the given point, an omitted axis defaulting to zero.
         const point = anchorPoint(obj, anchor);
         const target = position as [number, number, number];
         obj.shift([target[0] - point[0], target[1] - point[1], 0]);
