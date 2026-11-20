@@ -13,7 +13,7 @@
  * The installers register the app for `.zd` files, so the system opens a deck with it on a
  * double-click; a deck's `.md` (the extension before `.zd`) opens from the app or the command line.
  */
-import { app, BrowserWindow, Menu, dialog, shell, session, desktopCapturer, screen, systemPreferences } from 'electron';
+import { app, BrowserWindow, Menu, dialog, net, shell, session, desktopCapturer, screen, systemPreferences } from 'electron';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve, basename } from 'node:path';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
@@ -21,6 +21,7 @@ import { startPreview, parseArgs, resolveDeckPath, deckKind } from '../bin/zoomd
 import { FOLDER as RECORDINGS } from '../bin/recordings.mjs';
 import { listJobs, resumeRenders } from '../bin/render.mjs';
 import { copyTour, tourDeck, TOUR_FOLDER } from './tour.mjs';
+import { Updater, LATEST_RELEASE, probeInstall } from './update.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(here, '..');
@@ -62,6 +63,40 @@ const smokeShot = process.env.ZOOMDOWN_SMOKE || null;
 let win = null;
 let preview = null;
 let current = null;
+
+/**
+ * Updates: once a deck is open, the app looks for a newer release and offers it (see update.mjs).
+ * Only an installed app updates itself; run from a checkout, ZOOMDOWN_UPDATE_FEED (the address
+ * of a release, as GitHub's API describes it) tries the check and its prompts.
+ */
+const VERSION = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8')).version;
+const updateFeed = process.env.ZOOMDOWN_UPDATE_FEED || (app.isPackaged ? LATEST_RELEASE : null);
+let checkedForUpdates = false;
+const updater = updateFeed && !smokeShot
+  ? new Updater({
+    version: VERSION,
+    arch: process.arch,
+    install: app.isPackaged ? probeInstall() : null,
+    feed: updateFeed,
+    folder: join(app.getPath('userData'), 'updates'),
+    downloads: app.getPath('downloads'),
+    store: join(app.getPath('userData'), 'update.json'),
+    fetch: (url, init) => net.fetch(url, init),
+    dialog,
+    shell,
+    window: () => win,
+    deck: () => current,
+    // A prompt waits while the deck is presented full screen.
+    whenFree: () => new Promise((resolve) => {
+      if (!win || !win.isFullScreen()) resolve();
+      else win.once('leave-full-screen', () => resolve());
+    }),
+    progress: (fraction) => win?.setProgressBar(fraction),
+    quit: () => app.quit(),
+    relaunch: (options) => app.relaunch(options),
+    onChange: () => buildMenu(),
+  })
+  : null;
 
 /**
  * Rendering a talk as a video happens in a hidden window of its own: the render page draws the
@@ -188,6 +223,10 @@ async function openDeck(deckPath) {
   if (!win) createWindow();
   await win.loadURL(preview.url);
   void resumePendingRenders(target);
+  if (updater && !checkedForUpdates) {
+    checkedForUpdates = true;
+    setTimeout(() => void updater.check(), 4000);
+  }
 }
 
 function createWindow() {
@@ -323,8 +362,25 @@ async function start() {
 function buildMenu() {
   const recent = readRecent();
   const isMac = process.platform === 'darwin';
+  const updates = updater
+    ? [{ label: updater.label, enabled: updater.enabled, click: () => void updater.check({ manual: true }) }]
+    : [];
   const template = [
-    ...(isMac ? [{ role: 'appMenu' }] : []),
+    ...(isMac
+      ? [{
+        label: app.name,
+        submenu: [
+          { role: 'about' },
+          ...updates,
+          { type: 'separator' },
+          { role: 'services' },
+          { type: 'separator' },
+          { role: 'hide' }, { role: 'hideOthers' }, { role: 'unhide' },
+          { type: 'separator' },
+          { role: 'quit' },
+        ],
+      }]
+      : []),
     {
       label: 'File',
       submenu: [
@@ -362,6 +418,7 @@ function buildMenu() {
         { label: 'Documentation', click: () => shell.openExternal(DOCS) },
         { label: 'Source on GitHub', click: () => shell.openExternal(REPOSITORY) },
         { label: 'Report an Issue', click: () => shell.openExternal(`${REPOSITORY}/issues`) },
+        ...(isMac ? [] : updates),
         { type: 'separator' },
         { label: `Preview: ${preview ? preview.url : 'not running'}`, enabled: false },
       ],
@@ -444,6 +501,7 @@ if (!lock) {
     if (process.platform !== 'darwin') app.quit();
   });
   app.on('before-quit', () => {
+    updater?.abort();
     // A render under way is left for the next run, which takes it up again.
     for (const window of renderWindows.values()) if (!window.isDestroyed()) window.destroy();
     if (preview) void preview.server.close().catch(() => undefined);

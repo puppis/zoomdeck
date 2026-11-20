@@ -28,6 +28,36 @@ The builds are not signed by a registered developer, so the systems warn once:
 - **Windows**: SmartScreen shows "Windows protected your PC"; choose More info, then Run anyway.
 - **Linux**: make the AppImage executable (`chmod +x`) and run it, or install the `.deb`.
 
+## Updates
+
+Once a deck is open, the app asks GitHub whether a newer release is out (nothing runs between
+two starts of the app). When there is one, it tells you which, with **Release Notes** to read
+what changed, and offers to download it. The download (about 200 MB) takes a couple of minutes
+and runs in the background, its progress on the Dock or taskbar icon and in the menu, while you
+keep using the deck. Once it is ready, the app asks again: **Install and Restart** quits ZoomDown,
+puts the new version in place and starts it again with the same deck; **Later** keeps the
+download, and the next start offers it again. **Skip This Version** stops the offers until a
+newer one; **Check for Updates…** (in the ZoomDown menu on macOS, in Help elsewhere) looks at any
+time. A prompt never interrupts a deck presented full screen: it waits until you leave full screen.
+Every download is checked against the digest GitHub publishes for it.
+
+How the new version is put in place depends on how the app was installed:
+
+- **macOS**: an app in Applications (or any folder you can write to) replaces itself. An app run
+  from the disk image, or from Downloads without being moved, cannot: the new disk image is
+  downloaded to your Downloads folder and opened, for you to drag ZoomDown to Applications. As the
+  builds are not signed by a registered developer, macOS may ask again for the camera, the
+  microphone and Screen Recording after an update.
+- **Windows**: the installed app runs the new installer silently over the old version, which
+  takes a minute or so without a window, and starts again. The portable `.exe` cannot replace
+  itself while it runs: the new one is downloaded to your Downloads folder.
+- **Linux**: an AppImage in a folder you can write to is replaced by the new one (renamed when its
+  name carries the version). For the `.deb`, the new package is downloaded to your Downloads
+  folder and opened with the system's software installer, which asks for your password.
+
+Updates come from the releases of the repository, also for an app you built yourself; run from a
+checkout (`npm run desktop`), the app does not look for them.
+
 ## Using it
 
 Started from a deck (double-clicked or dropped on the app, or passed on the command line) the

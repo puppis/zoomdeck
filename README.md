@@ -71,6 +71,8 @@ search box on every page finds any name. `docs/markup.md` is the compact dialect
 - **A desktop app** for macOS, Linux and Windows (`desktop/`, built with electron-builder; installers
   under the repository's releases, or built locally with `npm run desktop:build`, see below): the
   same player and preview server in a window, with menus, native dialogs and the command's flags.
+  It looks for a newer release when it starts and, if you agree, downloads it in the background
+  and installs it on a restart.
 - **A PDF printout** (`P`): every stage of the deck, or the last stage of each slide,
   drawn by the deck's own renderer at up to 4K and stored losslessly, one per page, with the
   slides as bookmarks.
@@ -149,7 +151,9 @@ npm run desktop:build                        # the installers for this system, i
 the first launch asks once), an installer and a portable `.exe` on Windows, an `.AppImage` and a
 `.deb` on Linux. The "Desktop app" workflow builds all three on a version tag and attaches them to
 the release; [The desktop app](https://puppis.github.io/zoomdown/desktop.html) says what each
-system asks on the first launch.
+system asks on the first launch. The installed app updates itself from those releases
+(`desktop/update.mjs`), by the names electron-builder gives the installers and the SHA-256 digests
+GitHub publishes for them.
 
 ## Markdown decks
 
