@@ -3705,9 +3705,9 @@ export class PlayerUI {
       this._pairingPanel.append(el('p', { class: 'note', text: 'The server listens on this computer only. Restart it with --host (zoomdown serve --host, or npm run dev -- --host; the desktop app listens on the network unless started with --local) so the tablet can reach it, then come back here.' }));
       return;
     }
-    // One code at a time, chosen with a toggle: each address of the computer (the Wi-Fi, the cable
-    // to a tablet, another network), and its name on the network, which outlives a change of
-    // address but is not found on every network.
+    // One code at a time, chosen with a toggle: the computer's name on the network, which outlives a
+    // change of address but is found by multicast DNS, which not every network passes, and each of
+    // its addresses (the Wi-Fi, the cable to a tablet, another network).
     const room = this._pad?.room ?? '';
     const code = padCode();
     const links: PairingLink[] = info.links ?? info.addresses.map((address) => ({ address, interface: '', kind: 'other' as const }));
@@ -3715,22 +3715,22 @@ export class PlayerUI {
     const plugged = this._cableLinks().map((link) => link.address);
     const kindLabel = (link: PairingLink) => (plugged.includes(link.address) || link.kind === 'cable' ? 'Cable' : link.kind === 'shared' ? 'Shared network' : link.kind === 'wifi' ? 'Wi-Fi' : 'Network');
     const choices = [
+      ...(info.names ?? []).map((host) => ({
+        key: 'name',
+        host,
+        label: `Name · ${host}`,
+        caption: 'By name: finds this computer whatever its address. The name is looked up with multicast DNS (Bonjour), which some networks do not pass between devices, eduroam for instance: there, choose an address.',
+      })),
       ...[...links].sort((a, b) => kindOrder[a.kind] - kindOrder[b.kind]).map((link) => ({
         key: link.kind as string,
         host: link.address,
         label: `${kindLabel(link)} · ${link.address}`,
         caption: plugged.includes(link.address) || link.kind === 'cable'
           ? `By the cable's address: the tablet plugged in by cable reaches this computer over the wire.`
-          : `By address: works on any network the two share, eduroam and other networks of institutions included.`,
-      })),
-      ...(info.names ?? []).map((host) => ({
-        key: 'name',
-        host,
-        label: `Name · ${host}`,
-        caption: 'By name: finds this computer whatever its address, on home networks and phone hotspots. Networks of institutions (eduroam, say) keep devices from finding each other by name: use an address there.',
+          : `By address: works on any network the two share, eduroam included; a new address (on another network, say) needs a new code.`,
       })),
     ].slice(0, 6);
-    // The address asked for, else the kind of link chosen last time, else the cable, else the first address.
+    // The address asked for, else the cable of a tablet plugged in, else the kind of link chosen last time, else the name.
     let remembered: string | null = null;
     try {
       remembered = localStorage.getItem('zoomdown:pairing-choice');

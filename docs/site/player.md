@@ -170,14 +170,13 @@ scrolls or zooms anything.
    to the computer's own host name; a request under another name is refused, as a guard against
    DNS rebinding.
 2. On the presenting computer, open the settings and, under **Tablet**, choose "Show the pairing
-   code". A QR code and its address appear, one at a time: a toggle above it picks the network
-   address it is for (the Wi-Fi, the cable, another network) or the computer's name on the
-   network (`Name.local`). An address works wherever the two devices share a network. The name
-   finds the computer whatever its address, but only on networks that let devices find each other
-   by name (a home Wi-Fi, a phone's hotspot): networks of institutions, eduroam among them, do
-   not, so the address is shown first. The toggle remembers the kind you chose. "Copy the link"
-   puts the address on the clipboard, which reaches Safari on an iPad signed in to the same Apple
-   Account (Universal Clipboard).
+   code". A QR code and its address appear, one at a time: a toggle above it picks the computer's
+   name on the network (`Name.local`, the default) or one of its network addresses (the Wi-Fi, the
+   cable, another network). The name finds the computer whatever its address, but it is looked up
+   with multicast DNS (Bonjour), which some networks do not pass between devices, eduroam for
+   instance; there, choose an address, which works wherever the two devices share a network. The
+   toggle remembers the kind you chose. "Copy the link" puts the address on the clipboard, which
+   reaches Safari on an iPad signed in to the same Apple Account (Universal Clipboard).
 3. Scan the code with the tablet's camera (or type or paste the address): the pad page opens there, with the
    current slide and a toolbar for the tool (pen or highlighter), color swatches, tip size, undo,
    redo, clear and the whiteboard, and nothing else. A fingertip erases the stroke it touches. Adding it to the home screen gives it the whole

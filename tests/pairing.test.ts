@@ -69,31 +69,31 @@ describe('a tablet plugged in by cable', () => {
 });
 
 describe('the pairing panel', () => {
-  it('shows one code at a time, the cable first when one is plugged in, and the name with its limits', async () => {
+  it('shows one code at a time, the cable\'s when one is plugged in, and notes what the name relies on', async () => {
     const ui = player({ names: ['Laptop.local'], addresses: [WIFI.address, SHARED.address], links: [WIFI, SHARED], port: 8765, lan: true }) as unknown as Internals;
     ui._cableChanged({ links: [SHARED], devices: ['iPad'] });
     await ui._showPairing();
     const panel = ui._pairingPanel;
     expect(panel.querySelectorAll('.code').length).toBe(1);
     const buttons = [...panel.querySelectorAll<HTMLButtonElement>('.choices button')];
-    expect(buttons.map((button) => button.textContent)).toEqual(['Cable · 192.168.2.1', 'Wi-Fi · 10.12.0.7', 'Name · Laptop.local']);
-    expect(buttons.map((button) => button.getAttribute('aria-checked'))).toEqual(['true', 'false', 'false']);
+    expect(buttons.map((button) => button.textContent)).toEqual(['Name · Laptop.local', 'Cable · 192.168.2.1', 'Wi-Fi · 10.12.0.7']);
+    expect(buttons.map((button) => button.getAttribute('aria-checked'))).toEqual(['false', 'true', 'false']);
     expect(panel.querySelector('.url')?.textContent).toMatch(/^http:\/\/192\.168\.2\.1:8765\/pad\.html\?room=room/);
-    buttons[2].click();
+    buttons[0].click();
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(panel.querySelector('.url')?.textContent).toMatch(/^http:\/\/laptop\.local:8765\//i);
-    expect(panel.textContent).toMatch(/eduroam/);
+    expect(panel.textContent).toMatch(/multicast DNS.*eduroam/);
     expect(localStorage.getItem('zoomdown:pairing-choice')).toBe('name');
   });
 
-  it('starts from the Wi-Fi address without a cable, and from the kind chosen last time', async () => {
+  it('starts from the name without a cable, and from the kind chosen last time', async () => {
     const info = { names: ['Laptop.local'], addresses: [WIFI.address], links: [WIFI], port: 8765, lan: true };
     const first = player(info) as unknown as Internals;
     await first._showPairing();
-    expect(first._pairingPanel.querySelector('.url')?.textContent).toMatch(/^http:\/\/10\.12\.0\.7:8765\//);
-    localStorage.setItem('zoomdown:pairing-choice', 'name');
+    expect(first._pairingPanel.querySelector('.url')?.textContent).toMatch(/^http:\/\/laptop\.local:8765\//i);
+    localStorage.setItem('zoomdown:pairing-choice', 'wifi');
     const second = player(info) as unknown as Internals;
     await second._showPairing();
-    expect(second._pairingPanel.querySelector('.url')?.textContent).toMatch(/^http:\/\/laptop\.local:8765\//i);
+    expect(second._pairingPanel.querySelector('.url')?.textContent).toMatch(/^http:\/\/10\.12\.0\.7:8765\//);
   });
 });
