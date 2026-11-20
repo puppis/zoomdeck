@@ -151,13 +151,34 @@ export function padDevice(): PadDevice {
   return device;
 }
 
+/** A network address of the computer, with its interface and the kind of link: Wi-Fi, a cable, a network shared from here, or another. */
+export interface PairingLink {
+  address: string;
+  interface: string;
+  kind: 'wifi' | 'cable' | 'shared' | 'other';
+}
+
+/** What is plugged in by cable: the links on a wire (or shared from this computer) and the phones and tablets on USB (macOS). */
+export interface CableState {
+  links: PairingLink[];
+  devices: string[];
+}
+
 export interface PairingInfo {
   /** Names of this computer on the local network (its Bonjour name, as a rule), which outlive a change of address. */
   names?: string[];
   /** Addresses other devices on the network can use, empty when the server listens on the loopback only. */
   addresses: string[];
+  /** The same addresses with their links, from servers that tell them. */
+  links?: PairingLink[];
+  cable?: CableState;
   port: number;
   lan: boolean;
+}
+
+/** Call `callback` whenever what is plugged in by cable changes, as the server tells it. */
+export function onCableChange(callback: (state: CableState) => void): void {
+  import.meta.hot?.on('zoomdown:cable', (state: CableState) => callback(state));
 }
 
 /** Ask the server how a tablet can reach it. */

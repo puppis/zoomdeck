@@ -170,9 +170,15 @@ scrolls or zooms anything.
    to the computer's own host name; a request under another name is refused, as a guard against
    DNS rebinding.
 2. On the presenting computer, open the settings and, under **Tablet**, choose "Show the pairing
-   code". A QR code and an address appear: one for the computer's name on the network
-   (`Name.local`, which finds the computer whatever its address), and one per network address.
-3. Scan the code with the tablet (or type the address): the pad page opens there, with the
+   code". A QR code and its address appear, one at a time: a toggle above it picks the network
+   address it is for (the Wi-Fi, the cable, another network) or the computer's name on the
+   network (`Name.local`). An address works wherever the two devices share a network. The name
+   finds the computer whatever its address, but only on networks that let devices find each other
+   by name (a home Wi-Fi, a phone's hotspot): networks of institutions, eduroam among them, do
+   not, so the address is shown first. The toggle remembers the kind you chose. "Copy the link"
+   puts the address on the clipboard, which reaches Safari on an iPad signed in to the same Apple
+   Account (Universal Clipboard).
+3. Scan the code with the tablet's camera (or type or paste the address): the pad page opens there, with the
    current slide and a toolbar for the tool (pen or highlighter), color swatches, tip size, undo,
    redo, clear and the whiteboard, and nothing else. A fingertip erases the stroke it touches. Adding it to the home screen gives it the whole
    screen.
@@ -189,13 +195,18 @@ by name; it needs the same port, so start the server with `--port` when the defa
 can be busy. Safari may forget the pad page's memory after a week without a visit, in which
 case the tablet scans the code once more and is recognized again.
 
-**Over a cable.** The pairing needs a network between the two devices, not necessarily Wi-Fi. On
-a Mac, plug the iPad in, open System Settings → General → Sharing → Internet Sharing, share your
-connection "from" the interface you use (Wi-Fi) "to" iPad USB, and turn it on; the computer gets an
-address on the cable (192.168.2.1 as a rule), the pairing panel shows a code for it next to the
-Wi-Fi one, and the tablet scans that one. The cable link is private and steadier than a crowded
-Wi-Fi. An iPad with a cellular plan can also share its own connection to the computer over USB
-(Personal Hotspot), which works the same way.
+**Over a cable.** The pairing needs a network between the two devices, not necessarily Wi-Fi: the
+iPad's USB cable can carry one, which helps where the Wi-Fi keeps devices apart. On a Mac, plug the
+iPad in, open System Settings → General → Sharing → Internet Sharing, share your connection "from"
+the interface you use (Wi-Fi) "to" iPad USB, and turn it on; the computer gets an address on the
+cable (192.168.2.1 as a rule). An iPad with a cellular plan can instead share its own connection
+to the computer over USB (Personal Hotspot), which works the same way. The deck notices the cable:
+when an iPad is plugged in and no tablet is connected, it offers to pair it, and "Show the code"
+opens the pairing code for the cable's address, which the iPad scans; when the cable carries no
+network yet, the offer says how to give it one. A computer cannot open a page on the iPad by
+itself, so the iPad still scans the code (or pastes the copied link). The cable link is private and
+steadier than a crowded Wi-Fi. Telling that an iPad is plugged in works on macOS; elsewhere the
+offer appears once the cable carries a network.
 
 **Presenter notes.** A slide's `::: notes` blocks ([Presenter notes](slides.html#presenter-notes))
 appear on the tablet under the picture whenever a stop settles: the slide's own notes, then the

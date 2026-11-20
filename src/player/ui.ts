@@ -17,7 +17,7 @@ import {
   DEFAULT_PEN_STYLE, InkSurface, PEN_PRESETS, PEN_PRESET_LABELS, newStrokeId, type InkSample, type InkStroke, type InkTool, type PenPreset,
 } from './ink';
 import MarkdownIt from 'markdown-it';
-import { PadLink, fetchPairingInfo, padCode, padLinkAvailable, padUrl, type InkOp, type InkSurfaceName, type PadDevice, type PadMessage } from './pad';
+import { PadLink, fetchPairingInfo, onCableChange, padCode, padLinkAvailable, padUrl, type CableState, type InkOp, type InkSurfaceName, type PadDevice, type PadMessage, type PairingLink } from './pad';
 import { PEN_COLORS, Swatches } from './swatches';
 import { Recorder, initialEvents, type CapturedMedia } from './recorder';
 import { Playback } from './playback';
@@ -343,6 +343,12 @@ export class PlayerUI {
   /** The tablets that said hello, by the id of their page: admitted (by trust or the pairing code), or waiting to be allowed. */
   private readonly _pads = new Map<string, PadEntry>();
   private _padRequest!: HTMLElement;
+  /** The offer to pair a tablet plugged in by cable. */
+  private _cableOffer!: HTMLElement;
+  /** What is plugged in by cable, as the server last told it. */
+  private _cable: CableState = { links: [], devices: [] };
+  /** The cable state whose offer was answered or dismissed, so that it is not made again until something changes. */
+  private _cableAnswered = '';
   private _padList!: HTMLElement;
   private _frameTimer: number | null = null;
   private readonly _useLocation: boolean;
@@ -451,7 +457,8 @@ export class PlayerUI {
     });
     closePlayback.addEventListener('click', () => this.closeRecording());
     this._padRequest = el('div', { class: 'pad-request', role: 'dialog', 'aria-label': 'A tablet asks to draw here', hidden: '' });
-    this.stageHost.append(this._boardLayer, this._highlights, this._screen, this._system, this._camera, this._spotlight, this._remoteCursor, this._error, this._loading, this._padRequest);
+    this._cableOffer = el('div', { class: 'pad-request cable-offer', role: 'dialog', 'aria-label': 'Pair the tablet plugged in by cable', hidden: '' });
+    this.stageHost.append(this._boardLayer, this._highlights, this._screen, this._system, this._camera, this._spotlight, this._remoteCursor, this._error, this._loading, this._padRequest, this._cableOffer);
 
     this._previous = el('button', { class: 'previous', 'aria-label': 'Previous stop', title: 'Previous stop (←)', text: '←' });
     this._next = el('button', { class: 'next', 'aria-label': 'Next stop', title: 'Next stop (→)', text: '→' });
@@ -3682,8 +3689,8 @@ export class PlayerUI {
     this._boardInk.restyle();
   }
 
-  /** Render the tablet's URL as a QR code, or explain what is missing. */
-  private async _showPairing(): Promise<void> {
+  /** Render the tablet's URL as a QR code, or explain what is missing; `preferred` picks the address shown first. */
+  private async _showPairing(preferred?: string): Promise<void> {
     this._pairingPanel.replaceChildren();
     if (!this._pad) {
       this._pairingPanel.append(el('p', { class: 'note', text: 'Pairing is not available here.' }));
@@ -3698,37 +3705,93 @@ export class PlayerUI {
       this._pairingPanel.append(el('p', { class: 'note', text: 'The server listens on this computer only. Restart it with --host (zoomdown serve --host, or npm run dev -- --host; the desktop app listens on the network unless started with --local) so the tablet can reach it, then come back here.' }));
       return;
     }
-    // One code per name or address: the computer's name on the network outlives a change of
-    // address; a tablet on a cable (USB sharing) reaches the computer on another link than the
-    // Wi-Fi, and only the tablet knows which one it can see.
+    // One code at a time, chosen with a toggle: each address of the computer (the Wi-Fi, the cable
+    // to a tablet, another network), and its name on the network, which outlives a change of
+    // address but is not found on every network.
     const room = this._pad?.room ?? '';
     const code = padCode();
-    const names = info.names ?? [];
-    const targets = [
-      ...names.map((host) => ({ host, caption: `By name: ${host} finds this computer on any network the two share, whatever its address.` })),
-      ...info.addresses.map((host) => ({ host, caption: `By address: ${host}.` })),
-    ].slice(0, 5);
-    this._pairingPanel.append(el('p', { class: 'note', text: 'The code admits the tablet for this session. To let it come back on its own, choose "Always allow" when it asks, or Trust it in the list above: it then opens the pad page from a bookmark or its home screen, without the code.' }));
-    if (info.addresses.length > 1) {
-      this._pairingPanel.append(el('p', { class: 'note', text: 'This computer has several network addresses; scan the one the tablet shares (the Wi-Fi, or the USB connection when sharing over the cable).' }));
+    const links: PairingLink[] = info.links ?? info.addresses.map((address) => ({ address, interface: '', kind: 'other' as const }));
+    const kindOrder = { cable: 0, shared: 1, wifi: 2, other: 3 } as const;
+    const plugged = this._cableLinks().map((link) => link.address);
+    const kindLabel = (link: PairingLink) => (plugged.includes(link.address) || link.kind === 'cable' ? 'Cable' : link.kind === 'shared' ? 'Shared network' : link.kind === 'wifi' ? 'Wi-Fi' : 'Network');
+    const choices = [
+      ...[...links].sort((a, b) => kindOrder[a.kind] - kindOrder[b.kind]).map((link) => ({
+        key: link.kind as string,
+        host: link.address,
+        label: `${kindLabel(link)} · ${link.address}`,
+        caption: plugged.includes(link.address) || link.kind === 'cable'
+          ? `By the cable's address: the tablet plugged in by cable reaches this computer over the wire.`
+          : `By address: works on any network the two share, eduroam and other networks of institutions included.`,
+      })),
+      ...(info.names ?? []).map((host) => ({
+        key: 'name',
+        host,
+        label: `Name · ${host}`,
+        caption: 'By name: finds this computer whatever its address, on home networks and phone hotspots. Networks of institutions (eduroam, say) keep devices from finding each other by name: use an address there.',
+      })),
+    ].slice(0, 6);
+    // The address asked for, else the kind of link chosen last time, else the cable, else the first address.
+    let remembered: string | null = null;
+    try {
+      remembered = localStorage.getItem('zoomdown:pairing-choice');
+    } catch {
+      remembered = null;
     }
+    let current = choices.find((choice) => choice.host === preferred)
+      ?? (plugged.length ? choices.find((choice) => plugged.includes(choice.host)) : undefined)
+      ?? choices.find((choice) => choice.key === remembered)
+      ?? choices[0];
+    this._pairingPanel.append(el('p', { class: 'note', text: 'The code admits the tablet for this session. To let it come back on its own, choose "Always allow" when it asks, or Trust it in the list above: it then opens the pad page from a bookmark or its home screen, without the code.' }));
     let QRCode: typeof import('qrcode') | null = null;
     try {
       QRCode = await import('qrcode');
     } catch {
       QRCode = null;
     }
-    for (const { host, caption } of targets) {
-      const url = padUrl(host, info.port, room, code);
-      const canvas = el('canvas', { class: 'qr', 'aria-label': `Pairing code for ${host}` });
-      this._pairingPanel.append(el('div', { class: 'code' }, canvas, el('div', {}, el('p', { class: 'note', text: caption }), el('p', { class: 'note url', text: url }))));
+    const toggle = el('div', { class: 'choices', role: 'radiogroup', 'aria-label': 'Reach this computer' });
+    const canvas = el('canvas', { class: 'qr' });
+    const caption = el('p', { class: 'note' });
+    const address = el('p', { class: 'note url' });
+    const copy = el('button', { text: 'Copy the link' });
+    const copied = el('span', { class: 'note' });
+    const buttons = choices.map((choice) => {
+      const button = el('button', { role: 'radio', text: choice.label });
+      button.addEventListener('click', () => {
+        current = choice;
+        try {
+          localStorage.setItem('zoomdown:pairing-choice', choice.key);
+        } catch {
+          /* the choice is not remembered */
+        }
+        void draw();
+      });
+      toggle.append(button);
+      return button;
+    });
+    const draw = async () => {
+      const url = padUrl(current.host, info.port, room, code);
+      buttons.forEach((button, index) => button.setAttribute('aria-checked', String(choices[index] === current)));
+      caption.textContent = current.caption;
+      address.textContent = url;
+      copied.textContent = '';
+      canvas.setAttribute('aria-label', `Pairing code for ${current.host}`);
       try {
         if (QRCode) await QRCode.toCanvas(canvas, url, { width: 200, margin: 1 });
-        else canvas.remove();
+        else canvas.hidden = true;
       } catch {
-        canvas.remove();
+        canvas.hidden = true;
       }
-    }
+    };
+    copy.addEventListener('click', () => {
+      const url = padUrl(current.host, info.port, room, code);
+      void navigator.clipboard?.writeText(url).then(
+        () => { copied.textContent = 'Copied: on an iPad signed in to the same Apple Account, paste it into Safari (Universal Clipboard).'; },
+        () => { copied.textContent = 'The link could not be copied; select it above.'; },
+      );
+    });
+    if (choices.length > 1) this._pairingPanel.append(toggle);
+    this._pairingPanel.append(el('div', { class: 'code' }, canvas, el('div', {}, caption, address, el('p', { class: 'note' }, copy, ' ', copied))));
+    await draw();
   }
 
   /** Bind a pointer action to a modifier combination, freeing it from any other action. */
@@ -4305,6 +4368,59 @@ export class PlayerUI {
     link.on((message, from) => this._onPadMessage(message, from));
     link.send({ type: 'hello', role: 'presenter' });
     this._syncSettingsForm();
+    // A tablet plugged in by cable is offered pairing: the server tells when the cable changes.
+    onCableChange((state) => this._cableChanged(state));
+    void fetchPairingInfo().then((info) => {
+      if (info?.cable) this._cableChanged(info.cable);
+    });
+  }
+
+  private _cableChanged(state: CableState): void {
+    this._cable = state;
+    this._renderCableOffer();
+  }
+
+  /** The links on the cable of a plugged-in device: a wire with a network, or a network this computer shares while one is plugged in. */
+  private _cableLinks(): PairingLink[] {
+    const plugged = this._cable.devices.length > 0;
+    return this._cable.links.filter((link) => link.kind === 'cable' || (link.kind === 'shared' && plugged));
+  }
+
+  /**
+   * The offer on the deck to pair a tablet plugged in by cable, while no tablet is connected:
+   * the pairing code for the cable's address, or, when the cable carries no network yet, how to
+   * give it one (Internet Sharing to the tablet's USB). Answered or dismissed, it waits for the
+   * cable to change.
+   */
+  private _renderCableOffer(): void {
+    const device = this._cable.devices[0] ?? null;
+    const links = this._cableLinks();
+    const key = JSON.stringify([links.map((link) => link.address), device]);
+    if (!links.length && !device) this._cableAnswered = '';
+    const tabletIn = [...this._pads.values()].some((entry) => entry.admitted);
+    if ((!links.length && !device) || tabletIn || key === this._cableAnswered || !this._features.has('pen')) {
+      this._cableOffer.hidden = true;
+      this._cableOffer.replaceChildren();
+      return;
+    }
+    const name = device ?? 'A tablet';
+    const show = el('button', { class: 'primary', text: 'Show the code' });
+    show.addEventListener('click', () => {
+      this._cableAnswered = key;
+      this._renderCableOffer();
+      this.openSettings('tablet');
+      void this._showPairing(links[0]?.address);
+    });
+    const dismiss = el('button', { class: 'dismiss', text: '×', 'aria-label': 'Not now' });
+    dismiss.addEventListener('click', () => {
+      this._cableAnswered = key;
+      this._renderCableOffer();
+    });
+    const text = links.length
+      ? `${name} is connected by cable. Pair it to draw on the deck?`
+      : `${name} is connected by cable, without a network on it yet: turn on Internet Sharing to ${device} USB (System Settings ▸ General ▸ Sharing) to pair over the cable, or pair over Wi-Fi.`;
+    this._cableOffer.replaceChildren(el('span', { text }), show, dismiss);
+    this._cableOffer.hidden = false;
   }
 
   private _broadcast(message: PadMessage): void {
@@ -4432,6 +4548,8 @@ export class PlayerUI {
 
   /** The prompt on the deck for the first tablet waiting to be allowed, if any. */
   private _renderPadRequest(): void {
+    // A tablet coming in answers the offer to pair one by cable.
+    this._renderCableOffer();
     const waiting = [...this._pads].find(([, entry]) => !entry.admitted && !entry.ignored && entry.device);
     if (!waiting) {
       this._padRequest.hidden = true;

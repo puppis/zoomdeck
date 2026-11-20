@@ -282,6 +282,9 @@ body.zd-page { margin: 0; height: 100vh; overflow: hidden; background: var(--bac
 .zd-stage .pad-request button { padding: 5px 10px; font-size: 12px; }
 .zd-stage .pad-request .primary { background: var(--foreground); color: var(--background); border-color: var(--foreground); }
 .zd-stage .pad-request .dismiss { padding: 3px 8px; font-size: 16px; line-height: 1; border: 0; background: transparent; color: var(--muted); }
+/* The offer to pair a tablet plugged in by cable sits under a tablet's request, and its advice may wrap. */
+.zd-stage .pad-request.cable-offer { top: 64px; white-space: normal; max-width: min(640px, calc(100% - 32px)); }
+.zd-stage .pad-request.cable-offer button { flex: none; white-space: nowrap; }
 .zd-app dialog.settings .pads { margin-bottom: 10px; }
 .zd-app dialog.settings .pads[hidden] { display: none; }
 .zd-app dialog.settings .pairing { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 10px; }
@@ -290,6 +293,9 @@ body.zd-page { margin: 0; height: 100vh; overflow: hidden; background: var(--bac
 .zd-app dialog.settings .pairing .code .note { margin: 0 0 6px; }
 .zd-app dialog.settings .pairing .qr { background: #fff; padding: 8px; border-radius: 8px; }
 .zd-app dialog.settings .pairing .url { user-select: all; overflow-wrap: anywhere; margin: 0; }
+/* One pairing code at a time: the toggle picks the address (or the name) it is for. */
+.zd-app dialog.settings .pairing .choices { display: flex; flex-wrap: wrap; gap: 6px; }
+.zd-app dialog.settings .pairing .choices button[aria-checked="true"] { background: var(--foreground); color: var(--background); border-color: var(--foreground); }
 .zd-app:fullscreen .zd-stage { width: 100vw; height: 100vh; }
 @media (prefers-reduced-motion: reduce) {
   .zd-app button, .zd-stage .spotlight { transition: none; }
