@@ -53,7 +53,7 @@ zoomdown serve talk/slides.zd --host   # reachable on the network, for a tablet
 The preview opens the deck in your browser at `http://127.0.0.1:8000/` (or the next free port,
 printed in the terminal), reloads it on every save and keeps your position. The argument is a
 `.zd` file (its settings in its front matter; a deck's `.md` too), a PDF, a JS/TS module exporting a deck, or a
-[Slajdomat presentation](slajdomat.html)'s folder. Ctrl+C stops the server; it also stops by itself when the
+[Slajdomat presentation](documents.html#a-slajdomat-presentation)'s folder. Ctrl+C stops the server; it also stops by itself when the
 program that started it, an editor's build panel say, ends.
 
 ## Present it

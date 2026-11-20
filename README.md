@@ -131,7 +131,7 @@ running preview to the stop of a source line. `build` accepts `--show-outline`, 
 `.zd` file (its settings in its front matter; `.md`, the extension decks had before, still works),
 a PDF, a JS/TS module exporting a deck definition, or a presentation exported by Slajdomat (its
 folder, `index.html` or `manifest.json`, played with ZoomDown's player:
-[docs/site/slajdomat.md](docs/site/slajdomat.md)); any other `.json` path is refused. Code-authored decks in `--one-file` mode embed the code but
+[docs/site/documents.md](docs/site/documents.md#a-slajdomat-presentation)); any other `.json` path is refused. Code-authored decks in `--one-file` mode embed the code but
 not images they load themselves.
 
 ### The desktop app

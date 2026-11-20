@@ -32,7 +32,7 @@ The builds are not signed by a registered developer, so the systems warn once:
 
 Started from a deck (double-clicked or dropped on the app, or passed on the command line) the
 app presents it at once. Started bare, it asks for a deck (a `.zd` file, a PDF, a slide
-module or a [Slajdomat presentation](slajdomat.html) by its `index.html`; a deck kept as `.md`
+module or a [Slajdomat presentation](documents.html#a-slajdomat-presentation) by its `index.html`; a deck kept as `.md`
 opens too), in the folder you used last; the very first time it offers instead to copy the tour
 deck, with its examples, to a folder of yours, and opens the copy's `slides.zd`.
 **File ▸ Copy the Tour Deck…** does the same later, into a `zoomdown-tour` folder inside the one

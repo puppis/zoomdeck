@@ -152,7 +152,7 @@ node bin/zoomdown.mjs jump <file> <line>
 ```
 
 `<deck>` is a `.zd` file (or a deck's `.md`), a PDF, a JS/TS module exporting a deck definition, or a
-[Slajdomat presentation](slajdomat.html) by its folder, `index.html` or `manifest.json`; another `.json`
+[Slajdomat presentation](documents.html#a-slajdomat-presentation) by its folder, `index.html` or `manifest.json`; another `.json`
 path is refused, with a message saying to move its settings into the front matter. Both
 commands read the front matter, with the files it extends. `serve` watches the deck's folder,
 the folders its settings name, the folders of the files it extends and any `--watch` path,
