@@ -50,7 +50,7 @@ read: its settings move into the front matter, without `markup`, and `imports` i
 | `background` | text | white | canvas background color |
 | `viewport` | `16x9` (also `16:9`) or `{ width: 16, height: 9 }` | 16 × 9 | proportions the camera fits (the stage reveals surrounding canvas when it has room) |
 | `showOutline` | true or false | false | open the outline at start |
-| `theme` | a name or a list of names | none | themes under the deck's own `styles`, `layout`, `presenter`, `background` and `viewport`: `themes/<name>.md`, see [Extending a deck](extending.html#themes) |
+| `theme` | a name or a list of names | none | themes under the deck's own `styles`, `layout`, `presenter`, `background` and `viewport`: `themes/<name>.zd`, see [Extending a deck](extending.html#themes) |
 | `layout` | map | below | typography and spacing, below |
 | `presenter` | map | below | timing and camera policy, below |
 | `macros` | map | none | LaTeX macros for every formula, in MathJax's form: an expansion, or `[expansion, number of arguments]`, or `[expansion, number of arguments, default of an optional first argument]` (see [Mathematics](math.html)) |

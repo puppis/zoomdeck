@@ -25,7 +25,7 @@ callout: color=ORANGE font_size=30
 A **style** is a named set of attributes. Styles are defined under `styles` in the front
 matter, as attribute strings or maps, or in a `::: styles` block of the Markdown file (one
 `name: attributes` line each); the `::: styles` definition wins for the same name. A style sheet
-kept apart from the deck is a **theme**, `themes/<name>.md` next to the Markdown, applied with
+kept apart from the deck is a **theme**, `themes/<name>.zd` next to the deck, applied with
 `theme: lecture` in the front matter under the deck's own styles; see
 [Extending a deck](extending.html#themes).
 
