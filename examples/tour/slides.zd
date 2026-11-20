@@ -1418,5 +1418,5 @@ This slide's viewport was slid and tilted by `[[animate: #satellite ...]]` in it
 
 A video uses the image syntax: `play=once` plays one pass as a stop of its own, `play=loop` keeps looping until the next click, `muted=false` turns the sound on. An `[[iframe]]` shows its `poster` until the camera rests on its slide, then the live page. {#media-key x=-9.35 y=-3.5 width=18.7 font_size=22}
 
-Click outside a live page to give the keys back to the deck. Pressing ← plays the current stop backwards (videos and loops jump instead). {#media-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
+Inside a live page the deck's keys still go to the deck alone, and with drawing on a stroke can cross the page. Pressing ← plays the current stop backwards (videos and loops jump instead). {#media-more x=-9.35 y=-4.85 width=18.7 font_size=18 color=GRAY}
 :::

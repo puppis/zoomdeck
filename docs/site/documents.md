@@ -49,8 +49,9 @@ The slides look and run as they were made. Every object of a drawing is drawn by
 its SVG, as Slajdomat's viewer draws it, and sharp at rest like a deck's own text; children sit
 where their placeholders are. The stops are Slajdomat's, one for one: entering a slide, each
 event together with the ones merged into it, the zoom into a child and back. Show and hide
-events fade their object, and embedded web pages (objects named `iframe: url` in Figma) are live
-pages over their object once the camera rests on the slide. Slajdomat's `animate` events are
+events fade their object, links are clickable as in Slajdomat's viewer, and embedded web pages
+(objects named `iframe: url` in Figma) are live pages over their object once the camera rests on
+the slide. Slajdomat's `animate` events are
 not played yet, its comments, search, stopwatch and sound recordings are not read, and the export
 cannot be built into a web page with `zoomdown build` yet.
 

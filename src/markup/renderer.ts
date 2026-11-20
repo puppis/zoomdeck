@@ -807,13 +807,15 @@ export class MarkupRenderer {
       const box = new Rectangle({ width: boxWidth, height: boxHeight });
       // No border unless stroke_width asks for one, in color, around the placeholder and the live page.
       box.setStyle({ strokeColor: color, strokeWidth: numberValue(attrs, 'stroke_width', element.line, 0) as number });
-      box.setFill(color, 0.06);
+      // A lightly tinted box stands for the page, unless a poster does: then the box is all but
+      // invisible (the live page still finds its place by it) and the poster fills it, edge to edge.
+      box.setFill(color, attrs.poster ? 0.001 : 0.06);
       const caption = attrs.title ?? element.source;
       let inside: Mobject | null = null;
       if (attrs.poster) {
-        // A still of the page for previews; it is scaled to fit inside the slide.
-        inside = await this.loadImage(attrs.poster, boxWidth - 0.1, element.line);
-        if (inside.getHeight() > boxHeight - 0.1 && inside.getHeight() > 0) inside.scaleToFitHeight(boxHeight - 0.1);
+        // A still of the page for previews, fitted to the box.
+        inside = await this.loadImage(attrs.poster, boxWidth, element.line);
+        if (inside.getHeight() > boxHeight && inside.getHeight() > 0) inside.scaleToFitHeight(boxHeight);
       } else {
         const label = await this.text([{ content: caption, kind: 'code', bold: false, italic: false, color: null }], this.layout.fontSize * 0.7, boxWidth - 0.4, color);
         if (label.getWidth() > 0) inside = label;

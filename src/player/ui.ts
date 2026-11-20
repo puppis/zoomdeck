@@ -786,20 +786,62 @@ export class PlayerUI {
     // Any open dialog (settings, recordings, print) keeps the keys to itself.
     if (this._dialog.open || this.root.querySelector('dialog[open]')) return;
     if (combo === 'Space' && /^(BUTTON|SUMMARY)$/.test(target.tagName)) return;
-    // While a recording plays, the keys serve the playback: the deck follows the recording, not the viewer.
-    if (this._playback) {
-      const deckAction = actionFor(this._settings, combo);
-      const action = actionFor(this._settings, combo, ['playback']) ?? (deckAction === 'fullscreen' ? deckAction : null);
-      if (!action) return;
-      event.preventDefault();
-      this._runAction(action);
-      return;
-    }
-    // The whiteboard's keys (the arrows scroll it) come before the deck's while it is shown.
-    const action = actionFor(this._settings, combo, this._boardOn ? ['board', 'deck'] : ['deck']);
+    const action = this._actionForCombo(combo);
     if (!action) return;
     event.preventDefault();
     this._runAction(action);
+  }
+
+  /** The action a key combination runs now, or null. */
+  private _actionForCombo(combo: string): ActionName | null {
+    // While a recording plays, the keys serve the playback: the deck follows the recording, not the viewer.
+    if (this._playback) {
+      const deckAction = actionFor(this._settings, combo);
+      return actionFor(this._settings, combo, ['playback']) ?? (deckAction === 'fullscreen' ? deckAction : null);
+    }
+    // The whiteboard's keys (the arrows scroll it) come before the deck's while it is shown.
+    return actionFor(this._settings, combo, this._boardOn ? ['board', 'deck'] : ['deck']);
+  }
+
+  /** The keys taken from a live page on their way down, whose release is taken too. */
+  private readonly _pageKeys = new Set<string>();
+
+  /**
+   * A key pressed or released inside a live page of the deck (an iframe the player can listen
+   * to): whether the player takes it, in which case the page must not see it. A key the player
+   * has a use for (a shortcut, the arrows included) is the player's alone, so that the two never
+   * both act on it; a copy goes where the player reads its keys, so that it works as when the deck
+   * has the focus. Modifier keys alone are passed on and left to the page as well, since they act
+   * on nothing by themselves (holding one picks a pointer tool, so a stroke can cross the page).
+   * Keys typed into a field of the page stay the page's.
+   */
+  pageKey(event: KeyboardEvent): boolean {
+    const target = event.target as HTMLElement | null;
+    if (target && (/^(INPUT|SELECT|TEXTAREA)$/.test(target.tagName ?? '') || target.isContentEditable)) return false;
+    const forward = () => {
+      const copy = new KeyboardEvent(event.type, {
+        key: event.key, code: event.code, location: event.location, repeat: event.repeat,
+        ctrlKey: event.ctrlKey, shiftKey: event.shiftKey, altKey: event.altKey, metaKey: event.metaKey,
+        bubbles: true, cancelable: true,
+      });
+      this._keys.dispatchEvent(copy);
+    };
+    if (['Shift', 'Control', 'Alt', 'Meta'].includes(event.key)) {
+      forward();
+      return false;
+    }
+    if (event.type === 'keyup') {
+      if (!this._pageKeys.delete(event.code || event.key)) return false;
+      forward();
+      return true;
+    }
+    const combo = keyCombo(event);
+    if (!combo) return false;
+    const taken = this._capturing !== null || (!this._dialog.open && !this.root.querySelector('dialog[open]') && this._actionForCombo(combo) !== null);
+    if (!taken) return false;
+    this._pageKeys.add(event.code || event.key);
+    forward();
+    return true;
   }
 
   private _runAction(action: ActionName): void {

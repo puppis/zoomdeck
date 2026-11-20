@@ -175,11 +175,12 @@ exports embed videos as data URIs, which grows the file quickly.
 ```
 
 An `[[iframe: url, #id, …]]` embeds a web page. On the canvas it is a placeholder: the
-`poster=` image scaled into the slide, or an outlined box labelled with the `title` (or the URL).
+`poster=` image fitted to the page's box, or a tinted box labeled with the `title` (or the URL).
 It takes the usual placement attributes plus `width` and `height`, `step`/`hide` and `color`. The
 live page appears over the placeholder only once the camera has come to rest on its slide: in
-parent previews, during zooms in and out, and after the camera leaves, the placeholder stands in. Interaction inside the page is real, so click outside it to return the
-keyboard to the deck. URLs must be `http(s)` or relative to the Markdown file; pages that forbid
+parent previews, during zooms in and out, and after the camera leaves, the placeholder stands in. Interaction inside the page is real, but the deck's own keys (its
+shortcuts, the arrows included) go to the deck alone, and a page from another site gives the keys
+back when the pointer leaves it; with drawing on, a stroke can cross the page. URLs must be `http(s)` or relative to the Markdown file; pages that forbid
 framing stay blank. The page is not drawn by the pen or spotlight overlays and is absent from
 exported screenshots.
 

@@ -199,6 +199,9 @@ export abstract class DensityImage extends Mobject {
 
   private static _texture(canvas: HTMLCanvasElement): THREE.CanvasTexture {
     const texture = new THREE.CanvasTexture(canvas);
+    // Premultiplied, so that filtering between a picture's edge and the clear canvas around it
+    // does not blend in the clear pixels' black: no grey seam around a part with a transparent border.
+    texture.premultiplyAlpha = true;
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.minFilter = THREE.LinearMipmapLinearFilter;
     texture.magFilter = THREE.LinearFilter;
@@ -214,6 +217,8 @@ export abstract class DensityImage extends Mobject {
   protected _createThreeObject(): THREE.Object3D {
     const group = new THREE.Group();
     this._texture = DensityImage._texture(this._canvas);
+    // The texture is premultiplied: the color is scaled by the opacity here (as an sRGB value, since the
+    // stage blends in sRGB), and blended as premultiplied.
     const material = new THREE.MeshBasicMaterial({
       map: this._texture,
       transparent: true,
@@ -222,7 +227,11 @@ export abstract class DensityImage extends Mobject {
       forceSinglePass: true,
       depthWrite: false,
       depthTest: false,
+      blending: THREE.CustomBlending,
+      blendSrc: THREE.OneFactor,
+      blendDst: THREE.OneMinusSrcAlphaFactor,
     });
+    material.color.setRGB(this._opacity, this._opacity, this._opacity, THREE.SRGBColorSpace);
     this._mesh = new THREE.Mesh(new THREE.PlaneGeometry(this._worldWidth, this._worldHeight), material);
     this._mesh.frustumCulled = false;
     group.add(this._mesh);
@@ -230,7 +239,9 @@ export abstract class DensityImage extends Mobject {
   }
 
   protected override _syncMaterialToThree(): void {
-    if (this._mesh) this._mesh.material.opacity = this._opacity;
+    if (!this._mesh) return;
+    this._mesh.material.opacity = this._opacity;
+    this._mesh.material.color.setRGB(this._opacity, this._opacity, this._opacity, THREE.SRGBColorSpace);
   }
 
   override getDisplayMeshLength(): number {

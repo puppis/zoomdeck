@@ -133,6 +133,7 @@ export async function runDeck(definition: DeckDefinition | ResolvedDeck, options
   stage.attach(presenter);
   const links = new LinkLayer(ui.stageHost, stage, presenter);
   const iframes = new IframeLayer(ui.stageHost, stage, presenter);
+  iframes.onPageKey = (event) => ui.pageKey(event);
   stage.afterRender.push(() => links.update(), () => iframes.update());
   try {
     const root = await deck.deck();

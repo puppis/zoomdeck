@@ -458,6 +458,16 @@ export interface SvgDrawing {
   parts: SvgPart[];
   /** World coordinates of a point given in the container's units. */
   toWorld(x: number, y: number): Vec;
+  /** World coordinates of a point given in the units of `element`'s content (its own transform and its ancestors' applied). */
+  toWorldIn(element: Element, x: number, y: number): Vec;
+}
+
+/** The transform from the content of `element` to the content of its ancestor `ancestor`: the transforms in between, `element`'s included. */
+export function transformBetween(ancestor: Element, element: Element): (x: number, y: number) => Vec {
+  const chain: Element[] = [];
+  for (let node: Element | null = element; node && node !== ancestor; node = node.parentElement) chain.unshift(node);
+  const m = chain.reduce<Matrix>((matrix, node) => multiply(matrix, parseTransform(node.getAttribute('transform'))), IDENTITY);
+  return (x, y) => [m[0] * x + m[2] * y + m[4], m[1] * x + m[3] * y + m[5]];
 }
 
 export function svgDrawing(svgText: string, options: SvgImportOptions & { skip?: (element: Element) => boolean } = {}): SvgDrawing {
@@ -474,7 +484,11 @@ export function svgDrawing(svgText: string, options: SvgImportOptions & { skip?:
     importer.convert(element, matrix, style, { shape: (vmob) => items.push(vmob), image: (image) => items.push(image) });
     parts.push({ id: element.id, element, items });
   }
-  return { frame: importer.box, container, parts, toWorld: (x, y) => importer.toWorld(matrix, x, y) };
+  const toWorldIn = (element: Element, x: number, y: number): Vec => {
+    const [px, py] = transformBetween(root, element)(x, y);
+    return importer.toWorld(IDENTITY, px, py);
+  };
+  return { frame: importer.box, container, parts, toWorld: (x, y) => importer.toWorld(matrix, x, y), toWorldIn };
 }
 
 /** A property of an element, from its style attribute or its own attribute. */

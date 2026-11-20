@@ -19,7 +19,9 @@ import { setSourceRank } from './display';
 import { IframeHost } from './markup/iframe';
 import type { PresenterConfig, PresenterConfigOptions, SlideContext } from './runtime';
 import { Slide } from './slides';
-import { svgDrawing, type SvgDrawing, type SvgPart } from './svg';
+import { LINKED_OBJECTS } from './links';
+import { placeLinks, subpathBoxes, type LinkBox } from './slajdomat-links';
+import { svgDrawing, transformBetween, type SvgDrawing, type SvgPart } from './svg';
 
 /** One node of a Slajdomat manifest's tree: a slide (`child`) or an event of its parent slide. */
 export interface SlajdomatEvent {
@@ -112,6 +114,83 @@ export function placeholderBox(drawing: SvgDrawing, id: string): { center: [numb
   return { center: [(left + right) / 2, (top + bottom) / 2, 0], width: Math.abs(right - left), height: Math.abs(top - bottom) };
 }
 
+/** A link of a drawing: its target and its clickable box in world units. */
+interface DrawingLink {
+  href: string;
+  center: [number, number, number];
+  width: number;
+  height: number;
+}
+
+/** The ink box of a text in its own units: its paths' outlines, their transforms applied. */
+function inkBox(text: Element, paths: Element[]): LinkBox | null {
+  let [x0, y0, x1, y1] = [Infinity, Infinity, -Infinity, -Infinity];
+  for (const path of paths) {
+    const map = transformBetween(text, path);
+    for (const box of subpathBoxes(path.getAttribute('d') ?? '')) {
+      for (const [x, y] of [map(box.x0, box.y0), map(box.x1, box.y0), map(box.x0, box.y1), map(box.x1, box.y1)]) {
+        x0 = Math.min(x0, x);
+        y0 = Math.min(y0, y);
+        x1 = Math.max(x1, x);
+        y1 = Math.max(y1, y);
+      }
+    }
+  }
+  return x0 <= x1 ? { x: x0, y: y0, width: x1 - x0, height: y1 - y0 } : null;
+}
+
+/**
+ * The links of a drawing, by the part (an element of its top group) that holds each. Figma
+ * follows a linked text with one `<a><rect/></a>` per line of the link, the rectangles relative to
+ * the text's box, which is not exported: they are placed from the text's ink, as Slajdomat's viewer
+ * places them, or, for a text whose outlines are moved, from its ink box.
+ */
+export function drawingLinks(drawing: SvgDrawing, base: string): Map<Element, DrawingLink[]> {
+  const links = new Map<Element, DrawingLink[]>();
+  const read = (element: Element, name: string) => parseFloat(element.getAttribute(name) ?? '') || 0;
+  for (const first of Array.from(drawing.container.querySelectorAll('a'))) {
+    const text = first.previousElementSibling;
+    if (!text || text.tagName.toLowerCase() === 'a') continue;
+    const anchors: Element[] = [];
+    const rects: Element[] = [];
+    for (let a: Element | null = first; a && a.tagName.toLowerCase() === 'a'; a = a.nextElementSibling) {
+      const rect = a.firstElementChild;
+      if (rect && rect.tagName.toLowerCase() === 'rect') {
+        anchors.push(a);
+        rects.push(rect);
+      }
+    }
+    if (!rects.length) continue;
+    const paths = text.tagName.toLowerCase() === 'path' ? [text] : Array.from(text.querySelectorAll('path'));
+    const boxes = rects.map((rect) => ({ x: read(rect, 'x'), y: read(rect, 'y'), width: read(rect, 'width'), height: read(rect, 'height') }));
+    const moved = [text, ...paths].some((element) => element.hasAttribute('transform'));
+    let placed = moved ? null : placeLinks(paths.map((path) => path.getAttribute('d') ?? ''), boxes);
+    if (!placed) {
+      const ink = inkBox(text, paths);
+      if (!ink) continue;
+      placed = boxes.map((box) => ({ ...box, x: ink.x + box.x, y: ink.y + box.y }));
+    }
+    let part: Element = first;
+    while (part.parentElement && part.parentElement !== drawing.container) part = part.parentElement;
+    if (part.parentElement !== drawing.container) continue;
+    placed.forEach((box, index) => {
+      const href = anchors[index].getAttribute('href') ?? anchors[index].getAttribute('xlink:href');
+      if (!href || !(box.width > 0 && box.height > 0)) return;
+      const [left, top] = drawing.toWorldIn(anchors[index], box.x, box.y);
+      const [right, bottom] = drawing.toWorldIn(anchors[index], box.x + box.width, box.y + box.height);
+      const list = links.get(part) ?? [];
+      list.push({
+        href: href.startsWith('#') ? href : new URL(href, base).href,
+        center: [(left + right) / 2, (top + bottom) / 2, 0],
+        width: Math.abs(right - left),
+        height: Math.abs(top - bottom),
+      });
+      links.set(part, list);
+    });
+  }
+  return links;
+}
+
 /** The background of a drawing, which Slajdomat's viewer removes: its first element, a rectangle. */
 function isBackground(element: Element): boolean {
   return element.tagName.toLowerCase() === 'rect' && element.parentElement?.firstElementChild === element;
@@ -177,6 +256,40 @@ function references(element: Element): Set<string> {
   return ids;
 }
 
+/**
+ * Rectangles filled with a picture, as Figma exports them (a pattern in bounding-box units that
+ * shows an image), turned into the picture itself, clipped to the rectangle: a browser repeats a
+ * pattern's tile, so the far edge of the picture would bleed into the near one as a thin line.
+ * The picture keeps the pattern's placement in the rectangle, and the rectangle's other attributes
+ * (its opacity, say) go to a group around it. `root` is changed in place; the document is not.
+ */
+function unpatternPictures(root: Element, document: Document): void {
+  const id = (value: string | null) => value?.match(/url\(\s*['"]?#([^'")\s]+)['"]?\s*\)/)?.[1] ?? null;
+  for (const rect of Array.from(root.querySelectorAll('rect'))) {
+    const style = rect.getAttribute('style') ?? '';
+    const pattern = document.getElementById(id(rect.getAttribute('fill')) ?? id(style.match(/fill\s*:\s*([^;]+)/)?.[1] ?? null) ?? '');
+    if (!pattern || pattern.tagName.toLowerCase() !== 'pattern' || pattern.getAttribute('patternContentUnits') !== 'objectBoundingBox' || pattern.hasAttribute('patternTransform')) continue;
+    const use = Array.from(pattern.children).find((child) => child.tagName.toLowerCase() === 'use');
+    const image = use ? document.getElementById((use.getAttribute('href') ?? use.getAttribute('xlink:href') ?? '').replace(/^#/, '')) : null;
+    if (!use || !image || image.tagName.toLowerCase() !== 'image') continue;
+    const read = (name: string) => rect.getAttribute(name) ?? '0';
+    const group = document.createElementNS(SVG_NS, 'g');
+    for (const attribute of Array.from(rect.attributes)) {
+      if (!['x', 'y', 'width', 'height', 'rx', 'ry', 'fill', 'style'].includes(attribute.name)) group.setAttribute(attribute.name, attribute.value);
+    }
+    // The rectangle's box, in which the pattern's content lives in units of the box.
+    const box = document.createElementNS(SVG_NS, 'svg');
+    for (const [name, value] of [['x', read('x')], ['y', read('y')], ['width', read('width')], ['height', read('height')], ['viewBox', '0 0 1 1'], ['preserveAspectRatio', 'none'], ['overflow', 'hidden']]) box.setAttribute(name, value);
+    const picture = image.cloneNode(true) as Element;
+    picture.removeAttribute('id');
+    const placement = [use.getAttribute('transform') ?? '', `translate(${use.getAttribute('x') ?? 0} ${use.getAttribute('y') ?? 0})`, picture.getAttribute('transform') ?? ''].join(' ').trim();
+    picture.setAttribute('transform', placement);
+    box.appendChild(picture);
+    group.appendChild(box);
+    rect.replaceWith(group);
+  }
+}
+
 /** The presentation attributes of an element, for a group that stands in for it. */
 function presentation(element: Element, leave: string[]): string {
   return Array.from(element.attributes)
@@ -193,10 +306,15 @@ function presentation(element: Element, leave: string[]): string {
 export function partMarkup(part: SvgPart, container: Element): string {
   const root = container.ownerDocument.documentElement;
   const serializer = new XMLSerializer();
+  // A copy of the part, its pictures out of their patterns; the drawing itself stays as it is.
+  const holder = container.ownerDocument.createElementNS(SVG_NS, 'g');
+  holder.appendChild(part.element.cloneNode(true));
+  unpatternPictures(holder, container.ownerDocument);
+  const element = holder.firstElementChild as Element;
   const wrapperOpen = container === root ? `<g${presentation(root, ['width', 'height', 'viewBox', 'version', 'id'])}>` : `<g${presentation(root, ['width', 'height', 'viewBox', 'version', 'id'])}><g${presentation(container, ['id'])}>`;
   const wrapperClose = container === root ? '</g>' : '</g></g>';
   // The definitions, followed from the part and the frame group to whatever they use in turn.
-  const wanted = references(part.element);
+  const wanted = references(element);
   if (container !== root) for (const id of references(container.cloneNode(false) as Element)) wanted.add(id);
   const seen = new Set<string>();
   const definitions: string[] = [];
@@ -211,7 +329,7 @@ export function partMarkup(part: SvgPart, container: Element): string {
     for (const next of references(definition)) if (!seen.has(next)) pending.push(next);
   }
   const defs = definitions.length ? `<defs>${definitions.join('')}</defs>` : '';
-  return `${defs}${wrapperOpen}${serializer.serializeToString(part.element)}${wrapperClose}`;
+  return `${defs}${wrapperOpen}${serializer.serializeToString(element)}${wrapperClose}`;
 }
 
 /** The world box a part covers: its shapes (with their strokes) and pictures; null when it draws nothing. */
@@ -272,6 +390,7 @@ export class SlajdomatSlide extends Slide {
     for (const event of this.events) if (event.type !== 'child' && !first.has(event.id)) first.set(event.id, event.type);
     const longSide = Math.max(this.width, this.height);
     const pages = this._pages(drawing);
+    const links = drawingLinks(drawing, this._base);
     for (const [rank, part] of drawing.parts.entries()) {
       const bounds = partBounds(part);
       if (!bounds) continue;
@@ -285,10 +404,18 @@ export class SlajdomatSlide extends Slide {
       const base = Math.max(24, Math.round((BASE_PAGE_PIXELS * Math.max(width, height)) / longSide));
       const picture = new SvgPicture(partMarkup(part, drawing.container), [left, top, right - left, bottom - top], { width, height, base });
       picture.moveTo([(bounds.minX + bounds.maxX) / 2, (bounds.minY + bounds.maxY) / 2, 0]);
-      // A web page over the part comes and goes with it.
+      // A web page over the part, and the part's links, come and go with it.
       const page = pages.get(part.id);
       pages.delete(part.id);
-      const obj = (page ? new Group(picture as unknown as Mobject, page) : picture) as unknown as Mobject;
+      const hits = (links.get(part.element) ?? []).map((link) => {
+        // All but invisible: the drawing shows the link, the player keeps a clickable area over it.
+        const area = new Rectangle({ width: link.width, height: link.height, color: '#FFFFFF', fillOpacity: 0.001, strokeWidth: 0 });
+        area.moveTo(link.center);
+        LINKED_OBJECTS.set(area as unknown as Mobject, link.href);
+        return area as unknown as Mobject;
+      });
+      const extra = [...(page ? [page] : []), ...hits];
+      const obj = (extra.length ? new Group(picture as unknown as Mobject, ...extra) : picture) as unknown as Mobject;
       // Parts draw in the drawing's order, whichever click shows each one.
       setSourceRank(obj, rank);
       if (part.id) this.parts.set(part.id, obj);
