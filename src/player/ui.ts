@@ -17,7 +17,7 @@ import {
   DEFAULT_PEN_STYLE, InkSurface, PEN_PRESETS, PEN_PRESET_LABELS, newStrokeId, type InkSample, type InkStroke, type InkTool, type PenPreset,
 } from './ink';
 import MarkdownIt from 'markdown-it';
-import { PadLink, fetchPairingInfo, onCableChange, padCode, padLinkAvailable, padUrl, type CableState, type InkOp, type InkSurfaceName, type PadDevice, type PadMessage, type PairingLink } from './pad';
+import { PAD_ALIVE_MS, PAD_GONE_MS, PadLink, fetchPairingInfo, onCableChange, padCode, padLinkAvailable, padUrl, type CableState, type InkOp, type InkSurfaceName, type PadDevice, type PadMessage, type PairingLink } from './pad';
 import { PEN_COLORS, Swatches } from './swatches';
 import { Recorder, initialEvents, type CapturedMedia } from './recorder';
 import { Playback } from './playback';
@@ -40,6 +40,8 @@ interface PadEntry {
   admitted: boolean;
   /** Dismissed by the presenter: no prompt for it again in this session. */
   ignored: boolean;
+  /** When the page was last heard from (Date.now()), so that one gone without a goodbye is forgotten. */
+  seen?: number;
 }
 
 /** How far from a stroke's path, in screen pixels, a fingertip still erases it. */
@@ -342,6 +344,8 @@ export class PlayerUI {
   private _noticeTimer: number | null = null;
   /** The tablets that said hello, by the id of their page: admitted (by trust or the pairing code), or waiting to be allowed. */
   private readonly _pads = new Map<string, PadEntry>();
+  /** The tablets let in during this session (by the code, or allowed once), by device id: a page of theirs coming back is let in again. */
+  private readonly _sessionPads = new Set<string>();
   private _padRequest!: HTMLElement;
   /** The offer to pair a tablet plugged in by cable. */
   private _cableOffer!: HTMLElement;
@@ -4370,6 +4374,9 @@ export class PlayerUI {
     this._syncSettingsForm();
     // A tablet plugged in by cable is offered pairing: the server tells when the cable changes.
     onCableChange((state) => this._cableChanged(state));
+    // A tablet gone without a goodbye (its cable pulled out, its network lost) is forgotten once silent.
+    const forget = window.setInterval(() => this._forgetSilentPads(), PAD_ALIVE_MS);
+    this._abort.signal.addEventListener('abort', () => window.clearInterval(forget));
     void fetchPairingInfo().then((info) => {
       if (info?.cable) this._cableChanged(info.cable);
     });
@@ -4395,7 +4402,7 @@ export class PlayerUI {
   private _renderCableOffer(): void {
     const device = this._cable.devices[0] ?? null;
     const links = this._cableLinks();
-    const key = JSON.stringify([links.map((link) => link.address), device]);
+    const key = JSON.stringify([links.map((link) => link.address), device, this._cable.unshared ?? []]);
     if (!links.length && !device) this._cableAnswered = '';
     const tabletIn = [...this._pads.values()].some((entry) => entry.admitted);
     if ((!links.length && !device) || tabletIn || key === this._cableAnswered || !this._features.has('pen')) {
@@ -4416,9 +4423,12 @@ export class PlayerUI {
       this._cableAnswered = key;
       this._renderCableOffer();
     });
-    const text = links.length
-      ? `${name} is connected by cable. Pair it to draw on the deck?`
-      : `${name} is connected by cable, without a network on it yet: turn on Internet Sharing to ${device} USB (System Settings ▸ General ▸ Sharing) to pair over the cable, or pair over Wi-Fi.`;
+    const unshared = (this._cable.unshared ?? []).length > 0;
+    const text = unshared
+      ? `${name} is connected by cable, but Internet Sharing does not reach it (it often misses a tablet plugged in again): turn Internet Sharing off and on again (System Settings ▸ General ▸ Sharing), then open the new address on the tablet.`
+      : links.length
+        ? `${name} is connected by cable. Pair it to draw on the deck?`
+        : `${name} is connected by cable, without a network on it yet: turn on Internet Sharing to ${device} USB (System Settings ▸ General ▸ Sharing) to pair over the cable, or pair over Wi-Fi.`;
     this._cableOffer.replaceChildren(el('span', { text }), show, dismiss);
     this._cableOffer.hidden = false;
   }
@@ -4450,7 +4460,23 @@ export class PlayerUI {
     return this._notesMarkdown.render(markdown);
   }
 
+  /** Forget the tablet pages not heard from for a while: they went away without saying goodbye. */
+  private _forgetSilentPads(): void {
+    const limit = Date.now() - PAD_GONE_MS;
+    let gone = false;
+    for (const [from, entry] of this._pads) {
+      if ((entry.seen ?? 0) >= limit) continue;
+      this._pads.delete(from);
+      gone = true;
+    }
+    if (!gone) return;
+    this._renderPadRequest();
+    this._syncSettingsForm();
+  }
+
   private _onPadMessage(message: PadMessage, from: string): void {
+    const known = this._pads.get(from);
+    if (known) known.seen = Date.now();
     switch (message.type) {
       case 'hello':
         if (message.role === 'pad') this._onPadHello(from, message.device ?? null, message.code);
@@ -4474,6 +4500,7 @@ export class PlayerUI {
       case 'state':
       case 'frame':
       case 'admit':
+      case 'alive':
         break;
     }
   }
@@ -4500,9 +4527,13 @@ export class PlayerUI {
   private _onPadHello(from: string, device: PadDevice | null, code: string | undefined): void {
     const entry = this._pads.get(from) ?? { device, admitted: false, ignored: false };
     entry.device = device;
+    entry.seen = Date.now();
+    // The same tablet's earlier page (before a reload, or a lost connection) is gone.
+    if (device) for (const [other, known] of this._pads) if (other !== from && known.device?.id === device.id) this._pads.delete(other);
     this._pads.set(from, entry);
     const trusted = this._isTrusted(device);
-    if (entry.admitted || trusted || (Boolean(code) && code === padCode())) {
+    const comingBack = Boolean(device) && this._sessionPads.has(device!.id);
+    if (entry.admitted || trusted || comingBack || (Boolean(code) && code === padCode())) {
       this._admitPad(from, trusted);
       return;
     }
@@ -4515,6 +4546,7 @@ export class PlayerUI {
     const entry = this._pads.get(from);
     if (!entry) return;
     entry.admitted = true;
+    if (entry.device) this._sessionPads.add(entry.device.id);
     if (entry.device) this._pad?.send({ type: 'admit', to: entry.device.id, ok: true, trusted });
     this.notice(`${entry.device?.name ?? 'Tablet'} connected`);
     this._sendState();

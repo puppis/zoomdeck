@@ -8,6 +8,8 @@ export function linkKind(name: string, port?: string): 'wifi' | 'cable' | 'share
 export function pairingLinks(): Array<{ address: string; interface: string; kind: 'wifi' | 'cable' | 'shared' | 'other' }>;
 /** Read the hardware ports of the network devices again in the background (macOS; at most every ten seconds). */
 export function refreshHardwarePorts(): Promise<void>;
+/** The USB interfaces of plugged-in iPads and iPhones that Internet Sharing does not reach (macOS only). */
+export function unsharedCables(): Promise<string[]>;
 /** The phones and tablets plugged in by USB, by product name (macOS only). */
 export function cabledDevices(): Promise<string[]>;
 /** Whether a Vite `server.host` value makes the server reachable from other machines. */

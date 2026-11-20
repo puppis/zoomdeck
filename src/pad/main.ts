@@ -7,7 +7,7 @@
  * never selects, scrolls or zooms.
  */
 import { DEFAULT_PEN_STYLE, InkSurface, newStrokeId, type InkSample, type InkStroke, type InkTool } from '../player/ink';
-import { PadLink, padDevice, padLinkAvailable, type InkOp, type InkSurfaceName, type PadDevice, type PadMessage } from '../player/pad';
+import { PAD_ALIVE_MS, PadLink, onServerConnection, padDevice, padLinkAvailable, type InkOp, type InkSurfaceName, type PadDevice, type PadMessage } from '../player/pad';
 import { Swatches } from '../player/swatches';
 import padCss from './pad.css?inline';
 
@@ -75,7 +75,7 @@ class Pad {
     this.slideInk = new InkSurface(this.slideSvg, style, 'slide-ink');
     this.boardInk = new InkSurface(this.boardSvg, style, 'board-ink');
     this.waiting = el('div', { class: 'waiting', text: 'Waiting for the presenter… Open the deck on the computer, with the preview server started with --host.' });
-    this.frame = el('div', { class: 'frame' }, this.image, this.board, this.waiting);
+    this.frame = el('div', { class: 'frame cleared' }, this.image, this.board, this.waiting);
     this.frame.append(this.slideSvg, this.boardSvg);
     const view = el('div', { class: 'view' }, this.frame);
     // The presenter's notes for the current stop, under the picture; the presenter sends them as HTML it rendered itself.
@@ -128,6 +128,29 @@ class Pad {
       if (document.visibilityState === 'visible' && !this.connected) this.hello();
     });
     window.addEventListener('pagehide', () => this.link.send({ type: 'bye' }));
+    // Still here: the presenter forgets a tablet that stops saying so (its cable pulled out, its network gone).
+    window.setInterval(() => {
+      if (document.visibilityState === 'visible') this.link.send({ type: 'alive' });
+    }, PAD_ALIVE_MS);
+    // A lost connection says so on a clear page: the tablet is not drawing on the deck any more. A
+    // cable pulled out and plugged in again gives the tablet a new network, so the way back is a new
+    // address, from the pairing code; a page whose server answers again without that says hello.
+    onServerConnection((connected) => {
+      if (connected) {
+        this.hello();
+        return;
+      }
+      this.connected = false;
+      this.blank('Connection lost', 'The connection to the presenter is lost. Plug the cable back in (or join the network again), then open the new address on this tablet: scan the pairing code the computer offers, or the one in its Settings ▸ Tablet ▸ Show the pairing code.');
+    });
+  }
+
+  /** Clear the page down to a message: no slide, no board, no ink, until the presenter sends the slide again. */
+  private blank(status: string, message: string): void {
+    this.status.textContent = status;
+    this.waiting.textContent = message;
+    this.waiting.hidden = false;
+    this.frame.classList.add('cleared');
   }
 
   /** Announce this tablet: its identity, and the pairing code when it was opened from one. */
@@ -209,10 +232,7 @@ class Pad {
         this.admitted = message.ok;
         if (!message.ok) {
           this.connected = false;
-          this.status.textContent = 'Waiting to be allowed';
-          this.waiting.textContent = `Waiting for the presenter to allow this ${this.device.name}: a prompt on the deck asks, once or for good; the settings (Tablet) list it too.`;
-          this.waiting.hidden = false;
-          this.image.hidden = true;
+          this.blank('Waiting to be allowed', `Waiting for the presenter to allow this ${this.device.name}: a prompt on the deck asks, once or for good; the settings (Tablet) list it too.`);
         } else if (message.trusted) {
           this.status.textContent = this.connected ? 'Connected, trusted' : this.status.textContent;
         }
@@ -222,6 +242,7 @@ class Pad {
         this.connected = true;
         this.status.textContent = 'Connected';
         this.waiting.hidden = true;
+        this.frame.classList.remove('cleared');
         if (Math.abs(message.aspect - this.aspect) > 1e-6) {
           this.aspect = message.aspect;
           this.layout();
@@ -443,6 +464,8 @@ class Pad {
       });
     }
     frame.addEventListener('pointerdown', (event) => {
+      // Nothing to draw on while the page is cleared.
+      if (!this.connected) return;
       if (event.pointerType === 'touch') {
         this.touches.set(event.pointerId, { x: event.clientX, y: event.clientY });
         this.fingerErase(event);
@@ -533,16 +556,25 @@ class Pad {
 
 // The pairing code's URL names the room and the code; the room is kept, so that a bookmark or the
 // home-screen icon (a plain /pad.html) finds the presenter again, and the code is dropped from the
-// address, since it admits the tablet for the presenter's session only.
+// address, since it admits the tablet for the presenter's session only. The code stays with this
+// tab (session storage), so that the page, reloading by itself after a lost connection, is let in again.
 const params = new URLSearchParams(location.search);
 const ROOM_KEY = 'zoomdown:pad-room';
+const CODE_KEY = 'zoomdown:pad-code';
 let room = params.get('room');
-const code = params.get('code') ?? undefined;
+let code = params.get('code') ?? undefined;
 try {
   if (room) localStorage.setItem(ROOM_KEY, room);
   else room = localStorage.getItem(ROOM_KEY);
 } catch {
   /* storage unavailable: the URL is all there is */
+}
+try {
+  const kept = JSON.parse(sessionStorage.getItem(CODE_KEY) ?? 'null') as { room: string; code: string } | null;
+  if (code && room) sessionStorage.setItem(CODE_KEY, JSON.stringify({ room, code }));
+  else if (!code && kept && kept.room === room) code = kept.code;
+} catch {
+  /* without session storage, a reload waits to be allowed */
 }
 if (code) {
   const clean = new URL(location.href);

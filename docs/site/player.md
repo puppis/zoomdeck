@@ -204,8 +204,13 @@ when an iPad is plugged in and no tablet is connected, it offers to pair it, and
 opens the pairing code for the cable's address, which the iPad scans; when the cable carries no
 network yet, the offer says how to give it one. A computer cannot open a page on the iPad by
 itself, so the iPad still scans the code (or pastes the copied link). The cable link is private and
-steadier than a crowded Wi-Fi. Telling that an iPad is plugged in works on macOS; elsewhere the
-offer appears once the cable carries a network.
+steadier than a crowded Wi-Fi. When the cable is unplugged (or the Wi-Fi drops), the tablet's page
+clears and says the connection is lost; the cable plugged in again is a new network, so plug it
+back in and open the new address on the tablet, from the code the deck offers again (it forgets a
+tablet it has not heard from for a few seconds) or from **Show the pairing code**. macOS Internet
+Sharing often misses a tablet plugged in again: the deck then says so, and turning Internet Sharing
+off and on again brings the cable back. Telling that an iPad is plugged in works on macOS;
+elsewhere the offer appears once the cable carries a network.
 
 **Presenter notes.** A slide's `::: notes` blocks ([Presenter notes](slides.html#presenter-notes))
 appear on the tablet under the picture whenever a stop settles: the slide's own notes, then the

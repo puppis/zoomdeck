@@ -37,6 +37,8 @@ export type PadMessage =
   | { type: 'admit'; to: string; ok: boolean; trusted?: boolean }
   /** A pad leaving (the page hidden or closed). */
   | { type: 'bye' }
+  /** A pad still there: sent every few seconds, so that the presenter forgets a tablet that went away without a goodbye (a cable pulled out, say). */
+  | { type: 'alive' }
   | { type: 'state'; clip: number; board: boolean; pan: { x: number; y: number }; aspect: number; background: string; foreground: string; notes?: string }
   /** A picture of the presenter's current view (a JPEG data URL), sent when a stop settles. */
   | { type: 'frame'; image: string; clip: number }
@@ -162,6 +164,8 @@ export interface PairingLink {
 export interface CableState {
   links: PairingLink[];
   devices: string[];
+  /** The USB interfaces of plugged-in tablets that macOS Internet Sharing does not reach (it often misses one plugged in again). */
+  unshared?: string[];
 }
 
 export interface PairingInfo {
@@ -174,6 +178,16 @@ export interface PairingInfo {
   cable?: CableState;
   port: number;
   lan: boolean;
+}
+
+/** How often a pad says it is still there, and how long the presenter waits before it forgets one that does not. */
+export const PAD_ALIVE_MS = 4000;
+export const PAD_GONE_MS = 12000;
+
+/** Call `callback` when the page loses its connection to the server (false) and gets it back (true). */
+export function onServerConnection(callback: (connected: boolean) => void): void {
+  import.meta.hot?.on('vite:ws:disconnect', () => callback(false));
+  import.meta.hot?.on('vite:ws:connect', () => callback(true));
 }
 
 /** Call `callback` whenever what is plugged in by cable changes, as the server tells it. */

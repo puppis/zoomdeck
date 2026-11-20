@@ -43,6 +43,8 @@ html, body {
   text-align: center; padding: 24px; color: var(--foreground); opacity: .7; pointer-events: none;
 }
 .waiting[hidden] { display: none; }
+.frame.cleared img, .frame.cleared .board, .frame.cleared svg { display: none; }
+.frame.cleared .waiting { opacity: 1; font-size: 18px; line-height: 1.5; }
 footer {
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 10px;
   border-top: 1px solid var(--border); background: var(--background);

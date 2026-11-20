@@ -79,6 +79,40 @@ export function pairingLinks() {
   return links.sort((a, b) => order.indexOf(a.address) - order.indexOf(b.address));
 }
 
+/**
+ * The USB interfaces of plugged-in iPads and iPhones that macOS Internet Sharing does not reach: a
+ * sharing bridge (bridge100) exists but the device's interface is not one of its members, and has
+ * no address of its own (as it has when the tablet shares its own connection). Internet Sharing
+ * often misses a tablet plugged in again until it is turned off and on. macOS only; empty elsewhere.
+ */
+export function unsharedCables() {
+  if (platform() !== 'darwin') return Promise.resolve([]);
+  return new Promise((resolve) => {
+    execFile('ifconfig', [], { encoding: 'utf8', timeout: 2000 }, (error, stdout) => {
+      if (error) return resolve([]);
+      const present = new Set();
+      const bridged = new Set();
+      let bridges = 0;
+      let current = '';
+      for (const line of String(stdout).split('\n')) {
+        const head = line.match(/^([a-zA-Z0-9]+): flags=/);
+        if (head) {
+          current = head[1];
+          present.add(current);
+          if (/^bridge\d+$/.test(current)) bridges += 1;
+          continue;
+        }
+        const member = /^bridge\d+$/.test(current) ? line.match(/^\s+member: (\S+)/) : null;
+        if (member) bridged.add(member[1]);
+      }
+      if (!bridges) return resolve([]);
+      const addressed = new Set(pairingLinks().map((link) => link.interface));
+      const usb = [...ports.byDevice].filter(([device, port]) => /iPad|iPhone/i.test(port) && present.has(device)).map(([device]) => device);
+      resolve(usb.filter((device) => !bridged.has(device) && !addressed.has(device)));
+    });
+  });
+}
+
 /** The phones and tablets plugged in by USB, by product name; macOS only (elsewhere, an empty list). */
 export function cabledDevices() {
   if (platform() !== 'darwin') return Promise.resolve([]);
@@ -149,9 +183,14 @@ export function padRelay() {
       const lan = () => listensOnLan(server.config.server.host);
       // What is plugged in by cable: the links on a wire (or shared from here) and the devices on USB.
       const cable = async () => {
-        if (!lan()) return { links: [], devices: [] };
+        if (!lan()) return { links: [], devices: [], unshared: [] };
         await refreshHardwarePorts();
-        return { links: pairingLinks().filter((link) => link.kind === 'cable' || link.kind === 'shared'), devices: await cabledDevices() };
+        const devices = await cabledDevices();
+        return {
+          links: pairingLinks().filter((link) => link.kind === 'cable' || link.kind === 'shared'),
+          devices,
+          unshared: devices.length ? await unsharedCables() : [],
+        };
       };
       server.middlewares.use('/__zoomdown/pad.json', async (_request, response) => {
         const address = server.httpServer?.address();
