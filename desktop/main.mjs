@@ -161,7 +161,7 @@ async function openDeck(deckPath) {
     return;
   }
   if (!existsSync(target) || !deckKind(target)) {
-    dialog.showErrorBox('ZoomDown', `Not a deck: ${deckPath}\nOpen a ZoomDown deck (.zd, or .md), a PDF or a slide module.`);
+    dialog.showErrorBox('ZoomDown', `Not a deck: ${deckPath}\nOpen a ZoomDown deck (.zd, or .md), a PDF, a slide module or a Slajdomat presentation (its index.html).`);
     return;
   }
   const previous = preview;
@@ -250,7 +250,7 @@ async function chooseDeck(folder = readStore().folder) {
     ...(folder ? { defaultPath: folder } : {}),
     properties: ['openFile'],
     filters: [
-      { name: 'Decks', extensions: ['zd', 'md', 'markdown', 'pdf', 'ts', 'js', 'mjs', 'tsx'] },
+      { name: 'Decks', extensions: ['zd', 'md', 'markdown', 'pdf', 'ts', 'js', 'mjs', 'tsx', 'html'] },
       { name: 'All files', extensions: ['*'] },
     ],
   });

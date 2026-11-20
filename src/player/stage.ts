@@ -8,7 +8,7 @@ import { TextBatcher } from './textbatch';
 import type { Presenter } from '../runtime';
 import type { Vec3 } from '../geometry';
 import { TEXT_LINES, textBasePxPerWorld, type StyledLine } from '../markup/text';
-import { BASE_PAGE_PIXELS, PAGE_IMAGES, pagePixels } from '../pdfdeck';
+import { PAGE_IMAGES, pagePixels } from '../density';
 
 export interface StageOptions {
   background: string;
@@ -297,8 +297,8 @@ export class Stage {
       const outside = x + halfWidth < center[0] - view.width / 2 - marginX || x - halfWidth > center[0] + view.width / 2 + marginX
         || y + halfHeight < center[1] - view.height / 2 - marginY || y - halfHeight > center[1] + view.height / 2 + marginY;
       const distance = Math.hypot(x - center[0], y - center[1]);
-      if (outside) page.request(BASE_PAGE_PIXELS, 1 + distance, false);
-      else page.request(pagePixels(2 * Math.max(halfWidth, halfHeight), pxPerWorld), 0, true);
+      if (outside) page.request(page.basePixels, 1 + distance, false);
+      else page.request(pagePixels(2 * Math.max(halfWidth, halfHeight), pxPerWorld, page.basePixels), 0, true);
     }
   }
 

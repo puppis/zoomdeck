@@ -129,7 +129,9 @@ player opens source lines with: E for the current stop, Alt + click for an eleme
 Name` (for module decks) and repeatable `--watch PATH`; `zoomdown jump <file> <line>` moves the
 running preview to the stop of a source line. `build` accepts `--show-outline`, `--without-notes` (an export for the audience, without the `::: notes`) and `--scene Name`. The deck argument is a
 `.zd` file (its settings in its front matter; `.md`, the extension decks had before, still works),
-a PDF, or a JS/TS module exporting a deck definition; a `.json` path is refused. Code-authored decks in `--one-file` mode embed the code but
+a PDF, a JS/TS module exporting a deck definition, or a presentation exported by Slajdomat (its
+folder, `index.html` or `manifest.json`, played with ZoomDown's player:
+[docs/site/slajdomat.md](docs/site/slajdomat.md)); any other `.json` path is refused. Code-authored decks in `--one-file` mode embed the code but
 not images they load themselves.
 
 ### The desktop app

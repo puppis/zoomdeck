@@ -84,12 +84,37 @@ const dropEngineMuxers = {
 };
 
 /**
+ * The manifest of a Slajdomat presentation at `path`: the presentation's folder, its viewer page
+ * (`index.html`) or its `manifest.json`; null for anything else.
+ */
+export function slajdomatManifestPath(path) {
+  let candidate = null;
+  try {
+    if (statSync(path).isDirectory()) candidate = join(path, 'manifest.json');
+    else if (basename(path).toLowerCase() === 'manifest.json') candidate = path;
+    else if (/\.html?$/i.test(path)) candidate = join(dirname(path), 'manifest.json');
+  } catch {
+    return null;
+  }
+  if (!candidate || !existsSync(candidate)) return null;
+  try {
+    const tree = JSON.parse(readFileSync(candidate, 'utf8'))?.tree;
+    return tree && tree.type === 'child' && typeof tree.id === 'string' ? candidate : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * The deck to use for a path: the file itself. A deck's settings are the front matter of its
  * Markdown, so a Markdown file is always the whole deck, whichever way it is opened. A JSON
- * file is no deck: its settings belong at the top of the Markdown.
+ * file is no deck: its settings belong at the top of the Markdown. A Slajdomat presentation,
+ * by its folder, its `index.html` or its `manifest.json`, is its manifest.
  */
 export function resolveDeckPath(path) {
   const deckPath = resolve(path);
+  const slajdomat = slajdomatManifestPath(deckPath);
+  if (slajdomat) return slajdomat;
   if (extname(deckPath).toLowerCase() === '.json') {
     throw new Error(`${path}: a deck is its Markdown file now; move the settings of this JSON file into the front matter at the top of the Markdown (between --- lines) and open the Markdown`);
   }
@@ -183,8 +208,12 @@ export async function deckFolders(deckPath) {
  */
 export const MARKUP_EXTENSIONS = ['.zd', '.md', '.markdown'];
 
-/** The kind of deck a file holds, by its extension; null for a file the command cannot serve. */
+/**
+ * The kind of deck a file holds, by its extension (a `manifest.json`, as `resolveDeckPath`
+ * returns it, is a Slajdomat presentation); null for a file the command cannot serve.
+ */
 export function deckKind(deckPath) {
+  if (basename(deckPath).toLowerCase() === 'manifest.json') return 'slajdomat';
   const ext = extname(deckPath).toLowerCase();
   if (MARKUP_EXTENSIONS.includes(ext)) return 'markdown';
   if (ext === '.pdf') return 'pdf';
@@ -248,7 +277,8 @@ export async function startPreview(options) {
       allowedHosts: allowedHosts(),
       port: options.port ?? 8000,
       strictPort: options.strictPort ?? (options.port !== null && options.port !== 0),
-      fs: { allow: [packageRoot, ...watchRoots] },
+      // A Slajdomat presentation's web pages often sit in a folder beside it (../Animations).
+      fs: { allow: [packageRoot, ...watchRoots, ...(kind === 'slajdomat' ? [dirname(deckDir)] : [])] },
     },
     logLevel: 'warn',
   });
@@ -371,6 +401,7 @@ export async function buildDeck(options) {
   if (!options.output) throw new Error('build needs an output folder');
   const kind = deckKind(deckPath);
   if (!kind) throw new Error(`unsupported deck file ${deckPath}`);
+  if (kind === 'slajdomat') throw new Error('A Slajdomat presentation cannot be exported as a web page yet; present it with `zoomdown serve` or the desktop app');
   const deckDir = dirname(deckPath);
   const outDir = options.output;
   await fs.mkdir(outDir, { recursive: true });

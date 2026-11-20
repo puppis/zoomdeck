@@ -31,7 +31,9 @@ screen wherever the camera rests, drawn again when the window changes size, and 
 small picture once out of view, so the text of a page stays as sharp as the deck's own while a
 long document never holds every page at full resolution. The pen, the whiteboard, the spotlight,
 recording and printing work on a PDF as on any deck. The exported folder copies the file next
-to the page; the single-file export embeds it.
+to the page; the single-file export embeds it. A presentation exported by Slajdomat, the Figma
+plugin for zooming slides, opens in the same places and plays as it was made:
+[Slajdomat presentations](slajdomat.html).
 
 ## A PDF inside a slide
 

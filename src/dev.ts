@@ -1,8 +1,9 @@
 /**
  * Development entry: `?deck=examples/tree-deck&scene=Demo` loads a deck module
- * (or `?deck=path/slides.zd`, `?deck=path/paper.pdf`; a deck's `.md` too) from this checkout and starts the player. Without `?deck=` it opens the tour.
+ * (or `?deck=path/slides.zd`, `?deck=path/paper.pdf`, a Slajdomat presentation's
+ * `?deck=path/manifest.json` or `index.html`; a deck's `.md` too) from this checkout and starts the player. Without `?deck=` it opens the tour.
  */
-import { runDeck, loadMarkupDeck, pdfDeck } from './index';
+import { runDeck, loadMarkupDeck, pdfDeck, slajdomatDeck } from './index';
 import type { DeckDefinition } from './deck';
 
 const params = new URLSearchParams(location.search);
@@ -14,7 +15,10 @@ async function main(): Promise<void> {
   const base = deckPath.startsWith('/') ? deckPath : `/${deckPath}`;
   // The deck's own file, which the player's Export builds as a web page through the server.
   let file = new URL(base, location.href).href;
-  if (deckPath.endsWith('.json')) {
+  if (/(^|\/)manifest\.json$/i.test(deckPath) || /\.html?$/i.test(deckPath)) {
+    // A Slajdomat presentation, by its manifest or its viewer page.
+    definition = await slajdomatDeck({ url: base });
+  } else if (deckPath.endsWith('.json')) {
     throw new Error(`${deckPath}: a deck is its Markdown file now; move the settings of this JSON file into the front matter at the top of the Markdown (between --- lines) and open the Markdown`);
   } else if (/\.(?:zd|md|markdown)$/i.test(deckPath)) {
     definition = await loadMarkupDeck({ url: base });

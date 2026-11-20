@@ -167,8 +167,31 @@ export interface SvgImportOptions {
   defaultColor?: string;
 }
 
-/** Convert SVG text into a group of vector mobjects centered at the origin. */
-export function svgToMobject(svgText: string, options: SvgImportOptions = {}): VGroup {
+/**
+ * A picture an SVG places (an `<image>`, or a rectangle filled with a pattern that holds one):
+ * its file, often a `data:` URL, and where it lands in world coordinates. The picture is
+ * `width` by `height`, mirrored left to right first when `mirrored`, then turned by `angle`
+ * (radians, counterclockwise) and centered on `center`.
+ */
+export interface SvgImage {
+  href: string;
+  center: Vec;
+  width: number;
+  height: number;
+  angle: number;
+  mirrored: boolean;
+  opacity: number;
+}
+
+/** Where the importer puts what it draws: shapes, and pictures when the caller takes them. */
+interface SvgSink {
+  shape(vmob: VMobject): void;
+  /** Without it, pictures are left out as before: `<image>` is skipped, a pattern fill drawn flat. */
+  image?(image: SvgImage): void;
+}
+
+/** One SVG document read for conversion: its frame and the walk that converts an element. */
+function svgImporter(svgText: string, options: SvgImportOptions) {
   // Fragments cut out of a larger export often use `xlink:href` without declaring the prefix,
   // which a browser's XML parser rejects at the first use, dropping everything after it.
   const declared = /xlink:/.test(svgText) && !/xmlns:xlink\s*=/.test(svgText) ? svgText.replace(/<svg\b/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"') : svgText;
@@ -190,7 +213,7 @@ export function svgToMobject(svgText: string, options: SvgImportOptions = {}): V
   else if (options.height !== undefined) scale = options.height / box.height;
   else scale = 2 / box.height;
   const defaultColor = options.defaultColor ?? '#000000';
-  const group = new VGroup();
+  let sink: SvgSink = { shape: () => undefined };
   const rootStyle: Style = { fill: '#000000', fillOpacity: 1, stroke: null, strokeWidth: 1, strokeOpacity: 1, opacity: 1 };
   const skip = new Set(['defs', 'clippath', 'mask', 'symbol', 'marker', 'lineargradient', 'radialgradient', 'pattern', 'metadata', 'title', 'desc', 'style']);
   const toWorld = (m: Matrix, x: number, y: number): Vec => {
@@ -224,6 +247,15 @@ export function svgToMobject(svgText: string, options: SvgImportOptions = {}): V
       walk(target, multiply(matrix, offset), style, depth + 1, own, emit);
       return;
     }
+    if (sink.image && emit === draw) {
+      // A picture: an <image>, or a rectangle filled with a pattern that shows one, stretched over it.
+      const picture = tag === 'image' ? hrefOf(element) : tag === 'rect' ? patternPicture(element) : null;
+      if (picture) {
+        const attr = (name: string, fallback = '0') => parseFloat(element.getAttribute(name) || fallback) || 0;
+        emitImage(picture, attr('x'), attr('y'), attr('width'), attr('height'), matrix, style);
+        return;
+      }
+    }
     const subpaths = worldSubpaths(element, matrix);
     if (subpaths) {
       if (subpaths.length) emit(element, subpaths, matrix, style, own);
@@ -231,6 +263,41 @@ export function svgToMobject(svgText: string, options: SvgImportOptions = {}): V
     }
     if (tag === 'text') console.warn('[zoomdown] SVG <text> elements are not supported; convert text to paths');
     for (const child of Array.from(element.children)) walk(child, matrix, style, depth + 1, own, emit);
+  };
+  /** The file an `<image>` or `<use>` names. */
+  const hrefOf = (element: Element): string | null => element.getAttribute('href') ?? element.getAttribute('xlink:href');
+  /** The picture a rectangle's pattern fill shows (Figma exports picture fills so), or null. */
+  const patternPicture = (element: Element): string | null => {
+    const id = declaredStyle(element, 'fill')?.match(/url\(\s*['"]?#([^'")\s]+)['"]?\s*\)/)?.[1];
+    const pattern = id ? document.getElementById(id) : null;
+    if (!pattern || pattern.tagName.toLowerCase() !== 'pattern') return null;
+    for (const child of Array.from(pattern.children)) {
+      const tag = child.tagName.toLowerCase();
+      const target = tag === 'image' ? child : tag === 'use' ? document.getElementById((hrefOf(child) ?? '').replace(/^#/, '')) : null;
+      if (target && target.tagName.toLowerCase() === 'image') return hrefOf(target);
+    }
+    return null;
+  };
+  /** Report the picture `href` covering the box at `x`, `y` of size `w` × `h` under `matrix`. */
+  const emitImage = (href: string, x: number, y: number, w: number, h: number, matrix: Matrix, style: Style): void => {
+    if (!(w > 0 && h > 0)) return;
+    const origin = toWorld(matrix, x, y);
+    const right = toWorld(matrix, x + w, y);
+    const down = toWorld(matrix, x, y + h);
+    const across: Vec = [right[0] - origin[0], right[1] - origin[1]];
+    const along: Vec = [down[0] - origin[0], down[1] - origin[1]];
+    // Unmirrored, the picture's top edge runs to the right of its left edge, which runs down.
+    const mirrored = across[0] * along[1] - across[1] * along[0] > 0;
+    const angle = Math.atan2(across[1], across[0]) - (mirrored ? Math.PI : 0);
+    (sink.image as (image: SvgImage) => void)({
+      href,
+      center: toWorld(matrix, x + w / 2, y + h / 2),
+      width: Math.hypot(across[0], across[1]),
+      height: Math.hypot(along[0], along[1]),
+      angle,
+      mirrored,
+      opacity: style.opacity,
+    });
   };
   const regions = new Map<string, Region | null>();
   /** The region of the clip path or mask an element names, in the user space of `matrix`; null without one, or one that cannot be applied. */
@@ -294,7 +361,7 @@ export function svgToMobject(svgText: string, options: SvgImportOptions = {}): V
     const ctmScale = Math.sqrt(Math.abs(matrix[0] * matrix[3] - matrix[1] * matrix[2]));
     const strokeWorld = style.stroke ? style.strokeWidth * ctmScale * scale : 0;
     if (!clips.length) {
-      group.add(styled(shapeMobject(subpaths), style, strokeWorld, true));
+      sink.shape(styled(shapeMobject(subpaths), style, strokeWorld, true));
       return;
     }
     const inside = (p: Vec) => clips.every((region) => regionContains(region, p));
@@ -326,22 +393,88 @@ export function svgToMobject(svgText: string, options: SvgImportOptions = {}): V
       strokeIntact = !border && whole.length === subpaths.length;
     }
     if (placement === 'inside' && strokeIntact) {
-      group.add(styled(shapeMobject(subpaths), style, strokeWorld, true));
+      sink.shape(styled(shapeMobject(subpaths), style, strokeWorld, true));
       return;
     }
     if (placement !== 'outside') {
       const fill = placement === 'inside' ? subpaths : intersectFill(subpaths, clips);
-      if (fill.length) group.add(styled(shapeMobject(fill), { ...style, stroke: null }, 0, true));
+      if (fill.length) sink.shape(styled(shapeMobject(fill), { ...style, stroke: null }, 0, true));
     }
-    if (whole.length) group.add(styled(shapeMobject(whole), style, strokeWidth, false));
+    if (whole.length) sink.shape(styled(shapeMobject(whole), style, strokeWidth, false));
     // The cut outline of a stroke, filled in the stroke's color and opacity.
-    if (outlines.length) group.add(styled(shapeMobject(outlines), { ...style, stroke: null, fill: style.stroke, fillOpacity: style.strokeOpacity }, 0, true));
+    if (outlines.length) sink.shape(styled(shapeMobject(outlines), { ...style, stroke: null, fill: style.stroke, fillOpacity: style.strokeOpacity }, 0, true));
   };
   // Presentation attributes on the <svg> element itself (a stroke, a fill, an opacity) are inherited like a group's.
   const inherited = styleOf(root, rootStyle, defaultColor);
-  for (const child of Array.from(root.children)) walk(child, IDENTITY, inherited, 0, [], draw);
+  return {
+    root,
+    box,
+    scale,
+    toWorld,
+    /** The style an element passes on to its children, from the root down. */
+    styleOf: (element: Element, parent: Style) => styleOf(element, parent, defaultColor),
+    inherited,
+    /** Convert `element` under `matrix` and `style` into `into`. */
+    convert(element: Element, matrix: Matrix, style: Style, into: SvgSink): void {
+      sink = into;
+      try {
+        walk(element, matrix, style, 0, [], draw);
+      } finally {
+        sink = { shape: () => undefined };
+      }
+    },
+  };
+}
+
+/** Convert SVG text into a group of vector mobjects centered at the origin. */
+export function svgToMobject(svgText: string, options: SvgImportOptions = {}): VGroup {
+  const importer = svgImporter(svgText, options);
+  const group = new VGroup();
+  const into: SvgSink = { shape: (vmob) => group.add(vmob) };
+  for (const child of Array.from(importer.root.children)) importer.convert(child, IDENTITY, importer.inherited, into);
   if (!group.isEmpty()) group.moveTo([0, 0, 0]);
   return group;
+}
+
+/** One part of a drawing: an element of its top group, and what it draws in document order. */
+export interface SvgPart {
+  id: string;
+  element: Element;
+  items: Array<VMobject | SvgImage>;
+}
+
+/**
+ * An SVG drawing taken apart, with every part where the drawing puts it: the world origin is the
+ * center of its frame (the `viewBox`), `width` (or `height`) its world size. The parts are the
+ * children of the root's first `<g>`, the frame group of a Figma export, or of the root without
+ * one; `skip` leaves elements out before they are converted. Pictures come back as `SvgImage`s
+ * for the caller to load.
+ */
+export interface SvgDrawing {
+  /** The frame in the drawing's own units. */
+  frame: { x: number; y: number; width: number; height: number };
+  /** The element whose children are the parts. */
+  container: Element;
+  parts: SvgPart[];
+  /** World coordinates of a point given in the container's units. */
+  toWorld(x: number, y: number): Vec;
+}
+
+export function svgDrawing(svgText: string, options: SvgImportOptions & { skip?: (element: Element) => boolean } = {}): SvgDrawing {
+  const importer = svgImporter(svgText, options);
+  const root = importer.root;
+  const container = Array.from(root.children).find((child) => child.tagName.toLowerCase() === 'g') ?? root;
+  // The frame group's transform and style reach its parts; its clip, the slide's edge, does not.
+  const matrix = container === root ? IDENTITY : parseTransform(container.getAttribute('transform'));
+  const style = container === root ? importer.inherited : importer.styleOf(container, importer.inherited);
+  const parts: SvgPart[] = [];
+  for (const element of Array.from(container.children)) {
+    if (options.skip?.(element)) continue;
+    const items: SvgPart['items'] = [];
+    importer.convert(element, matrix, style, { shape: (vmob) => items.push(vmob), image: (image) => items.push(image) });
+    parts.push({ id: element.id, element, items });
+  }
+  return { frame: importer.box, container, parts, toWorld: (x, y) => importer.toWorld(matrix, x, y) };
 }
 
 /** A property of an element, from its style attribute or its own attribute. */

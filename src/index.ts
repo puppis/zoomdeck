@@ -76,10 +76,15 @@ export type { DirectiveOptions, DirectiveFactory, DirectiveModule } from './dire
 export { fillSnippet, SNIPPET_DIRECTIVE } from './markup/imports';
 export { pdfDeck, pdfPages, pdfUrl, loadPdfJs, PdfPage, PageImage, PAGE_IMAGES, pagePixels, pageNames, pageSize, BASE_PAGE_PIXELS, MAX_PAGE_PIXELS } from './pdfdeck';
 export type { PdfDeckOptions, PdfSource, PageImageOptions } from './pdfdeck';
+export { slajdomatDeck, slajdomatManifestUrl, isSlajdomatManifest, placeholderBox, SlajdomatSlide, SvgPicture } from './slajdomat';
+export { DensityImage } from './density';
+export type { DensityImageOptions } from './density';
+export type { SlajdomatDeckOptions, SlajdomatEvent, SlajdomatManifest } from './slajdomat';
 export { expandImports, importPath, describeOrigin, IMPORT_DIRECTIVE } from './markup/imports';
 export type { ExpandOptions, ExpandedSource, LineOrigin } from './markup/imports';
 export type { MarkupDeckOptions } from './markup/deck';
-export { svgToMobject, loadSvgMobject } from './svg';
+export { svgToMobject, loadSvgMobject, svgDrawing } from './svg';
+export type { SvgDrawing, SvgImage, SvgPart, SvgImportOptions } from './svg';
 export { sketch, sketchDrawable, sketchSeed, FILL_STYLES, SKETCH_SCALE } from './sketch';
 export type { SketchOptions, FillStyle, OutlineMobject } from './sketch';
 export { makeIcon, makeIconFromParts, iconParts, artworkFromModule, ICON_NAMES } from './icons';
