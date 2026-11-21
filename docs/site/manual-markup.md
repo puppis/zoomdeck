@@ -570,7 +570,7 @@ and an icon's label count separately).
 | --- | --- | --- | --- |
 | `buff` | units | 0.15 for a box, 0.3 for a blob | the margin around the elements |
 | `corner_radius` | units | 0 | box only |
-| `smoothness` | 0 to 1 | 0.5 | blob only: how closely the outline follows the elements |
+| `smoothness` | 0 to 1 | 0.5 | blob only: the radius of the disc that rounds the outline's hollows, up to twice `buff` |
 | `fill_color`, `fill_opacity` | | the stroke color, 0 | |
 | `color`, `stroke_width`, `opacity`, `step`, `hide`, `run_time`, `lag`, `href` | | | as for connections |
 | the hand-drawn attributes, `tremble` | | | |

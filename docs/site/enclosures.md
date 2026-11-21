@@ -38,8 +38,10 @@ as wide as the members it joins: two joined dots get a capsule, a large node and
 tapered shape, a path of edges a blob that turns with it. Targets that no edge joins and whose
 margins do not touch get separate loops. A blob encloses everything inside it, so members around
 an empty middle, or a cycle of edges, give one outline without a hole: the triangles of a graph
-are filled. Smoothing softens the hollows between members only: where the curve bulges outward it
-stays exactly `buff` from the targets and edges, however many of them meet there.
+are filled. The curve is the margin around targets and edges with its hollows rounded, as if a disc
+rolled around it from outside: where the curve bulges outward it stays exactly `buff` from them,
+however many meet there, and every hollow is an arc of the disc, which `smoothness` sizes. Two
+targets join when the disc cannot pass between their margins.
 
 ```markdown
 [[dot: #p x=-2 y=0 radius=0.38]]
@@ -51,7 +53,7 @@ stays exactly `buff` from the targets and edges, however many of them meet there
 | Attribute | Default | Meaning |
 | --- | --- | --- |
 | `buff` | 0.3 | distance between the targets and the curve |
-| `smoothness` | 0.5 | from 0 (the plain outline of the margins, with creases where they meet) to 1 (neighbors merge into one soft shape) |
+| `smoothness` | 0.5 | from 0 (the plain outline of the margins, with creases where they meet) to 1 (hollows rounded by a disc of radius 2 × `buff`, which also bridges gaps up to 4 × `buff` between margins); at 0.5 hollows are rounded like the corners |
 | `color`, `stroke_width` | the layout color, 2 | the curve |
 | `fill_color`, `fill_opacity` | `color`, 0 | the enclosed area |
 | `sketch` and its tuning | `false` | a [hand-drawn](sketch.html) curve with a hatched or solid fill |

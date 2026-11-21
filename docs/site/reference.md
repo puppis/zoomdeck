@@ -82,7 +82,7 @@ commas; `(x,y)` tuples stay whole; `#id` sets the ID; `.name` applies a style.
 | `buff` | attachments | distance from the targets |
 | `side` | braces | `bottom`, `top`, `left`, `right` |
 | `corner_radius` | rectangles, boxes | rounded corners |
-| `smoothness` | blobs | how softly neighboring targets merge, 0 to 1 |
+| `smoothness` | blobs | how widely the hollows are rounded, and which neighboring targets merge, 0 to 1 |
 | `sketch`, `roughness`, `bowing`, `fill_style`, `hachure_angle`, `hachure_gap`, `fill_weight`, `seed` | shapes, icons, connections, attachments | hand-drawn rendering and its tuning |
 
 ## Layout

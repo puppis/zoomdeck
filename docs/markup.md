@@ -215,8 +215,8 @@ A `brace` is **attached** to one element, named first: `[[brace: #target, #id, â
 (a smooth enclosing curve) surround one or several elements, listed before the first comma:
 `[[box: #a #b, #id, â€¦]]`. Boxes take `buff`, `corner_radius`, `color`, `stroke_width`,
 `fill_color` and `fill_opacity`; blobs `buff` (the distance kept from every member, 0.3),
-`smoothness` (0 to 1, how softly neighbouring members merge; distant members get separate
-loops), `color`, `stroke_width`, `fill_color` and `fill_opacity`. A blob flows around the members
+`smoothness` (0 to 1, the radius of the disc that rounds the hollows, up to twice `buff`;
+members join when it cannot pass between them, distant members get separate loops), `color`, `stroke_width`, `fill_color` and `fill_opacity`. A blob flows around the members
 of a group, and around an icon and its label, separately. All attachments accept `step`, `hide`,
 `opacity` and timing. Like connections they are created after layout, so they cannot anchor other
 elements or serve as endpoints.

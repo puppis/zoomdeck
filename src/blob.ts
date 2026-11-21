@@ -4,16 +4,15 @@
  *
  * The shapes are rectangles, round ones (the outline of a circle, a dot or an
  * ellipse) and bridges, tapered bands between two discs that follow an edge
- * joining two members. The enclosed region is the set of points whose distance
- * to the nearest shape is below `buff`, with neighbouring shapes blended by a
- * smooth minimum so that the curve flows around the group instead of pinching
- * between its members. The blend alone swells wherever shapes overlap (a member
- * and the edges leaving it), and the more of them, the more, so the region is
- * also kept within the shapes' offset closed by a disc: exactly `buff` from the
- * shapes where the curve bulges outward, while the blend shapes the hollows and
- * decides which members join. Holes (members around an empty middle, a cycle of
- * edges) are filled. The boundary is traced on a grid (marching squares),
- * resampled evenly and turned into Catmull-Rom curves.
+ * joining two members. A blob is their offset closed by a rolling disc: the
+ * points within `buff` of a shape, together with every point that a disc of
+ * radius ρ rolling around them from outside cannot reach. Where the curve
+ * bulges outward it is exactly `buff` from the shapes, however many of them
+ * overlap there; every hollow is rounded by an arc of radius ρ, tangent to the
+ * rest of the curve; two members join exactly when the disc cannot pass between
+ * them; and holes (members around an empty middle, a cycle of edges) are filled.
+ * ρ grows with the smoothness, up to twice `buff`. The boundary is traced on a
+ * grid (marching squares), resampled evenly and turned into Catmull-Rom curves.
  */
 import type { VMobject } from 'manim-web';
 import { loopsMobject } from './paths';
@@ -38,8 +37,10 @@ export interface BlobOptions {
   /** Distance between the rectangles and the curve, in logical units; 0.3 by default. */
   buff?: number;
   /**
-   * How far neighbouring rectangles blend into one shape, between 0 (the plain
-   * union, with creases where offsets meet) and 1 (wide, soft bridges); 0.5 by default.
+   * How softly the hollows are rounded and neighbours merge, between 0 (the plain
+   * union of the offsets, with creases where they meet) and 1 (arcs of radius
+   * 2 × `buff`, which also bridge gaps up to 4 × `buff` between the offsets);
+   * 0.5 by default, hollows rounded like the corners.
    */
   smoothness?: number;
   /** Grid spacing used to trace the boundary; derived from `buff` by default. */
@@ -114,29 +115,9 @@ function unionDistance(rects: readonly Rect[], bridges: readonly Bridge[], x: nu
   return d;
 }
 
-/** Polynomial smooth minimum: like `min`, but the transition spans a band of width `k`. */
-function smoothMin(a: number, b: number, k: number): number {
-  if (k <= 0) return Math.min(a, b);
-  const h = Math.max(k - Math.abs(a - b), 0) / k;
-  return Math.min(a, b) - h * h * k / 4;
-}
-
-/** The distance to the nearest shape, and the smooth union of the shapes blended over `k`, written to `out`. */
-function distances(rects: readonly Rect[], bridges: readonly Bridge[], k: number, x: number, y: number, out: [number, number]): void {
-  let plain = Infinity;
-  let blended = Infinity;
-  for (const rect of rects) {
-    const d = rect.round ? roundDistance(rect, x, y) : rectDistance(rect, x, y);
-    plain = Math.min(plain, d);
-    blended = smoothMin(blended, d, k);
-  }
-  for (const bridge of bridges) {
-    const d = bridgeDistance(bridge, x, y);
-    plain = Math.min(plain, d);
-    blended = smoothMin(blended, d, k);
-  }
-  out[0] = plain;
-  out[1] = blended;
+/** The radius of the rolling disc that closes a blob: twice `buff` at full smoothness. */
+function closingRadius(buff: number, smoothness: number): number {
+  return 2 * buff * smoothness;
 }
 
 /** A field sampled on a grid: `values[j * columns + i]` at (x0 + i·h, y0 + j·h). */
@@ -242,22 +223,17 @@ function traceLoops(grid: Grid): number[][][] {
 /**
  * The blob's field on a grid around the shapes: negative inside, zero on the boundary.
  *
- * Two regions are intersected. The blend: the points whose smooth union distance is below
- * `buff`, which shapes the hollows between members and decides which of them join. The closed
- * offset: the points within `buff` of a shape (R), and every point that no disc of radius ρ
- * outside R covers; its concave corners are filled to that radius, its convex parts are exactly
- * `buff` from the shapes. The blend on its own swells wherever shapes overlap, more with every
- * shape (five dots and seven edges swelled past the grid, into open arcs); within the closed
- * offset, it cannot bulge out. ρ is the blend's width, so that the closed offset holds every
- * hollow the blend fills. The centers of the discs outside R are the points at least buff + ρ
- * from every shape, the region Q; a point is in the closed offset when it is farther than ρ from
- * Q, and its field is ρ minus the distance to Q's boundary, measured to the pieces of that level
- * line. The grid's border always counts as outside, so every loop closes.
+ * The blob is the region R of the points within `buff` of a shape, closed by a disc of radius ρ:
+ * R and every point that no disc of radius ρ outside R covers. The centers of the discs outside R
+ * are the points at least buff + ρ from every shape, the region Q; a point belongs to the blob
+ * when it is farther than ρ from Q, so the field is ρ minus the distance to Q's boundary,
+ * measured to the pieces of that level line. Without smoothness it is the distance to the shapes
+ * minus `buff`. The grid is centered on the shapes, so that a symmetric group is traced
+ * symmetrically, and its border always counts as outside, so every loop closes.
  */
 function blobGrid(rects: readonly Rect[], bridges: readonly Bridge[], resolved: Resolved): Grid {
   const { buff, smoothness, resolution: h } = resolved;
-  const blend = smoothness * buff * 3;
-  const radius = blend;
+  const radius = closingRadius(buff, smoothness);
   const margin = buff + radius + 3 * h;
   const left = Math.min(...rects.map((r) => r.x - r.width / 2));
   const right = Math.max(...rects.map((r) => r.x + r.width / 2));
@@ -274,13 +250,8 @@ function blobGrid(rects: readonly Rect[], bridges: readonly Bridge[], resolved: 
     const level = buff + radius;
     // The distance to the shapes minus buff + ρ: Q where it is not negative.
     const grown = new Float64Array(columns * rows);
-    const pair: [number, number] = [0, 0];
     for (let j = 0; j < rows; j += 1) {
-      for (let i = 0; i < columns; i += 1) {
-        distances(rects, bridges, blend, x0 + i * h, y0 + j * h, pair);
-        grown[j * columns + i] = pair[0] - level;
-        values[j * columns + i] = pair[1] - buff;
-      }
+      for (let i = 0; i < columns; i += 1) grown[j * columns + i] = unionDistance(rects, bridges, x0 + i * h, y0 + j * h) - level;
     }
     const edges = levelSegments({ x0, y0, h, columns, rows, values: grown });
     // The pieces of Q's boundary, in buckets as wide as the farthest distance that matters: beyond
@@ -303,8 +274,6 @@ function blobGrid(rects: readonly Rect[], bridges: readonly Bridge[], resolved: 
     for (let j = 0; j < rows; j += 1) {
       for (let i = 0; i < columns; i += 1) {
         const k = j * columns + i;
-        // Well outside the blend: the intersection is outside, whatever the closed offset says.
-        if (values[k] > 2 * h) continue;
         const e = grown[k];
         let closed: number;
         if (e >= 0 || e < -reach) {
@@ -335,7 +304,7 @@ function blobGrid(rects: readonly Rect[], bridges: readonly Bridge[], resolved: 
           }
           closed = radius - Math.sqrt(nearest);
         }
-        values[k] = Math.max(values[k], closed);
+        values[k] = closed;
       }
     }
   } else {

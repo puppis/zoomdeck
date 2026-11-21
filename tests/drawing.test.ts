@@ -102,15 +102,39 @@ describe('a blob around a graph', () => {
     }
   });
 
-  it('keeps the old blend in the hollows, and which members it joins', () => {
-    // Boxes 1.4 apart, beyond what the blend bridges at this smoothness: three loops.
-    const box = (x: number) => ({ x, y: 0, width: 1.6, height: 0.8 });
-    expect(blobOutline([box(-3), box(0), box(3)], { buff: 0.45, smoothness: 0.7 })).toHaveLength(3);
-    // A little closer, one loop, which the blend narrows between them.
-    const joined = blobOutline([box(-2.9), box(0), box(2.9)], { buff: 0.45, smoothness: 0.7 });
-    expect(joined).toHaveLength(1);
-    const waist = joined[0].filter(([x]) => Math.abs(x - 1.45) < 0.3).map(([, y]) => Math.abs(y));
-    expect(Math.min(...waist)).toBeLessThan(0.85 - 0.05);
+});
+
+describe('a blob closed by a rolling disc', () => {
+  // The disc's radius is 2 × buff × smoothness: 0.3 here, with buff 0.3 and the default smoothness.
+  const box = (left: number, bottom: number, right: number, top: number) => ({ x: (left + right) / 2, y: (bottom + top) / 2, width: right - left, height: top - bottom });
+
+  it('rounds a hollow with an arc of the disc\'s radius', () => {
+    // An L whose hollow corner is at (1, 1): offset by 0.3, the arc's center is at (1.6, 1.6).
+    const [loop] = blobOutline([box(0, 0, 2, 1), box(0, 1, 1, 2)], { buff: 0.3 });
+    const arc = loop.filter(([x, y]) => Math.hypot(x - 1.6, y - 1.6) < 0.4);
+    expect(arc.length).toBeGreaterThan(0);
+    for (const [x, y] of arc) expect(Math.hypot(x - 1.6, y - 1.6)).toBeCloseTo(0.3, 1);
+    // Without smoothness, the hollow keeps its crease: the outline passes by the corner of the offsets.
+    const [sharp] = blobOutline([box(0, 0, 2, 1), box(0, 1, 1, 2)], { buff: 0.3, smoothness: 0 });
+    const toCorner = sharp.map(([ax, ay], i) => {
+      const [bx, by] = sharp[(i + 1) % sharp.length];
+      const t = Math.max(0, Math.min(1, ((1.3 - ax) * (bx - ax) + (1.3 - ay) * (by - ay)) / ((bx - ax) ** 2 + (by - ay) ** 2)));
+      return Math.hypot(1.3 - ax - (bx - ax) * t, 1.3 - ay - (by - ay) * t);
+    });
+    expect(Math.min(...toCorner)).toBeLessThan(0.09);
+    expect(Math.min(...toCorner)).toBeLessThan(0.3 * (Math.SQRT2 - 1) - 0.03);
+  });
+
+  it('joins two members when the disc cannot pass between them', () => {
+    // Boxes 1.1 apart: their offsets leave a gap of 0.5, which a disc of radius 0.3 cannot pass, one of 0.18 can.
+    expect(blobOutline([box(-0.5, -0.5, 0.5, 0.5), box(1.6, -0.5, 2.6, 0.5)], { buff: 0.3 })).toHaveLength(1);
+    expect(blobOutline([box(-0.5, -0.5, 0.5, 0.5), box(1.6, -0.5, 2.6, 0.5)], { buff: 0.3, smoothness: 0.3 })).toHaveLength(2);
+    // Two dots 1 apart: a neck where the disc touches both offsets, its center sqrt(0.72² - 0.5²) from the axis.
+    const dot = (x: number) => ({ x, y: 0, width: 0.24, height: 0.24, round: true });
+    const loops = blobOutline([dot(-0.5), dot(0.5)], { buff: 0.3 });
+    expect(loops).toHaveLength(1);
+    const neck = Math.min(...loops[0].filter(([x]) => Math.abs(x) < 0.15).map(([, y]) => Math.abs(y)));
+    expect(neck).toBeCloseTo(Math.sqrt(0.72 ** 2 - 0.25) - 0.3, 1);
   });
 });
 
