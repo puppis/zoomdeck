@@ -37,7 +37,9 @@ A blob also follows the arrows and lines of the slide that join two of its targe
 as wide as the members it joins: two joined dots get a capsule, a large node and a small one a
 tapered shape, a path of edges a blob that turns with it. Targets that no edge joins and whose
 margins do not touch get separate loops. A blob encloses everything inside it, so members around
-an empty middle, or a cycle of edges, give one outline without a hole.
+an empty middle, or a cycle of edges, give one outline without a hole: the triangles of a graph
+are filled. Smoothing softens the hollows between members only: where the curve bulges outward it
+stays exactly `buff` from the targets and edges, however many of them meet there.
 
 ```markdown
 [[dot: #p x=-2 y=0 radius=0.38]]

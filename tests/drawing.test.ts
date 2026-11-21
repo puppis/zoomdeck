@@ -67,13 +67,50 @@ describe('blobs', () => {
     expect(blobOutline([dot(-3, 0), dot(3, 0)], { buff: 0.3 })).toHaveLength(2);
     const capsule = blobOutline([dot(-3, 0), dot(3, 0)], { buff: 0.3 }, [{ from: disc(-3, 0), to: disc(3, 0) }]);
     expect(capsule).toHaveLength(1);
-    // The capsule keeps its width along the edge.
+    // The capsule keeps its width along the edge, and does not swell where the dots overlap it.
     const middle = capsule[0].filter(([x]) => Math.abs(x) < 0.2).map(([, y]) => Math.abs(y));
     for (const y of middle) expect(y).toBeCloseTo(0.6, 1);
+    expect(Math.max(...capsule[0].map(([, y]) => Math.abs(y)))).toBeLessThan(0.63);
     // A triangle of edges is one outline, without the hole in its middle.
     const corners: Array<[number, number]> = [[-3, -2], [3, -2], [0, 3]];
     const bridges = corners.map((p, i) => ({ from: disc(...p), to: disc(...corners[(i + 1) % 3]) }));
     expect(blobOutline(corners.map(([x, y]) => dot(x, y)), { buff: 0.3 }, bridges)).toHaveLength(1);
+  });
+});
+
+describe('a blob around a graph', () => {
+  // Five dots, the edges of three triangles between them: an outline exactly buff from the dots
+  // and the edges, around the triangles, with however many shapes overlap at each node.
+  const P: Record<string, [number, number]> = { tl: [-1.25, 1.1], tr: [1.25, 1.1], l: [-2.5, -1.1], c: [0, -1.1], r: [2.5, -1.1] };
+  const EDGES = [['tl', 'tr'], ['tl', 'l'], ['tl', 'c'], ['tr', 'c'], ['tr', 'r'], ['l', 'c'], ['c', 'r']];
+  const R = 0.12;
+  const rects = Object.values(P).map(([x, y]) => ({ x, y, width: 2 * R, height: 2 * R, round: true }));
+  const bridges = EDGES.map(([a, b]) => ({ from: [...P[a], R] as [number, number, number], to: [...P[b], R] as [number, number, number] }));
+  /** Distance from a point to the nearest edge, as a segment widened by the dots' radius. */
+  const toGraph = ([x, y]: number[]) => Math.min(...EDGES.map(([a, b]) => {
+    const [ax, ay] = P[a];
+    const [bx, by] = P[b];
+    const t = Math.max(0, Math.min(1, ((x - ax) * (bx - ax) + (y - ay) * (by - ay)) / ((bx - ax) ** 2 + (by - ay) ** 2)));
+    return Math.hypot(x - ax - (bx - ax) * t, y - ay - (by - ay) * t) - R;
+  }));
+
+  it('is one closed outline at the requested distance, however smooth', () => {
+    for (const smoothness of [0, 0.5, 1]) {
+      const loops = blobOutline(rects, { buff: 0.35, smoothness }, bridges);
+      expect(loops).toHaveLength(1);
+      for (const point of loops[0]) expect(Math.abs(toGraph(point) - 0.35)).toBeLessThan(0.04);
+    }
+  });
+
+  it('keeps the old blend in the hollows, and which members it joins', () => {
+    // Boxes 1.4 apart, beyond what the blend bridges at this smoothness: three loops.
+    const box = (x: number) => ({ x, y: 0, width: 1.6, height: 0.8 });
+    expect(blobOutline([box(-3), box(0), box(3)], { buff: 0.45, smoothness: 0.7 })).toHaveLength(3);
+    // A little closer, one loop, which the blend narrows between them.
+    const joined = blobOutline([box(-2.9), box(0), box(2.9)], { buff: 0.45, smoothness: 0.7 });
+    expect(joined).toHaveLength(1);
+    const waist = joined[0].filter(([x]) => Math.abs(x - 1.45) < 0.3).map(([, y]) => Math.abs(y));
+    expect(Math.min(...waist)).toBeLessThan(0.85 - 0.05);
   });
 });
 

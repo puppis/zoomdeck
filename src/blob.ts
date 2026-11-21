@@ -7,8 +7,13 @@
  * joining two members. The enclosed region is the set of points whose distance
  * to the nearest shape is below `buff`, with neighbouring shapes blended by a
  * smooth minimum so that the curve flows around the group instead of pinching
- * between its members. The region's outer boundary is traced on a grid
- * (marching squares), resampled evenly and turned into Catmull-Rom curves.
+ * between its members. The blend alone swells wherever shapes overlap (a member
+ * and the edges leaving it), and the more of them, the more, so the region is
+ * also kept within the shapes' offset closed by a disc: exactly `buff` from the
+ * shapes where the curve bulges outward, while the blend shapes the hollows and
+ * decides which members join. Holes (members around an empty middle, a cycle of
+ * edges) are filled. The boundary is traced on a grid (marching squares),
+ * resampled evenly and turned into Catmull-Rom curves.
  */
 import type { VMobject } from 'manim-web';
 import { loopsMobject } from './paths';
@@ -101,6 +106,14 @@ function bridgeDistance(bridge: Bridge, x: number, y: number): number {
   return cx * qx + cy * qy - ra;
 }
 
+/** The distance to the nearest shape: exact outside the shapes, negative inside them. */
+function unionDistance(rects: readonly Rect[], bridges: readonly Bridge[], x: number, y: number): number {
+  let d = Infinity;
+  for (const rect of rects) d = Math.min(d, rect.round ? roundDistance(rect, x, y) : rectDistance(rect, x, y));
+  for (const bridge of bridges) d = Math.min(d, bridgeDistance(bridge, x, y));
+  return d;
+}
+
 /** Polynomial smooth minimum: like `min`, but the transition spans a band of width `k`. */
 function smoothMin(a: number, b: number, k: number): number {
   if (k <= 0) return Math.min(a, b);
@@ -108,42 +121,40 @@ function smoothMin(a: number, b: number, k: number): number {
   return Math.min(a, b) - h * h * k / 4;
 }
 
-/** A field that is negative inside the blob and zero on its boundary. */
-export function blobField(rects: readonly Rect[], options: BlobOptions = {}, bridges: readonly Bridge[] = []): (x: number, y: number) => number {
-  const { buff, smoothness } = resolve(options);
-  const k = smoothness * buff * 3;
-  return (x, y) => {
-    let d = Infinity;
-    for (const rect of rects) d = smoothMin(d, rect.round ? roundDistance(rect, x, y) : rectDistance(rect, x, y), k);
-    for (const bridge of bridges) d = smoothMin(d, bridgeDistance(bridge, x, y), k);
-    return d - buff;
-  };
-}
-
-/** Whether `point` lies inside the closed polygon `loop` (even-odd rule). */
-function inside(point: number[], loop: number[][]): boolean {
-  let result = false;
-  for (let i = 0, j = loop.length - 1; i < loop.length; j = i, i += 1) {
-    const [xi, yi] = loop[i];
-    const [xj, yj] = loop[j];
-    if ((yi > point[1]) !== (yj > point[1]) && point[0] < ((xj - xi) * (point[1] - yi)) / (yj - yi) + xi) result = !result;
+/** The distance to the nearest shape, and the smooth union of the shapes blended over `k`, written to `out`. */
+function distances(rects: readonly Rect[], bridges: readonly Bridge[], k: number, x: number, y: number, out: [number, number]): void {
+  let plain = Infinity;
+  let blended = Infinity;
+  for (const rect of rects) {
+    const d = rect.round ? roundDistance(rect, x, y) : rectDistance(rect, x, y);
+    plain = Math.min(plain, d);
+    blended = smoothMin(blended, d, k);
   }
-  return result;
+  for (const bridge of bridges) {
+    const d = bridgeDistance(bridge, x, y);
+    plain = Math.min(plain, d);
+    blended = smoothMin(blended, d, k);
+  }
+  out[0] = plain;
+  out[1] = blended;
 }
 
+/** A field sampled on a grid: `values[j * columns + i]` at (x0 + i·h, y0 + j·h). */
+interface Grid {
+  x0: number;
+  y0: number;
+  h: number;
+  columns: number;
+  rows: number;
+  values: Float64Array;
+}
+
+/** A piece of a level line inside one cell: the grid edges it crosses, and where. */
 type Segment = [number, number, number, number, number, number];
 
-/**
- * Trace the zero level of `field` over the rectangle [x0, x1] × [y0, y1] with
- * marching squares, returning closed loops of points in traversal order.
- */
-function traceContours(field: (x: number, y: number) => number, x0: number, y0: number, x1: number, y1: number, h: number): number[][][] {
-  const columns = Math.ceil((x1 - x0) / h) + 1;
-  const rows = Math.ceil((y1 - y0) / h) + 1;
-  const values = new Float64Array(columns * rows);
-  for (let j = 0; j < rows; j += 1) {
-    for (let i = 0; i < columns; i += 1) values[j * columns + i] = field(x0 + i * h, y0 + j * h);
-  }
+/** The pieces of the zero level of a sampled field, cell by cell (marching squares). */
+function levelSegments(grid: Grid): Segment[] {
+  const { x0, y0, h, columns, rows, values } = grid;
   const at = (i: number, j: number) => values[j * columns + i];
   // Edge identifiers: horizontal edges (between (i,j) and (i+1,j)) and vertical edges (between (i,j) and (i,j+1)).
   const horizontal = (i: number, j: number) => j * columns + i;
@@ -182,8 +193,8 @@ function traceContours(field: (x: number, y: number) => number, x0: number, y0: 
         case 6: case 9: link('bottom', 'top'); break;
         case 7: case 8: link('left', 'top'); break;
         case 5: case 10: {
-          // Saddle: decide by the field at the cell center.
-          const center = field(px + h / 2, py + h / 2) < 0;
+          // Saddle: decide by the mean of the corners, the field's value at the cell center.
+          const center = v00 + v10 + v01 + v11 < 0;
           if ((code === 5) === center) { link('left', 'top'); link('right', 'bottom'); }
           else { link('left', 'bottom'); link('right', 'top'); }
           break;
@@ -192,6 +203,12 @@ function traceContours(field: (x: number, y: number) => number, x0: number, y0: 
       }
     }
   }
+  return segments;
+}
+
+/** The zero level of a sampled field as closed loops of points, in traversal order. */
+function traceLoops(grid: Grid): number[][][] {
+  const segments = levelSegments(grid);
   // Link segments into loops through their shared edge identifiers.
   const byEdge = new Map<number, number[]>();
   segments.forEach((segment, index) => {
@@ -220,6 +237,154 @@ function traceContours(field: (x: number, y: number) => number, x0: number, y0: 
     if (loop.length >= 3) loops.push(loop);
   }
   return loops;
+}
+
+/**
+ * The blob's field on a grid around the shapes: negative inside, zero on the boundary.
+ *
+ * Two regions are intersected. The blend: the points whose smooth union distance is below
+ * `buff`, which shapes the hollows between members and decides which of them join. The closed
+ * offset: the points within `buff` of a shape (R), and every point that no disc of radius ρ
+ * outside R covers; its concave corners are filled to that radius, its convex parts are exactly
+ * `buff` from the shapes. The blend on its own swells wherever shapes overlap, more with every
+ * shape (five dots and seven edges swelled past the grid, into open arcs); within the closed
+ * offset, it cannot bulge out. ρ is the blend's width, so that the closed offset holds every
+ * hollow the blend fills. The centers of the discs outside R are the points at least buff + ρ
+ * from every shape, the region Q; a point is in the closed offset when it is farther than ρ from
+ * Q, and its field is ρ minus the distance to Q's boundary, measured to the pieces of that level
+ * line. The grid's border always counts as outside, so every loop closes.
+ */
+function blobGrid(rects: readonly Rect[], bridges: readonly Bridge[], resolved: Resolved): Grid {
+  const { buff, smoothness, resolution: h } = resolved;
+  const blend = smoothness * buff * 3;
+  const radius = blend;
+  const margin = buff + radius + 3 * h;
+  const left = Math.min(...rects.map((r) => r.x - r.width / 2));
+  const right = Math.max(...rects.map((r) => r.x + r.width / 2));
+  const bottom = Math.min(...rects.map((r) => r.y - r.height / 2));
+  const top = Math.max(...rects.map((r) => r.y + r.height / 2));
+  // A grid centered on the shapes, so that a symmetric group is traced symmetrically.
+  const half = (extent: number) => Math.ceil((extent / 2 + margin) / h);
+  const columns = 2 * half(right - left) + 1;
+  const rows = 2 * half(top - bottom) + 1;
+  const x0 = (left + right) / 2 - half(right - left) * h;
+  const y0 = (bottom + top) / 2 - half(top - bottom) * h;
+  const values = new Float64Array(columns * rows);
+  if (radius > 0) {
+    const level = buff + radius;
+    // The distance to the shapes minus buff + ρ: Q where it is not negative.
+    const grown = new Float64Array(columns * rows);
+    const pair: [number, number] = [0, 0];
+    for (let j = 0; j < rows; j += 1) {
+      for (let i = 0; i < columns; i += 1) {
+        distances(rects, bridges, blend, x0 + i * h, y0 + j * h, pair);
+        grown[j * columns + i] = pair[0] - level;
+        values[j * columns + i] = pair[1] - buff;
+      }
+    }
+    const edges = levelSegments({ x0, y0, h, columns, rows, values: grown });
+    // The pieces of Q's boundary, in buckets as wide as the farthest distance that matters: beyond
+    // ρ + 2h from Q, a point is inside the closed offset by more than 2h, far from the curve.
+    const reach = radius + 2 * h;
+    const across = Math.ceil(((columns - 1) * h) / reach) + 1;
+    const down = Math.ceil(((rows - 1) * h) / reach) + 1;
+    const cell = (value: number, origin: number, count: number) => Math.min(count - 1, Math.max(0, Math.floor((value - origin) / reach)));
+    // Each bucket lists its pieces as runs of five numbers: start, direction, and 1 / squared length.
+    const lists: number[][] = Array.from({ length: across * down }, () => []);
+    for (const [, ax, ay, , bx, by] of edges) {
+      const dx = bx - ax;
+      const dy = by - ay;
+      const inverse = dx * dx + dy * dy > 0 ? 1 / (dx * dx + dy * dy) : 0;
+      for (let cx = cell(Math.min(ax, bx), x0, across); cx <= cell(Math.max(ax, bx), x0, across); cx += 1) {
+        for (let cy = cell(Math.min(ay, by), y0, down); cy <= cell(Math.max(ay, by), y0, down); cy += 1) lists[cy * across + cx].push(ax, ay, dx, dy, inverse);
+      }
+    }
+    const buckets = lists.map((list) => Float64Array.from(list));
+    for (let j = 0; j < rows; j += 1) {
+      for (let i = 0; i < columns; i += 1) {
+        const k = j * columns + i;
+        // Well outside the blend: the intersection is outside, whatever the closed offset says.
+        if (values[k] > 2 * h) continue;
+        const e = grown[k];
+        let closed: number;
+        if (e >= 0 || e < -reach) {
+          // In Q, or far inside (the distance to the shapes is a lower bound of the distance to Q): ρ + e
+          // is the value in Q, and inside a bound below -2h, which keeps the curve where it is.
+          closed = radius + e;
+        } else {
+          const x = x0 + i * h;
+          const y = y0 + j * h;
+          const bx = cell(x, x0, across);
+          const by = cell(y, y0, down);
+          let nearest = reach * reach;
+          for (let cy = Math.max(0, by - 1); cy <= Math.min(down - 1, by + 1); cy += 1) {
+            for (let cx = Math.max(0, bx - 1); cx <= Math.min(across - 1, bx + 1); cx += 1) {
+              const list = buckets[cy * across + cx];
+              for (let n = 0; n < list.length; n += 5) {
+                const px = x - list[n];
+                const py = y - list[n + 1];
+                const dx = list[n + 2];
+                const dy = list[n + 3];
+                const t = Math.min(1, Math.max(0, (px * dx + py * dy) * list[n + 4]));
+                const qx = px - dx * t;
+                const qy = py - dy * t;
+                const squared = qx * qx + qy * qy;
+                if (squared < nearest) nearest = squared;
+              }
+            }
+          }
+          closed = radius - Math.sqrt(nearest);
+        }
+        values[k] = Math.max(values[k], closed);
+      }
+    }
+  } else {
+    for (let j = 0; j < rows; j += 1) {
+      for (let i = 0; i < columns; i += 1) values[j * columns + i] = unionDistance(rects, bridges, x0 + i * h, y0 + j * h) - buff;
+    }
+  }
+  const outside = h * 1e-3;
+  for (let i = 0; i < columns; i += 1) {
+    values[i] = Math.max(values[i], outside);
+    values[(rows - 1) * columns + i] = Math.max(values[(rows - 1) * columns + i], outside);
+  }
+  for (let j = 0; j < rows; j += 1) {
+    values[j * columns] = Math.max(values[j * columns], outside);
+    values[j * columns + columns - 1] = Math.max(values[j * columns + columns - 1], outside);
+  }
+  return { x0, y0, h, columns, rows, values };
+}
+
+/**
+ * A field that is negative inside the blob and zero on its boundary, interpolated from the grid
+ * the blob is traced on; away from the grid, the distance to the shapes minus `buff`.
+ */
+export function blobField(rects: readonly Rect[], options: BlobOptions = {}, bridges: readonly Bridge[] = []): (x: number, y: number) => number {
+  if (!rects.length) throw new Error('A blob needs at least one rectangle');
+  const resolved = resolve(options);
+  const { x0, y0, h, columns, rows, values } = blobGrid(rects, bridges, resolved);
+  return (x, y) => {
+    const u = (x - x0) / h;
+    const v = (y - y0) / h;
+    if (!(u >= 0 && v >= 0 && u <= columns - 1 && v <= rows - 1)) return unionDistance(rects, bridges, x, y) - resolved.buff;
+    const i = Math.min(columns - 2, Math.floor(u));
+    const j = Math.min(rows - 2, Math.floor(v));
+    const s = u - i;
+    const t = v - j;
+    const at = (a: number, b: number) => values[b * columns + a];
+    return (at(i, j) * (1 - s) + at(i + 1, j) * s) * (1 - t) + (at(i, j + 1) * (1 - s) + at(i + 1, j + 1) * s) * t;
+  };
+}
+
+/** Whether `point` lies inside the closed polygon `loop` (even-odd rule). */
+function inside(point: number[], loop: number[][]): boolean {
+  let result = false;
+  for (let i = 0, j = loop.length - 1; i < loop.length; j = i, i += 1) {
+    const [xi, yi] = loop[i];
+    const [xj, yj] = loop[j];
+    if ((yi > point[1]) !== (yj > point[1]) && point[0] < ((xj - xi) * (point[1] - yi)) / (yj - yi) + xi) result = !result;
+  }
+  return result;
 }
 
 /** Resample a closed polygon to anchors `spacing` apart along its perimeter. */
@@ -259,16 +424,11 @@ function resample(loop: number[][], spacing: number): number[][] {
  */
 export function blobOutline(rects: readonly Rect[], options: BlobOptions = {}, bridges: readonly Bridge[] = []): number[][][] {
   if (!rects.length) throw new Error('A blob needs at least one rectangle');
-  const { buff, smoothness, resolution, spacing } = resolve(options);
-  const margin = buff * (1 + smoothness) + 2 * resolution;
-  const x0 = Math.min(...rects.map((r) => r.x - r.width / 2)) - margin;
-  const x1 = Math.max(...rects.map((r) => r.x + r.width / 2)) + margin;
-  const y0 = Math.min(...rects.map((r) => r.y - r.height / 2)) - margin;
-  const y1 = Math.max(...rects.map((r) => r.y + r.height / 2)) + margin;
-  const loops = traceContours(blobField(rects, options, bridges), x0, y0, x1, y1, resolution);
+  const resolved = resolve(options);
+  const loops = traceLoops(blobGrid(rects, bridges, resolved));
   const outer = loops.filter((loop) => !loops.some((other) => other !== loop && inside(loop[0], other)));
   outer.sort((a, b) => b.length - a.length);
-  return outer.map((loop) => resample(loop, spacing));
+  return outer.map((loop) => resample(loop, resolved.spacing));
 }
 
 /** A vector mobject whose closed smooth curves enclose `rects`, and follow `bridges`, at distance `buff`. */
