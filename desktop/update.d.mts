@@ -31,7 +31,9 @@ export function findUpdate(release: unknown, options: { version: string; install
 export function isDownloaded(asset: Asset, file: string, mark: string): Promise<boolean>;
 export function download(asset: Asset, file: string, mark: string, options: { fetch: (url: string, init?: RequestInit) => Promise<Response>; onProgress?: (fraction: number) => void; signal?: AbortSignal }): Promise<string>;
 export function stageMacApp(zip: string, folder: string): Promise<string>;
-export function macInstallScript(options: { pid: number; target: string; staged: string; backup: string; deck?: string | null; version: string; open?: string }): string;
+export function macSidePaths(target: string): { incoming: string; outgoing: string };
+export function swapMacApp(options: { target: string; staged: string; executable: string; deck?: string | null; relaunch: (options: { execPath: string; args: string[] }) => void }): Promise<void>;
+export function tidyBesideMacApp(target: string): Promise<void>;
 export function appImageTarget(current: string, oldVersion: string, newVersion: string): string;
 
 export interface UpdaterOptions {

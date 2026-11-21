@@ -1,7 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 import { createHash } from 'node:crypto';
-import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -12,8 +11,10 @@ import {
   findUpdate,
   installKind,
   isDownloaded,
-  macInstallScript,
+  macSidePaths,
   pickAsset,
+  swapMacApp,
+  tidyBesideMacApp,
   Updater,
   type Install,
 } from '../desktop/update.mjs';
@@ -142,30 +143,48 @@ describe('a download', () => {
   });
 });
 
-describe.skipIf(process.platform === 'win32')('the macOS install script', () => {
-  it('waits for the app to quit, swaps the apps and opens the new one with the deck', async () => {
+describe('a macOS app updated in place', () => {
+  /** An old app in a folder with spaces and parentheses, and a new one unpacked elsewhere. */
+  function apps() {
     const folder = temporary();
-    const target = join(folder, 'Applications', 'ZoomDown.app');
-    const staged = join(folder, 'staged', 'ZoomDown.app');
+    const target = join(folder, 'Apps (test)', 'Zoom Down.app');
+    const staged = join(folder, 'updates', 'staged-0.8.1', 'Zoom Down.app');
     for (const [app, text] of [[target, 'old'], [staged, 'new']]) {
-      mkdirSync(join(app, 'Contents'), { recursive: true });
+      mkdirSync(join(app, 'Contents', 'MacOS'), { recursive: true });
       writeFileSync(join(app, 'Contents', 'version'), text);
     }
-    const opened = join(folder, 'opened');
-    const opener = join(folder, 'open.sh');
-    writeFileSync(opener, `#!/bin/sh\necho "$@" > '${opened}'\n`, { mode: 0o755 });
-    // The app: a process that ends a little later (not a child of the test's, which would linger unreaped).
-    const pid = Number(spawnSync('/bin/sh', ['-c', 'sleep 0.4 >/dev/null 2>&1 & echo $!'], { encoding: 'utf8' }).stdout.trim());
-    const script = join(folder, 'install.sh');
-    writeFileSync(script, macInstallScript({ pid, target, staged, backup: join(folder, 'Applications', '.ZoomDown-previous.app'), deck: '/talks/my deck.zd', version: '0.7.1', open: opener }));
-    const started = Date.now();
-    const result = spawnSync('/bin/sh', [script], { encoding: 'utf8' });
-    expect(result.status).toBe(0);
-    expect(Date.now() - started).toBeGreaterThan(250);
-    expect(readFileSync(join(target, 'Contents', 'version'), 'utf8')).toBe('new');
+    const version = (app: string) => readFileSync(join(app, 'Contents', 'version'), 'utf8');
+    return { target, staged, version };
+  }
+
+  it('takes the old one\'s place, with the relauncher set up while the old one still runs from there', async () => {
+    const { target, staged, version } = apps();
+    const relaunched: Array<{ execPath: string; args: string[]; found: string }> = [];
+    await swapMacApp({
+      target,
+      staged,
+      executable: 'ZoomDown',
+      deck: '/talks/my deck.zd',
+      relaunch: (options) => relaunched.push({ ...options, found: version(target) }),
+    });
+    expect(relaunched).toEqual([{ execPath: join(target, 'Contents', 'MacOS', 'ZoomDown'), args: ['/talks/my deck.zd'], found: 'old' }]);
+    expect(version(target)).toBe('new');
     expect(existsSync(staged)).toBe(false);
-    expect(existsSync(join(folder, 'Applications', '.ZoomDown-previous.app'))).toBe(false);
-    expect(readFileSync(opened, 'utf8').trim()).toBe(`${target} --args /talks/my deck.zd`);
+    const { incoming, outgoing } = macSidePaths(target);
+    expect(existsSync(incoming)).toBe(false);
+    // The old one waits aside, for the new one to remove it.
+    expect(version(outgoing)).toBe('old');
+    await tidyBesideMacApp(target);
+    expect(existsSync(outgoing)).toBe(false);
+    expect(version(target)).toBe('new');
+  });
+
+  it('leaves the old one in place, with no restart set up, when the new one cannot be moved', async () => {
+    const { target, version } = apps();
+    const relaunched: unknown[] = [];
+    await expect(swapMacApp({ target, staged: join(target, '..', 'missing.app'), executable: 'ZoomDown', relaunch: (options) => relaunched.push(options) })).rejects.toThrow();
+    expect(relaunched).toEqual([]);
+    expect(version(target)).toBe('old');
   });
 });
 
@@ -248,6 +267,26 @@ describe('the update cycle', () => {
     // Asked for from the menu, it is offered all the same.
     await updater.check({ manual: true });
     expect(prompts.length).toBe(3);
+  });
+
+  it('removes, on a macOS app\'s next start, the version the update replaced', async () => {
+    const folder = temporary();
+    const target = join(folder, 'Apps', 'ZoomDown.app');
+    const { outgoing } = macSidePaths(target);
+    mkdirSync(join(target, 'Contents'), { recursive: true });
+    mkdirSync(join(outgoing, 'Contents'), { recursive: true });
+    const { fetch } = serving({ [FEED]: () => Response.json({ tag_name: 'v0.8.1', assets: [] }) });
+    const updater = new Updater({
+      version: '0.8.1', arch: 'x64', install: { kind: 'mac', self: true, target }, feed: FEED,
+      folder: join(folder, 'updates'), downloads: folder, store: join(folder, 'update.json'), fetch,
+      dialog: { showMessageBox: async () => ({ response: 0 }) },
+      shell: { openExternal: () => undefined, openPath: () => undefined, showItemInFolder: () => undefined },
+      deck: () => null, quit: () => undefined, relaunch: () => undefined,
+    });
+    await updater.check();
+    for (let i = 0; i < 20 && existsSync(outgoing); i++) await new Promise((resolve) => setTimeout(resolve, 25));
+    expect(existsSync(outgoing)).toBe(false);
+    expect(existsSync(target)).toBe(true);
   });
 
   it('says so when the latest version is the one running', async () => {

@@ -7,9 +7,10 @@
  *
  * How a copy updates depends on how it was installed:
  * - macOS, an app in a folder the user can write to (Applications, as a rule): the release's
- *   .zip is unpacked and checked, and a small script waits for the app to quit, swaps the two
- *   and opens the new one. The builds carry an ad-hoc signature only, which the system's update
- *   framework (and electron-updater, built on it) does not accept.
+ *   .zip is unpacked and checked; installing moves the new app in place of the old one as the
+ *   app quits, and Electron's relauncher starts it (see swapMacApp). The builds carry an ad-hoc
+ *   signature only, which the system's update framework (and electron-updater, built on it)
+ *   does not accept.
  * - macOS, an app that cannot replace itself (run from the disk image, or from Downloads without
  *   being moved): the .dmg is downloaded to the Downloads folder and opened.
  * - Windows, installed by the installer: the new installer runs silently over the old version
@@ -25,7 +26,7 @@
  */
 import { createHash } from 'node:crypto';
 import { execFile, spawn as spawnProcess } from 'node:child_process';
-import { accessSync, constants, createWriteStream, existsSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'node:fs';
+import { accessSync, constants, createWriteStream, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { chmod, copyFile, mkdir, readdir, readFile, rename, rm, stat, unlink, writeFile } from 'node:fs/promises';
 import { once } from 'node:events';
 import { basename, dirname, join, posix, win32 } from 'node:path';
@@ -190,46 +191,57 @@ export async function stageMacApp(zip, folder) {
   return app;
 }
 
-/** A word for the shell, quoted. */
-function quote(text) {
-  return `'${String(text).replaceAll("'", "'\\''")}'`;
+/** Where, beside the app `target`, the new version waits to move in and the old one goes once moved out. */
+export function macSidePaths(target) {
+  const parent = dirname(target);
+  const name = basename(target, '.app');
+  return { incoming: join(parent, `.${name}-update.app`), outgoing: join(parent, `.${name}-previous.app`) };
+}
+
+/** Move an app, copying it when it goes to another volume. */
+async function moveApp(from, to) {
+  try {
+    await rename(from, to);
+  } catch (error) {
+    if (error.code !== 'EXDEV') throw error;
+    await run('ditto', [from, to]);
+    await rm(from, { recursive: true, force: true });
+  }
 }
 
 /**
- * The script that puts a new macOS app in place of the running one: it waits for process `pid`
- * to end, moves the old app aside, moves the new one in (putting the old one back if that
- * fails), and opens the app with `deck`. `open` is the command that opens it.
+ * Put the new macOS app `staged` in place of the running app `target`, as the app quits. The new
+ * app first moves beside the old one, onto the same volume, so that the swap itself is two
+ * renames; Electron's relauncher is set up to start `executable` from the app's place with
+ * `deck` once the app has quit; then the old app moves aside and the new one takes its name.
+ *
+ * The relauncher waits for the app to end and starts the program itself. Asking the system to
+ * open the app instead (an earlier version ran `open` from a script once the app had quit) may
+ * start nothing: right after an app quits, the system can still count it as running and only
+ * bring it forward. The relauncher is set up before the old app moves, as it starts from the
+ * running app's own program. The old app stays aside until the new one removes it
+ * (tidyBesideMacApp). If the new app cannot take its place, the old one is put back and the
+ * error thrown; the relauncher is set up by then, so quitting starts the app as it was.
  */
-export function macInstallScript({ pid, target, staged, backup, deck = null, version, open = 'open' }) {
-  const start = `${quote(open)} "$target"${deck ? ` --args ${quote(deck)}` : ''}`;
-  return `#!/bin/sh
-# Written by ZoomDown: once the app has quit, put version ${version} in its place and start it.
-pid=${Number(pid)}
-target=${quote(target)}
-staged=${quote(staged)}
-backup=${quote(backup)}
-waited=0
-while kill -0 "$pid" 2>/dev/null; do
-  waited=$((waited + 1))
-  if [ "$waited" -gt 600 ]; then echo "ZoomDown did not quit: the update is left for later"; exit 1; fi
-  sleep 0.1
-done
-rm -rf "$backup"
-if ! mv "$target" "$backup"; then
-  echo "the app could not be moved aside: the update is left for later"
-  ${start}
-  exit 1
-fi
-if mv "$staged" "$target"; then
-  rm -rf "$backup"
-  echo "updated to ${version}"
-else
-  echo "the new version could not be put in place: the previous one is back"
-  rm -rf "$target"
-  mv "$backup" "$target"
-fi
-${start}
-`;
+export async function swapMacApp({ target, staged, executable, deck = null, relaunch }) {
+  const { incoming, outgoing } = macSidePaths(target);
+  await rm(incoming, { recursive: true, force: true });
+  await rm(outgoing, { recursive: true, force: true });
+  await moveApp(staged, incoming);
+  relaunch({ execPath: join(target, 'Contents', 'MacOS', executable), args: deck ? [deck] : [] });
+  await rename(target, outgoing);
+  try {
+    await rename(incoming, target);
+  } catch (error) {
+    await rename(outgoing, target);
+    throw error;
+  }
+}
+
+/** Remove what an update left beside the app `target`: the old version, or a new one that did not move in. */
+export async function tidyBesideMacApp(target) {
+  const { incoming, outgoing } = macSidePaths(target);
+  await Promise.all([incoming, outgoing].map((path) => rm(path, { recursive: true, force: true }).catch(() => undefined)));
 }
 
 /** Where a new AppImage goes: in place of the old one, renamed when the old name carries the old version. */
@@ -297,6 +309,9 @@ export class Updater {
   async check({ manual = false } = {}) {
     if (this.state === 'ready') return this._offerInstall({ manual: true });
     if (this.state !== 'idle') return undefined;
+    // What the last update left beside the app: the version it replaced.
+    const { install } = this.options;
+    if (install?.kind === 'mac' && install.self) void tidyBesideMacApp(install.target);
     this._set('checking');
     let update;
     try {
@@ -516,24 +531,18 @@ export class Updater {
 
   /** Quit, and put the new version in place. */
   async _install() {
-    const { install, folder, version } = this.options;
+    const { install, version } = this.options;
     const update = this.update;
     const deck = this.options.deck();
+    // Once the relauncher is set up, quitting starts the app again, whatever happens next.
+    let relaunching = false;
+    const relaunch = (options) => {
+      relaunching = true;
+      this.options.relaunch(options);
+    };
     try {
       if (install.kind === 'mac') {
-        const target = install.target;
-        const parent = posix.dirname(target);
-        const script = macInstallScript({
-          pid: process.pid,
-          target,
-          staged: this._file,
-          backup: posix.join(parent, `.${posix.basename(target, '.app')}-previous.app`),
-          deck,
-          version: update.version,
-        });
-        const path = join(folder, 'install.sh');
-        await writeFile(path, script, { mode: 0o755 });
-        await this._spawn('/bin/sh', [path], join(folder, 'install.log'));
+        await swapMacApp({ target: install.target, staged: this._file, executable: basename(process.execPath), deck, relaunch });
       } else if (install.kind === 'nsis') {
         await this._spawn(this._file, NSIS_ARGUMENTS);
       } else if (install.kind === 'appimage') {
@@ -543,20 +552,21 @@ export class Updater {
         await chmod(part, 0o755);
         await rename(part, target);
         if (target !== install.target) await unlink(install.target).catch(() => undefined);
-        this.options.relaunch({ execPath: target, args: deck ? [deck] : [] });
+        relaunch({ execPath: target, args: deck ? [deck] : [] });
       }
     } catch (error) {
-      await this._tell('warning', 'The update could not be installed', `${error.message ?? error}. The releases page has the new version to install by hand.`);
+      const restart = relaunching ? ` ${PRODUCT} starts again as it was;` : '';
+      await this._tell('warning', 'The update could not be installed', `${error.message ?? error}.${restart} The releases page has the new version to install by hand.`);
       void this.options.shell.openExternal(update.page);
+      if (relaunching) this.options.quit();
       return;
     }
     this.options.quit();
   }
 
   /** Start a program that outlives the app; resolves once it has started, rejects if it cannot. */
-  async _spawn(command, args, log = null) {
-    const out = log ? openSync(log, 'a') : 'ignore';
-    const child = this.options.spawn(command, args, { detached: true, stdio: ['ignore', out, out] });
+  async _spawn(command, args) {
+    const child = this.options.spawn(command, args, { detached: true, stdio: 'ignore' });
     await new Promise((resolve, reject) => {
       child.once('spawn', resolve);
       child.once('error', reject);
@@ -573,8 +583,7 @@ export class Updater {
     } catch {
       return;
     }
-    const keep = update?.asset ? new Set([update.asset.name, `${update.asset.name}.checked`, `staged-${update.version}`]) : new Set();
-    keep.add('install.log');
+    const keep = new Set(update?.asset ? [update.asset.name, `${update.asset.name}.checked`, `staged-${update.version}`] : []);
     await Promise.all(entries.filter((entry) => !keep.has(entry)).map((entry) => rm(join(folder, entry), { recursive: true, force: true }).catch(() => undefined)));
   }
 
