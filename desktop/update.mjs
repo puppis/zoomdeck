@@ -262,8 +262,10 @@ const megabytes = (bytes) => `${Math.max(1, Math.round(bytes / 1e6))} MB`;
  *   version, arch, install (from `probeInstall`, or null), feed (the release's address),
  *   folder (where downloads are kept), downloads (the user's Downloads folder),
  *   store (a JSON file for the skipped version), fetch, dialog, shell, window() (the parent of
- *   the dialogs), deck() (the deck open now), whenFree() (resolves once a prompt would not
- *   interrupt a talk), progress(fraction, -1 to clear), quit(), relaunch(options), spawn,
+ *   the dialogs), deck() (the deck open now), whenFree(purpose) (resolves once the app is free:
+ *   for a 'prompt' offered by itself, a deck is shown, not full screen, with no other dialog
+ *   open; to 'quit' and install, no other dialog is open), progress(fraction, -1 to clear),
+ *   quit(), relaunch(options), spawn,
  *   onChange() (the state changed: the menu shows it).
  */
 export class Updater {
@@ -355,7 +357,7 @@ export class Updater {
   async _offerDownload({ manual }) {
     const { version, install } = this.options;
     const update = this.update;
-    if (!manual) await this.options.whenFree();
+    if (!manual) await this.options.whenFree('prompt');
     if (!update.asset) {
       const response = await this._ask({
         type: 'info',
@@ -468,7 +470,7 @@ export class Updater {
   async _offerInstall({ manual }) {
     const { install } = this.options;
     const update = this.update;
-    if (!manual) await this.options.whenFree();
+    if (!manual) await this.options.whenFree('prompt');
     const recording = ' Stop a recording first, if one is under way.';
     if (install.self) {
       const detail = {
@@ -531,6 +533,8 @@ export class Updater {
 
   /** Quit, and put the new version in place. */
   async _install() {
+    // A dialog of the app's still open would keep it from quitting.
+    await this.options.whenFree('quit');
     const { install, version } = this.options;
     const update = this.update;
     const deck = this.options.deck();

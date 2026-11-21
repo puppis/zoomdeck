@@ -49,7 +49,7 @@ export interface UpdaterOptions {
   shell: { openExternal(url: string): unknown; openPath(path: string): unknown; showItemInFolder(path: string): void };
   window?: () => unknown;
   deck: () => string | null;
-  whenFree?: () => Promise<void>;
+  whenFree?: (purpose: 'prompt' | 'quit') => Promise<void>;
   progress?: (fraction: number) => void;
   quit: () => void;
   relaunch: (options: { execPath: string; args: string[] }) => void;

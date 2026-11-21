@@ -38,7 +38,10 @@ keep using the deck. Once it is ready, the app asks again: **Install and Restart
 puts the new version in place and starts it again with the same deck; **Later** keeps the
 download, and the next start offers it again. **Skip This Version** stops the offers until a
 newer one; **Check for Updates…** (in the ZoomDown menu on macOS, in Help elsewhere) looks at any
-time. A prompt never interrupts a deck presented full screen: it waits until you leave full screen.
+time. The app offers an update by itself only while a deck is shown, so never over the dialog
+that asks for a deck, and a prompt never interrupts a deck presented full screen or another of
+the app's dialogs: it waits until you leave full screen or close the dialog. Installing, too,
+waits for the app's dialogs to be closed, since one left open would keep the app from quitting.
 Every download is checked against the digest GitHub publishes for it.
 
 How the new version is put in place depends on how the app was installed:

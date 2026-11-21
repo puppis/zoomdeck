@@ -207,6 +207,8 @@ describe('the update cycle', () => {
     });
     const prompts: string[] = [];
     const events: string[] = [];
+    // What the cycle waited for, and when it acted, in order.
+    const timeline: string[] = [];
     const relaunched: Array<{ execPath: string; args: string[] }> = [];
     const updater = new Updater({
       version: '0.7.0',
@@ -226,15 +228,26 @@ describe('the update cycle', () => {
       },
       shell: { openExternal: (url: string) => events.push(`open ${url}`), openPath: () => undefined, showItemInFolder: () => undefined },
       deck: () => '/talks/slides.zd',
-      quit: () => events.push('quit'),
-      relaunch: (options) => relaunched.push(options),
+      whenFree: async (purpose) => {
+        timeline.push(`free to ${purpose}`);
+      },
+      quit: () => {
+        events.push('quit');
+        timeline.push('quit');
+      },
+      relaunch: (options) => {
+        relaunched.push(options);
+        timeline.push('relaunch');
+      },
     });
-    return { updater, prompts, events, relaunched, asked, old, apps, folder };
+    return { updater, prompts, events, relaunched, asked, old, apps, folder, timeline };
   }
 
   it('downloads in the background when asked, then installs and starts the new version', async () => {
-    const { updater, prompts, events, relaunched, old, apps } = cycle([0, 0]);
+    const { updater, prompts, events, relaunched, old, apps, timeline } = cycle([0, 0]);
     await updater.check();
+    // Each prompt waits for the app to be free (a deck shown, no dialog open), and so does quitting.
+    expect(timeline).toEqual(['free to prompt', 'free to prompt', 'free to quit', 'relaunch', 'quit']);
     expect(prompts).toEqual(['ZoomDown 0.7.1 is available', 'ZoomDown 0.7.1 is ready to install']);
     const target = join(apps, 'ZoomDown-0.7.1.AppImage');
     expect(readFileSync(target, 'utf8')).toBe('the new AppImage');
@@ -287,6 +300,25 @@ describe('the update cycle', () => {
     for (let i = 0; i < 20 && existsSync(outgoing); i++) await new Promise((resolve) => setTimeout(resolve, 25));
     expect(existsSync(outgoing)).toBe(false);
     expect(existsSync(target)).toBe(true);
+  });
+
+  it('offers an update found at startup only once the app is free, and asked for from the menu at once', async () => {
+    const { updater, prompts, timeline } = cycle([2, 2]);
+    let free: () => void = () => undefined;
+    (updater as unknown as { options: { whenFree: () => Promise<void> } }).options.whenFree = () => new Promise<void>((resolve) => {
+      timeline.push('waiting');
+      free = resolve;
+    });
+    const checked = updater.check();
+    for (let i = 0; i < 20 && !timeline.includes('waiting'); i++) await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(timeline).toEqual(['waiting']);
+    expect(prompts).toEqual([]);
+    free();
+    await checked;
+    expect(prompts).toEqual(['ZoomDown 0.7.1 is available']);
+    await updater.check({ manual: true });
+    expect(timeline).toEqual(['waiting']);
+    expect(prompts.length).toBe(2);
   });
 
   it('says so when the latest version is the one running', async () => {

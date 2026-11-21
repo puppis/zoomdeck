@@ -69,6 +69,43 @@ let current = null;
  * Only an installed app updates itself; run from a checkout, ZOOMDOWN_UPDATE_FEED (the address
  * of a release, as GitHub's API describes it) tries the check and its prompts.
  */
+/**
+ * Whether the app is free for an update: no dialog of the app's is open (one open keeps the app
+ * from quitting, so installing waits for it), and, for a prompt, a deck is shown in the window and
+ * not presented full screen (so an update is offered only once a deck is open, and never interrupts a talk).
+ */
+let openDialogs = 0;
+let deckShown = false;
+const freeWaiters = new Set();
+function isFree(purpose) {
+  if (openDialogs > 0) return false;
+  return purpose === 'quit' || Boolean(win && deckShown && !win.isFullScreen());
+}
+function freeChanged() {
+  for (const waiter of [...freeWaiters]) waiter();
+}
+function whenFree(purpose) {
+  return new Promise((resolve) => {
+    const waiter = () => {
+      if (!isFree(purpose)) return;
+      freeWaiters.delete(waiter);
+      resolve();
+    };
+    freeWaiters.add(waiter);
+    waiter();
+  });
+}
+/** One of the app's dialogs, shown: counted while it is open, so that an update waits for it. */
+async function modal(shown) {
+  openDialogs += 1;
+  try {
+    return await shown;
+  } finally {
+    openDialogs -= 1;
+    freeChanged();
+  }
+}
+
 const VERSION = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8')).version;
 const updateFeed = process.env.ZOOMDOWN_UPDATE_FEED || (app.isPackaged ? LATEST_RELEASE : null);
 let checkedForUpdates = false;
@@ -86,11 +123,7 @@ const updater = updateFeed && !smokeShot
     shell,
     window: () => win,
     deck: () => current,
-    // A prompt waits while the deck is presented full screen.
-    whenFree: () => new Promise((resolve) => {
-      if (!win || !win.isFullScreen()) resolve();
-      else win.once('leave-full-screen', () => resolve());
-    }),
+    whenFree,
     progress: (fraction) => win?.setProgressBar(fraction),
     quit: () => app.quit(),
     relaunch: (options) => app.relaunch(options),
@@ -222,6 +255,8 @@ async function openDeck(deckPath) {
   remember(target);
   if (!win) createWindow();
   await win.loadURL(preview.url);
+  deckShown = true;
+  freeChanged();
   void resumePendingRenders(target);
   if (updater && !checkedForUpdates) {
     checkedForUpdates = true;
@@ -241,7 +276,9 @@ function createWindow() {
   });
   win.on('closed', () => {
     win = null;
+    deckShown = false;
   });
+  win.on('leave-full-screen', freeChanged);
   // Links to other pages open in the browser, not in the deck's window.
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (/^https?:/.test(url)) shell.openExternal(url);
@@ -284,7 +321,7 @@ function createWindow() {
 
 /** Ask for a deck, starting in `folder` (the last one used, by default); whether one was opened. */
 async function chooseDeck(folder = readStore().folder) {
-  const result = await dialog.showOpenDialog(win ?? undefined, {
+  const result = await modal(dialog.showOpenDialog(win ?? undefined, {
     title: 'Open a deck',
     ...(folder ? { defaultPath: folder } : {}),
     properties: ['openFile'],
@@ -292,7 +329,7 @@ async function chooseDeck(folder = readStore().folder) {
       { name: 'Decks', extensions: ['zd', 'md', 'markdown', 'pdf', 'ts', 'js', 'mjs', 'tsx', 'html'] },
       { name: 'All files', extensions: ['*'] },
     ],
-  });
+  }));
   if (result.canceled || !result.filePaths[0]) return false;
   await openDeck(result.filePaths[0]);
   return Boolean(current);
@@ -304,13 +341,13 @@ async function chooseDeck(folder = readStore().folder) {
  * afresh (talks recorded in it stay).
  */
 async function offerTour() {
-  const chosen = await dialog.showOpenDialog(win ?? undefined, {
+  const chosen = await modal(dialog.showOpenDialog(win ?? undefined, {
     title: 'Choose a folder for the tour deck',
     message: `The tour and its examples are copied to a "${TOUR_FOLDER}" folder inside the one you choose, where you can read and edit them and record talks.`,
     defaultPath: app.getPath('documents'),
     properties: ['openDirectory', 'createDirectory'],
     buttonLabel: 'Copy Here',
-  });
+  }));
   if (chosen.canceled || !chosen.filePaths[0]) return false;
   let deck;
   try {
@@ -320,14 +357,14 @@ async function offerTour() {
       dialog.showErrorBox('ZoomDown', `The tour could not be copied:\n${error.message}`);
       return false;
     }
-    const { response } = await dialog.showMessageBox(win ?? undefined, {
+    const { response } = await modal(dialog.showMessageBox(win ?? undefined, {
       type: 'question',
       message: 'A copy of the tour is there already',
       detail: `${error.target}\n\nOpen it as it is, or write the deck's files afresh over it? Talks recorded in it stay either way.`,
       buttons: ['Open It', 'Write Afresh', 'Cancel'],
       defaultId: 0,
       cancelId: 2,
-    });
+    }));
     if (response === 2) return false;
     deck = response === 1 ? copyTour(TOUR_SOURCE, chosen.filePaths[0], { replace: true }) : tourDeck(error.target);
   }
@@ -342,14 +379,14 @@ async function offerTour() {
 async function start() {
   const store = readStore();
   if (!store.decks.length && !store.folder) {
-    const { response } = await dialog.showMessageBox({
+    const { response } = await modal(dialog.showMessageBox({
       type: 'none',
       message: 'Welcome to ZoomDown',
       detail: 'Open a deck of yours (a .zd file, a PDF or a slide module), or copy the tour deck with its examples to a folder of yours and start from there.',
       buttons: ['Open a Deck…', 'Copy the Tour…', 'Quit'],
       defaultId: 1,
       cancelId: 2,
-    });
+    }));
     if (response === 2) return app.quit();
     const opened = response === 0 ? await chooseDeck(app.getPath('documents')) : await offerTour();
     if (!opened && !win) return start();
